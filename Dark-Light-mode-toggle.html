@@ -15,7 +15,7 @@
             height: 100vh;
             margin: 0;
             background-color: #f0f0f0;
-            transition: background-color 0.7s, color 0.7s;
+            transition: background-color 0.3s, color 0.3s;
         }
         .change {
             cursor: pointer;
@@ -27,12 +27,24 @@
             justify-content: center;
             align-items: center;
             font-size: 2em;
-            transition: background-color 0.7s, color 0.7s, transform 0.7s;
-            transform: rotate(-40deg); 
+            transition: background-color 0.3s, color 0.3s, transform 0.3s, box-shadow 0.3s;
+            transform: rotate(-10deg); /* Slight rotation */
+            background: linear-gradient(145deg, #ffffff, #e6e6e6);
+            box-shadow: 5px 5px 10px #aaaaaa, -5px -5px 10px #ffffff;
         }
         .dark {
             background-color: #222;
             color: #e6e6e6;
+        }
+        .dark .change {
+            background: linear-gradient(145deg, #333, #1a1a1a);
+            box-shadow: 5px 5px 10px #111, -5px -5px 10px #333;
+        }
+        .change:active {
+            box-shadow: inset 5px 5px 10px #aaaaaa, inset -5px -5px 10px #ffffff;
+        }
+        .dark .change:active {
+            box-shadow: inset 5px 5px 10px #111, inset -5px -5px 10px #333;
         }
     </style>
 </head>

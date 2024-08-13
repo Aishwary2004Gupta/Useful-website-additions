@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dark Mode Toggle</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            transition: background-color 0.7s, color 0.7s;
+        }
+        .change {
+            cursor: pointer;
+            border: 2px solid #555;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+            transition: background-color 0.7s, color 0.7s, transform 0.7s;
+            transform: rotate(-40deg); 
+        }
+        .dark {
+            background-color: #222;
+            color: #e6e6e6;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="change">&#9728;</div> <!-- Sun Icon -->
+
+    <script>
+        $(".change").on("click", function() {
+            if ($("body").hasClass("dark")) {
+                $("body").removeClass("dark");
+                $(".change").html("&#9728;"); // Sun Icon
+            } else {
+                $("body").addClass("dark");
+                $(".change").html("&#9790;"); // Moon Icon
+            }
+        });
+    </script>
+</body>
+</html>

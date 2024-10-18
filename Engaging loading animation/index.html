@@ -3,26 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loading and Random Vacation Image</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Vacation Loading Screen</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="loading-container">
-        <div class="loading-text">Loading</div>
-        <div class="dots">
-            <div class="dot"></div>
-            <div class="dot"></div>
-            <div class="dot"></div>
+    <div id="loading-screen">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+    </div>
+    <div id="content" style="display: none;">
+        <img id="vacation-image" src="" alt="Vacation Image">
+        <div class="date-container">
+            <p id="current-date"></p>
         </div>
-        <p class="loading-message">Hang tight, the good stuff is coming!</p>
     </div>
-
-    <div class="image-container" style="display: none;">
-        <img src="" alt="Vacation Image" class="vacation-image">
-        <div class="date-overlay"></div>
-    </div>
-
-    <!-- JavaScript -->
     <script src="script.js"></script>
 </body>
 </html>

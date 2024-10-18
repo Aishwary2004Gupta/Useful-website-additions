@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loading Animation Example</title>
+    <title>Loading and Random Vacation Image</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -17,13 +17,12 @@
         <p class="loading-message">Hang tight, the good stuff is coming!</p>
     </div>
 
-    <!-- Optional JavaScript for demo -->
-    <script>
-        // Simulating loading process for demo
-        setTimeout(() => {
-            document.querySelector('.loading-container').innerHTML = 
-                '<div class="loaded-message">Content Loaded Successfully!</div>';
-        }, 5000); // Simulates a 5-second loading time
-    </script>
+    <div class="image-container" style="display: none;">
+        <img src="" alt="Vacation Image" class="vacation-image">
+        <div class="date-overlay"></div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="script.js"></script>
 </body>
 </html>

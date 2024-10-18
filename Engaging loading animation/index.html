@@ -3,20 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vacation Loading Screen</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Loading Animation Example</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="loading-screen">
-        <div class="spinner"></div>
-        <p>Loading...</p>
-    </div>
-    <div id="content" style="display: none;">
-        <img id="vacation-image" src="" alt="Vacation Image">
-        <div class="date-container">
-            <p id="current-date"></p>
+    <div class="loading-container">
+        <div class="loading-text">Loading</div>
+        <div class="dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
         </div>
+        <p class="loading-message">Hang tight, the good stuff is coming!</p>
     </div>
-    <script src="script.js"></script>
+
+    <!-- Optional JavaScript for demo -->
+    <script>
+        // Simulating loading process for demo
+        setTimeout(() => {
+            document.querySelector('.loading-container').innerHTML = 
+                '<div class="loaded-message">Content Loaded Successfully!</div>';
+        }, 5000); // Simulates a 5-second loading time
+    </script>
 </body>
 </html>

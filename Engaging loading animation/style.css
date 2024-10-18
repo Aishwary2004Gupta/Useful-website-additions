@@ -1,89 +1,53 @@
-/* General Styles */
 body {
+    background-color: #f0f0f0;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
     margin: 0;
-    background-color: #f0f0f0;
-    font-family: Arial, sans-serif;
 }
 
-.loading-container {
+#loading-screen {
     text-align: center;
 }
 
-.loading-text {
-    font-size: 24px;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 10px;
-}
-
-/* Dots Animation */
-.dots {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 5px;
-    margin-bottom: 10px;
-}
-
-.dot {
-    width: 15px;
-    height: 15px;
-    margin: 0 5px;
-    background-color: #3498db;
+.spinner {
+    border: 16px solid #f3f3f3;
+    border-top: 16px solid #3498db;
     border-radius: 50%;
-    animation: bounce 1.5s infinite ease-in-out;
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite;
+    margin-bottom: 20px;
 }
 
-.dot:nth-child(2) {
-    animation-delay: 0.3s;
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
-.dot:nth-child(3) {
-    animation-delay: 0.6s;
-}
-
-/* Loading Message */
-.loading-message {
-    font-size: 16px;
-    color: #555;
-}
-
-/* Keyframes for Animation */
-@keyframes bounce {
-    0%, 80%, 100% {
-        transform: translateY(0);
-    }
-    40% {
-        transform: translateY(-20px);
-    }
-}
-
-/* Image Container Styles */
-.image-container {
+#content {
     position: relative;
     text-align: center;
-    display: none;
 }
 
-.vacation-image {
-    width: 100vw;
-    height: 100vh;
-    object-fit: cover;
+#vacation-image {
+    max-width: 80%;
+    height: auto;
 }
 
-/* Date Overlay */
-.date-overlay {
+.date-container {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.5);
-    color: #fff;
-    padding: 15px;
+    color: white;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 10px;
     border-radius: 10px;
+}
+
+#current-date {
     font-size: 24px;
+    font-weight: bold;
 }

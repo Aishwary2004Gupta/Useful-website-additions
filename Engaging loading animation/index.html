@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading Animation Example</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="loading-container">
+        <div class="loading-text">Loading</div>
+        <div class="dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+        <p class="loading-message">Hang tight, the good stuff is coming!</p>
+    </div>
+
+    <!-- Optional JavaScript for demo -->
+    <script>
+        // Simulating loading process for demo
+        setTimeout(() => {
+            document.querySelector('.loading-container').innerHTML = 
+                '<div class="loaded-message">Content Loaded Successfully!</div>';
+        }, 5000); // Simulates a 5-second loading time
+    </script>
+</body>
+</html>

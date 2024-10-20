@@ -6,10 +6,7 @@ This project demonstrates an engaging loading screen animation with a progress b
 
 - [Features](#features)
 - [Technologies Used](#technologies-used)
-- [Getting Started](#getting-started)
-- [Usage](#usage)
-- [Customization](#customization)
-- [License](#license)
+
 
 ## Features
 

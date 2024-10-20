@@ -17,7 +17,6 @@ This project demonstrates a simple scrolling text animation using HTML and CSS. 
 
 ![Scrolling Text Animation Demo](demo.gif) <!-- You can replace this with a screenshot or animated GIF of your project -->
 
-View the live demo [here](#) <!-- Add a link to the live demo if available -->
 
 ## Features
 

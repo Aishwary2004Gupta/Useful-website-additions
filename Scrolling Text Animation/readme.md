@@ -44,7 +44,7 @@ To run this project locally, follow these steps:
 
 1. **Clone the repository or download the ZIP file**:
     ```bash
-    git clone https://github.com/aish042004gupta/scrolling-text-animation.git
+    git clone https://github.com/Aishwary2004Gupta/scrolling-text-animation.git
     ```
    
 2. **Navigate to the project directory**:

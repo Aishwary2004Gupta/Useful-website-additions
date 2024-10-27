@@ -1,0 +1,14 @@
+ul {
+    position: relative;
+    transform: skewY(-15deg);
+}
+
+li {
+    position: relative;
+    list-style: none;
+    width: 200px;
+    padding: 15px;
+    background: #333;
+    z-index: calc(1 * var(--i));
+    transition: 0.5s;
+}

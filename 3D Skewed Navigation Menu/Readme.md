@@ -22,5 +22,8 @@ A modern, interactive navigation menu with 3D skewed effects and smooth hover an
 ## Installation
 
 1. **Clone this repository:**
+   
    ```bash
    git clone https://github.com/Aishwary2004Gupta/3D-Skewed-Navigation-Menu.git
+
+2. 

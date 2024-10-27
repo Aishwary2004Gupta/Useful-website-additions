@@ -1,3 +1,22 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    background: #222;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.navigation {
+    position: relative;
+    perspective: 1000px;
+}
+
 ul {
     position: relative;
     transform: skewY(-15deg);
@@ -9,22 +28,18 @@ li {
     width: 200px;
     padding: 15px;
     background: #333;
-    z-index: calc(1 * var(--i));
+    z-index: var(--i);
     transition: 0.5s;
+    transform-origin: top;
 }
 
 li:hover {
     background: #9535aa;
-    transform: translate(-50px);
+    transform: translateX(-50px);
 }
 
 li::before {
-    font-family: "FontAwesome";
-    color: #999;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    content: attr(data-icon);
+    content: '';
     position: absolute;
     top: 0;
     left: -40px;
@@ -41,10 +56,10 @@ li:hover::before {
 }
 
 li::after {
-    content: "";
+    content: '';
     position: absolute;
     top: -40px;
-    left: 0px;
+    left: 0;
     width: 100%;
     height: 40px;
     background: #2e3133;
@@ -70,6 +85,26 @@ li:hover a {
     color: #fff;
 }
 
-li:last-child::after{
+li:last-child::after {
     box-shadow: -120px 120px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* Icon styles */
+.icon {
+    position: absolute;
+    left: -40px;
+    top: 0;
+    width: 40px;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #999;
+    z-index: 1;
+    transform: skewY(45deg);
+    transition: 0.5s;
+}
+
+li:hover .icon {
+    color: #fff;
 }

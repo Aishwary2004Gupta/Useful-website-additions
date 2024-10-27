@@ -26,4 +26,12 @@ li::before {
     align-items: center;
     content: attr(data-icon);
     position: absolute;
+    top: 0;
+    left: -40px;
+    width: 40px;
+    height: 100%;
+    background: #2e3133;
+    transform-origin: right;
+    transform: skewY(45deg);
+    transition: 0.5s;
 }

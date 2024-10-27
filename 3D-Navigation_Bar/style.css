@@ -12,3 +12,13 @@ li {
     z-index: calc(1 * var(--i));
     transition: 0.5s;
 }
+
+li:hover {
+    background: #9535aa;
+    transform: translate(-50px);
+}
+
+li::before {
+    font-family: "FontAwesome";
+    
+}

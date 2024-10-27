@@ -52,3 +52,16 @@ li::after {
     transform: skewX(45deg);
     transition: 0.5s;
 }
+
+li:hover::after {
+    background: #7b5190;
+}
+
+li a {
+    text-decoration: none;
+    color: #999;
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: 0.5s;
+}

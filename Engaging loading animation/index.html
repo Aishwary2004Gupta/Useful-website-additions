@@ -6,76 +6,6 @@
     <link rel="stylesheet" href="styles.css">
     <script src="script.js" defer></script>
     <title>Engaging loading animation</title>
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            font-family: Arial, sans-serif;
-            overflow: hidden;
-        }
-        .loading-screen {
-            background-color: #b5d1c4;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: #0a4a3b;
-            position: relative;
-            transition: transform 1s ease;
-        }
-        .content {
-            text-align: center;
-        }
-        h1 {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin: 0;
-            line-height: 1.2;
-        }
-        .ethwarsaw {
-            font-size: 0.875rem;
-            margin-top: 10px;
-        }
-        .progress-bar {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            height: 8px;
-            width: 0;
-            background-color: #e67e22;
-            transition: width 0.5s ease;
-        }
-        .progress-number {
-            position: absolute;
-            bottom: 16px;
-            right: 16px;
-            font-size: 5rem;
-            font-weight: bold;
-            font-family: 'Times New Roman', Times, serif;
-            color: #e67e22;
-        }
-        .new-content {
-            position: absolute;
-            bottom: -100%;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #0a4a3b;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            transition: bottom 1s ease;
-            font-size: 2rem;
-        }
-        .new-content.show {
-            bottom: 0;
-        }
-    </style>
 </head>
 <body>
     <div class="loading-screen">
@@ -90,41 +20,5 @@
         <div id="current-date-time"></div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const progressBar = document.querySelector('.progress-bar');
-            const progressNumber = document.querySelector('.progress-number');
-            const loadingScreen = document.querySelector('.loading-screen');
-            const newContent = document.querySelector('.new-content');
-            const currentDateTime = document.getElementById('current-date-time');
-            let progress = 0;
-
-            function updateProgress() {
-                if (progress < 100) {
-                    progress += 1;
-                    progressBar.style.width = `${progress}%`;
-                    progressNumber.textContent = progress;
-                    setTimeout(updateProgress, 50);
-                } else {
-                    // Slide the new content up after the loading is completed
-                    loadingScreen.style.transform = 'translateY(-100%)';
-                    newContent.classList.add('show');
-                    // Set the current date and time
-                    const now = new Date();
-                    currentDateTime.textContent = now.toLocaleString('en-US', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: true
-                    });
-                }
-            }
-
-            updateProgress();
-        });
-    </script>
 </body>
 </html>

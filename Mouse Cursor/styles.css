@@ -26,13 +26,21 @@ button {
     border-radius: 8px;
     color: white;
     cursor: pointer;
-    transition: transform 0.2s ease, background 0.3s ease;
+    transition: transform 0.3s ease, background 0.4s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 button:hover {
     background: linear-gradient(135deg, #2575fc, #6a11cb);
-    transform: scale(1.1);
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
 }
+
+button:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
 
 #cursor {
     position: absolute;

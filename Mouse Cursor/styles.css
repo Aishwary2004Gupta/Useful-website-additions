@@ -78,3 +78,14 @@ button:active {
         transform: scale(0.5);
     }
 }
+
+@keyframes fade-and-fall {
+    0% {
+        opacity: 1;
+        transform: translate(0, 0) rotate(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(0, 200px) rotate(360deg);
+    }
+}

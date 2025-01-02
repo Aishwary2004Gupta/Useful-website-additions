@@ -1,16 +1,49 @@
 // script.js
 const cursor = document.getElementById('cursor');
+const body = document.body;
+
+// Smooth follow mouse
+let mouseX = 0, mouseY = 0;
+let cursorX = 0, cursorY = 0;
 
 document.addEventListener('mousemove', (e) => {
-    // Update cursor position
-    const { clientX: x, clientY: y } = e;
-    cursor.style.left = `${x}px`;
-    cursor.style.top = `${y}px`;
+    mouseX = e.clientX;
+    mouseY = e.clientY;
 
-    // Calculate 3D rotation based on mouse position
-    const { innerWidth, innerHeight } = window;
-    const rotateX = ((y / innerHeight) - 0.5) * -30; // Invert direction for X
-    const rotateY = ((x / innerWidth) - 0.5) * 30;
+    // Add trail effect
+    const trail = document.createElement('div');
+    trail.classList.add('trail');
+    trail.style.left = `${mouseX}px`;
+    trail.style.top = `${mouseY}px`;
+    body.appendChild(trail);
 
-    cursor.style.transform = `translate(-50%, -50%) rotate3d(1, 0, 0, ${rotateX}deg) rotate3d(0, 1, 0, ${rotateY}deg)`;
+    setTimeout(() => {
+        trail.remove();
+    }, 500);
+});
+
+// Smooth follow animation
+function animateCursor() {
+    cursorX += (mouseX - cursorX) * 0.1;
+    cursorY += (mouseY - cursorY) * 0.1;
+
+    cursor.style.left = `${cursorX}px`;
+    cursor.style.top = `${cursorY}px`;
+
+    requestAnimationFrame(animateCursor);
+}
+animateCursor();
+
+// Interactive element hover effect
+document.querySelectorAll('.interactive').forEach((el) => {
+    el.addEventListener('mouseenter', () => {
+        cursor.style.width = '60px';
+        cursor.style.height = '60px';
+        cursor.style.boxShadow = '0 0 30px rgba(255, 0, 150, 0.8)';
+    });
+    el.addEventListener('mouseleave', () => {
+        cursor.style.width = '30px';
+        cursor.style.height = '30px';
+        cursor.style.boxShadow = '0 0 15px rgba(255, 255, 255, 0.6)';
+    });
 });

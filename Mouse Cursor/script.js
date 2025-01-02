@@ -67,10 +67,14 @@ function createConfetti(x, y) {
         confetti.style.borderRadius = `${Math.random() < 0.5 ? '50%' : '0'}`;
         confetti.style.left = '0';
         confetti.style.top = '0';
-        confetti.style.transform = `translate(${Math.random() * 200 - 100}px, ${
-            Math.random() * 200 - 100
-        }px) rotate(${Math.random() * 360}deg)`;
-        confetti.style.animation = 'fade-and-fall 1s ease-out forwards';
+
+        // Generate random angles and distances for more dynamic scattering
+        const angle = Math.random() * 360; // Random rotation angle
+        const distanceX = Math.random() * 200 - 100; // Horizontal spread
+        const distanceY = Math.random() * 200 + 50;  // Vertical fall
+
+        confetti.style.transform = `translate(${distanceX}px, ${distanceY}px) rotate(${angle}deg)`;
+        confetti.style.animation = `fade-and-fall 1s ease-out forwards`;
 
         confettiContainer.appendChild(confetti);
     }
@@ -88,4 +92,3 @@ button.addEventListener('click', (event) => {
     const y = rect.top + rect.height / 2;
     createConfetti(x, y);
 });
-

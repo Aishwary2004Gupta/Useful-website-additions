@@ -86,6 +86,6 @@ button:active {
     }
     100% {
         opacity: 0;
-        transform: translate(0, 200px) rotate(360deg);
+        transform: translate(0, 300px) rotate(720deg); /* Rotate while falling */
     }
 }

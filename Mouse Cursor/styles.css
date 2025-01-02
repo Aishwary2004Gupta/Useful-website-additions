@@ -30,6 +30,7 @@ button:hover {
     background: linear-gradient(135deg, #2575fc, #6a11cb);
     transform: scale(1.1);
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+    animation: wobble 0.6s ease-in-out infinite; /* Added wobble effect */
 }
 
 /* Custom cursor */
@@ -52,4 +53,23 @@ button:hover {
     position: absolute;
     border-radius: 50%;
     pointer-events: none;
+}
+ 
+/* Wobble effect for the button */
+@keyframes wobble {
+    0% {
+        transform: rotate(0deg);
+    }
+    25% {
+        transform: rotate(10deg);
+    }
+    50% {
+        transform: rotate(0deg);
+    }
+    75% {
+        transform: rotate(-10deg);
+    }
+    100% {
+        transform: rotate(0deg);
+    }
 }

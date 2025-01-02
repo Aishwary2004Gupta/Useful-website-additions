@@ -1,0 +1,22 @@
+/* styles.css */
+body {
+    margin: 0;
+    height: 100vh;
+    background: linear-gradient(135deg, #1e3a8a, #2563eb);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    cursor: none; /* Hide default cursor */
+}
+
+#cursor {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background: radial-gradient(circle, #ffffff, #cccccc);
+    border-radius: 50%;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    transform: translate(-50%, -50%) rotate3d(0, 0, 0, 0deg);
+    transition: transform 0.1s ease-out;
+}

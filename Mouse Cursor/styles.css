@@ -4,27 +4,12 @@ body {
     height: 100vh;
     background: radial-gradient(circle at top, #1e3a8a, #2c5364);
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
     overflow: hidden;
     font-family: Arial, sans-serif;
     color: #fff;
-    cursor: none; /* Hide default cursor */
-}
-
-/* Header with wave effect */
-#hover-me {
-    font-size: 2.5rem;
-    margin: 20px 0;
-    text-transform: uppercase;
-    letter-spacing: 5px;
-    animation: wave 5s linear infinite;
-}
-
-@keyframes wave {
-    0%, 100% { transform: rotateZ(0); }
-    50% { transform: rotateZ(5deg); }
+    cursor: none; /* Hide the default cursor */
 }
 
 /* Interactive button */
@@ -38,6 +23,7 @@ button {
     cursor: pointer;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
     transition: transform 0.3s ease, background 0.4s ease, box-shadow 0.3s ease;
+    position: relative;
 }
 
 button:hover {
@@ -59,4 +45,11 @@ button:hover {
     transform: translate(-50%, -50%);
     z-index: 100;
     transition: transform 0.1s ease-out;
+}
+
+/* Confetti particles */
+.particle {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
 }

@@ -20,32 +20,15 @@ function followCursor() {
 }
 followCursor();
 
-// Magnetic button effect
+// Confetti explosion effect below the button
 const button = document.querySelector('.interactive');
-button.addEventListener('mousemove', (e) => {
-    const rect = button.getBoundingClientRect();
-    const dx = e.clientX - (rect.left + rect.width / 2);
-    const dy = e.clientY - (rect.top + rect.height / 2);
-    const dist = Math.sqrt(dx * dx + dy * dy);
-
-    if (dist < 100) {
-        button.style.transform = `translate(${dx * 0.1}px, ${dy * 0.1}px)`;
-    } else {
-        button.style.transform = 'translate(0, 0)';
-    }
-});
-
-button.addEventListener('mouseleave', () => {
-    button.style.transform = 'translate(0, 0)';
-});
-
-// Confetti explosion
 button.addEventListener('click', (e) => {
-    const x = e.clientX;
-    const y = e.clientY;
+    const rect = button.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const bottomY = rect.top + rect.height;
 
     for (let i = 0; i < 25; i++) {
-        createParticle(x, y);
+        createParticle(centerX, bottomY);
     }
 });
 
@@ -54,8 +37,8 @@ function createParticle(x, y) {
     particle.classList.add('particle');
     document.body.appendChild(particle);
 
-    const angle = Math.random() * 360;
-    const velocity = Math.random() * 2 + 1;
+    const angle = Math.random() * Math.PI * 2;
+    const velocity = Math.random() * 3 + 2;
     const size = Math.random() * 6 + 4;
 
     particle.style.width = `${size}px`;
@@ -70,7 +53,7 @@ function createParticle(x, y) {
     let lifespan = 100;
 
     const moveParticle = () => {
-        particle.style.transform = `translate(${dx * lifespan}px, ${dy * lifespan}px)`;
+        particle.style.transform = `translate(${dx * lifespan}px, ${dy * lifespan}px) rotate(${lifespan * 10}deg)`;
         lifespan -= 2;
 
         if (lifespan > 0) {

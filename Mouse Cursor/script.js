@@ -47,3 +47,45 @@ document.querySelectorAll('.interactive').forEach((el) => {
         cursor.style.boxShadow = '0 0 15px rgba(255, 255, 255, 0.6)';
     });
 });
+
+// Function to generate confetti
+function createConfetti(x, y) {
+    const confettiContainer = document.createElement('div');
+    confettiContainer.style.position = 'absolute';
+    confettiContainer.style.left = `${x}px`;
+    confettiContainer.style.top = `${y}px`;
+    confettiContainer.style.pointerEvents = 'none';
+    confettiContainer.style.zIndex = 1000;
+
+    for (let i = 0; i < 30; i++) {
+        const confetti = document.createElement('div');
+        confetti.style.position = 'absolute';
+        confetti.style.width = `${Math.random() * 8 + 4}px`;
+        confetti.style.height = `${Math.random() * 8 + 4}px`;
+        confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+        confetti.style.opacity = 0.8;
+        confetti.style.borderRadius = `${Math.random() < 0.5 ? '50%' : '0'}`;
+        confetti.style.left = '0';
+        confetti.style.top = '0';
+        confetti.style.transform = `translate(${Math.random() * 200 - 100}px, ${
+            Math.random() * 200 - 100
+        }px) rotate(${Math.random() * 360}deg)`;
+        confetti.style.animation = 'fade-and-fall 1s ease-out forwards';
+
+        confettiContainer.appendChild(confetti);
+    }
+
+    document.body.appendChild(confettiContainer);
+
+    setTimeout(() => confettiContainer.remove(), 1000); // Remove confetti after 1 second
+}
+
+// Add click event to the button
+const button = document.querySelector('.interactive');
+button.addEventListener('click', (event) => {
+    const rect = button.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+    createConfetti(x, y);
+});
+

@@ -1,27 +1,40 @@
 const cursor = document.getElementById('cursor');
-let mouseX = 0, mouseY = 0;
-let cursorX = 0, cursorY = 0;
+const body = document.body;
+const button = document.querySelector('.interactive');
 
-// Smooth follow cursor
+let mouseX = 0, mouseY = 0;
+
+// Cursor movement
 document.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
+    cursor.style.left = `${mouseX}px`;
+    cursor.style.top = `${mouseY}px`;
+
+    // Add rainbow tail
+    createRainbowTrail(mouseX, mouseY);
 });
 
-// Animate cursor position
-function followCursor() {
-    cursorX += (mouseX - cursorX) * 0.1;
-    cursorY += (mouseY - cursorY) * 0.1;
+// Button swinging effect
+document.addEventListener('mousemove', (e) => {
+    const rect = button.getBoundingClientRect();
+    const buttonCenterX = rect.left + rect.width / 2;
+    const buttonCenterY = rect.top + rect.height / 2;
 
-    cursor.style.left = `${cursorX}px`;
-    cursor.style.top = `${cursorY}px`;
+    const deltaX = mouseX - buttonCenterX;
+    const deltaY = mouseY - buttonCenterY;
+    const distance = Math.sqrt(deltaX ** 2 + deltaY ** 2);
 
-    requestAnimationFrame(followCursor);
-}
-followCursor();
+    const maxSwing = 30; // max swing in degrees
+    const swing = Math.min(maxSwing, (100 / distance) * maxSwing);
 
-// Confetti explosion effect below the button
-const button = document.querySelector('.interactive');
+    button.style.transform = `rotate(${swing}deg)`;
+    if (distance > 100) {
+        button.style.transform = 'rotate(0deg)';
+    }
+});
+
+// Add confetti on button click
 button.addEventListener('click', (e) => {
     const rect = button.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
@@ -32,6 +45,7 @@ button.addEventListener('click', (e) => {
     }
 });
 
+// Create particles for confetti effect
 function createParticle(x, y) {
     const particle = document.createElement('div');
     particle.classList.add('particle');
@@ -63,4 +77,18 @@ function createParticle(x, y) {
         }
     };
     moveParticle();
+}
+
+// Create rainbow tail
+function createRainbowTrail(x, y) {
+    const trail = document.createElement('div');
+    trail.classList.add('cursor-tail');
+    trail.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+    trail.style.left = `${x}px`;
+    trail.style.top = `${y}px`;
+    body.appendChild(trail);
+
+    setTimeout(() => {
+        trail.remove();
+    }, 600);
 }

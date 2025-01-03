@@ -14,21 +14,22 @@ body {
 
 /* Button styles */
 button {
-    padding: 15px 40px;
-    font-size: 1rem;
+    padding: 20px 50px;
+    font-size: 1.2rem;
     color: #fff;
     background: linear-gradient(135deg, #6a11cb, #2575fc);
     border: none;
     border-radius: 50px;
     cursor: pointer;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    transition: background 0.4s ease, box-shadow 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
     position: relative;
-    transform-origin: center;
-    transition: transform 0.2s ease-in-out; /* Smooth transform */
+    outline: none;
+    z-index: 10;
 }
 
 button:hover {
+    transform: scale(1.2); /* Smooth enlargement on hover */
     background: linear-gradient(135deg, #2575fc, #6a11cb);
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
 }
@@ -57,6 +58,27 @@ button:hover {
     pointer-events: none;
     opacity: 1;
     animation: fadeOut 0.6s ease-out forwards;
+}
+
+/* Particle styles */
+.particle {
+    position: absolute;
+    pointer-events: none;
+    opacity: 1;
+    transform-origin: center;
+    animation: fadeParticle 1s ease-out forwards;
+}
+
+/* Fade-out effect for particles */
+@keyframes fadeParticle {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
 }
 
 /* Rainbow colors fade effect */

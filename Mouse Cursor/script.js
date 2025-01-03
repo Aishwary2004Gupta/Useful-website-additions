@@ -4,13 +4,24 @@ const button = document.querySelector('.interactive');
 
 let mouseX = 0, mouseY = 0;
 
-// Update cursor position and leave a rainbow trail
+// Update cursor position and leave a rainbow neon trail
 document.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
 
+    // Update cursor position
     cursor.style.left = `${mouseX}px`;
     cursor.style.top = `${mouseY}px`;
+
+    // Create neon trail
+    const trail = document.createElement('div');
+    trail.classList.add('neon-trail');
+    trail.style.left = `${mouseX}px`;
+    trail.style.top = `${mouseY}px`;
+
+    // Add and remove trail
+    body.appendChild(trail);
+    setTimeout(() => trail.remove(), 800);
 });
 
 // Handle button click to create an explosion effect
@@ -64,8 +75,8 @@ function createExplosion(x, y, particleCount) {
         const dy = Math.sin(angle) * distance;
 
         // Set CSS variables for movement
-        particle.style.setProperty('--dx', `${dx}px`);
-        particle.style.setProperty('--dy', `${dy}px`);
+        particle.style.setProperty(`--dx`, `${dx}px`);
+        particle.style.setProperty(`--dy`, `${dy}px`);
 
         // Append particle and clean up after animation ends
         body.appendChild(particle);

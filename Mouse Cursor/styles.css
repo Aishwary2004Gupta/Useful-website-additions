@@ -12,7 +12,7 @@ body {
     cursor: none; /* Hide the default cursor */
 }
 
-/* Interactive button */
+/* Button styles */
 button {
     padding: 15px 40px;
     font-size: 1rem;
@@ -22,15 +22,15 @@ button {
     border-radius: 50px;
     cursor: pointer;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    transition: transform 0.3s ease, background 0.4s ease, box-shadow 0.3s ease;
+    transition: background 0.4s ease, box-shadow 0.3s ease;
     position: relative;
+    transform-origin: center;
+    transition: transform 0.2s ease-in-out; /* Smooth transform */
 }
 
 button:hover {
     background: linear-gradient(135deg, #2575fc, #6a11cb);
-    transform: scale(1.1);
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
-    animation: wobble 0.6s ease-in-out infinite; /* Added wobble effect */
 }
 
 /* Custom cursor */
@@ -48,28 +48,25 @@ button:hover {
     transition: transform 0.1s ease-out;
 }
 
-/* Confetti particles */
-.particle {
+/* Cursor rainbow tail */
+.cursor-tail {
     position: absolute;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     pointer-events: none;
+    opacity: 1;
+    animation: fadeOut 0.6s ease-out forwards;
 }
- 
-/* Wobble effect for the button */
-@keyframes wobble {
+
+/* Rainbow colors fade effect */
+@keyframes fadeOut {
     0% {
-        transform: rotate(0deg);
-    }
-    25% {
-        transform: rotate(10deg);
-    }
-    50% {
-        transform: rotate(0deg);
-    }
-    75% {
-        transform: rotate(-10deg);
+        transform: scale(1);
+        opacity: 1;
     }
     100% {
-        transform: rotate(0deg);
+        transform: scale(0);
+        opacity: 0;
     }
 }

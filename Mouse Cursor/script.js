@@ -8,30 +8,12 @@ let mouseX = 0, mouseY = 0;
 document.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
+
     cursor.style.left = `${mouseX}px`;
     cursor.style.top = `${mouseY}px`;
 
-    // Add rainbow tail
+    // Add rainbow trail
     createRainbowTrail(mouseX, mouseY);
-});
-
-// Button swinging effect
-document.addEventListener('mousemove', (e) => {
-    const rect = button.getBoundingClientRect();
-    const buttonCenterX = rect.left + rect.width / 2;
-    const buttonCenterY = rect.top + rect.height / 2;
-
-    const deltaX = mouseX - buttonCenterX;
-    const deltaY = mouseY - buttonCenterY;
-    const distance = Math.sqrt(deltaX ** 2 + deltaY ** 2);
-
-    const maxSwing = 30; // max swing in degrees
-    const swing = Math.min(maxSwing, (100 / distance) * maxSwing);
-
-    button.style.transform = `rotate(${swing}deg)`;
-    if (distance > 100) {
-        button.style.transform = 'rotate(0deg)';
-    }
 });
 
 // Add confetti on button click
@@ -45,29 +27,51 @@ button.addEventListener('click', (e) => {
     }
 });
 
-// Create particles for confetti effect
+// Create particles for confetti effect with random shapes
 function createParticle(x, y) {
     const particle = document.createElement('div');
     particle.classList.add('particle');
-    document.body.appendChild(particle);
 
-    const angle = Math.random() * Math.PI * 2;
-    const velocity = Math.random() * 3 + 2;
-    const size = Math.random() * 6 + 4;
-
+    // Set random size
+    const size = Math.random() * 12 + 8;
     particle.style.width = `${size}px`;
     particle.style.height = `${size}px`;
-    particle.style.background = `hsl(${Math.random() * 360}, 70%, 50%)`;
+
+    // Set random shape: circle, square, or triangle
+    const shapes = ['circle', 'square', 'triangle'];
+    const shape = shapes[Math.floor(Math.random() * shapes.length)];
+
+    if (shape === 'circle') {
+        particle.style.borderRadius = '50%';
+    } else if (shape === 'square') {
+        particle.style.borderRadius = '0';
+    } else if (shape === 'triangle') {
+        particle.style.width = '0';
+        particle.style.height = '0';
+        particle.style.borderLeft = `${size / 2}px solid transparent`;
+        particle.style.borderRight = `${size / 2}px solid transparent`;
+        particle.style.borderBottom = `${size}px solid hsl(${Math.random() * 360}, 100%, 50%)`;
+    }
+
+    // Random color
+    particle.style.background = shape !== 'triangle' 
+        ? `hsl(${Math.random() * 360}, 100%, 50%)` 
+        : 'none';
+
+    // Position particle at click location
     particle.style.left = `${x}px`;
     particle.style.top = `${y}px`;
 
+    // Set random movement
+    const angle = Math.random() * Math.PI * 2;
+    const velocity = Math.random() * 3 + 2;
     const dx = Math.cos(angle) * velocity;
     const dy = Math.sin(angle) * velocity;
 
     let lifespan = 100;
 
     const moveParticle = () => {
-        particle.style.transform = `translate(${dx * lifespan}px, ${dy * lifespan}px) rotate(${lifespan * 10}deg)`;
+        particle.style.transform = `translate(${dx * lifespan}px, ${dy * lifespan}px) rotate(${lifespan * 15}deg)`;
         lifespan -= 2;
 
         if (lifespan > 0) {
@@ -76,10 +80,12 @@ function createParticle(x, y) {
             particle.remove();
         }
     };
+
+    document.body.appendChild(particle);
     moveParticle();
 }
 
-// Create rainbow tail
+// Create rainbow trail
 function createRainbowTrail(x, y) {
     const trail = document.createElement('div');
     trail.classList.add('cursor-tail');

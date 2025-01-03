@@ -4,7 +4,7 @@ const button = document.querySelector('.interactive');
 
 let mouseX = 0, mouseY = 0;
 
-// Update cursor position and leave a rainbow neon trail
+// Update cursor position and leave a smooth neon trail
 document.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
@@ -13,18 +13,18 @@ document.addEventListener('mousemove', (e) => {
     cursor.style.left = `${mouseX}px`;
     cursor.style.top = `${mouseY}px`;
 
-    // Create neon trail
+    // Create improved neon trail
     const trail = document.createElement('div');
     trail.classList.add('neon-trail');
     trail.style.left = `${mouseX}px`;
     trail.style.top = `${mouseY}px`;
 
-    // Add and remove trail
+    // Append and cleanup trail
     body.appendChild(trail);
-    setTimeout(() => trail.remove(), 800);
+    setTimeout(() => trail.remove(), 1000);
 });
 
-// Handle button click to create an explosion effect
+// Button click creates an explosion effect
 button.addEventListener('click', () => {
     const rect = button.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
@@ -33,6 +33,7 @@ button.addEventListener('click', () => {
     createExplosion(centerX, centerY, 40); // Create 40 particles
 });
 
+// Improved explosion
 function createExplosion(x, y, particleCount) {
     for (let i = 0; i < particleCount; i++) {
         const particle = document.createElement('div');
@@ -69,16 +70,16 @@ function createExplosion(x, y, particleCount) {
         particle.style.top = `${y}px`;
 
         // Calculate random direction for explosion
-        const angle = Math.random() * Math.PI * 2; // Random angle in radians
-        const distance = Math.random() * 200; // Random distance
+        const angle = Math.random() * Math.PI * 2; // Random angle
+        const distance = Math.random() * 200;     // Random distance
         const dx = Math.cos(angle) * distance;
         const dy = Math.sin(angle) * distance;
 
-        // Set CSS variables for movement
-        particle.style.setProperty(`--dx`, `${dx}px`);
-        particle.style.setProperty(`--dy`, `${dy}px`);
+        // CSS variables for movement
+        particle.style.setProperty('--dx', `${dx}px`);
+        particle.style.setProperty('--dy', `${dy}px`);
 
-        // Append particle and clean up after animation ends
+        // Append particle and cleanup
         body.appendChild(particle);
         particle.addEventListener('animationend', () => particle.remove());
     }

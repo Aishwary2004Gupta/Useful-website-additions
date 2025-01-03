@@ -46,6 +46,31 @@ button:hover {
     transition: transform 0.1s ease-out;
 }
 
+/* Neon tail effect */
+.neon-trail {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #f72585, #7209b7, #4361ee, transparent);
+    pointer-events: none;
+    animation: fade-and-move 0.8s ease-out forwards;
+    z-index: 50;
+    opacity: 1;
+}
+
+/* Animation for fading out and shrinking */
+@keyframes fade-and-move {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0);
+    }
+}
+
 .particle {
     position: absolute;
     opacity: 1;

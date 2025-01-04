@@ -5,21 +5,24 @@ const button = document.getElementById('change-animation');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-// Mouse position and animation states
+// Mouse position and animations
 let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
-let currentAnimation = 0; // Tracks the current animation (0 to 2)
+let currentAnimation = 0; // 0 to 4
 let particles = [];
-let neonTrail = []; // Array to store trail points for the neon effect
+let pulseCircles = [];
+let ripples = [];
+let typingTrail = [];
 
-// Backgrounds for each animation
+// Background styles
 const backgrounds = [
-  "linear-gradient(45deg, #16213e, #0f3460)", // Dark pink gradient
-  "linear-gradient(45deg, #1a2a6c, #fdbb2d)", // Blue-yellow gradient
-  "linear-gradient(45deg, rgb(55, 188, 224), rgb(39, 19, 14))", // Gray-brown gradient
+  "radial-gradient(circle at center, #2c3e50, #34495e)", // Modern dark
+  "linear-gradient(90deg, #9b59b6, #8e44ad)", // Purple gradient
+  "linear-gradient(45deg, #e67e22, #d35400)", // Warm orange
+  "linear-gradient(135deg, #16a085, #1abc9c)", // Aqua green
+  "linear-gradient(225deg, #3498db, #2980b9)", // Neon blue
 ];
 
-// Resize event listener
-window.addEventListener('resize', () => {
+window.addEventListener("resize", () => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 });
@@ -30,122 +33,137 @@ window.addEventListener('mousemove', (e) => {
   mouse.y = e.y;
 });
 
-// Neon trail effect
-function neonCursorTrail() {
-  neonTrail.push({ x: mouse.x, y: mouse.y, alpha: 1 });
-
-  // Remove excess points to keep the trail size consistent
-  if (neonTrail.length > 20) neonTrail.shift();
-
-  neonTrail.forEach((point, index) => {
-    ctx.beginPath();
-    ctx.arc(point.x, point.y, 6, 0, Math.PI * 2); // Draw the glowing point
-    ctx.closePath();
-
-    ctx.globalAlpha = point.alpha; // Adjust transparency for fading effect
-    ctx.fillStyle = `hsl(300, 100%, 70%)`; // Purple neon color
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = `hsl(300, 100%, 70%)`;
-    ctx.fill();
-
-    // Gradually reduce the alpha for the fading effect
-    neonTrail[index].alpha -= 0.03;
-  });
-}
-
-// Trigger animations based on the current animation
-function triggerAnimation() {
-  if (currentAnimation === 0) {
-    createParticles(10, 'alphabet'); // Alphabet animation
-  } else if (currentAnimation === 1) {
-    createParticles(20, 'shape'); // Random shape animation
-  } else {
-    neonCursorTrail(); // Neon cursor trail animation
-  }
-}
-
-// Particle Class
+// Particle Class for dynamic effects
 class Particle {
-  constructor(x, y, hue, shape, letter = '') {
+  constructor(x, y, hue, size = Math.random() * 5 + 3) {
     this.x = x;
     this.y = y;
-    this.size = Math.random() * 4 + 2;
-    this.speedX = (Math.random() - 0.5) * 3;
-    this.speedY = (Math.random() - 0.5) * 3;
-    this.lifetime = 1; // Lifetime for fading
-    this.hue = hue; // Color hue
-    this.shape = shape; // Shape type
-    this.letter = letter; // Only used for the alphabet particle
+    this.size = size;
+    this.hue = hue;
+    this.alpha = 1; // Opacity
+    this.decay = 0.02; // Decay rate
   }
 
   update() {
-    this.x += this.speedX;
-    this.y += this.speedY;
-    this.lifetime -= 0.02;
+    this.alpha -= this.decay;
   }
 
   draw() {
-    ctx.globalAlpha = this.lifetime;
+    ctx.globalAlpha = this.alpha;
     ctx.fillStyle = `hsl(${this.hue}, 100%, 50%)`;
-
     ctx.beginPath();
-    if (this.shape === 'circle') {
-      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-      ctx.fill();
-    } else if (this.shape === 'square') {
-      ctx.fillRect(this.x, this.y, this.size * 2, this.size * 2);
-    } else if (this.shape === 'triangle') {
-      ctx.moveTo(this.x, this.y);
-      ctx.lineTo(this.x + this.size, this.y + this.size * 2);
-      ctx.lineTo(this.x - this.size, this.y + this.size * 2);
-      ctx.closePath();
-      ctx.fill();
-    } else if (this.shape === 'letter') {
-      ctx.font = `${this.size * 5}px Arial`;
-      ctx.fillText(this.letter, this.x, this.y);
-    }
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.fill();
   }
 }
 
-// Particle creation
-function createParticles(amount, type) {
-  for (let i = 0; i < amount; i++) {
-    const hue = Math.random() * 360;
-    const letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[Math.floor(Math.random() * 26)];
-    particles.push(
-      new Particle(
-        mouse.x,
-        mouse.y,
-        hue,
-        type === 'alphabet' ? 'letter' : ['circle', 'square', 'triangle'][Math.floor(Math.random() * 3)],
-        letter
-      )
-    );
-  }
-}
-
-// Main animation loop
-function animate() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+// Animation 1: Neon Follow Trail
+function neonTrail() {
+  particles.push(new Particle(mouse.x, mouse.y, Math.random() * 360, 6));
 
   particles.forEach((particle, index) => {
     particle.update();
+    if (particle.alpha <= 0) particles.splice(index, 1);
     particle.draw();
-
-    if (particle.lifetime <= 0) {
-      particles.splice(index, 1);
-    }
   });
-
-  triggerAnimation();
-  requestAnimationFrame(animate);
 }
 
-// Switch animation and background
-button.addEventListener('click', () => {
-  currentAnimation = (currentAnimation + 1) % 3; // Cycle through animations (0, 1, 2)
+// Animation 2: Click Pulse
+function clickPulse() {
+  canvas.addEventListener('click', (e) => {
+    pulseCircles.push({
+      x: e.clientX,
+      y: e.clientY,
+      size: 1,
+      maxSize: 100,
+      opacity: 0.8,
+      hue: Math.random() * 360,
+    });
+  });
+
+  pulseCircles.forEach((circle, index) => {
+    circle.size += 2;
+    circle.opacity -= 0.02;
+
+    if (circle.opacity <= 0) pulseCircles.splice(index, 1);
+
+    ctx.beginPath();
+    ctx.arc(circle.x, circle.y, circle.size, 0, Math.PI * 2);
+    ctx.strokeStyle = `hsla(${circle.hue}, 100%, 50%, ${circle.opacity})`;
+    ctx.lineWidth = 4;
+    ctx.stroke();
+  });
+}
+
+// Animation 3: Background Ripple
+function backgroundRipple() {
+  ripples.push({ x: mouse.x, y: mouse.y, radius: 1, alpha: 1, hue: 180 });
+
+  ripples.forEach((ripple, index) => {
+    ripple.radius += 2;
+    ripple.alpha -= 0.02;
+
+    if (ripple.alpha <= 0) ripples.splice(index, 1);
+
+    ctx.beginPath();
+    ctx.arc(ripple.x, ripple.y, ripple.radius, 0, Math.PI * 2);
+    ctx.strokeStyle = `hsla(${ripple.hue}, 100%, 70%, ${ripple.alpha})`;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  });
+}
+
+// Animation 4: Static Dotted Cursor
+function staticDots() {
+  for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 6) {
+    const radius = 30;
+    const x = mouse.x + Math.cos(angle) * radius;
+    const y = mouse.y + Math.sin(angle) * radius;
+
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.fillStyle = `hsl(200, 100%, 70%)`;
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = "hsl(200, 100%, 70%)";
+    ctx.fill();
+  }
+}
+
+// Animation 5: Typing Effect
+function typingEffect() {
+  typingTrail.push(new Particle(mouse.x, mouse.y, 220, 10));
+  particles.forEach((particle) => {
+    ctx.font = "24px Arial";
+    ctx.fillStyle = `rgba(255, 255, 255, ${particle.alpha})`;
+    ctx.fillText("Type!", particle.x, particle.y);
+  });
+
+  typingTrail.forEach((particle, index) => {
+    particle.update();
+    if (particle.alpha <= 0) typingTrail.splice(index, 1);
+    particle.draw();
+  });
+}
+
+// Trigger animation
+function triggerAnimation() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (currentAnimation === 0) neonTrail();
+  else if (currentAnimation === 1) clickPulse();
+  else if (currentAnimation === 2) backgroundRipple();
+  else if (currentAnimation === 3) staticDots();
+  else if (currentAnimation === 4) typingEffect();
+
+  requestAnimationFrame(triggerAnimation);
+}
+
+// Change animation and background
+button.addEventListener("click", () => {
+  currentAnimation = (currentAnimation + 1) % 5;
   document.body.style.background = backgrounds[currentAnimation];
 });
 
-// Start animation
-animate();
+// Start the animations
+triggerAnimation();

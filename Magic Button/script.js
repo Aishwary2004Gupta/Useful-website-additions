@@ -15,7 +15,7 @@ let neonTrail = []; // Array to store trail points for the neon effect
 const backgrounds = [
   "linear-gradient(45deg, #16213e, #0f3460)", // Dark pink gradient
   "linear-gradient(45deg, #1a2a6c, #fdbb2d)", // Blue-yellow gradient
-  "linear-gradient(45deg, rgb(200, 178, 178), rgb(39, 19, 14))", // Gray-brown gradient
+  "linear-gradient(45deg, rgb(55, 188, 224), rgb(39, 19, 14))", // Gray-brown gradient
 ];
 
 // Resize event listener

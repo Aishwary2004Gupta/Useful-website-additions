@@ -9,7 +9,7 @@ canvas.height = window.innerHeight;
 let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
 let currentAnimation = 0; // Tracks the current animation (0 to 2)
 let particles = [];
-let elasticLine = { x: mouse.x, y: mouse.y, points: [] }; // For elastic neon line
+let neonTrail = []; // Array to store trail points for the neon effect
 
 // Backgrounds for each animation
 const backgrounds = [
@@ -29,6 +29,40 @@ window.addEventListener('mousemove', (e) => {
   mouse.x = e.x;
   mouse.y = e.y;
 });
+
+// Neon trail effect
+function neonCursorTrail() {
+  neonTrail.push({ x: mouse.x, y: mouse.y, alpha: 1 });
+
+  // Remove excess points to keep the trail size consistent
+  if (neonTrail.length > 20) neonTrail.shift();
+
+  neonTrail.forEach((point, index) => {
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, 6, 0, Math.PI * 2); // Draw the glowing point
+    ctx.closePath();
+
+    ctx.globalAlpha = point.alpha; // Adjust transparency for fading effect
+    ctx.fillStyle = `hsl(300, 100%, 70%)`; // Purple neon color
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = `hsl(300, 100%, 70%)`;
+    ctx.fill();
+
+    // Gradually reduce the alpha for the fading effect
+    neonTrail[index].alpha -= 0.03;
+  });
+}
+
+// Trigger animations based on the current animation
+function triggerAnimation() {
+  if (currentAnimation === 0) {
+    createParticles(10, 'alphabet'); // Alphabet animation
+  } else if (currentAnimation === 1) {
+    createParticles(20, 'shape'); // Random shape animation
+  } else {
+    neonCursorTrail(); // Neon cursor trail animation
+  }
+}
 
 // Particle Class
 class Particle {
@@ -90,48 +124,6 @@ function createParticles(amount, type) {
   }
 }
 
-// Neon elastic line animation
-function neonElasticLine() {
-  // Add the current mouse position to the points array
-  elasticLine.points.push({ x: mouse.x, y: mouse.y });
-
-  // Begin drawing the elastic neon line
-  ctx.beginPath();
-  ctx.moveTo(elasticLine.points[0].x, elasticLine.points[0].y);
-
-  // Loop through the points to create a smooth curved path
-  for (let i = 1; i < elasticLine.points.length; i++) {
-    const prev = elasticLine.points[i - 1];
-    const current = elasticLine.points[i];
-    const controlX = (prev.x + current.x) / 2;
-    const controlY = (prev.y + current.y) / 2;
-
-    ctx.quadraticCurveTo(prev.x, prev.y, controlX, controlY);
-  }
-
-  // Set the neon style
-  ctx.strokeStyle = 'hsl(200, 100%, 70%)'; // Neon blue color
-  ctx.lineWidth = 5; // Width of the neon line
-  ctx.shadowBlur = 20; // Glow effect
-  ctx.shadowColor = 'hsl(200, 100%, 70%)'; // Glow matches line color
-  ctx.stroke();
-  ctx.closePath();
-
-  // Reduce shadow for performance optimization
-  ctx.shadowBlur = 0;
-}
-
-// Trigger animations based on the current animation
-function triggerAnimation() {
-  if (currentAnimation === 0) {
-    createParticles(10, 'alphabet'); // Alphabet animation
-  } else if (currentAnimation === 1) {
-    createParticles(20, 'shape'); // Random shape animation
-  } else {
-    neonElasticLine(); // Neon elastic line animation
-  }
-}
-
 // Main animation loop
 function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -145,12 +137,7 @@ function animate() {
     }
   });
 
-  if (currentAnimation === 2) {
-    neonElasticLine();
-  } else {
-    triggerAnimation();
-  }
-
+  triggerAnimation();
   requestAnimationFrame(animate);
 }
 

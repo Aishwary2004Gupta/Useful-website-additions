@@ -18,6 +18,7 @@ const backgrounds = [
   "linear-gradient(45deg, rgb(200, 178, 178), rgb(39, 19, 14))", // Gray-brown gradient
 ];
 
+// Resize event listener
 window.addEventListener('resize', () => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -91,14 +92,14 @@ function createParticles(amount, type) {
 
 // Neon elastic line animation
 function neonElasticLine() {
+  // Add the current mouse position to the points array
   elasticLine.points.push({ x: mouse.x, y: mouse.y });
 
-  // Limit points to create the stretchy effect
-  if (elasticLine.points.length > 20) elasticLine.points.shift();
-
+  // Begin drawing the elastic neon line
   ctx.beginPath();
   ctx.moveTo(elasticLine.points[0].x, elasticLine.points[0].y);
 
+  // Loop through the points to create a smooth curved path
   for (let i = 1; i < elasticLine.points.length; i++) {
     const prev = elasticLine.points[i - 1];
     const current = elasticLine.points[i];
@@ -108,12 +109,16 @@ function neonElasticLine() {
     ctx.quadraticCurveTo(prev.x, prev.y, controlX, controlY);
   }
 
-  ctx.strokeStyle = 'hsl(354, 89.00%, 50.20%)';
-  ctx.lineWidth = 6;
-  ctx.shadowBlur = 15;
-  ctx.shadowColor = 'hsl(70, 91.10%, 48.60%)';
+  // Set the neon style
+  ctx.strokeStyle = 'hsl(200, 100%, 70%)'; // Neon blue color
+  ctx.lineWidth = 5; // Width of the neon line
+  ctx.shadowBlur = 20; // Glow effect
+  ctx.shadowColor = 'hsl(200, 100%, 70%)'; // Glow matches line color
   ctx.stroke();
   ctx.closePath();
+
+  // Reduce shadow for performance optimization
+  ctx.shadowBlur = 0;
 }
 
 // Trigger animations based on the current animation
@@ -140,7 +145,12 @@ function animate() {
     }
   });
 
-  triggerAnimation();
+  if (currentAnimation === 2) {
+    neonElasticLine();
+  } else {
+    triggerAnimation();
+  }
+
   requestAnimationFrame(animate);
 }
 

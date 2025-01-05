@@ -1,12 +1,13 @@
 const canvas = document.getElementById("particleCanvas");
 const ctx = canvas.getContext("2d");
+const modeSwitch = document.getElementById("modeSwitch");
 
-// Resize canvas
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 let particles = [];
 const mouse = { x: undefined, y: undefined };
+let theme = "light"; // Set the default theme to "light"
 
 // Particle class
 class Particle {
@@ -47,9 +48,7 @@ class Particle {
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance < 150) {
-            this.radius = this.baseRadius + 3; // Grow near mouse
-            this.velocityX += dx / distance * 0.05;
-            this.velocityY += dy / distance * 0.05;
+            this.radius = this.baseRadius + 15; // Larger growth
         } else {
             this.radius = this.baseRadius;
         }
@@ -66,13 +65,16 @@ function init() {
         const x = Math.random() * (canvas.width - radius * 2) + radius;
         const y = Math.random() * (canvas.height - radius * 2) + radius;
         const speed = Math.random() * 2 + 0.5;
-        const color = `hsl(${Math.random() * 360}, 80%, 60%)`;
+        const color =
+            theme === "dark"
+                ? `hsl(${Math.random() * 360}, 80%, 60%)`
+                : `rgba(0, 0, 0, ${Math.random() * 0.7 + 0.3})`;
 
         particles.push(new Particle(x, y, radius, color, speed));
     }
 }
 
-// Connect particles
+// Connect particles (optional visual effect)
 function connectParticles() {
     const maxDistance = 120;
 
@@ -87,7 +89,10 @@ function connectParticles() {
                 ctx.beginPath();
                 ctx.moveTo(particles[i].x, particles[i].y);
                 ctx.lineTo(particles[j].x, particles[j].y);
-                ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+                ctx.strokeStyle =
+                    theme === "dark"
+                        ? `rgba(255, 255, 255, ${opacity})`
+                        : `rgba(0, 0, 0, ${opacity})`;
                 ctx.lineWidth = 1;
                 ctx.stroke();
                 ctx.closePath();
@@ -96,18 +101,16 @@ function connectParticles() {
     }
 }
 
-// Animate particles
+// Animation loop
 function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    particles.forEach(particle => particle.update());
+    particles.forEach((particle) => particle.update());
     connectParticles();
-
     requestAnimationFrame(animate);
 }
 
 // Update mouse position
-canvas.addEventListener("mousemove", event => {
+canvas.addEventListener("mousemove", (event) => {
     mouse.x = event.x;
     mouse.y = event.y;
 });
@@ -119,6 +122,20 @@ window.addEventListener("resize", () => {
     init();
 });
 
-// Start
+// Toggle theme
+modeSwitch.addEventListener("change", () => {
+    theme = modeSwitch.checked ? "light" : "dark";
+    canvas.style.background = theme === "dark" ? "#141e30" : "#e4e5e6";
+    init(); // Reinitialize with updated colors
+});
+
+// Ensure default light mode is applied on load
+function applyDefaultLightMode() {
+    canvas.style.background = "#e4e5e6"; // Light mode background
+    modeSwitch.checked = true; // Set toggle to light mode
+}
+
+// Initialize animation
+applyDefaultLightMode();
 init();
 animate();

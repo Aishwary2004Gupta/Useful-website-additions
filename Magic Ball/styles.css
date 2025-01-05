@@ -4,7 +4,20 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: radial-gradient(circle, #141e30, #243b55);
+    background: linear-gradient(120deg, #141e30, #243b55);
+    animation: backgroundChange 15s infinite alternate;
+}
+
+@keyframes backgroundChange {
+    0% {
+        background: linear-gradient(120deg, #141e30, #243b55);
+    }
+    50% {
+        background: linear-gradient(120deg, #00416a, #e4e5e6);
+    }
+    100% {
+        background: linear-gradient(120deg, #232526, #414345);
+    }
 }
 
 canvas {

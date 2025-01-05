@@ -1,0 +1,17 @@
+body {
+    margin: 0;
+    overflow: hidden;
+    background: radial-gradient(circle, #1a1a2e, #16213e, #0f3460);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+  }
+  

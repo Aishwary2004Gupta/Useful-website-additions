@@ -1,6 +1,5 @@
 const canvas = document.getElementById('cursorCanvas');
 const ctx = canvas.getContext('2d');
-// const button = document.getElementById('btn');
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;

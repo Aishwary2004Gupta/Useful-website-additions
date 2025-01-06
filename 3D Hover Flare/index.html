@@ -8,14 +8,16 @@
         body {
             margin: 0;
             overflow: hidden;
-            background: #e4e5e6; /* Light mode default */
+            background: #e4e5e6; /* Default light mode */
         }
+
         #theme-toggle {
             position: fixed;
             top: 20px;
             right: 20px;
             z-index: 10;
         }
+
         .toggle-slider {
             display: inline-block;
             width: 50px;
@@ -26,6 +28,7 @@
             position: relative;
             transition: background 0.3s;
         }
+
         .toggle-slider::before {
             content: "";
             position: absolute;
@@ -37,12 +40,15 @@
             left: 3px;
             transition: transform 0.3s;
         }
+
         input[type="checkbox"] {
             display: none;
         }
+
         input[type="checkbox"]:checked + .toggle-slider {
             background: #333;
         }
+
         input[type="checkbox"]:checked + .toggle-slider::before {
             transform: translateX(25px);
         }
@@ -55,7 +61,7 @@
             <span class="toggle-slider"></span>
         </label>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/146/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r146/three.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

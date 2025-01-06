@@ -1,4 +1,4 @@
-/* General reset */
+/* General Reset */
 * {
     margin: 0;
     padding: 0;
@@ -6,68 +6,59 @@
   }
   
   body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
     font-family: Arial, sans-serif;
-    overflow: hidden;
-  }
-  
-  .container {
-    position: relative;
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
+    overflow: hidden;
+    background: linear-gradient(180deg, #2c3e50, #34495e);
   }
   
-  /* Backgrounds */
   .background {
-    position: absolute;
-    top: 0;
-    left: 0;
+    position: fixed;
     width: 100vw;
     height: 100vh;
+    z-index: -1;
     transition: background-color 1s ease;
   }
   
   /* Clock Container */
+  .clock-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  
   .clock {
     position: relative;
-    width: 300px;
-    height: 300px;
+    width: 250px;
+    height: 250px;
     border-radius: 50%;
-    background: linear-gradient(to bottom right, #e6e6e6, #ffffff);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    transform: rotateZ(0deg) perspective(500px);
+    background: radial-gradient(circle, #fefefe, #e0e0e0);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1), inset 0 3px 8px rgba(0, 0, 0, 0.1);
   }
   
-  .clock .hour-hand,
-  .clock .minute-hand {
+  .hour-hand,
+  .minute-hand {
     position: absolute;
-    width: 10px;
-    height: 100px;
+    width: 8px;
+    height: 80px;
     top: 50%;
     left: 50%;
-    transform-origin: bottom;
+    background-color: black;
+    border-radius: 4px;
+    transform-origin: bottom center;
     transform: translate(-50%, -100%) rotate(0deg);
-    border-radius: 5px;
-  }
-  
-  .hour-hand {
-    background: #000;
-    height: 80px;
-    z-index: 2;
   }
   
   .minute-hand {
-    background: #007BFF;
-    height: 120px;
-    cursor: pointer;
-    z-index: 1;
+    height: 100px;
+    background-color: #007bff;
   }
   
-  .clock .center {
+  .center {
     position: absolute;
     width: 15px;
     height: 15px;
@@ -76,18 +67,15 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    z-index: 3;
+    z-index: 1;
   }
   
+  /* Time Display */
   .time-display {
-    position: absolute;
-    top: 5%;
-    right: 5%;
-    padding: 10px 15px;
-    font-size: 18px;
-    color: #fff;
+    font-size: 24px;
+    color: #ffffff;
     background: rgba(0, 0, 0, 0.5);
-    border-radius: 8px;
-    z-index: 10;
+    padding: 10px 15px;
+    border-radius: 5px;
   }
   

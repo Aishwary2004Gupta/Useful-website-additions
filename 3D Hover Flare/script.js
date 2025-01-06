@@ -1,102 +1,57 @@
-const canvas = document.getElementById('particleCanvas');
-const ctx = canvas.getContext('2d');
+// Tooltip element
+const tooltip = document.getElementById('tooltip');
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+// Items in the room
+const lamp = document.getElementById('lamp');
+const table = document.getElementById('table');
+const chair = document.getElementById('chair');
 
-const particles = [];
-const maxParticles = 100;
-const connectionDistance = 150;
-
-// Particle constructor
-class Particle {
-  constructor(x, y, dx, dy, radius) {
-    this.x = x;
-    this.y = y;
-    this.dx = dx;
-    this.dy = dy;
-    this.radius = radius;
-  }
-
-  draw() {
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-    ctx.fill();
-  }
-
-  update() {
-    if (this.x + this.radius > canvas.width || this.x - this.radius < 0) {
-      this.dx = -this.dx;
-    }
-    if (this.y + this.radius > canvas.height || this.y - this.radius < 0) {
-      this.dy = -this.dy;
-    }
-
-    this.x += this.dx;
-    this.y += this.dy;
-    this.draw();
-  }
+// Show tooltip
+function showTooltip(e, text) {
+  tooltip.textContent = text;
+  tooltip.style.top = `${e.clientY + 15}px`;
+  tooltip.style.left = `${e.clientX + 15}px`;
+  tooltip.style.opacity = 1;
 }
 
-// Mouse tracking
-const mouse = {
-  x: null,
-  y: null,
-};
+// Hide tooltip
+function hideTooltip() {
+  tooltip.style.opacity = 0;
+}
 
-canvas.addEventListener('mousemove', (event) => {
-  mouse.x = event.x;
-  mouse.y = event.y;
+// Lamp interaction
+lamp.addEventListener('mouseenter', (e) => showTooltip(e, 'Click to toggle the lamp!'));
+lamp.addEventListener('mouseleave', hideTooltip);
+lamp.addEventListener('click', () => {
+  lamp.style.backgroundColor =
+    lamp.style.backgroundColor === 'yellow' ? '#ffc107' : 'yellow';
 });
 
-// Initialize particles
-function initParticles() {
-  for (let i = 0; i < maxParticles; i++) {
-    const radius = 5;
-    const x = Math.random() * (canvas.width - radius * 2) + radius;
-    const y = Math.random() * (canvas.height - radius * 2) + radius;
-    const dx = (Math.random() - 0.5) * 2;
-    const dy = (Math.random() - 0.5) * 2;
-
-    particles.push(new Particle(x, y, dx, dy, radius));
-  }
-}
-
-// Connect particles
-function connectParticles() {
-  for (let a = 0; a < particles.length; a++) {
-    for (let b = a; b < particles.length; b++) {
-      const dx = particles[a].x - particles[b].x;
-      const dy = particles[a].y - particles[b].y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-
-      if (distance < connectionDistance) {
-        const opacity = 1 - distance / connectionDistance;
-        ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
-        ctx.beginPath();
-        ctx.moveTo(particles[a].x, particles[a].y);
-        ctx.lineTo(particles[b].x, particles[b].y);
-        ctx.stroke();
-      }
-    }
-  }
-}
-
-// Animation loop
-function animate() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  particles.forEach((particle) => particle.update());
-  connectParticles();
-  requestAnimationFrame(animate);
-}
-
-// Handle window resize
-window.addEventListener('resize', () => {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+// Table interaction
+table.addEventListener('mouseenter', (e) => showTooltip(e, 'This is the table.'));
+table.addEventListener('mouseleave', hideTooltip);
+table.addEventListener('click', () => {
+  table.style.transform = 'scale(1.2)';
+  setTimeout(() => (table.style.transform = 'scale(1)'), 500);
 });
 
-// Start
-initParticles();
-animate();
+// Chair interaction
+chair.addEventListener('mouseenter', (e) => showTooltip(e, 'Click to shake the chair!'));
+chair.addEventListener('mouseleave', hideTooltip);
+chair.addEventListener('click', () => {
+  chair.style.animation = 'shake 0.5s';
+  chair.addEventListener('animationend', () => {
+    chair.style.animation = '';
+  });
+});
+
+// Shake animation
+const styleSheet = document.createElement('style');
+styleSheet.innerHTML = `
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+}`;
+document.head.appendChild(styleSheet);

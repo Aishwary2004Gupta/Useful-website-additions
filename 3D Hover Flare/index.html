@@ -3,18 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Interactive Room</title>
+  <title>Interactive 3D Clock</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="room">
-    <div class="lamp" id="lamp"></div>
-    <div class="table" id="table"></div>
-    <div class="chair" id="chair"></div>
+  <div class="container">
+    <div id="background" class="background"></div>
+    <div class="clock">
+      <div class="hour-hand"></div>
+      <div class="minute-hand" id="minute-hand"></div>
+      <div class="center"></div>
+    </div>
+    <div class="time-display" id="time-display">Time: 12:00</div>
   </div>
-
-  <div id="tooltip" class="tooltip">Tooltip</div>
-
   <script src="script.js"></script>
 </body>
 </html>

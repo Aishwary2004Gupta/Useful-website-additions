@@ -1,57 +1,68 @@
-// Tooltip element
-const tooltip = document.getElementById('tooltip');
+// Select elements
+const minuteHand = document.getElementById("minute-hand");
+const background = document.getElementById("background");
+const timeDisplay = document.getElementById("time-display");
 
-// Items in the room
-const lamp = document.getElementById('lamp');
-const table = document.getElementById('table');
-const chair = document.getElementById('chair');
+let currentTime = { hours: 12, minutes: 0 }; // Default time
 
-// Show tooltip
-function showTooltip(e, text) {
-  tooltip.textContent = text;
-  tooltip.style.top = `${e.clientY + 15}px`;
-  tooltip.style.left = `${e.clientX + 15}px`;
-  tooltip.style.opacity = 1;
+// Drag-to-rotate functionality
+let isDragging = false;
+let initialRotation = 0;
+
+minuteHand.addEventListener("mousedown", (e) => {
+  isDragging = true;
+  const rect = minuteHand.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+  initialRotation = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+  e.preventDefault();
+});
+
+document.addEventListener("mousemove", (e) => {
+  if (isDragging) {
+    const rect = minuteHand.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const newRotation = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+
+    let deltaRotation = (newRotation - initialRotation) * (180 / Math.PI);
+    let newMinuteRotation = ((deltaRotation + 360) % 360);
+
+    const newMinutes = Math.round(newMinuteRotation / 6) % 60;
+    updateClock(newMinutes);
+
+    initialRotation = newRotation;
+  }
+});
+
+document.addEventListener("mouseup", () => {
+  isDragging = false;
+});
+
+function updateClock(minutes) {
+  currentTime.minutes = minutes;
+  currentTime.hours = (12 + Math.floor(minutes / 60)) % 12 || 12;
+  minuteHand.style.transform = `translate(-50%, -100%) rotate(${minutes * 6}deg)`;
+  timeDisplay.innerText = `Time: ${currentTime.hours}:${currentTime.minutes
+    .toString()
+    .padStart(2, "0")}`;
+  updateBackground();
 }
 
-// Hide tooltip
-function hideTooltip() {
-  tooltip.style.opacity = 0;
+function updateBackground() {
+  const hours = currentTime.hours;
+
+  if (hours >= 6 && hours < 12) {
+    // Morning
+    background.style.backgroundColor = "#FFD580";
+  } else if (hours >= 12 && hours < 18) {
+    // Afternoon
+    background.style.backgroundColor = "#FFA07A";
+  } else if (hours >= 18 && hours < 21) {
+    // Evening
+    background.style.backgroundColor = "#4B0082";
+  } else {
+    // Night
+    background.style.backgroundColor = "#2E3B55";
+  }
 }
-
-// Lamp interaction
-lamp.addEventListener('mouseenter', (e) => showTooltip(e, 'Click to toggle the lamp!'));
-lamp.addEventListener('mouseleave', hideTooltip);
-lamp.addEventListener('click', () => {
-  lamp.style.backgroundColor =
-    lamp.style.backgroundColor === 'yellow' ? '#ffc107' : 'yellow';
-});
-
-// Table interaction
-table.addEventListener('mouseenter', (e) => showTooltip(e, 'This is the table.'));
-table.addEventListener('mouseleave', hideTooltip);
-table.addEventListener('click', () => {
-  table.style.transform = 'scale(1.2)';
-  setTimeout(() => (table.style.transform = 'scale(1)'), 500);
-});
-
-// Chair interaction
-chair.addEventListener('mouseenter', (e) => showTooltip(e, 'Click to shake the chair!'));
-chair.addEventListener('mouseleave', hideTooltip);
-chair.addEventListener('click', () => {
-  chair.style.animation = 'shake 0.5s';
-  chair.addEventListener('animationend', () => {
-    chair.style.animation = '';
-  });
-});
-
-// Shake animation
-const styleSheet = document.createElement('style');
-styleSheet.innerHTML = `
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  50% { transform: translateX(5px); }
-  75% { transform: translateX(-5px); }
-}`;
-document.head.appendChild(styleSheet);

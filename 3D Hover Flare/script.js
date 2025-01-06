@@ -1,57 +1,33 @@
-// Grab the theme toggle switch
-const modeSwitch = document.getElementById("modeSwitch");
+const background = document.getElementById('background');
 
-// Set up Three.js components: scene, camera, renderer
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.z = 50;
+// Function to generate random shapes
+function generateShapes() {
+  const shape = document.createElement('div');
+  shape.classList.add('shape');
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+  // Random size for the shape
+  const size = Math.random() * 50 + 10; // between 10px and 60px
+  shape.style.width = `${size}px`;
+  shape.style.height = `${size}px`;
 
-// Create particle system
-const particleCount = 2000; // Total number of particles
-const particleGeometry = new THREE.BufferGeometry();
-const particleMaterial = new THREE.PointsMaterial({
-    size: 2,
-    transparent: true,
-    opacity: 0.8,
-    color: 0x000000, // Default to black for light mode
-});
+  // Random position and color
+  shape.style.left = `${Math.random() * 100}vw`;
+  shape.style.top = `${Math.random() * 100}vh`;
+  shape.style.background = `hsl(${Math.random() * 360}, 100%, 70%)`;
 
-const positions = new Float32Array(particleCount * 3); // x, y, z for each particle
-for (let i = 0; i < particleCount * 3; i++) {
-    positions[i] = (Math.random() - 0.5) * 200; // Spread particles in 3D space
+  // Add to background
+  background.appendChild(shape);
+
+  // Remove shape after animation ends
+  setTimeout(() => {
+    shape.remove();
+  }, 5000);
 }
 
-particleGeometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-
-const particles = new THREE.Points(particleGeometry, particleMaterial);
-scene.add(particles);
-
-// Responsive canvas size
-window.addEventListener("resize", () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+// Generate shapes on mouse move
+document.addEventListener('mousemove', () => {
+  generateShapes();
 });
 
-// Animation loop
-const animate = () => {
-    particles.rotation.y += 0.001;
-    particles.rotation.x += 0.0005;
-    renderer.render(scene, camera);
-    requestAnimationFrame(animate);
-};
-
-// Handle light/dark mode toggle
-let theme = "light"; // Default mode
-modeSwitch.addEventListener("change", () => {
-    theme = modeSwitch.checked ? "dark" : "light";
-    document.body.style.background = theme === "dark" ? "#141e30" : "#e4e5e6";
-    particleMaterial.color.set(theme === "dark" ? 0xffffff : 0x000000); // White particles in dark mode
-});
-
-// Start animation
-animate();
+// Generate random floating shapes
+setInterval(generateShapes, 300);

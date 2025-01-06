@@ -1,68 +1,68 @@
-// Select elements
+const hourHand = document.getElementById("hour-hand");
 const minuteHand = document.getElementById("minute-hand");
 const background = document.getElementById("background");
 const timeDisplay = document.getElementById("time-display");
 
-let currentTime = { hours: 12, minutes: 0 }; // Default time
+let isDraggingMinuteHand = false;
+let currentTime = { hours: 12, minutes: 0 };
 
-// Drag-to-rotate functionality
-let isDragging = false;
-let initialRotation = 0;
+minuteHand.addEventListener("mousedown", startDragging);
+document.addEventListener("mousemove", dragMinuteHand);
+document.addEventListener("mouseup", stopDragging);
 
-minuteHand.addEventListener("mousedown", (e) => {
-  isDragging = true;
-  const rect = minuteHand.getBoundingClientRect();
-  const centerX = rect.left + rect.width / 2;
-  const centerY = rect.top + rect.height / 2;
-  initialRotation = Math.atan2(e.clientY - centerY, e.clientX - centerX);
-  e.preventDefault();
-});
+function startDragging() {
+  isDraggingMinuteHand = true;
+}
 
-document.addEventListener("mousemove", (e) => {
-  if (isDragging) {
-    const rect = minuteHand.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    const newRotation = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+function dragMinuteHand(event) {
+  if (!isDraggingMinuteHand) return;
 
-    let deltaRotation = (newRotation - initialRotation) * (180 / Math.PI);
-    let newMinuteRotation = ((deltaRotation + 360) % 360);
+  const clockRect = document.querySelector(".clock").getBoundingClientRect();
+  const centerX = clockRect.left + clockRect.width / 2;
+  const centerY = clockRect.top + clockRect.height / 2;
 
-    const newMinutes = Math.round(newMinuteRotation / 6) % 60;
-    updateClock(newMinutes);
+  const angle = Math.atan2(event.clientY - centerY, event.clientX - centerX) * (180 / Math.PI) + 90;
+  const minuteRotation = (angle + 360) % 360;
 
-    initialRotation = newRotation;
-  }
-});
-
-document.addEventListener("mouseup", () => {
-  isDragging = false;
-});
-
-function updateClock(minutes) {
-  currentTime.minutes = minutes;
-  currentTime.hours = (12 + Math.floor(minutes / 60)) % 12 || 12;
-  minuteHand.style.transform = `translate(-50%, -100%) rotate(${minutes * 6}deg)`;
-  timeDisplay.innerText = `Time: ${currentTime.hours}:${currentTime.minutes
-    .toString()
-    .padStart(2, "0")}`;
+  currentTime.minutes = Math.round(minuteRotation / 6) % 60;
+  updateClockHands();
+  updateTimeDisplay();
   updateBackground();
+}
+
+function stopDragging() {
+  isDraggingMinuteHand = false;
+}
+
+function updateClockHands() {
+  const minuteAngle = currentTime.minutes * 6;
+  const hourAngle = (currentTime.hours % 12) * 30 + (currentTime.minutes / 60) * 30;
+
+  minuteHand.style.transform = `translate(-50%, -100%) rotate(${minuteAngle}deg)`;
+  hourHand.style.transform = `translate(-50%, -100%) rotate(${hourAngle}deg)`;
+}
+
+function updateTimeDisplay() {
+  const hours = (Math.floor(currentTime.minutes / 60) + currentTime.hours) % 12 || 12;
+  const minutes = currentTime.minutes.toString().padStart(2, "0");
+  timeDisplay.textContent = `${hours}:${minutes}`;
 }
 
 function updateBackground() {
   const hours = currentTime.hours;
 
   if (hours >= 6 && hours < 12) {
-    // Morning
-    background.style.backgroundColor = "#FFD580";
+    background.style.backgroundColor = "#FFD580"; // Morning
   } else if (hours >= 12 && hours < 18) {
-    // Afternoon
-    background.style.backgroundColor = "#FFA07A";
+    background.style.backgroundColor = "#FFA07A"; // Afternoon
   } else if (hours >= 18 && hours < 21) {
-    // Evening
-    background.style.backgroundColor = "#4B0082";
+    background.style.backgroundColor = "#4B0082"; // Evening
   } else {
-    // Night
-    background.style.backgroundColor = "#2E3B55";
+    background.style.backgroundColor = "#2E3B55"; // Night
   }
 }
+
+// Initialize with default time
+updateClockHands();
+updateTimeDisplay();
+updateBackground();

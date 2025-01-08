@@ -8,7 +8,7 @@ body {
 }
 .input__container {
   position: relative;
-  background: #f0f00;
+  background: #f0f0f0;
   padding: 20px;
   display: flex;
   justify-content: flex-start;

@@ -125,8 +125,7 @@ const IMAGES = [
       "alt": "Logan Sargeant",
       "title": "Logan Sargeant"
     }
-  ]
-
+];
 
 const navEl = document.querySelector('#gallery-nav');
 const galleryEl = document.querySelector("#gallery");
@@ -135,19 +134,26 @@ const RADIUS = 250; // distance (radius) from center of gallery
 const START_INDEX = 2; // index of item for load animation
 
 function setupGalleryAndNav() {
+    if (!galleryEl || !navEl) {
+        console.error('galleryEl or navEl is not defined');
+        return;
+    }
+
     // add 2 extra elements at beginning to "compensate" for mask positioning
-    const extraElStart1 =  document.createElement("div");
+    const extraElStart1 = document.createElement("div");
     galleryEl.appendChild(extraElStart1);
-   
+
     IMAGES.forEach(image => {
         const galleryImg = document.createElement('img');
         galleryImg.src = image.src;
         galleryImg.alt = image.alt;
-        galleryEl.title = image.title;
-        gallery.appendChild(galleryImg);
+        galleryImg.title = image.title;
+        galleryEl.appendChild(galleryImg);
+        console.log('Appended image:', galleryImg);
     });
+
     // add 2 extra elements at end to "compensate" for mask positioning
-    const extraElEnd1 =  document.createElement("div");
+    const extraElEnd1 = document.createElement("div");
     galleryEl.appendChild(extraElEnd1);
 
     // create button for each image
@@ -163,19 +169,15 @@ function setupGalleryAndNav() {
         button.appendChild(img);
         navEl.appendChild(button);
 
-      // position  button around the circle
-        const buttonRect = button.getBoundingClientRect();
-        const buttonSize = buttonRect.width;
-        
-        // calculate position
+        // position button around the circle
         const angle = (index / IMAGES.length) * 360;
         const x = Math.cos(angle * (Math.PI / 180)) * RADIUS;
         const y = Math.sin(angle * (Math.PI / 180)) * RADIUS;
 
         // center the buttons around the middle of the <nav> container
         button.style.position = 'absolute';
-        button.style.left = `calc(50% + ${x - (buttonSize / 2)}px)`;
-        button.style.top = `calc(50% + ${y - (buttonSize / 2)}px)`;
+        button.style.left = `calc(50% + ${x}px)`;
+        button.style.top = `calc(50% + ${y}px)`;
 
         // button event listener
         button.addEventListener('click', () => {
@@ -185,12 +187,12 @@ function setupGalleryAndNav() {
 
             // scroll to selected image
             const imgToScroll = document.querySelector(`#gallery img[src="${image.src}"]`);
-             imgToScroll.scrollIntoView({ behavior: 'smooth' });
+            imgToScroll.scrollIntoView({ behavior: 'smooth' });
         });
 
-        // load inital image
+        // load initial image
         if (index === START_INDEX) {
-            setTimeout(() => button.click(),150);
+            setTimeout(() => button.click(), 150);
         }
     });
 }

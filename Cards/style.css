@@ -41,7 +41,7 @@ body{
   .container .glass svg {
     width: 80px; /* Set a fixed width for the SVG */
     height: 80px; /* Set a fixed height for the SVG */
-    fill: #fff; /* Ensure the SVG icons are white */
+    fill: #fff; 
 }
   
   .container:hover .glass {

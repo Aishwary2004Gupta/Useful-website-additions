@@ -37,6 +37,12 @@ body{
     backdrop-filter: blur(10px);
     transform: rotate(calc(var(--r) * 1deg));
   }
+
+  .container .glass svg {
+    width: 80px; /* Set a fixed width for the SVG */
+    height: 80px; /* Set a fixed height for the SVG */
+    fill: #fff; /* Ensure the SVG icons are white */
+}
   
   .container:hover .glass {
     transform: rotate(0deg);

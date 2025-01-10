@@ -40,7 +40,7 @@ body{
 
   .container .glass svg {
     width: 80px; /* Set a fixed width for the SVG */
-    height: 80px; /* Set a fixed height for the SVG */
+    height: 80px; 
     fill: #fff; 
 }
   

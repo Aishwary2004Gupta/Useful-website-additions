@@ -29,8 +29,7 @@ body{
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden; /* Ensure content doesn't overflow */
-
+    overflow: hidden; 
     transition: 0.5s;
     border-radius: 10px;
     margin: 0 -45px;

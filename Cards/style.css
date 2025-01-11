@@ -52,7 +52,7 @@ body {
   }
   
   .container .glass[data-text="Github"]:hover {
-    background: #333; /* Dark gray for Github */
+    background: #333; 
   }
   
   .container .glass[data-text="Twitter"]:hover {

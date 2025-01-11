@@ -64,7 +64,7 @@ body {
   }
 
   .container .glass[data-text="Instagram"]:hover {
-    background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); /* Instagram gradient */
+    background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); 
   }
 
 .container .glass svg {

@@ -55,7 +55,7 @@ body {
   }
   
   .container .glass[data-text="Twitter"]:hover {
-    background: #F5F8FA; 
+    background: #1b303e; 
   }
   
   .container .glass[data-text="Code"]:hover {
@@ -76,6 +76,7 @@ body {
   height: 80px;
   fill: #fff;
   transition: transform 0.3s ease; 
+  font-size: 2.5em;
 }
 
 .container:hover .glass {
@@ -94,8 +95,4 @@ body {
   justify-content: center;
   align-items: center;
   color: #fff;
-}
-.container .glass svg {
-  font-size: 2.5em;
-  fill: #fff;
 }

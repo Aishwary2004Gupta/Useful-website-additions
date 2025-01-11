@@ -30,14 +30,13 @@ body {
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  transition: background 0.3s ease, transform 0.3s ease; /* Smooth transition for background and transform changes */ 
+  transition: background 0.3s ease, transform 0.3s ease;   
   transition: 0.8s;
   border-radius: 10px;
   margin: 0 -45px;
   backdrop-filter: blur(10px);
   transform: rotate(calc(var(--r) * 1deg));
 }
-
 
 .container .glass[data-text="Discord"]:hover {
     background: #5865F2; 
@@ -67,17 +66,16 @@ body {
     background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); 
   }
 
-/* Pop-out effect for SVG icons on hover */
+
 .container .glass:hover svg {
-    transform: scale(1.2); /* Scale up the SVG icon */
+    transform: scale(1.2); 
   }
 
 .container .glass svg {
   width: 80px;
   height: 80px;
   fill: #fff;
-  transition: transform 0.3s ease; /* Smooth transition for transform changes */
-
+  transition: transform 0.3s ease; 
 }
 
 .container:hover .glass {

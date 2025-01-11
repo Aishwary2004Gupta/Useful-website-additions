@@ -56,7 +56,7 @@ body {
   }
   
   .container .glass[data-text="Twitter"]:hover {
-    background: #F5F8FA; /* Blue for X (Twitter) */
+    background: #F5F8FA; 
   }
   
   .container .glass[data-text="Code"]:hover {

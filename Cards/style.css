@@ -30,12 +30,42 @@ body {
   justify-content: center;
   align-items: center;
   overflow: hidden;
+  transition: background 0.3s ease; /* Smooth transition for background change */
   transition: 0.5s;
   border-radius: 10px;
   margin: 0 -45px;
   backdrop-filter: blur(10px);
   transform: rotate(calc(var(--r) * 1deg));
 }
+
+/* Hover effects for different icons */
+.container .glass[data-text="Discord"]:hover {
+    background: #5865F2; /* Blue for Discord */
+  }
+  
+  .container .glass[data-text="Earn"]:hover {
+    background: #4caf50; /* Green for Earn */
+  }
+  
+  .container .glass[data-text="LinkedIn"]:hover {
+    background: #0077B5; /* Blue for LinkedIn */
+  }
+  
+  .container .glass[data-text="Github"]:hover {
+    background: #333; /* Dark gray for Github */
+  }
+  
+  .container .glass[data-text="Twitter"]:hover {
+    background: #F5F8FA; /* Blue for X (Twitter) */
+  }
+  
+  .container .glass[data-text="Code"]:hover {
+    background: #f0db4f; /* Yellow for Code */
+  }
+
+  .container .glass[data-text="Instagram"]:hover {
+    background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); /* Instagram gradient */
+  }
 
 .container .glass svg {
   width: 80px;

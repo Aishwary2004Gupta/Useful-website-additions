@@ -30,7 +30,7 @@ body {
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  transition: background 0.3s ease, transform 0.3s ease;   
+  transition: background 0.3s ease, transform 0.3s ease;
   transition: 0.8s;
   border-radius: 10px;
   margin: 0 -45px;
@@ -39,43 +39,49 @@ body {
 }
 
 .container .glass[data-text="Discord"]:hover {
-    background: #252a64; 
-  }
-  
-  .container .glass[data-text="Earn"]:hover {
-    background: #134515; 
-  }
-  
-  .container .glass[data-text="LinkedIn"]:hover {
-    background: #013551;
-  }
-  
-  .container .glass[data-text="Github"]:hover {
-    background: #333; 
-  }
-  
-  .container .glass[data-text="Twitter"]:hover {
-    background: #1b303e; 
-  }
-  
-  .container .glass[data-text="Code"]:hover {
-    background: #80721a; 
-  }
+  background: #252a64;
+}
 
-  .container .glass[data-text="Instagram"]:hover {
-    background: linear-gradient(45deg, #513211, #612d19, #61111d, #530e29, #530a3c); 
-  }
+.container .glass[data-text="Earn"]:hover {
+  background: #134515;
+}
 
+.container .glass[data-text="LinkedIn"]:hover {
+  background: #013551;
+}
+
+.container .glass[data-text="Github"]:hover {
+  background: #333;
+}
+
+.container .glass[data-text="Twitter"]:hover {
+  background: #1b303e;
+}
+
+.container .glass[data-text="Code"]:hover {
+  background: #80721a;
+}
+
+.container .glass[data-text="Instagram"]:hover {
+  background: linear-gradient(
+    45deg,
+    #513211,
+    #612d19,
+    #61111d,
+    #530e29,
+    #530a3c
+  );
+}
 
 .container .glass:hover svg {
-    transform: scale(1.2); 
-  }
+  transform: scale(1.2);
+}
 
 .container .glass svg {
   width: 80px;
   height: 80px;
   fill: #fff;
-  transition: transform 0.3s ease; 
+  transition: transform 0.3s ease;
   font-size: 2.5em;
 }
 

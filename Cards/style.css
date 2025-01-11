@@ -60,7 +60,7 @@ body {
   }
   
   .container .glass[data-text="Code"]:hover {
-    background: #f0db4f; /* Yellow for Code */
+    background: #f0db4f; 
   }
 
   .container .glass[data-text="Instagram"]:hover {

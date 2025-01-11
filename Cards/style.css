@@ -48,7 +48,7 @@ body {
   }
   
   .container .glass[data-text="LinkedIn"]:hover {
-    background: #0077B5; /* Blue for LinkedIn */
+    background: #0077B5;
   }
   
   .container .glass[data-text="Github"]:hover {

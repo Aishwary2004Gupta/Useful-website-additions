@@ -38,7 +38,7 @@ body {
   transform: rotate(calc(var(--r) * 1deg));
 }
 
-/* Hover effects for different icons */
+
 .container .glass[data-text="Discord"]:hover {
     background: #5865F2; /* Blue for Discord */
   }

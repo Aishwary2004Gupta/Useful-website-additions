@@ -30,7 +30,7 @@ body {
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  transition: background 0.3s ease; /* Smooth transition for background change */
+  transition: background 0.3s ease; 
   transition: 0.5s;
   border-radius: 10px;
   margin: 0 -45px;

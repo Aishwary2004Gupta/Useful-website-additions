@@ -44,7 +44,7 @@ body {
   }
   
   .container .glass[data-text="Earn"]:hover {
-    background: #4caf50; /* Green for Earn */
+    background: #4caf50; 
   }
   
   .container .glass[data-text="LinkedIn"]:hover {

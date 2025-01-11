@@ -43,7 +43,7 @@ body {
   }
   
   .container .glass[data-text="Earn"]:hover {
-    background: #4caf50; 
+    background: #134515; 
   }
   
   .container .glass[data-text="LinkedIn"]:hover {
@@ -59,7 +59,7 @@ body {
   }
   
   .container .glass[data-text="Code"]:hover {
-    background: #f0db4f; 
+    background: #80721a; 
   }
 
   .container .glass[data-text="Instagram"]:hover {

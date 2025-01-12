@@ -20,6 +20,8 @@ body {
     z-index: 10;
     background-color: #e94e77;
     border: none;
+    /* justify-content: center;
+    align-self: center; */
     color: #fff;
     padding: 10px 20px;
     font-size: 16px;

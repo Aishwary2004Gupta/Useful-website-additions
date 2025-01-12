@@ -96,24 +96,6 @@ const effects = [
     ctx.fillStyle = "hsl(60, 100%, 50%)";
     ctx.fillText("Hello!", mouse.x + 10, mouse.y - 10);
   },
-  // // Arrow cursor
-  // () => {
-  //   ctx.beginPath();
-  //   ctx.moveTo(mouse.x, mouse.y);
-  //   ctx.lineTo(mouse.x - 10, mouse.y + 20);
-  //   ctx.lineTo(mouse.x + 10, mouse.y + 20);
-  //   ctx.closePath();
-  //   ctx.fillStyle = "hsl(300, 100%, 60%)";
-  //   ctx.fill();
-  // },
-  // // Blur effect
-  // () => {
-  //   ctx.globalAlpha = 0.15;
-  //   ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-  //   ctx.beginPath();
-  //   ctx.arc(mouse.x, mouse.y, 40, 0, Math.PI * 2);
-  //   ctx.fill();
-  // },
 ];
 
 // Draw and update particles

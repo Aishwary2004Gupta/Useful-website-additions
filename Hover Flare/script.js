@@ -60,7 +60,7 @@ class Particle {
 // Generate particles
 function init() {
     particles = [];
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i < 210; i++) {
         const radius = Math.random() * 3 + 1;
         const x = Math.random() * (canvas.width - radius * 2) + radius;
         const y = Math.random() * (canvas.height - radius * 2) + radius;

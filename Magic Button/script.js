@@ -148,12 +148,11 @@ function animate() {
   requestAnimationFrame(animate);
 }
 
-// Switch Animation
+
 button.addEventListener("click", () => {
   currentAnimation = (currentAnimation + 1) % 8;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   particles = [];
 });
-
 
 animate();

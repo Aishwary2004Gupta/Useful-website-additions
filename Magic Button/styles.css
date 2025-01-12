@@ -1,33 +1,33 @@
-  body {
-    margin: 0;
-    overflow: hidden;
-    background: #111;
-  }
+body {
+  margin: 0;
+  overflow: hidden;
+  background: #111;
+}
 
-  canvas {
-    display: block;
-  }
+canvas {
+  display: block;
+}
 
-  #change-animation {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) perspective(500px) rotateX(15deg);
-    background: linear-gradient(45deg, #ff6b6b, #f5a623);
-    color: white;
-    border: none;
-    padding: 15px 30px;
-    cursor: pointer;
-    font-size: 20px;
-    font-weight: bold;
-    letter-spacing: 1px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    border-radius: 10px;
-    z-index: 10;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
+#change-animation {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) perspective(500px) rotateX(15deg);
+  background: linear-gradient(45deg, #ff6b6b, #f5a623);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  z-index: 10;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
 
-  #change-animation:hover {
-    transform: translate(-50%, -50%) perspective(500px) rotateX(0deg) scale(1.05);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8);
-  }
+#change-animation:hover {
+  transform: translate(-50%, -50%) perspective(500px) rotateX(0deg) scale(1.05);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8);
+}

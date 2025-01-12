@@ -2,32 +2,32 @@ const canvas = document.getElementById("cursorCanvas");
 const ctx = canvas.getContext("2d");
 const button = document.getElementById("change-animation");
 
+// Set canvas dimensions
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-// Global Variables
+// Global variables
 let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
 let particles = [];
 let currentAnimation = 0;
 let swirlAngle = 0;
-const textCursorContent = "Hello!";
-let spotlightRadius = 150;
+let maxParticles = 150; // Limit the number of particles for performance
 
-// Update canvas size on window resize
+// Update canvas size dynamically on resize
 window.addEventListener("resize", () => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 });
 
-// Update mouse position
+// Track mouse movements
 window.addEventListener("mousemove", (e) => {
   mouse.x = e.clientX;
   mouse.y = e.clientY;
 });
 
-// Particle Class
+// Particle class
 class Particle {
-  constructor(x, y, hue, size = 5, alpha = 1, decay = 0.02) {
+  constructor(x, y, size = 5, hue = 180, alpha = 1, decay = 0.02) {
     this.x = x;
     this.y = y;
     this.size = size;
@@ -37,7 +37,7 @@ class Particle {
   }
 
   update() {
-    this.alpha -= this.decay;
+    this.alpha -= this.decay; // Fade effect
   }
 
   draw() {
@@ -49,110 +49,96 @@ class Particle {
   }
 }
 
-// Swirl Cursor Effect
-function swirlEffect() {
-  swirlAngle += 0.1;
-  for (let i = 0; i < 10; i++) {
-    const angle = swirlAngle + (i * Math.PI * 2) / 10;
-    const x = mouse.x + Math.cos(angle) * 50;
-    const y = mouse.y + Math.sin(angle) * 50;
-    particles.push(new Particle(x, y, Math.random() * 360, 4));
-  }
-  drawParticles();
+// Common particle handler
+function addParticle(hueVariation = 50, size = 4, decay = 0.02) {
+  if (particles.length > maxParticles) particles.shift(); // Remove oldest particle
+  const hue = Math.random() * hueVariation + currentAnimation * 40; // Vary based on animation
+  particles.push(new Particle(mouse.x, mouse.y, size, hue, 1, decay));
 }
 
-// Flashlight Cursor Effect
-function flashlightEffect() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.globalCompositeOperation = "source-over";
-  ctx.fillStyle = "rgba(0, 0, 0, 0.9)";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+// Individual effects
+const effects = [
+  // Swirl effect
+  () => {
+    swirlAngle += 0.1;
+    for (let i = 0; i < 10; i++) {
+      const angle = swirlAngle + (i * Math.PI * 2) / 10;
+      const x = mouse.x + Math.cos(angle) * 20;
+      const y = mouse.y + Math.sin(angle) * 20;
+      particles.push(new Particle(x, y, 4, Math.random() * 360, 0.8, 0.03));
+    }
+  },
+  // Flashlight effect
+  () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "rgba(0, 0, 0, 0.9)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.beginPath();
+    ctx.arc(mouse.x, mouse.y, 100, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalCompositeOperation = "source-over";
+  },
+  // Distort effect
+  () => addParticle(Math.random() * 360, 10, 0.03),
+  // Dot cursor effect
+  () => {
+    ctx.beginPath();
+    ctx.arc(mouse.x, mouse.y, 8, 0, Math.PI * 2);
+    ctx.fillStyle = "hsl(220, 100%, 60%)";
+    ctx.fill();
+  },
+  // Following cursor particles
+  () => addParticle(50, 6),
+  // Text cursor
+  () => {
+    ctx.font = "20px Arial";
+    ctx.fillStyle = "hsl(60, 100%, 50%)";
+    ctx.fillText("Hello!", mouse.x + 10, mouse.y - 10);
+  },
+  // Arrow cursor
+  () => {
+    ctx.beginPath();
+    ctx.moveTo(mouse.x, mouse.y);
+    ctx.lineTo(mouse.x - 10, mouse.y + 20);
+    ctx.lineTo(mouse.x + 10, mouse.y + 20);
+    ctx.closePath();
+    ctx.fillStyle = "hsl(300, 100%, 60%)";
+    ctx.fill();
+  },
+  // Blur effect
+  () => {
+    ctx.globalAlpha = 0.15;
+    ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+    ctx.beginPath();
+    ctx.arc(mouse.x, mouse.y, 40, 0, Math.PI * 2);
+    ctx.fill();
+  },
+];
 
-  ctx.globalCompositeOperation = "destination-out";
-  ctx.beginPath();
-  ctx.arc(mouse.x, mouse.y, spotlightRadius, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-// Distort Cursor Effect
-function distortEffect() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  particles.push(new Particle(mouse.x, mouse.y, Math.random() * 360, 10, 0.5, 0.03));
-  drawParticles();
-}
-
-// Dot Cursor Effect
-function dotEffect() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.beginPath();
-  ctx.arc(mouse.x, mouse.y, 8, 0, Math.PI * 2);
-  ctx.fillStyle = "hsl(220, 100%, 60%)";
-  ctx.fill();
-}
-
-// Following Cursor Effect
-function followingCursorEffect() {
-  particles.push(new Particle(mouse.x, mouse.y, 180, 5, 1, 0.02));
-  drawParticles();
-}
-
-// Text Cursor Effect
-function textCursorEffect() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.font = "20px Arial";
-  ctx.fillStyle = "hsl(60, 100%, 50%)";
-  ctx.fillText(textCursorContent, mouse.x + 10, mouse.y - 10);
-}
-
-// Arrow Cursor Effect
-function arrowEffect() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.beginPath();
-  ctx.moveTo(mouse.x, mouse.y);
-  ctx.lineTo(mouse.x - 10, mouse.y + 25);
-  ctx.lineTo(mouse.x + 10, mouse.y + 25);
-  ctx.closePath();
-  ctx.fillStyle = "hsl(300, 100%, 60%)";
-  ctx.fill();
-}
-
-// Blur Cursor Effect
-function blurEffect() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.globalAlpha = 0.15;
-  ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-  ctx.beginPath();
-  ctx.arc(mouse.x, mouse.y, 40, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-// Draw Particles
+// Draw and update particles
 function drawParticles() {
   particles.forEach((particle, index) => {
     particle.update();
-    if (particle.alpha <= 0) particles.splice(index, 1);
-    particle.draw();
+    if (particle.alpha <= 0) particles.splice(index, 1); // Remove faded particles
+    else particle.draw();
   });
 }
 
-// Trigger Animations
+// Animation loop
 function animate() {
-  if (currentAnimation === 0) swirlEffect();
-  else if (currentAnimation === 1) flashlightEffect();
-  else if (currentAnimation === 2) distortEffect();
-  else if (currentAnimation === 3) dotEffect();
-  else if (currentAnimation === 4) followingCursorEffect();
-  else if (currentAnimation === 5) textCursorEffect();
-  else if (currentAnimation === 6) arrowEffect();
-  else if (currentAnimation === 7) blurEffect();
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  effects[currentAnimation]();
+  drawParticles();
   requestAnimationFrame(animate);
 }
 
-
+// Change animation on button click
 button.addEventListener("click", () => {
-  currentAnimation = (currentAnimation + 1) % 8;
+  currentAnimation = (currentAnimation + 1) % effects.length;
+  particles = []; // Clear particles for a fresh start
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  particles = [];
 });
 
+// Start animation
 animate();

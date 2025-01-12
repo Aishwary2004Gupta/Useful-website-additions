@@ -155,5 +155,5 @@ button.addEventListener("click", () => {
   particles = [];
 });
 
-// Start Animation
+
 animate();

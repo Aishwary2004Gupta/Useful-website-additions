@@ -1,0 +1,35 @@
+body {
+    margin: 0;
+    overflow: hidden; /* Prevent scrollbars from interfering */
+    background: radial-gradient(circle, #1a1a1d, #0b0c10);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none; /* Ensure mouse events pass through */
+    z-index: 1;
+  }
+  
+  #change-animation {
+    position: relative;
+    z-index: 10;
+    background-color: #e94e77;
+    border: none;
+    color: #fff;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-family: Arial, sans-serif;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  
+  #change-animation:hover {
+    transform: scale(1.1);
+  }
+  

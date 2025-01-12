@@ -94,7 +94,7 @@ const effects = [
   () => {
     ctx.font = "20px Arial";
     ctx.fillStyle = "hsl(60, 100%, 50%)";
-    ctx.fillText("Hello!", mouse.x + 10, mouse.y - 10);
+    ctx.fillText("Hello! developer", mouse.x + 10, mouse.y - 10);
   },
 ];
 

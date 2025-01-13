@@ -9,47 +9,45 @@ canvas {
 }
 
 #change-animation {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) perspective(800px) rotateX(15deg);
-    background: linear-gradient(45deg, #ff6b6b, #f5a623, #54e346);
-    color: white;
-    border: none;
-    padding: 15px 30px;
-    cursor: pointer;
-    font-size: 20px;
-    font-weight: bold;
-    letter-spacing: 1px;
-    border-radius: 10px;
-    z-index: 10;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  
-    /* Add perspective and depth */
-    text-shadow: 0 2px 3px rgba(0, 0, 0, 0.5), 0 0 10px rgba(255, 255, 255, 0.3);
-  }
-  
-  /* Add depth using pseudo-elements */
-  #change-animation::before {
-    content: "";
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    right: 5px;
-    bottom: 5px;
-    background: linear-gradient(45deg, #ff6b6b, #f5a623);
-    border-radius: 10px;
-    z-index: -1;
-    box-shadow: 
-      0 5px 10px rgba(161, 55, 55, 0.3),
-      0 10px 15px rgba(215, 59, 59, 0.2);
-  }
-  
-  #change-animation:hover {
-    transform: translate(-50%, -50%) perspective(800px) rotateX(5deg) scale(1.05);
-  }
-  
-  #change-animation:active {
-    transform: translate(-50%, -50%) perspective(800px) rotateX(20deg) scale(0.95);
-  }
-  
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) perspective(800px) rotateX(15deg);
+  background: linear-gradient(45deg, #ff6b6b, #f5a623, #54e346);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  border-radius: 10px;
+  z-index: 10;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  /* Add perspective and depth */
+  text-shadow: 0 2px 3px rgba(0, 0, 0, 0.5), 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+/* Add depth using pseudo-elements */
+#change-animation::before {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  right: 5px;
+  bottom: 5px;
+  background: linear-gradient(45deg, #ff6b6b, #f5a623);
+  border-radius: 10px;
+  z-index: -1;
+  box-shadow: 0 5px 10px rgba(161, 55, 55, 0.3),
+    0 10px 15px rgba(215, 59, 59, 0.2);
+}
+
+#change-animation:hover {
+  transform: translate(-50%, -50%) perspective(800px) rotateX(5deg) scale(1.05);
+}
+
+#change-animation:active {
+  transform: translate(-50%, -50%) perspective(800px) rotateX(20deg) scale(0.95);
+}

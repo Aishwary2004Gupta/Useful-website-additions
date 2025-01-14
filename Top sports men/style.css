@@ -59,7 +59,7 @@ body{
     transition: 0.2s ease-in-out;
     fill: #03a9f4;
 }
-  
+
   .card:nth-child(3) {
     border-top-right-radius: 10px;
     border-top-left-radius: 0px;

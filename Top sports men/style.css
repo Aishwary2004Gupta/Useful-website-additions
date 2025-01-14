@@ -6,7 +6,7 @@ body{
     align-items: center;
     min-height: 100vh;
     background: #121212;
-    }
+}
 
 .main_back {
     position: absolute;
@@ -18,7 +18,7 @@ body{
     z-index: -2;
     box-shadow: inset 0px 0px 180px 5px #ffffff;
     }
-  
+
 .main {
     display: flex;
     flex-wrap: wrap;

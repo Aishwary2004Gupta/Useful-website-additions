@@ -19,14 +19,14 @@ body{
     box-shadow: inset 0px 0px 180px 5px #ffffff;
     }
   
-  .main {
+.main {
     display: flex;
     flex-wrap: wrap;
     width: 14em;
     align-items: center;
     justify-content: center;
     z-index: -1;
-  }
+    }
   
   .card {
     display: flex;

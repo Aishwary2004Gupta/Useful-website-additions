@@ -63,7 +63,7 @@ body{
 .card:nth-child(3) {
     border-top-right-radius: 10px;
     border-top-left-radius: 0px;
-  }
+}
   
   .card:nth-child(3) .dribble {
     opacity: 0;

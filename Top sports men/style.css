@@ -49,8 +49,8 @@ body{
     transition: 0.2s ease-in-out;
     fill: #cc39a4;
 }
-  
-  .card:nth-child(2) {
+
+.card:nth-child(2) {
     border-radius: 0px;
   }
   

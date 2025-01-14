@@ -43,12 +43,12 @@ body{
     border: 1px solid transparent;
     -webkit-backdrop-filter: blur(5px);
 }
-  
-  .card .instagram {
+
+.card .instagram {
     opacity: 0;
     transition: 0.2s ease-in-out;
     fill: #cc39a4;
-  }
+}
   
   .card:nth-child(2) {
     border-radius: 0px;

@@ -52,7 +52,7 @@ body{
 
 .card:nth-child(2) {
     border-radius: 0px;
-  }
+}
   
   .card:nth-child(2) .twitter {
     opacity: 0;

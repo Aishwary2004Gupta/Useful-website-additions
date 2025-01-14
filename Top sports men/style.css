@@ -26,8 +26,8 @@ body{
     align-items: center;
     justify-content: center;
     z-index: -1;
-    }
-  
+}
+
 .card {
     display: flex;
     align-items: center;
@@ -42,7 +42,7 @@ body{
     backdrop-filter: blur(5px);
     border: 1px solid transparent;
     -webkit-backdrop-filter: blur(5px);
-  }
+}
   
   .card .instagram {
     opacity: 0;

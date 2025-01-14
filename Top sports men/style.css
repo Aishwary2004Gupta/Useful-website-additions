@@ -64,8 +64,8 @@ body{
     border-top-right-radius: 10px;
     border-top-left-radius: 0px;
 }
-  
-  .card:nth-child(3) .dribble {
+
+.card:nth-child(3) .dribble {
     opacity: 0;
     transition: 0.2s ease-in-out;
     fill: #ffb5d2;

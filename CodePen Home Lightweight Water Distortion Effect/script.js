@@ -1,15 +1,13 @@
-import GUI from "https://cdn.jsdelivr.net/npm/lil-gui@0.18.2/+esm"
-
 const canvasEl = document.querySelector("canvas");
 const imgInput = document.querySelector("#image-selector-input");
 const devicePixelRatio = Math.min(window.devicePixelRatio, 2);
 
 const params = {
-    blueish: .6,
+    blueish: 0.6,
     scale: 7,
-    illumination: .15,
-    surfaceDistortion: .07,
-    waterDistortion: .03,
+    illumination: 0.15,
+    surfaceDistortion: 0.07,
+    waterDistortion: 0.03,
     loadMyImage: () => {
         imgInput.click();
     }
@@ -148,30 +146,29 @@ function resizeCanvas() {
 
 function createControls() {
     const gui = new GUI();
-	 gui.close();
+    gui.close();
 
     gui
         .add(params, "loadMyImage")
         .name("load image");
 
     const paramsFolder = gui.addFolder("shader params");
-    // paramsFolder.close();
 
     paramsFolder
         .add(params, "blueish", 0, .8)
-        .onChange(updateUniforms)
+        .onChange(updateUniforms);
     paramsFolder
         .add(params, "scale", 5, 12)
-        .onChange(updateUniforms)
+        .onChange(updateUniforms);
     paramsFolder
         .add(params, "illumination", 0, 1)
-        .onChange(updateUniforms)
+        .onChange(updateUniforms);
     paramsFolder
         .add(params, "surfaceDistortion", 0, .12)
         .onChange(updateUniforms)
-        .name("surface distortion")
+        .name("surface distortion");
     paramsFolder
         .add(params, "waterDistortion", 0, .08)
         .onChange(updateUniforms)
-        .name("water distortion")
+        .name("water distortion");
 }

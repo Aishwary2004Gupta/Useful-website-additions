@@ -1,200 +1,177 @@
-const IMAGES = [
-    {
-        "id": "image-1",
-        "src": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/M/MAXVER01_Max_Verstappen/maxver01.png",
-        "alt": "Max Verstappen",
-        "title": "Max Verstappen"
-    },
-    {
-        "id": "image-2",
-        "src": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/C/CHALEC01_Charles_Leclerc/chalec01.png",
-        "alt": "Charles Leclerc",
-        "title": "Charles Leclerc"
-    },
-    {
-        "id": "image-3",
-        "src": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LANNOR01_Lando_Norris/lannor01.png",
-        "alt": "Lando Norris",
-        "title": "Lando Norris"
-    },
-    {
-        "id": "image-4",
-        "src": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/C/CARSAI01_Carlos_Sainz/carsai01.png",
-        "alt": "Carlos Sainz",
-        "title": "Carlos Sainz"
-    },
-    {
-        "id": "image-5",
-        "src": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/S/SERPER01_Sergio_Perez/serper01.png",
-        "alt": "Sergio Perez",
-        "title": "Sergio Perez"
-    },
-    {
-        "id": "image-6",
-        "src": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/O/OSCPIA01_Oscar_Piastri/oscpia01.png",
-        "alt": "Oscar Piastre",
-        "title": "Oscar Piastre"
-    },
-    {
-        "id": "image-7",
-        "src": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/G/GEORUS01_George_Russell/georus01.png",
-        "alt": "George Russel",
-        "title": "George Russel"
-    },
-    {
-        "id": "image-8",
-        "src": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LEWHAM01_Lewis_Hamilton/lewham01.png",
-        "alt": "Lewis Hamilton",
-        "title": "Lewis Hamilton"
-    },
-    {
-        "id": "image-9",
-        "src": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/F/FERALO01_Fernando_Alonso/feralo01.png",
-        "alt": "Fernando Alonso",
-        "title": "Fernando Alonso"
-    },
-    {
-        "id": "image-10",
-        "src": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/Y/YUKTSU01_Yuki_Tsunoda/yuktsu01.png",
-        "alt": "Yuki Tsunoda",
-        "title": "Yuki Tsunoda"
-    },
-    {
-        "id": "image-11",
-        "src": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LANSTR01_Lance_Stroll/lanstr01.png",
-        "alt": "Lance Stroll",
-        "title": "Lance Stroll"
-    },
-    {
-        "id": "image-12",
-        "src": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/D/DANRIC01_Daniel_Ricciardo/danric01.png",
-        "alt": "Daniel Riccardo",
-        "title": "Daniel Riccardo"
-    },
-    {
-        "id": "image-13",
-        "src": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/O/OLIBEA01_Oliver_Bearman/olibea01.png",
-        "alt": "Oliver Bearman",
-        "title": "Oliver Bearman"
-    },
-    {
-        "id": "image-14",
-        "src": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/N/NICHUL01_Nico_Hulkenberg/nichul01.png",
-        "alt": "Nico Hulkenberg",
-        "title": "Nico Hulkenberg"
-    },
-    {
-        "id": "image-15",
-        "src": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/P/PIEGAS01_Pierre_Gasly/piegas01.png",
-        "alt": "Pierre Gasly",
-        "title": "Pierre Gasly"
-    },
-    {
-        "id": "image-16",
-        "src": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/A/ALEALB01_Alexander_Albon/alealb01.png",
-        "alt": "Alexander Albon",
-        "title": "Alexander Albon"
-    },
-    {
-        "id": "image-17",
-        "src": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/E/ESTOCO01_Esteban_Ocon/estoco01.png",
-        "alt": "Eseban Ocon",
-        "title": "Eseban Ocon"
-    },
-    {
-        "id": "image-18",
-        "src": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/K/KEVMAG01_Kevin_Magnussen/kevmag01.png",
-        "alt": "Kevin Magnussen",
-        "title": "Kevin Magnussen"
-    },
-    {
-        "id": "image-19",
-        "src": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/G/GUAZHO01_Guanyu_Zhou/guazho01.png",
-        "alt": "Guanyu Zhou",
-        "title": "Guanyu Zhou"
-    },
-    {
-        "id": "image-20",
-        "src": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/V/VALBOT01_Valtteri_Bottas/valbot01.png",
-        "alt": "Valtteri Botas",
-        "title": "Valtteri Botas"
-    },
-    {
-        "id": "image-21",
-        "src": "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LOGSAR01_Logan_Sargeant/logsar01.png",
-        "alt": "Logan Sargeant",
-        "title": "Logan Sargeant"
+import GUI from "https://cdn.jsdelivr.net/npm/lil-gui@0.18.2/+esm"
+
+const canvasEl = document.querySelector("canvas");
+const imgInput = document.querySelector("#image-selector-input");
+const devicePixelRatio = Math.min(window.devicePixelRatio, 2);
+
+const params = {
+    blueish: .6,
+    scale: 7,
+    illumination: .15,
+    surfaceDistortion: .07,
+    waterDistortion: .03,
+    loadMyImage: () => {
+        imgInput.click();
     }
-];
+};
 
-const navEl = document.querySelector('#gallery-nav');
-const galleryEl = document.querySelector("#gallery");
+imgInput.onchange = () => {
+    const [file] = imgInput.files;
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            loadImage(e.target.result);
+        };
+        reader.readAsDataURL(file);
+    }
+};
 
-const RADIUS = 250; // distance (radius) from center of gallery
-const START_INDEX = 2; // index of item for load animation
+let image, uniforms;
+const gl = initShader();
+updateUniforms();
+loadImage("https://ksenia-k.com/img/codepen/for-water-distortion-demo-2.jpg");
+createControls();
+render();
+window.addEventListener("resize", resizeCanvas);
 
-function setupGalleryAndNav() {
-    if (!galleryEl || !navEl) {
-        console.error('galleryEl or navEl is not defined');
-        return;
+function initShader() {
+    const vsSource = document.getElementById("vertShader").innerHTML;
+    const fsSource = document.getElementById("fragShader").innerHTML;
+
+    const gl = canvasEl.getContext("webgl") || canvasEl.getContext("experimental-webgl");
+
+    if (!gl) {
+        alert("WebGL is not supported by your browser.");
     }
 
-    // add 2 extra elements at beginning to "compensate" for mask positioning
-    const extraElStart1 = document.createElement("div");
-    galleryEl.appendChild(extraElStart1);
+    function createShader(gl, sourceCode, type) {
+        const shader = gl.createShader(type);
+        gl.shaderSource(shader, sourceCode);
+        gl.compileShader(shader);
 
-    IMAGES.forEach(image => {
-        const galleryImg = document.createElement('img');
-        galleryImg.src = image.src;
-        galleryImg.alt = image.alt;
-        galleryImg.title = image.title;
-        galleryEl.appendChild(galleryImg);
-        console.log('Appended image:', galleryImg);
-    });
-
-    // add 2 extra elements at end to "compensate" for mask positioning
-    const extraElEnd1 = document.createElement("div");
-    galleryEl.appendChild(extraElEnd1);
-
-    // create button for each image
-    IMAGES.forEach((image, index) => {
-        const button = document.createElement('button');
-        button.title = image.title;
-
-        const img = document.createElement('img');
-        img.src = image.src;
-        img.alt = image.alt;
-        img.title = image.title;
-
-        button.appendChild(img);
-        navEl.appendChild(button);
-
-        // position button around the circle
-        const angle = (index / IMAGES.length) * 360;
-        const x = Math.cos(angle * (Math.PI / 180)) * RADIUS;
-        const y = Math.sin(angle * (Math.PI / 180)) * RADIUS;
-
-        // center the buttons around the middle of the <nav> container
-        button.style.position = 'absolute';
-        button.style.left = `calc(50% + ${x}px)`;
-        button.style.top = `calc(50% + ${y}px)`;
-
-        // button event listener
-        button.addEventListener('click', () => {
-            // remove active
-            navEl.querySelectorAll("button.active").forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-
-            // scroll to selected image
-            const imgToScroll = document.querySelector(`#gallery img[src="${image.src}"]`);
-            imgToScroll.scrollIntoView({ behavior: 'smooth' });
-        });
-
-        // load initial image
-        if (index === START_INDEX) {
-            setTimeout(() => button.click(), 150);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            console.error("An error occurred compiling the shaders: " + gl.getShaderInfoLog(shader));
+            gl.deleteShader(shader);
+            return null;
         }
-    });
+
+        return shader;
+    }
+
+    const vertexShader = createShader(gl, vsSource, gl.VERTEX_SHADER);
+    const fragmentShader = createShader(gl, fsSource, gl.FRAGMENT_SHADER);
+
+    function createShaderProgram(gl, vertexShader, fragmentShader) {
+        const program = gl.createProgram();
+        gl.attachShader(program, vertexShader);
+        gl.attachShader(program, fragmentShader);
+        gl.linkProgram(program);
+
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+            console.error("Unable to initialize the shader program: " + gl.getProgramInfoLog(program));
+            return null;
+        }
+
+        return program;
+    }
+
+    const shaderProgram = createShaderProgram(gl, vertexShader, fragmentShader);
+    uniforms = getUniforms(shaderProgram);
+
+    function getUniforms(program) {
+        let uniforms = [];
+        let uniformCount = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+        for (let i = 0; i < uniformCount; i++) {
+            let uniformName = gl.getActiveUniform(program, i).name;
+            uniforms[uniformName] = gl.getUniformLocation(program, uniformName);
+        }
+        return uniforms;
+    }
+
+    const vertices = new Float32Array([-1., -1., 1., -1., -1., 1., 1., 1.]);
+
+    const vertexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+    gl.useProgram(shaderProgram);
+
+    const positionLocation = gl.getAttribLocation(shaderProgram, "a_position");
+    gl.enableVertexAttribArray(positionLocation);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+    return gl;
 }
 
-setupGalleryAndNav();
+function updateUniforms() {
+    gl.uniform1f(uniforms.u_blueish, params.blueish);
+    gl.uniform1f(uniforms.u_scale, params.scale);
+    gl.uniform1f(uniforms.u_illumination, params.illumination);
+    gl.uniform1f(uniforms.u_surface_distortion, params.surfaceDistortion);
+    gl.uniform1f(uniforms.u_water_distortion, params.waterDistortion);
+}
+
+function loadImage(src) {
+    image = new Image();
+    image.crossOrigin = "anonymous";
+    image.src = src;
+    image.onload = () => {
+        const imageTexture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, imageTexture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+        gl.uniform1i(uniforms.u_image_texture, 0);
+        resizeCanvas();
+    };
+}
+
+function render() {
+    const currentTime = performance.now();
+    gl.uniform1f(uniforms.u_time, currentTime);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    requestAnimationFrame(render);
+}
+
+function resizeCanvas() {
+    const imgRatio = image.naturalWidth / image.naturalHeight;
+    canvasEl.width = window.innerWidth * devicePixelRatio;
+    canvasEl.height = window.innerHeight * devicePixelRatio;
+    gl.viewport(0, 0, canvasEl.width, canvasEl.height);
+    gl.uniform1f(uniforms.u_ratio, canvasEl.width / canvasEl.height);
+    gl.uniform1f(uniforms.u_img_ratio, imgRatio);
+}
+
+function createControls() {
+    const gui = new GUI();
+	 gui.close();
+
+    gui
+        .add(params, "loadMyImage")
+        .name("load image");
+
+    const paramsFolder = gui.addFolder("shader params");
+    // paramsFolder.close();
+
+    paramsFolder
+        .add(params, "blueish", 0, .8)
+        .onChange(updateUniforms)
+    paramsFolder
+        .add(params, "scale", 5, 12)
+        .onChange(updateUniforms)
+    paramsFolder
+        .add(params, "illumination", 0, 1)
+        .onChange(updateUniforms)
+    paramsFolder
+        .add(params, "surfaceDistortion", 0, .12)
+        .onChange(updateUniforms)
+        .name("surface distortion")
+    paramsFolder
+        .add(params, "waterDistortion", 0, .08)
+        .onChange(updateUniforms)
+        .name("water distortion")
+}

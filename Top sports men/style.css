@@ -1,3 +1,15 @@
+body {
+  margin: 0;
+  padding: 0;
+  /* display: flex; */
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #000; /* Set background to black */
+  font-family: "Poppins", sans-serif;
+}
+
+
 .main_back {
     position: absolute;
     border-radius: 10px;

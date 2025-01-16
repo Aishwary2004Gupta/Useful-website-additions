@@ -51,32 +51,10 @@ window.addEventListener("resize", setupCanvas);
 function update(t) {
 
     // for intro motion
-    // if (!mouseMoved) {
-    //     pointer.x = (.5 + .3 * Math.cos(.002 * t) * (Math.sin(.005 * t))) * window.innerWidth;
-    //     pointer.y = (.5 + .2 * (Math.cos(.005 * t)) + .1 * Math.cos(.01 * t)) * window.innerHeight;
-    // }
-
     if (!mouseMoved) {
-        // Number of points for the star
-        const starPoints = 5; // Change this for more spikes
-        const time = t * 0.005; // Controls rotation speed
-    
-        // Radius calculations for the outer and inner circles of the star
-        const outerRadius = Math.min(window.innerWidth, window.innerHeight) * 0.4; // Scale for canvas size
-        const innerRadius = outerRadius * 0.5;
-    
-        // Angle calculation for creating the star path
-        const angle = (time % (2 * Math.PI)) + (Math.PI / 2); // Rotates the star
-        const starIndex = Math.floor(time * starPoints * 2) % (starPoints * 2); // Determines which point we are at
-    
-        const isOuterPoint = starIndex % 2 === 0; // Alternate between outer and inner points
-        const radius = isOuterPoint ? outerRadius : innerRadius;
-        const pointAngle = (starIndex / (starPoints * 2)) * 2 * Math.PI + angle;
-    
-        pointer.x = 0.5 * window.innerWidth + radius * Math.cos(pointAngle);
-        pointer.y = 0.5 * window.innerHeight + radius * Math.sin(pointAngle);
+        pointer.x = (.5 + .3 * Math.cos(.002 * t) * (Math.sin(.005 * t))) * window.innerWidth;
+        pointer.y = (.5 + .2 * (Math.cos(.005 * t)) + .1 * Math.cos(.01 * t)) * window.innerHeight;
     }
-    
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     trail.forEach((p, pIdx) => {

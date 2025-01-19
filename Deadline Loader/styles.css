@@ -1,3 +1,4 @@
+/* General styles */
 body {
     font-family: Arial, sans-serif;
     background-color: black;
@@ -16,13 +17,14 @@ body {
     text-align: center;
   }
   
+  /* Loader styles */
   .deadline-loader {
     position: relative;
-    width: 400px;
-    height: 20px;
+    width: 500px;
+    height: 40px;
     background-color: white;
+    border-radius: 20px;
     overflow: hidden;
-    border-radius: 10px;
     margin-bottom: 10px;
   }
   
@@ -37,39 +39,44 @@ body {
     transition: transform 7s linear;
   }
   
-  .mask-white {
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 50px;
-    height: 100%;
-    background-color: white;
-    z-index: 2;
-  }
-  
   .grim-reaper {
     position: absolute;
-    width: 30px;
-    height: 30px;
-    background-image: url('grim-reaper.png'); /* Replace with a proper image */
+    left: 10px;
+    top: -5px;
+    width: 40px;
+    height: 40px;
+    background-image: url('grim-reaper.png'); /* Replace with Grim Reaper image */
     background-size: contain;
     background-repeat: no-repeat;
-    right: 0;
-    top: -5px;
+    z-index: 2;
     animation: move-reaper 7s linear forwards;
   }
   
+  .worker {
+    position: absolute;
+    right: 10px;
+    top: -5px;
+    width: 40px;
+    height: 40px;
+    background-image: url('worker.png'); /* Replace with Worker image */
+    background-size: contain;
+    background-repeat: no-repeat;
+    z-index: 2;
+  }
+  
+  /* Text styles */
   .deadline-text {
     font-size: 18px;
     text-align: center;
   }
   
+  /* Animations */
   @keyframes move-reaper {
     from {
       transform: translateX(0);
     }
     to {
-      transform: translateX(-400px);
+      transform: translateX(460px);
     }
   }
   

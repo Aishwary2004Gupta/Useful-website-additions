@@ -1,0 +1,75 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: black;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    flex-direction: column;
+  }
+  
+  .loader-container h1 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    text-align: center;
+  }
+  
+  .deadline-loader {
+    position: relative;
+    width: 400px;
+    height: 20px;
+    background-color: white;
+    overflow: hidden;
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .mask-red {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: red;
+    transform: translateX(-100%);
+    transition: transform 7s linear;
+  }
+  
+  .mask-white {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 50px;
+    height: 100%;
+    background-color: white;
+    z-index: 2;
+  }
+  
+  .grim-reaper {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background-image: url('grim-reaper.png'); /* Replace with a proper image */
+    background-size: contain;
+    background-repeat: no-repeat;
+    right: 0;
+    top: -5px;
+    animation: move-reaper 7s linear forwards;
+  }
+  
+  .deadline-text {
+    font-size: 18px;
+    text-align: center;
+  }
+  
+  @keyframes move-reaper {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-400px);
+    }
+  }
+  

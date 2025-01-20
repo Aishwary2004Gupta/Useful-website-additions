@@ -1,4 +1,4 @@
-$(".change").on("click", function() {
+$(".change").on("click", function () {
     if ($("body").hasClass("dark")) {
         $("body").removeClass("dark");
         $(".change").html("&#9728;"); // Sun Icon

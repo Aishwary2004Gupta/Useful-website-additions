@@ -1,102 +1,105 @@
 /* Base Neon Cursor Tail Style */
 body {
-    margin: 0;
-    height: 100vh;
-    background: radial-gradient(circle at top, #141E30, #243B55);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-    font-family: Arial, sans-serif;
-    color: #fff;
-    cursor: none; /* Hide the default cursor */
+  margin: 0;
+  height: 100vh;
+  background: radial-gradient(circle at top, #141e30, #243b55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+  color: #fff;
+  cursor: none; /* Hide the default cursor */
 }
 
 button {
-    padding: 20px 50px;
-    font-size: 1.2rem;
-    color: #fff;
-    background: linear-gradient(135deg, #6a11cb, #2575fc);
-    border: none;
-    border-radius: 50px;
-    cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-    position: relative;
-    z-index: 10;
-    outline: none;
+  padding: 20px 50px;
+  font-size: 1.2rem;
+  color: #fff;
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+  position: relative;
+  z-index: 10;
+  outline: none;
 }
 
 button:hover {
-    transform: scale(1.2); /* Smooth enlargement on hover */
-    background: linear-gradient(135deg, #2575fc, #6a11cb);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+  transform: scale(1.2); /* Smooth enlargement on hover */
+  background: linear-gradient(135deg, #2575fc, #6a11cb);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
 }
 
 #cursor {
-    position: absolute;
-    width: 25px;
-    height: 25px;
-    border: 3px solid rgba(255, 255, 255, 0.8);
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    pointer-events: none;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-    transform: translate(-50%, -50%);
-    z-index: 100;
-    transition: transform 0.1s ease-out;
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  border: 3px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  transform: translate(-50%, -50%);
+  z-index: 100;
+  transition: transform 0.1s ease-out;
 }
 
 /* Improved Neon Tail */
 .neon-trail {
-    position: absolute;
-    width: 15px;
-    height: 15px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.8), transparent);
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.6), 0 0 30px rgba(100, 255, 250, 0.4);
-    animation: fade-out-and-shrink 1s ease-out forwards, neon-color 1s infinite;
-    z-index: 50;
-    opacity: 1;
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.8), transparent);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.6),
+    0 0 30px rgba(100, 255, 250, 0.4);
+  animation: fade-out-and-shrink 1s ease-out forwards, neon-color 1s infinite;
+  z-index: 50;
+  opacity: 1;
 }
 
 @keyframes fade-out-and-shrink {
-    0% {
-        opacity: 1;
-        transform: scale(1);
-    }
-    100% {
-        opacity: 0;
-        transform: scale(0);
-    }
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0);
+  }
 }
 
 @keyframes neon-color {
-    0%, 100% {
-        background: radial-gradient(circle, rgba(255, 0, 255, 0.8), transparent);
-        box-shadow: 0 0 15px rgba(255, 0, 255, 0.6), 0 0 30px rgba(100, 255, 250, 0.4);
-    }
-    50% {
-        background: radial-gradient(circle, rgba(0, 255, 255, 0.8), transparent);
-        box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 150, 0.4);
-    }
+  0%,
+  100% {
+    background: radial-gradient(circle, rgba(255, 0, 255, 0.8), transparent);
+    box-shadow: 0 0 15px rgba(255, 0, 255, 0.6),
+      0 0 30px rgba(100, 255, 250, 0.4);
+  }
+  50% {
+    background: radial-gradient(circle, rgba(0, 255, 255, 0.8), transparent);
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 150, 0.4);
+  }
 }
 
 /* Particle Explosion Animation */
 .particle {
-    position: absolute;
-    opacity: 1;
-    pointer-events: none;
-    animation: explode 1.2s ease-out forwards;
+  position: absolute;
+  opacity: 1;
+  pointer-events: none;
+  animation: explode 1.2s ease-out forwards;
 }
 
 @keyframes explode {
-    0% {
-        transform: translate(0, 0) scale(1);
-        opacity: 1;
-    }
-    100% {
-        transform: translate(var(--dx), var(--dy)) scale(0.5);
-        opacity: 0;
-    }
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) scale(0.5);
+    opacity: 0;
+  }
 }

@@ -1,109 +1,109 @@
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-    min-height: 100vh;
-    background: #222;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  min-height: 100vh;
+  background: #222;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .navigation {
-    position: relative;
-    perspective: 1000px;
+  position: relative;
+  perspective: 1000px;
 }
 
 ul {
-    position: relative;
-    transform: skewY(-15deg);
+  position: relative;
+  transform: skewY(-15deg);
 }
 
 li {
-    position: relative;
-    list-style: none;
-    width: 200px;
-    padding: 15px;
-    background: #333;
-    z-index: var(--i);
-    transition: 0.5s;
-    transform-origin: top;
+  position: relative;
+  list-style: none;
+  width: 200px;
+  padding: 15px;
+  background: #333;
+  z-index: var(--i);
+  transition: 0.5s;
+  transform-origin: top;
 }
 
 li:hover {
-    background: #9535aa;
-    transform: translateX(-50px);
+  background: #9535aa;
+  transform: translateX(-50px);
 }
 
 li::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -40px;
-    width: 40px;
-    height: 100%;
-    background: #2e3133;
-    transform-origin: right;
-    transform: skewY(45deg);
-    transition: 0.5s;
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -40px;
+  width: 40px;
+  height: 100%;
+  background: #2e3133;
+  transform-origin: right;
+  transform: skewY(45deg);
+  transition: 0.5s;
 }
 
 li:hover::before {
-    background: #7b5190;
+  background: #7b5190;
 }
 
 li::after {
-    content: '';
-    position: absolute;
-    top: -40px;
-    left: 0;
-    width: 100%;
-    height: 40px;
-    background: #2e3133;
-    transform-origin: bottom;
-    transform: skewX(45deg);
-    transition: 0.5s;
+  content: "";
+  position: absolute;
+  top: -40px;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  background: #2e3133;
+  transform-origin: bottom;
+  transform: skewX(45deg);
+  transition: 0.5s;
 }
 
 li:hover::after {
-    background: #7b5190;
+  background: #7b5190;
 }
 
 li a {
-    text-decoration: none;
-    color: #999;
-    display: block;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    transition: 0.5s;
+  text-decoration: none;
+  color: #999;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: 0.5s;
 }
 
 li:hover a {
-    color: #fff;
+  color: #fff;
 }
 
 li:last-child::after {
-    box-shadow: -120px 120px 20px rgba(0, 0, 0, 0.25);
+  box-shadow: -120px 120px 20px rgba(0, 0, 0, 0.25);
 }
 
 .icon {
-    position: absolute;
-    left: -40px;
-    top: -15px;
-    width: 40px;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #999;
-    z-index: 1;
-    transform: skewY(45deg);
-    transition: 0.5s;
+  position: absolute;
+  left: -40px;
+  top: -15px;
+  width: 40px;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #999;
+  z-index: 1;
+  transform: skewY(45deg);
+  transition: 0.5s;
 }
 
 li:hover .icon {
-    color: #fff;
+  color: #fff;
 }

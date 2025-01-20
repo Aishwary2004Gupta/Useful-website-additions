@@ -1,45 +1,45 @@
 body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    background-color: #f0f0f0;
-    transition: background-color 0.3s, color 0.3s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  background-color: #f0f0f0;
+  transition: background-color 0.3s, color 0.3s;
 }
 .change {
-    cursor: pointer;
-    border: 2px solid #555;
-    border-radius: 50%;
-    width: 80px;
-    height: 80px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 2em;
-    transition: background-color 0.3s, color 0.3s, transform 0.3s, box-shadow 0.3s;
-    transform: rotate(-40deg); 
-    background: linear-gradient(145deg, #ffffff, #e6e6e6);
-    box-shadow: 5px 5px 10px #aaaaaa, -5px -5px 10px #ffffff;
+  cursor: pointer;
+  border: 2px solid #555;
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2em;
+  transition: background-color 0.3s, color 0.3s, transform 0.3s, box-shadow 0.3s;
+  transform: rotate(-40deg);
+  background: linear-gradient(145deg, #ffffff, #e6e6e6);
+  box-shadow: 5px 5px 10px #aaaaaa, -5px -5px 10px #ffffff;
 }
 .dark {
-    background-color: #222;
-    color: #e6e6e6;
+  background-color: #222;
+  color: #e6e6e6;
 }
 .dark .change {
-    background: linear-gradient(145deg, #333, #1a1a1a);
-    box-shadow: 5px 5px 10px #111, -5px -5px 10px #333;
+  background: linear-gradient(145deg, #333, #1a1a1a);
+  box-shadow: 5px 5px 10px #111, -5px -5px 10px #333;
 }
 .change:active {
-    box-shadow: inset 5px 5px 10px #aaaaaa, inset -5px -5px 10px #ffffff;
+  box-shadow: inset 5px 5px 10px #aaaaaa, inset -5px -5px 10px #ffffff;
 }
 .dark .change:active {
-    box-shadow: inset 5px 5px 10px #111, inset -5px -5px 10px #333;
+  box-shadow: inset 5px 5px 10px #111, inset -5px -5px 10px #333;
 }
 .change:hover {
-    transform: scale(1.1) rotate(-10deg); 
-    box-shadow: 8px 8px 16px #aaaaaa, -8px -8px 16px #ffffff; 
+  transform: scale(1.1) rotate(-10deg);
+  box-shadow: 8px 8px 16px #aaaaaa, -8px -8px 16px #ffffff;
 }
 .dark .change:hover {
-    box-shadow: 8px 8px 16px #111, -8px -8px 16px #333; 
+  box-shadow: 8px 8px 16px #111, -8px -8px 16px #333;
 }

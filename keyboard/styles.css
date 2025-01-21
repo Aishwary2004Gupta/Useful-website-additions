@@ -1,32 +1,32 @@
 body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    background-color: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  background-color: #f0f0f0;
 }
 
 .keyboard {
-    display: flex;
+  display: flex;
 }
 
 .key {
-    width: 60px;
-    height: 200px;
-    margin: 5px;
-    background-color: #fff;
-    border: 1px solid #ccc;
-    display: flex;
-    justify-content: center;
-    align-items: flex-end;
-    padding-bottom: 10px;
-    font-size: 20px;
-    cursor: pointer;
-    user-select: none;
-    transition: background-color 0.2s;
+  width: 60px;
+  height: 200px;
+  margin: 5px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding-bottom: 10px;
+  font-size: 20px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s;
 }
 
 .key:active {
-    background-color: #ddd;
+  background-color: #ddd;
 }

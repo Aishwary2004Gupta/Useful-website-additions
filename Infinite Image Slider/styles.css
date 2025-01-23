@@ -21,7 +21,7 @@ body {
 
 .slider {
   width: 100%;
-  height: var(--height); /* 400px */
+  height: var(--height); 
   position: relative;
   overflow: hidden;
   mask-image: linear-gradient(to right, transparent, #fff 10% 90%, transparent);

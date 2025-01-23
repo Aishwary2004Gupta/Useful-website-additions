@@ -13,7 +13,7 @@ body {
 }
 
 :root {
-  --items-count: 6;
+  --items-count: 7;
   --width: 370px;
   --height: 400px;
   --duration: 5s;

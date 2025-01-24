@@ -2,11 +2,12 @@ body {
   font-family: sans-serif;
   display: flex;
   justify-content: center;
-  justify-items: center;
+  align-items: center; 
+  height: 100vh; 
 }
 
 svg {
-  height: 140px;
+  height: 500px;
   width: 200px;
   justify-content: center;
 }

@@ -1,0 +1,341 @@
+:root {
+    --bg: #421717;
+  }
+  
+  html,
+  body {
+    height: 100%;
+  }
+  
+  body {
+    background: var(--bg);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  
+  div {
+    position: absolute;
+  }
+  
+  .hat-cir::after {
+    position: absolute;
+    content: "";
+    background: #ffb30c;
+    width: 80%;
+    height: 150%;
+    border-radius: 50%;
+    left: -15px;
+    top: -20px;
+  }
+  
+  .main-logo {
+    width: 138px;
+    height: 129px;
+    scale: 1.5;
+  }
+  
+  .bone {
+    height: 133%;
+    width: 18%;
+    transform: rotate(-48deg) translate(54px, 28px);
+    animation: firstBoneAnimation 0.5s linear forwards;
+  }
+  
+  .starts {
+    width: 100%;
+    height: 15px;
+  }
+  
+  .first-part {
+    width: 50%;
+    height: 100%;
+    background: #fff;
+    border-radius: 45%;
+    rotate: -24deg;
+    top: 0px;
+    left: 1.5px;
+  }
+  
+  .second-part {
+    width: 50%;
+    height: 100%;
+    rotate: 40deg;
+    top: 0;
+    right: 1.5px;
+    background: #fff;
+    border-radius: 45%;
+  }
+  
+  .starts.at-bottom {
+    bottom: 0;
+    transform: scale(-1);
+  }
+  
+  .long-bone {
+    background: #fff;
+    height: 90%;
+    width: 44%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+  
+  .second-bone {
+    transform: rotate(48deg) translate(22px, -56px);
+  
+    animation: secondBoneAnimation 0.5s linear forwards;
+  }
+  
+  .upper-block {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 105px;
+    height: 77px;
+    left: 50%;
+    transform: translate(-50%, 13px);
+    animation: upperBlockAnimation 0.5s linear forwards;
+  }
+  
+  .logo-hat {
+    top: 0;
+    width: 68px;
+    height: 25px;
+    overflow: hidden;
+    animation: hatTopFirst 0.4s 0.5s forwards ease-in-out;
+  }
+  
+  .inner-cir {
+    background: #fbbe03;
+    width: 100%;
+    height: 150%;
+    border-radius: 200px 200px 0 0;
+    overflow: hidden;
+  }
+  
+  .inner-square {
+    bottom: 12px;
+    width: 100%;
+    height: 8px;
+    background: #e60011;
+  }
+  
+  .hat-bottom-part {
+    top: 25px;
+    width: 100%;
+    height: 7px;
+    background: #fbbe03;
+    animation: hatTopSecond 0.4s 0.5s forwards ease-in-out;
+  }
+  
+  .hat-bottom-part::after,
+  .hat-bottom-part::before {
+    position: absolute;
+    content: "";
+    width: 15px;
+    height: 120%;
+    background: var(--bg);
+    bottom: 1%;
+  }
+  
+  .hat-bottom-part::after {
+    rotate: -49deg;
+    left: -8px;
+  }
+  
+  .hat-bottom-part::before {
+    rotate: 49deg;
+    right: -8px;
+  }
+  
+  .logo-face {
+    width: 65.5%;
+    height: 51%;
+    background: #fff;
+    top: 32px;
+    transform: translate(0.5px);
+    border-radius: 0 0 100px 100px;
+    animation: upperPartScale 0.5s 0.5s ease forwards;
+  }
+  
+  .logo-eye {
+    background: #201815;
+    width: 22px;
+    height: 17px;
+    border-radius: 50%;
+    transform: translate(8px, 6px);
+    animation: eyeAnimation 0.5s linear forwards,
+      eyeTransformAnimationLeft 0.2s 0.5s linear forwards;
+  }
+  
+  .logo-eye::after {
+    position: absolute;
+    content: "";
+    background: #fff;
+    width: 110%;
+    height: 50%;
+    rotate: 40deg;
+    top: 1px;
+    left: 3px;
+    opacity: 0;
+    animation: opacityAnimation.5s 0.5s linear forwards;
+  }
+  
+  .right-logo-eye {
+    transform: translate(39px, 6px);
+    animation: eyeAnimation 0.5s linear forwards,
+      eyeTransformAnimationRight 0.2s 0.5s linear forwards;
+  }
+  
+  .right-logo-eye::after {
+    rotate: -40deg;
+    left: -5px;
+    top: -1px;
+  }
+  
+  .logo-nose {
+    background: #201815;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    left: 50%;
+    transform: translate(-50%);
+    bottom: 6px;
+  }
+  
+  .upper-mouth {
+    width: 37px;
+    height: 11px;
+    bottom: 0px;
+    overflow: hidden;
+    animation: upperMouthAnimation 0.5s 0.5s ease forwards;
+  }
+  
+  .extra-upper {
+    border: 6.5px solid #a39393;
+    width: 99%;
+    height: 120%;
+    border-radius: 50%;
+    left: 50%;
+    transform: translate(-50%);
+    top: -15px;
+  }
+  
+  .lower-block {
+    width: 39px;
+    height: 24px;
+    bottom: 17px;
+    left: 50%;
+    transform: translate(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+    animation: lowerPartScale 0.5s 0.5s ease forwards;
+  }
+  
+  .lower-mouth {
+    bottom: 0;
+    width: 98%;
+    height: 68%;
+    background: #fff;
+    border-radius: 0 0 100px 100px;
+  }
+  
+  .lower-teeth {
+    top: 0;
+    width: 100%;
+    height: 48%;
+    overflow: hidden;
+  }
+  
+  .teeth-border {
+    width: 105%;
+    height: 120%;
+    border: 6.5px solid #a39393;
+    border-radius: 50%;
+    left: 50%;
+    transform: translate(-50%);
+    top: -15px;
+  }
+  
+  @keyframes firstBoneAnimation {
+    to {
+      transform: rotate(-28deg) translate(64px, 8px);
+    }
+  }
+  
+  @keyframes secondBoneAnimation {
+    to {
+      transform: rotate(28deg) translate(40px, -48px);
+    }
+  }
+  
+  @keyframes upperBlockAnimation {
+    to {
+      transform: translate(-50%, 2px);
+    }
+  }
+  
+  @keyframes eyeAnimation {
+    to {
+      height: 22px;
+    }
+  }
+  
+  @keyframes upperPartScale {
+    to {
+      scale: 1.4;
+      border-radius: 70px 70px 100px 100px;
+      height: 81%;
+    }
+  }
+  
+  @keyframes lowerPartScale {
+    to {
+      bottom: -5px;
+      scale: 0.7;
+      transform: translate(-28px);
+    }
+  }
+  
+  @keyframes upperMouthAnimation {
+    to {
+      bottom: -35px;
+    }
+  }
+  
+  @keyframes eyeTransformAnimationLeft {
+    to {
+      transform: translate(8px, 20px);
+    }
+  }
+  
+  @keyframes eyeTransformAnimationRight {
+    to {
+      transform: translate(39px, 20px);
+    }
+  }
+  
+  @keyframes hatTopFirst {
+    to {
+      transform: translateY(-6px);
+      scale: 0.8;
+    }
+  }
+  
+  @keyframes hatTopSecond {
+    to {
+      transform: translateY(-14px);
+      scale: 0.8;
+    }
+  }
+  @keyframes opacityAnimation {
+    20%,
+    100% {
+      opacity: 1;
+    }
+  }

@@ -1,40 +1,39 @@
 body {
-    font-family: sans-serif;
-    display: flex;
-    justify-content: center;
-    justify-items: center;
+  font-family: sans-serif;
+  display: flex;
+  justify-content: center;
+  justify-items: center;
+}
+
+svg {
+  height: 140px;
+  width: 200px;
+  justify-content: center;
+}
+
+svg path {
+  stroke-dasharray: 210;
+  stroke-dashoffset: 210;
+  animation: dash 10s forwards;
+}
+
+svg g {
+  animation: fill-in 2s 10s forwards;
+  fill-opacity: 0;
+}
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: 0;
   }
-  
-  svg {
-    height: 140px;
-    width: 200px;
-    justify-content: center;
+}
+
+@keyframes fill-in {
+  to {
+    fill-opacity: 1;
   }
-  
-  svg path {
-    stroke-dasharray: 210;
-    stroke-dashoffset: 210;
-    animation: dash 10s forwards;
-  }
-  
-  svg g {
-    animation: fill-in 2s 10s forwards;
-    fill-opacity: 0;
-  }
-  
-  @keyframes dash {
-    to {
-      stroke-dashoffset: 0;
-    }
-  }
-  
-  @keyframes fill-in {
-    to {
-      fill-opacity: 1;
-    }
-  }
-  
-  svg circle {
-    display: none;
-  }
-  
+}
+
+svg circle {
+  display: none;
+}

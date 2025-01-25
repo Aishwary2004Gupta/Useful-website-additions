@@ -21,6 +21,16 @@ body {
     animation: bounceAnimation 1s infinite;
 }
 
+.shadow {
+    position: absolute;
+    width: 200px;
+    height: 15px;
+    background: rgb(61, 58, 52);
+    border-radius: 50%;
+    animation: shadowAnimation 1s infinite;
+    transform: translateY(95px)
+}
+
 @keyframes bounceAnimation {
     50% {
         /* transform: translateY(-100px); */

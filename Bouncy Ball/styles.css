@@ -17,7 +17,7 @@ body {
     height: 200px;
     background: #f7f7f7;
     border-radius: 50%;
-    /* z-index: 2; */
+    z-index: 3;
     animation: bounceAnimation 1s infinite;
 }
 
@@ -25,7 +25,7 @@ body {
     position: absolute;
     width: 200px;
     height: 15px;
-    background: rgb(61, 58, 52);
+    background: rgb(61, 58, 58);
     border-radius: 50%;
     animation: shadowAnimation 1s infinite;
     transform: translateY(95px)
@@ -34,15 +34,27 @@ body {
 @keyframes bounceAnimation {
     50% {
         /* transform: translateY(-100px); */
-        transform: translateY(-240px);
+        transform: translateY(-250px);
         animation-timing-function: ease-in;
     }
     
     0%, 100% {
-        transform: scaleX(1.2) scaleY(.7);
+        transform: scaleX(1.2) scaleY(0.7);
     }
 
     97% {
         transform: scaleX(1)
+    }
+}
+
+@keyframes shadowAnimation {
+    0%, 100% {
+        transform: scaleX(0.7) translateY(95px);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scaleX(1) translateY(95px);
+        opacity: 0.5;
     }
 }

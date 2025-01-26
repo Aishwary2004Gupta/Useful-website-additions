@@ -31,6 +31,8 @@ body {
   transform: translateY(95px);
 }
 
+
+
 @keyframes bounceAnimation {
   50% {
     /* transform: translateY(-100px); */

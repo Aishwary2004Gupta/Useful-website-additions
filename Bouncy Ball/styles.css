@@ -31,7 +31,17 @@ body {
   transform: translateY(95px);
 }
 
-
+.particles::before,
+.particles::after {
+  content: '';
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background: #fff;
+  border-radius: 50%;
+  opacity: 0;
+  animation: particleAnimation 2s infinite;
+}
 
 @keyframes bounceAnimation {
   50% {

@@ -43,6 +43,16 @@ body {
   animation: particleAnimation 2s infinite;
 }
 
+.particles::before {
+    left: -20px;
+    animation-delay: 1s;
+  }
+  
+  .particles::after {
+    right: -20px;
+    animation-delay: 1.5s;
+  }
+
 @keyframes bounceAnimation {
   50% {
     /* transform: translateY(-100px); */

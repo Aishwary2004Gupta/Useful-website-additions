@@ -31,28 +31,6 @@ body {
   transform: translateY(95px);
 }
 
-.particles::before,
-.particles::after {
-  content: '';
-  position: absolute;
-  width: 5px;
-  height: 5px;
-  background: #fff;
-  border-radius: 50%;
-  opacity: 0;
-  animation: particleAnimation 2s infinite;
-}
-
-.particles::before {
-    left: -20px;
-    animation-delay: 1s;
-  }
-  
-  .particles::after {
-    right: -20px;
-    animation-delay: 1s;
-  }
-
 @keyframes bounceAnimation {
   50% {
     /* transform: translateY(-100px); */
@@ -82,18 +60,3 @@ body {
     opacity: 0.5;
   }
 }
-
-@keyframes particleAnimation {
-    0% {
-      transform: translateY(0);
-      opacity: 1;
-    }
-    50% {
-      transform: translateY(-50px) translateX(20px);
-      opacity: 0.5;
-    }
-    100% {
-      transform: translateY(-100px) translateX(40px);
-      opacity: 0;
-    }
-  }

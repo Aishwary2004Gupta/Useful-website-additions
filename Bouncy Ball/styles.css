@@ -82,3 +82,18 @@ body {
     opacity: 0.5;
   }
 }
+
+@keyframes particleAnimation {
+    0% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    50% {
+      transform: translateY(-50px) translateX(20px);
+      opacity: 0.5;
+    }
+    100% {
+      transform: translateY(-100px) translateX(40px);
+      opacity: 0;
+    }
+  }

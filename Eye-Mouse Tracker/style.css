@@ -52,8 +52,8 @@ body {
 }
 
 .btn-pupil {
-    background: #323131;
-    border: 0.8rem solid rgb(157, 241, 67);
+    background: #320f0f;
+    border: 0.8rem solid rgb(27, 186, 115);
     border-radius: 10rem;
     padding: 0.7rem;
     transition: all 200ms ease-out;

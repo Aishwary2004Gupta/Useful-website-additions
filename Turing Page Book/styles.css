@@ -45,6 +45,23 @@ $images:
     width: 420px;
     height: 420px;
     position: relative;
-    perspective: 1000px;
     margin: 0 auto;
+    border: #fff solid 2px;
 }
+
+.title {
+    position: absolute;
+    top: 45px; left: 0;
+    width: 100%;
+    font-size: 2em;
+    font-weight: normal;
+    line-height: 1;
+}
+
+.credit {
+    position: absolute;
+    top: 100%; left:0;
+    font-size: 0.9em;
+    text-align: left;
+}
+

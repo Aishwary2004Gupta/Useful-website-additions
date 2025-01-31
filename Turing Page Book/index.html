@@ -29,11 +29,11 @@
             --speed: 5s;
             --borderColor: #555;
             --images: url('https://picsum.photos/428/300?random=1'),
-                     url('https://picsum.photos/428/300?random=2'),
-                     url('https://picsum.photos/428/300?random=3'),
-                     url('https://picsum.photos/428/300?random=4'),
-                     url('https://picsum.photos/428/300?random=5'),
-                     url('https://picsum.photos/428/300?random=6');
+                url('https://picsum.photos/428/300?random=2'),
+                url('https://picsum.photos/428/300?random=3'),
+                url('https://picsum.photos/428/300?random=4'),
+                url('https://picsum.photos/428/300?random=5'),
+                url('https://picsum.photos/428/300?random=6');
         }
 
         .imgloader {
@@ -44,13 +44,33 @@
         }
 
         @keyframes preload {
-            0% { background-image: var(--images, 0); }
-            10% { background-image: var(--images, 1); }
-            20% { background-image: var(--images, 2); }
-            30% { background-image: var(--images, 3); }
-            40% { background-image: var(--images, 4); }
-            50% { background-image: var(--images, 5); }
-            100% { display: none; }
+            0% {
+                background-image: var(--images, 0);
+            }
+
+            10% {
+                background-image: var(--images, 1);
+            }
+
+            20% {
+                background-image: var(--images, 2);
+            }
+
+            30% {
+                background-image: var(--images, 3);
+            }
+
+            40% {
+                background-image: var(--images, 4);
+            }
+
+            50% {
+                background-image: var(--images, 5);
+            }
+
+            100% {
+                display: none;
+            }
         }
 
         .container {
@@ -140,12 +160,29 @@
         }
 
         @keyframes nextPage {
-            0% { background-image: var(--images, 0); }
-            20% { background-image: var(--images, 1); }
-            40% { background-image: var(--images, 2); }
-            60% { background-image: var(--images, 3); }
-            80% { background-image: var(--images, 4); }
-            100% { background-image: var(--images, 5); }
+            0% {
+                background-image: var(--images, 0);
+            }
+
+            20% {
+                background-image: var(--images, 1);
+            }
+
+            40% {
+                background-image: var(--images, 2);
+            }
+
+            60% {
+                background-image: var(--images, 3);
+            }
+
+            80% {
+                background-image: var(--images, 4);
+            }
+
+            100% {
+                background-image: var(--images, 5);
+            }
         }
 
         .gap {

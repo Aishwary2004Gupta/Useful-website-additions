@@ -13,3 +13,10 @@ body{
     text-align: center;
     padding: 4em 0;
 }
+
+$bookAngle: 60deg;
+$speed: 5s;
+$boarderColor: #555;
+
+$images:
+    url()

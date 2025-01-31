@@ -28,49 +28,6 @@
             --bookAngle: 60deg;
             --speed: 5s;
             --borderColor: #555;
-            --images: url('https://picsum.photos/428/300?random=1'),
-                url('https://picsum.photos/428/300?random=2'),
-                url('https://picsum.photos/428/300?random=3'),
-                url('https://picsum.photos/428/300?random=4'),
-                url('https://picsum.photos/428/300?random=5'),
-                url('https://picsum.photos/428/300?random=6');
-        }
-
-        .imgloader {
-            position: fixed;
-            animation: preload 1s steps(1);
-            width: 1px;
-            height: 1px;
-        }
-
-        @keyframes preload {
-            0% {
-                background-image: var(--images, 0);
-            }
-
-            10% {
-                background-image: var(--images, 1);
-            }
-
-            20% {
-                background-image: var(--images, 2);
-            }
-
-            30% {
-                background-image: var(--images, 3);
-            }
-
-            40% {
-                background-image: var(--images, 4);
-            }
-
-            50% {
-                background-image: var(--images, 5);
-            }
-
-            100% {
-                display: none;
-            }
         }
 
         .container {
@@ -79,6 +36,7 @@
             border: #fff solid 2px;
             border-radius: 4px;
             height: 420px;
+            margin: 0 auto;
         }
 
         .title {
@@ -104,84 +62,79 @@
             perspective: 630px;
             perspective-origin: center 50px;
             transform: scale(1.2);
+            width: 420px;
+            height: 300px;
+            margin: 0 auto;
         }
 
         .page {
             position: absolute;
             top: 0;
             right: 50%;
+            width: 210px;
+            height: 300px;
             transform-origin: 100% 100%;
             border: solid var(--borderColor) 2px;
-            background-size: 420px 300px;
+            background-size: cover;
             background-position: center;
             transform-style: preserve-3d;
         }
 
         .page:nth-child(1) {
             transform: rotateX(var(--bookAngle)) rotateY(3deg);
+            background-image: url('https://picsum.photos/428/300?random=1');
         }
 
         .page:nth-child(2) {
             transform: rotateX(var(--bookAngle)) rotateY(4.5deg);
+            background-image: url('https://picsum.photos/428/300?random=2');
         }
 
         .page:nth-child(3) {
             transform: rotateX(var(--bookAngle)) rotateY(6deg);
             animation: nextPage calc(var(--speed) * 5) infinite calc(var(--speed) * -4.8) steps(1);
-            background-size: 420px 300px;
-            background-position: -2px -2px;
+            background-image: url('https://picsum.photos/428/300?random=3');
         }
 
         .page:nth-child(4) {
             transform: rotateX(var(--bookAngle)) rotateY(177deg);
+            background-image: url('https://picsum.photos/428/300?random=4');
         }
 
         .page:nth-child(5) {
             transform: rotateX(var(--bookAngle)) rotateY(175.5deg);
+            background-image: url('https://picsum.photos/428/300?random=5');
         }
 
         .page:nth-child(6) {
             transform: rotateX(var(--bookAngle)) rotateY(174deg);
             overflow: hidden;
-        }
-
-        .page:nth-child(6)::after {
-            content: '';
-            width: 210px;
-            height: 300px;
-            position: absolute;
-            top: 0;
-            right: 0;
-            transform-origin: center;
-            transform: rotateY(180deg);
-            animation: nextPage calc(var(--speed) * 5) calc(var(--speed) * -4) infinite steps(1);
-            background-size: 420px 300px;
-            background-position: 100% -2px;
+            background-image: url('https://picsum.photos/428/300?random=6');
         }
 
         @keyframes nextPage {
             0% {
-                background-image: var(--images, 0);
+                background-image: url('https://picsum.photos/428/300?random=1');
             }
 
             20% {
-                background-image: var(--images, 1);
+                background-image: url('https://picsum.photos/428/300?random=2');
             }
 
             40% {
-                background-image: var(--images, 2);
+                background-image: url('https://picsum.photos/428/300?random=3');
             }
 
             60% {
-                background-image: var(--images, 3);
+                background-image: url('https://picsum.photos/428/300?random=4');
             }
 
             80% {
-                background-image: var(--images, 4);
+                background-image: url('https://picsum.photos/428/300?random=5');
             }
 
             100% {
-                background-image: var(--images, 5);
+                background-image: url('https://picsum.photos/428/300?random=6');
             }
         }
 
@@ -211,7 +164,6 @@
 </head>
 
 <body>
-    <div class="imgloader"></div>
     <div class="container">
         <h1 class="title">Turning pages<br>with CSS</h1>
         <div class="credit">* Images loaded randomly from Picsum.photos</div>

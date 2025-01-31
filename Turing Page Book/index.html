@@ -5,14 +5,13 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE-edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="stylesheet">
     <title>Turning Pages Book</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap');
 
         * {
             padding: 0;
-            margin: 0 auto;
+            margin: 0;
             box-sizing: border-box;
         }
 
@@ -24,141 +23,101 @@
             padding: 4em 0;
         }
 
-        :root {
-            --bookAngle: 60deg;
-            --speed: 5s;
-            --borderColor: #555;
-        }
-
         .container {
             position: relative;
             width: 420px;
-            border: #fff solid 2px;
-            border-radius: 4px;
-            height: 420px;
             margin: 0 auto;
         }
 
         .title {
-            position: absolute;
-            top: 45px;
-            left: 0;
-            width: 100%;
             font-size: 2em;
             font-weight: normal;
             line-height: 1;
+            margin-bottom: 20px;
         }
 
         .credit {
-            position: absolute;
-            top: 100%;
-            left: 0;
             font-size: 0.9em;
             text-align: left;
+            margin-bottom: 20px;
         }
 
         .book {
             position: relative;
-            perspective: 630px;
-            perspective-origin: center 50px;
-            transform: scale(1.2);
-            width: 420px;
+            width: 210px;
             height: 300px;
             margin: 0 auto;
+            perspective: 1000px;
         }
 
         .page {
             position: absolute;
-            top: 0;
-            right: 50%;
-            width: 210px;
-            height: 300px;
-            transform-origin: 100% 100%;
-            border: solid var(--borderColor) 2px;
-            background-size: cover;
-            background-position: center;
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+            border: 1px solid #555;
+            transform-origin: left;
             transform-style: preserve-3d;
+            transition: transform 1s ease-in-out;
+        }
+
+        .page img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .page:nth-child(1) {
-            transform: rotateX(var(--bookAngle)) rotateY(3deg);
-            background-image: url('https://picsum.photos/428/300?random=1');
+            z-index: 6;
         }
 
         .page:nth-child(2) {
-            transform: rotateX(var(--bookAngle)) rotateY(4.5deg);
-            background-image: url('https://picsum.photos/428/300?random=2');
+            z-index: 5;
         }
 
         .page:nth-child(3) {
-            transform: rotateX(var(--bookAngle)) rotateY(6deg);
-            animation: nextPage calc(var(--speed) * 5) infinite calc(var(--speed) * -4.8) steps(1);
-            background-image: url('https://picsum.photos/428/300?random=3');
+            z-index: 4;
         }
 
         .page:nth-child(4) {
-            transform: rotateX(var(--bookAngle)) rotateY(177deg);
-            background-image: url('https://picsum.photos/428/300?random=4');
+            z-index: 3;
         }
 
         .page:nth-child(5) {
-            transform: rotateX(var(--bookAngle)) rotateY(175.5deg);
-            background-image: url('https://picsum.photos/428/300?random=5');
+            z-index: 2;
         }
 
         .page:nth-child(6) {
-            transform: rotateX(var(--bookAngle)) rotateY(174deg);
-            overflow: hidden;
-            background-image: url('https://picsum.photos/428/300?random=6');
+            z-index: 1;
         }
 
-        @keyframes nextPage {
-            0% {
-                background-image: url('https://picsum.photos/428/300?random=1');
-            }
-
-            20% {
-                background-image: url('https://picsum.photos/428/300?random=2');
-            }
-
-            40% {
-                background-image: url('https://picsum.photos/428/300?random=3');
-            }
-
-            60% {
-                background-image: url('https://picsum.photos/428/300?random=4');
-            }
-
-            80% {
-                background-image: url('https://picsum.photos/428/300?random=5');
-            }
-
-            100% {
-                background-image: url('https://picsum.photos/428/300?random=6');
-            }
+        .book:hover .page:nth-child(1) {
+            transform: rotateY(-180deg);
         }
 
-        .gap {
-            width: 10px;
-            height: 300px;
-            background: none;
-            transform: rotateX(var(--bookAngle));
-            transform-origin: bottom;
-            position: absolute;
-            top: 0;
-            left: calc(50% - 5px);
+        .book:hover .page:nth-child(2) {
+            transform: rotateY(-160deg);
+            transition-delay: 0.2s;
         }
 
-        .gap::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translate(-50%, 50%);
-            background-color: var(--borderColor);
-            width: 10px;
-            height: 5px;
-            border-radius: 50%;
+        .book:hover .page:nth-child(3) {
+            transform: rotateY(-140deg);
+            transition-delay: 0.4s;
+        }
+
+        .book:hover .page:nth-child(4) {
+            transform: rotateY(-120deg);
+            transition-delay: 0.6s;
+        }
+
+        .book:hover .page:nth-child(5) {
+            transform: rotateY(-100deg);
+            transition-delay: 0.8s;
+        }
+
+        .book:hover .page:nth-child(6) {
+            transform: rotateY(-80deg);
+            transition-delay: 1s;
         }
     </style>
 </head>
@@ -168,12 +127,24 @@
         <h1 class="title">Turning pages<br>with CSS</h1>
         <div class="credit">* Images loaded randomly from Picsum.photos</div>
         <div class="book">
-            <div class="page"></div>
-            <div class="page"></div>
-            <div class="page"></div>
-            <div class="page"></div>
-            <div class="page"></div>
-            <div class="page"></div>
+            <div class="page">
+                <img src="https://picsum.photos/210/300?random=1" alt="Page 1">
+            </div>
+            <div class="page">
+                <img src="https://picsum.photos/210/300?random=2" alt="Page 2">
+            </div>
+            <div class="page">
+                <img src="https://picsum.photos/210/300?random=3" alt="Page 3">
+            </div>
+            <div class="page">
+                <img src="https://picsum.photos/210/300?random=4" alt="Page 4">
+            </div>
+            <div class="page">
+                <img src="https://picsum.photos/210/300?random=5" alt="Page 5">
+            </div>
+            <div class="page">
+                <img src="https://picsum.photos/210/300?random=6" alt="Page 6">
+            </div>
         </div>
     </div>
 </body>

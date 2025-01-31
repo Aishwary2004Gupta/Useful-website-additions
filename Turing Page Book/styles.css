@@ -2,5 +2,14 @@
 
 *{
     padding: 0;
-    
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+body{
+    font-family: 'Indie Flower', cursive;
+    background-color: #eee;
+    color: #555;
+    text-align: center;
+    padding: 4em 0;
 }

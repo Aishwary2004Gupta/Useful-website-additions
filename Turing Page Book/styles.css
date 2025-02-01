@@ -1,126 +1,60 @@
-@import url('https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap');
-
-* {
-    padding: 0;
-    margin: 0;
-    box-sizing: border-box;
-}
-
 body {
-    font-family: 'Indie Flower', cursive;
-    background-color: #eee;
-    color: #555;
-    text-align: center;
-    padding: 4em 0;
-}
-
-.container {
-    position: relative;
-    width: 420px;
-    border: #fff solid 2px;
-    border-radius: 4px;
-    height: 420px;
-    margin: 0 auto;
-}
-
-.title {
-    position: absolute;
-    top: 45px;
-    left: 0;
-    width: 100%;
-    font-size: 2em;
-    font-weight: normal;
-    line-height: 1;
-}
-
-.credit {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    font-size: 0.9em;
-    text-align: left;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f0f0;
+    margin: 0;
+    perspective: 1000px;
 }
 
 .book {
     position: relative;
-    perspective: 630px;
-    perspective-origin: center 50px;
-    transform: scale(1.2);
-    filter: drop-shadow(0px 10px 5px rgba(0, 0, 0, 0.25));
-}
-
-.page {
-    width: 210px;
+    width: 200px;
     height: 300px;
-    background-color: #bbb;
-    position: absolute;
-    top: 0;
-    right: 50%;
-    transform-origin: 100% 100%;
-    border: solid #555 2px;
-    background-size: 420px 300px;
-    background-position: center;
     transform-style: preserve-3d;
 }
 
-.page:nth-child(1) { transform: rotateX(60deg) rotateY(3deg); }
-.page:nth-child(2) { transform: rotateX(60deg) rotateY(4.5deg); }
-.page:nth-child(3) { 
-    transform: rotateX(60deg) rotateY(6deg);
-    animation: nextPage 5s infinite -24s steps(1);
-    background-size: 420px 300px;
-    background-position: -2px -2px;
-}
-
-.page:nth-child(4) { transform: rotateX(60deg) rotateY(177deg); }
-.page:nth-child(5) { transform: rotateX(60deg) rotateY(175.5deg); }
-.page:nth-child(6) {
-    transform: rotateX(60deg) rotateY(174deg);
-    overflow: hidden;
-}
-
-.page:nth-child(6)::after {
-    content: '';
-    width: 210px;
-    height: 300px;
+.page {
     position: absolute;
-    top: 0;
-    right: 0;
-    transform-origin: center;
-    transform: rotateY(180deg);
-    animation: nextPage 25s -20s infinite steps(1);
-    background-size: 420px 300px;
-    background-position: 100% -2px;
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    transform-origin: left;
+    transition: transform 1s;
 }
 
-@keyframes nextPage {
-    0% { background-image: url('https://picsum.photos/420/300?random=1'); }
-    20% { background-image: url('https://picsum.photos/420/300?random=2'); }
-    40% { background-image: url('https://picsum.photos/420/300?random=3'); }
-    60% { background-image: url('https://picsum.photos/420/300?random=4'); }
-    80% { background-image: url('https://picsum.photos/420/300?random=5'); }
-    100% { background-image: url('https://picsum.photos/420/300?random=1'); }
+.page1 {
+    transform: rotateY(0deg);
 }
 
-.gap {
-    width: 10px;
-    height: 300px;
-    background: none;
-    transform: rotateX(60deg);
-    transform-origin: bottom;
-    position: absolute;
-    top: 0;
-    left: calc(50% - 5px);
+.page2 {
+    transform: rotateY(0deg);
+    z-index: 1;
 }
 
-.gap::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translate(-50%, 50%);
-    background-color: #555;
-    width: 10px;
-    height: 5px;
-    border-radius: 50%;
+.page3 {
+    transform: rotateY(0deg);
+    z-index: 2;
+}
+
+.page4 {
+    transform: rotateY(0deg);
+    z-index: 3;
+}
+
+.book:hover .page2 {
+    transform: rotateY(-180deg);
+}
+
+.book:hover .page3 {
+    transform: rotateY(-180deg);
+    transition-delay: 0.5s;
+}
+
+.book:hover .page4 {
+    transform: rotateY(-180deg);
+    transition-delay: 1s;
 }

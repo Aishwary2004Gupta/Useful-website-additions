@@ -79,5 +79,7 @@ $images:
     background-color: #bbb;
     position: absolute;
     top: 0px; right: 50;
-    
+    transform-origin: 100% 100%;
+    border: solid $boarderColor 2px;
+    background-
 }

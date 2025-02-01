@@ -64,7 +64,7 @@ body {
 .container {
   position: relative;
   width: 420px;
-  border: #fff solid 2px;
+  /* border: #fff solid 2px; */
   border-radius: 4px;
   height: 420px;
 }

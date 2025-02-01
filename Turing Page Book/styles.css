@@ -7,8 +7,8 @@
 
 body {
   font-family: "Indie Flower", cursive;
-  background: linear-gradient(135deg, #80adf6 0%, #080808 100%);
-  color: #ffffff;
+  background: linear-gradient(400deg, #dad6d9 0%, #080808 200%);
+  color: #080101;
   text-align: center;
   padding: 4em 0;
 }
@@ -64,7 +64,7 @@ body {
 .container {
   position: relative;
   width: 420px;
-  /* border: #fff solid 2px; */
+  border: #ec1c2a47 solid 4px;
   border-radius: 4px;
   height: 420px;
 }

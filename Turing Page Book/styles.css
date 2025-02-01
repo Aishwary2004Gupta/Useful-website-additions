@@ -81,5 +81,11 @@ $images:
     top: 0px; right: 50;
     transform-origin: 100% 100%;
     border: solid $boarderColor 2px;
-    background-
+    background-size: 420px 300px;
+    background-position: center;
+    transform-style: preserve-3d;
+
+    &:nth-child(1) {
+        transform: rotateX(0deg);
+    }
 }

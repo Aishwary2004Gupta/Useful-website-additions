@@ -24,25 +24,31 @@ body {
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
     transform-origin: left;
     transition: transform 1s;
+    background-size: cover;
+    background-position: center;
 }
 
 .page1 {
     transform: rotateY(0deg);
+    background-image: url('https://picsum.photos/200/300?random=1');
 }
 
 .page2 {
     transform: rotateY(0deg);
     z-index: 1;
+    background-image: url('https://picsum.photos/200/300?random=2');
 }
 
 .page3 {
     transform: rotateY(0deg);
     z-index: 2;
+    background-image: url('https://picsum.photos/200/300?random=3');
 }
 
 .page4 {
     transform: rotateY(0deg);
     z-index: 3;
+    background-image: url('https://picsum.photos/200/300?random=4');
 }
 
 .book:hover .page2 {

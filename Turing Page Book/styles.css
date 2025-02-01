@@ -1,12 +1,12 @@
-@import url("https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap');
 
-*{
+* {
     padding: 0;
     margin: 0 auto;
     box-sizing: border-box;
 }
 
-body{
+body {
     font-family: 'Indie Flower', cursive;
     background-color: #eee;
     color: #555;
@@ -16,42 +16,20 @@ body{
 
 $bookAngle: 60deg;
 $speed: 5s;
-$boarderColor: #555;
+$borderColor: #555;
 
-$images:
-    url('https://picsum.photos/420/300?random=1'),
-    url('https://picsum.photos/420/300?random=1'),
-    url('https://picsum.photos/420/300?random=1'),
-    url('https://picsum.photos/420/300?random=1'),
-    url('https://picsum.photos/420/300?random=1'),
-    url('https://picsum.photos/420/300?random=1'),
-    url('https://picsum.photos/420/300?random=1'),
-
-.imageLoader {
-    display: fixed;
-    animation: preload is steps(1);
-    width: 1px;
-    height: 1px;
-
-    @keyframes preload {
-        @for $i from 0 through 4 {
-            #{$i * 10} % {background-image: nth($images, ($i + 1)); }
-        }
-        100% {display: none;}
-    }
-}
-
-.container{
-    width: 420px;
-    height: 420px;
+.container {
     position: relative;
-    margin: 0 auto;
+    width: 420px;
     border: #fff solid 2px;
+    border-radius: 4px;
+    height: 420px;
 }
 
 .title {
     position: absolute;
-    top: 45px; left: 0;
+    top: 45px;
+    left: 0;
     width: 100%;
     font-size: 2em;
     font-weight: normal;
@@ -60,7 +38,8 @@ $images:
 
 .credit {
     position: absolute;
-    top: 100%; left:0;
+    top: 100%;
+    left: 0;
     font-size: 0.9em;
     text-align: left;
 }
@@ -70,7 +49,7 @@ $images:
     perspective: 630px;
     perspective-origin: center 50px;
     transform: scale(1.2);
-    filter: drop-shadow(0px 10px 5px rgba(0,0,0,0.25));
+    filter: drop-shadow(0px 10px 5px rgba(0, 0, 0, 0.25));
 }
 
 .page {
@@ -78,14 +57,70 @@ $images:
     height: 300px;
     background-color: #bbb;
     position: absolute;
-    top: 0px; right: 50;
+    top: 0px;
+    right: 50%;
     transform-origin: 100% 100%;
-    border: solid $boarderColor 2px;
+    border: solid $borderColor 2px;
     background-size: 420px 300px;
     background-position: center;
     transform-style: preserve-3d;
+}
 
-    &:nth-child(1) {
-        transform: rotateX(0deg);
+.page:nth-child(1) { transform: rotateX($bookAngle) rotateY(3deg); }
+.page:nth-child(2) { transform: rotateX($bookAngle) rotateY(4.5deg); }
+.page:nth-child(3) { 
+    transform: rotateX($bookAngle) rotateY(6deg);
+    animation: nextPage $speed infinite $speed*-4.8 steps(1);
+    background-size: 420px 300px;
+    background-position: -2px -2px;
+}
+
+.page:nth-child(4) { transform: rotateX($bookAngle) rotateY(177deg); }
+.page:nth-child(5) { transform: rotateX($bookAngle) rotateY(175.5deg); }
+.page:nth-child(6) {
+    transform: rotateX($bookAngle) rotateY(174deg);
+    overflow: hidden;
+}
+
+.page:nth-child(6)::after {
+    content: '';
+    width: 210px;
+    height: 300px;
+    position: absolute;
+    top: 0px;
+    right: 0%;
+    transform-origin: center;
+    transform: rotateY(180deg);
+    animation: nextPage $speed*5 $speed*-4 infinite steps(1);
+    background-size: 420px 300px;
+    background-position: 100%-2px;
+}
+
+@keyframes nextPage {
+    @for $i from 0 through 4 {
+        #{$i * 20}% { background-image: nth($images, ($i + 1)); }
     }
+}
+
+.gap {
+    width: 10px;
+    height: 300px;
+    background: none;
+    transform: rotateX($bookAngle);
+    transform-origin: bottom;
+    position: absolute;
+    top: 0px;
+    left: calc(50% - 5px);
+}
+
+.gap::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translate(-50%, 50%);
+    background-color: $borderColor;
+    width: 10px;
+    height: 5px;
+    border-radius: 50%;
 }

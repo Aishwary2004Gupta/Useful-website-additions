@@ -7,8 +7,8 @@
 
 body {
   font-family: "Indie Flower", cursive;
-  background: linear-gradient(135deg, #1a6ef4 0%, #080808 100%);
-  color: #fff;
+  background: linear-gradient(135deg, #80adf6 0%, #080808 100%);
+  color: #ffffff;
   text-align: center;
   padding: 4em 0;
 }
@@ -16,7 +16,7 @@ body {
 .imgLoader {
   position: fixed;
   -webkit-animation: preLoad 1s steps(1);
-          animation: preLoad 1s steps(1);
+        animation: preLoad 1s steps(1);
   width: 1px;
   height: 1px;
 }

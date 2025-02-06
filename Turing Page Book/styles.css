@@ -16,7 +16,7 @@ body {
 .imgLoader {
   position: fixed;
   -webkit-animation: preLoad 1s steps(1);
-        animation: preLoad 1s steps(1);
+  animation: preLoad 1s steps(1);
   width: 1px;
   height: 1px;
 }
@@ -117,7 +117,7 @@ body {
 .page:nth-child(3) {
   transform: rotateX(60deg) rotateY(6deg);
   -webkit-animation: nextPage 25s infinite -24s steps(1);
-          animation: nextPage 25s infinite -24s steps(1);
+  animation: nextPage 25s infinite -24s steps(1);
   background-size: 420px 300px;
   background-position: -2px -2px;
 }
@@ -141,7 +141,7 @@ body {
   transform-origin: center;
   transform: rotateY(180deg);
   -webkit-animation: nextPage 25s -20s infinite steps(1);
-          animation: nextPage 25s -20s infinite steps(1);
+  animation: nextPage 25s -20s infinite steps(1);
   background-size: 420px 300px;
   background-position: 100% -2px;
 }
@@ -202,7 +202,8 @@ body {
   border-radius: 50%;
 }
 
-.pages, .flips {
+.pages,
+.flips {
   transform-style: preserve-3d;
 }
 
@@ -233,43 +234,43 @@ body {
 .flip.flip1 {
   right: 50%;
   -webkit-animation: flip1 5s infinite ease-in-out;
-          animation: flip1 5s infinite ease-in-out;
+  animation: flip1 5s infinite ease-in-out;
   border-width: 2px 2px 2px 0;
 }
 .flip.flip1::after {
   -webkit-animation: nextFlip1 25s -20s infinite steps(1);
-          animation: nextFlip1 25s -20s infinite steps(1);
+  animation: nextFlip1 25s -20s infinite steps(1);
 }
 .flip:not(.flip1) {
   right: calc(100% - 2px);
   top: -2px;
   transform-origin: right;
   -webkit-animation: flip2 5s ease-in-out infinite;
-          animation: flip2 5s ease-in-out infinite;
+  animation: flip2 5s ease-in-out infinite;
 }
 .flip.flip2::after {
   -webkit-animation: nextFlip2 25s -20s infinite steps(1);
-          animation: nextFlip2 25s -20s infinite steps(1);
+  animation: nextFlip2 25s -20s infinite steps(1);
 }
 .flip.flip3::after {
   -webkit-animation: nextFlip3 25s -20s infinite steps(1);
-          animation: nextFlip3 25s -20s infinite steps(1);
+  animation: nextFlip3 25s -20s infinite steps(1);
 }
 .flip.flip4::after {
   -webkit-animation: nextFlip4 25s -20s infinite steps(1);
-          animation: nextFlip4 25s -20s infinite steps(1);
+  animation: nextFlip4 25s -20s infinite steps(1);
 }
 .flip.flip5::after {
   -webkit-animation: nextFlip5 25s -20s infinite steps(1);
-          animation: nextFlip5 25s -20s infinite steps(1);
+  animation: nextFlip5 25s -20s infinite steps(1);
 }
 .flip.flip6::after {
   -webkit-animation: nextFlip6 25s -20s infinite steps(1);
-          animation: nextFlip6 25s -20s infinite steps(1);
+  animation: nextFlip6 25s -20s infinite steps(1);
 }
 .flip.flip7::after {
   -webkit-animation: nextFlip7 25s -20s infinite steps(1);
-          animation: nextFlip7 25s -20s infinite steps(1);
+  animation: nextFlip7 25s -20s infinite steps(1);
 }
 .flip.flip7 {
   width: 30px;
@@ -277,26 +278,31 @@ body {
 }
 .flip.flip7::after {
   -webkit-animation: nextFlip7 25s -20s infinite steps(1);
-          animation: nextFlip7 25s -20s infinite steps(1);
+  animation: nextFlip7 25s -20s infinite steps(1);
 }
 @-webkit-keyframes flip1 {
-  0%, 20% {
+  0%,
+  20% {
     transform: rotateX(60deg) rotateY(6deg);
   }
-  80%, 100% {
+  80%,
+  100% {
     transform: rotateX(60deg) rotateY(174deg);
   }
 }
 @keyframes flip1 {
-  0%, 20% {
+  0%,
+  20% {
     transform: rotateX(60deg) rotateY(6deg);
   }
-  80%, 100% {
+  80%,
+  100% {
     transform: rotateX(60deg) rotateY(174deg);
   }
 }
 @-webkit-keyframes flip2 {
-  0%, 20% {
+  0%,
+  20% {
     transform: rotateY(0deg) translateY(0px);
   }
   50% {
@@ -304,7 +310,8 @@ body {
   }
 }
 @keyframes flip2 {
-  0%, 20% {
+  0%,
+  20% {
     transform: rotateY(0deg) translateY(0px);
   }
   50% {

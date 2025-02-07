@@ -1,217 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>She Waits in the Restless Horizon</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            overflow: hidden;
-            font-family: 'Arial', sans-serif;
-            background: #0a0a0a;
-        }
-
-        canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 0;
-        }
-
-        .content {
-            position: relative;
-            z-index: 1;
-            color: white;
-            padding: 2rem;
-            max-width: 800px;
-            margin: 0 auto;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .title {
-            font-size: 2.5rem;
-            margin-bottom: 2rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-        }
-
-        .description {
-            font-size: 1.1rem;
-            line-height: 1.6;
-            opacity: 0.9;
-            max-width: 600px;
-        }
-
-        .nav {
-            position: fixed;
-            top: 2rem;
-            right: 2rem;
-            z-index: 2;
-            color: white;
-        }
-
-        @media (max-width: 768px) {
-            .title {
-                font-size: 1.8rem;
-            }
-            
-            .description {
-                font-size: 1rem;
-            }
-            
-            .nav {
-                top: 1rem;
-                right: 1rem;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Particle Effect</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: black;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
 </head>
 <body>
-    <nav class="nav">
-        <a href="#" style="color: white; text-decoration: none;">MENU</a>
-    </nav>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.152.2/three.min.js"></script>
+  <script>
+    let scene, camera, renderer, particles, particlePositions, mouse, raycaster;
 
-    <div class="content">
-        <h1 class="title">She Waits in the Restless Horizon</h1>
-        <p class="description">
-            [Your description text here...]<br><br>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-        </p>
-    </div>
+    function init() {
+      // Scene setup
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+      camera.position.z = 100;
 
-    <canvas id="particles"></canvas>
+      renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
 
-    <script>
-        const canvas = document.getElementById('particles');
-        const ctx = canvas.getContext('2d');
-        let particlesArray = [];
+      // Particle setup
+      const particleCount = 1000;
+      const geometry = new THREE.BufferGeometry();
+      const positions = [];
+      const sizes = [];
+      
+      for (let i = 0; i < particleCount; i++) {
+        positions.push((Math.random() - 0.5) * 400); // X
+        positions.push((Math.random() - 0.5) * 400); // Y
+        positions.push((Math.random() - 0.5) * 400); // Z
+        sizes.push(Math.random() * 2 + 1);
+      }
 
-        // Canvas sizing
-        function setSize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        setSize();
-        window.addEventListener('resize', setSize);
+      particlePositions = new Float32Array(positions);
+      geometry.setAttribute("position", new THREE.BufferAttribute(particlePositions, 3));
 
-        // Mouse interaction
-        const mouse = {
-            x: null,
-            y: null,
-            radius: 150
-        }
+      // Material for particles
+      const material = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 2,
+        transparent: true,
+        opacity: 0.8,
+      });
 
-        window.addEventListener('mousemove', e => {
-            mouse.x = e.x;
-            mouse.y = e.y;
-        });
+      // Particles
+      particles = new THREE.Points(geometry, material);
+      scene.add(particles);
 
-        // Touch interaction
-        canvas.addEventListener('touchmove', e => {
-            e.preventDefault();
-            mouse.x = e.touches[0].clientX;
-            mouse.y = e.touches[0].clientY;
-        }, { passive: false });
+      // Raycaster for mouse interaction
+      raycaster = new THREE.Raycaster();
+      mouse = new THREE.Vector2();
 
-        // Particle class
-        class Particle {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 2 + 1;
-                this.baseX = this.x;
-                this.baseY = this.y;
-                this.density = (Math.random() * 30) + 1;
-            }
+      // Event listeners
+      window.addEventListener("mousemove", onMouseMove);
+      window.addEventListener("resize", onWindowResize);
 
-            draw() {
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.closePath();
-                ctx.fill();
-            }
+      animate();
+    }
 
-            update() {
-                let dx = mouse.x - this.x;
-                let dy = mouse.y - this.y;
-                let distance = Math.sqrt(dx * dx + dy * dy);
-                let forceDirectionX = dx / distance;
-                let forceDirectionY = dy / distance;
-                let maxDistance = mouse.radius;
-                let force = (maxDistance - distance) / maxDistance;
-                let directionX = forceDirectionX * force * this.density;
-                let directionY = forceDirectionY * force * this.density;
+    function onMouseMove(event) {
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-                if (distance < mouse.radius) {
-                    this.x -= directionX;
-                    this.y -= directionY;
-                } else {
-                    if (this.x !== this.baseX) {
-                        let dx = this.baseX - this.x;
-                        this.x += dx / 10;
-                    }
-                    if (this.y !== this.baseY) {
-                        let dy = this.baseY - this.y;
-                        this.y += dy / 10;
-                    }
-                }
-            }
-        }
+      raycaster.setFromCamera(mouse, camera);
 
-        // Initialize particles
-        function init() {
-            particlesArray = [];
-            let numberOfParticles = (canvas.width * canvas.height) / 9000;
-            for (let i = 0; i < numberOfParticles; i++) {
-                particlesArray.push(new Particle());
-            }
-        }
+      const intersects = raycaster.intersectObject(particles);
 
-        // Animation loop
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            for (let i = 0; i < particlesArray.length; i++) {
-                particlesArray[i].draw();
-                particlesArray[i].update();
-            }
-            
-            connect();
-            requestAnimationFrame(animate);
-        }
+      if (intersects.length > 0) {
+        const particle = intersects[0];
+        const index = particle.index * 3;
 
-        // Connect nearby particles
-        function connect() {
-            for (let a = 0; a < particlesArray.length; a++) {
-                for (let b = a; b < particlesArray.length; b++) {
-                    let dx = particlesArray[a].x - particlesArray[b].x;
-                    let dy = particlesArray[a].y - particlesArray[b].y;
-                    let distance = Math.sqrt(dx * dx + dy * dy);
+        // Displace the particle
+        particlePositions[index] += (Math.random() - 0.5) * 20;
+        particlePositions[index + 1] += (Math.random() - 0.5) * 20;
+        particlePositions[index + 2] += (Math.random() - 0.5) * 20;
 
-                    if (distance < 100) {
-                        ctx.strokeStyle = `rgba(255, 255, 255, ${1 - distance/100})`;
-                        ctx.lineWidth = 1;
-                        ctx.beginPath();
-                        ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
-                        ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
-                        ctx.stroke();
-                    }
-                }
-            }
-        }
+        particles.geometry.attributes.position.needsUpdate = true;
+      }
+    }
 
-        init();
-        animate();
-    </script>
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      renderer.render(scene, camera);
+    }
+
+    init();
+  </script>
 </body>
 </html>

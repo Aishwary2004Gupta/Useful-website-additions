@@ -1,112 +1,169 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
-    <meta charset="UTF-8">
+    <title>Particle Effect</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Particle Effect</title>
     <style>
-        body {
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
             overflow: hidden;
-            background: black;
-            color: white;
+            background: #1a1a1a;
         }
 
         canvas {
-            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        .text-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            font-family: Arial, sans-serif;
+            z-index: 1;
+        }
+
+        .main-text {
+            font-size: 3em;
+            margin-bottom: 20px;
+            letter-spacing: 4px;
+        }
+
+        .sub-text {
+            font-size: 1.5em;
+            letter-spacing: 2px;
         }
     </style>
 </head>
-
 <body>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.152.2/three.min.js"></script>
+    <div class="text-container">
+        <div class="main-text">OPENCONTINENTS</div>
+        <div class="sub-text">JULIUSONAH</div>
+    </div>
+    <canvas id="canvas"></canvas>
+
     <script>
-        let scene, camera, renderer, particles, particlePositions, mouse, raycaster;
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
 
+        // Set canvas size
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Particle configuration
+        const particles = [];
+        const particleCount = window.innerWidth < 768 ? 50 : 100;
+        const mouse = { x: null, y: null, radius: 150 };
+
+        // Handle mouse movement
+        canvas.addEventListener('mousemove', e => {
+            mouse.x = e.x;
+            mouse.y = e.y;
+        });
+
+        // Handle touch movement
+        canvas.addEventListener('touchmove', e => {
+            e.preventDefault();
+            mouse.x = e.touches[0].clientX;
+            mouse.y = e.touches[0].clientY;
+        }, { passive: false });
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 1;
+                this.speedX = Math.random() * 3 - 1.5;
+                this.speedY = Math.random() * 3 - 1.5;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                // Bounce off walls
+                if (this.x > canvas.width || this.x < 0) this.speedX *= -1;
+                if (this.y > canvas.height || this.y < 0) this.speedY *= -1;
+
+                // Mouse interaction
+                const dx = mouse.x - this.x;
+                const dy = mouse.y - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < mouse.radius) {
+                    this.speedX *= -1;
+                    this.speedY *= -1;
+                }
+            }
+
+            draw() {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Create particles
         function init() {
-            // Scene setup
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-            camera.position.z = 100;
-
-            renderer = new THREE.WebGLRenderer();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.body.appendChild(renderer.domElement);
-
-            // Particle setup
-            const particleCount = 1000;
-            const geometry = new THREE.BufferGeometry();
-            const positions = [];
-            const sizes = [];
-
             for (let i = 0; i < particleCount; i++) {
-                positions.push((Math.random() - 0.5) * 400); // X
-                positions.push((Math.random() - 0.5) * 400); // Y
-                positions.push((Math.random() - 0.5) * 400); // Z
-                sizes.push(Math.random() * 2 + 1);
-            }
-
-            particlePositions = new Float32Array(positions);
-            geometry.setAttribute("position", new THREE.BufferAttribute(particlePositions, 3));
-
-            // Material for particles
-            const material = new THREE.PointsMaterial({
-                color: 0xffffff,
-                size: 2,
-                transparent: true,
-                opacity: 0.8,
-            });
-
-            // Particles
-            particles = new THREE.Points(geometry, material);
-            scene.add(particles);
-
-            // Raycaster for mouse interaction
-            raycaster = new THREE.Raycaster();
-            mouse = new THREE.Vector2();
-
-            // Event listeners
-            window.addEventListener("mousemove", onMouseMove);
-            window.addEventListener("resize", onWindowResize);
-
-            animate();
-        }
-
-        function onMouseMove(event) {
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-            raycaster.setFromCamera(mouse, camera);
-
-            const intersects = raycaster.intersectObject(particles);
-
-            if (intersects.length > 0) {
-                const particle = intersects[0];
-                const index = particle.index * 3;
-
-                // Displace the particle
-                particlePositions[index] += (Math.random() - 0.5) * 20;
-                particlePositions[index + 1] += (Math.random() - 0.5) * 20;
-                particlePositions[index + 2] += (Math.random() - 0.5) * 20;
-
-                particles.geometry.attributes.position.needsUpdate = true;
+                particles.push(new Particle());
             }
         }
 
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
+        // Animation loop
         function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+            }
+            
+            connectParticles();
             requestAnimationFrame(animate);
-            renderer.render(scene, camera);
+        }
+
+        // Connect nearby particles
+        function connectParticles() {
+            for (let a = 0; a < particles.length; a++) {
+                for (let b = a; b < particles.length; b++) {
+                    const dx = particles[a].x - particles[b].x;
+                    const dy = particles[a].y - particles[b].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 100) {
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${1 - distance/100})`;
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[a].x, particles[a].y);
+                        ctx.lineTo(particles[b].x, particles[b].y);
+                        ctx.stroke();
+                    }
+                }
+            }
         }
 
         init();
+        animate();
+
+        // Reset mouse position when leaving canvas
+        canvas.addEventListener('mouseleave', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
     </script>
 </body>
-
 </html>

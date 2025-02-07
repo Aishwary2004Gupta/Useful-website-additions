@@ -1,91 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Particle Effect</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      background: black;
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    #text-container {
-      position: absolute;
-      text-align: center;
-    }
-    h1 {
-      font-family: Arial, sans-serif;
-      font-size: 24px;
-      margin: 0;
-    }
-    p {
-      font-family: Arial, sans-serif;
-      font-size: 16px;
-      margin: 0;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Particle Effect</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: black;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #text-container {
+            position: absolute;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: Arial, sans-serif;
+            font-size: 24px;
+            margin: 0;
+        }
+
+        p {
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            margin: 0;
+        }
+    </style>
 </head>
+
 <body>
-  <div id="text-container">
-    <h1>OPEN CONTINENTS</h1>
-    <p>JULIUS ONAH</p>
-  </div>
-  <script>
-    let particles = [];
-    
-    function setup() {
-      createCanvas(windowWidth, windowHeight);
-      for (let i = 0; i < 200; i++) {
-        particles.push(new Particle());
-      }
-    }
+    <div id="text-container">
+        <h1>OPEN CONTINENTS</h1>
+        <p>JULIUS ONAH</p>
+    </div>
+    <script>
+        let particles = [];
 
-    function draw() {
-      background(0);
-      particles.forEach((p) => {
-        p.update();
-        p.show();
-      });
-    }
-
-    class Particle {
-      constructor() {
-        this.pos = createVector(random(width), random(height));
-        this.vel = p5.Vector.random2D().mult(random(0.5, 2));
-        this.acc = createVector(0, 0);
-        this.size = random(1, 5);
-      }
-
-      update() {
-        this.pos.add(this.vel);
-        this.edges();
-      }
-
-      edges() {
-        if (this.pos.x < 0 || this.pos.x > width) {
-          this.vel.x *= -1;
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            for (let i = 0; i < 200; i++) {
+                particles.push(new Particle());
+            }
         }
-        if (this.pos.y < 0 || this.pos.y > height) {
-          this.vel.y *= -1;
+
+        function draw() {
+            background(0);
+            particles.forEach((p) => {
+                p.update();
+                p.show();
+            });
         }
-      }
 
-      show() {
-        noStroke();
-        fill(255, random(50, 150));
-        ellipse(this.pos.x, this.pos.y, this.size);
-      }
-    }
+        class Particle {
+            constructor() {
+                this.pos = createVector(random(width), random(height));
+                this.vel = p5.Vector.random2D().mult(random(0.5, 2));
+                this.acc = createVector(0, 0);
+                this.size = random(1, 5);
+            }
 
-    function windowResized() {
-      resizeCanvas(windowWidth, windowHeight);
-    }
-  </script>
+            update() {
+                this.pos.add(this.vel);
+                this.edges();
+            }
+
+            edges() {
+                if (this.pos.x < 0 || this.pos.x > width) {
+                    this.vel.x *= -1;
+                }
+                if (this.pos.y < 0 || this.pos.y > height) {
+                    this.vel.y *= -1;
+                }
+            }
+
+            show() {
+                noStroke();
+                fill(255, random(50, 150));
+                ellipse(this.pos.x, this.pos.y, this.size);
+            }
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+        }
+    </script>
 </body>
+
 </html>

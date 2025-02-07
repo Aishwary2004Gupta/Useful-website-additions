@@ -1,105 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Interactive Particle Effect</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      background: black;
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    #text-container {
-      position: absolute;
-      text-align: center;
-    }
-    h1 {
-      font-family: Arial, sans-serif;
-      font-size: 24px;
-      margin: 0;
-    }
-    p {
-      font-family: Arial, sans-serif;
-      font-size: 16px;
-      margin: 0;
-    }
-  </style>
-</head>
-<body>
-  <div id="text-container">
-    <h1>OPEN CONTINENTS</h1>
-    <p>JULIUS ONAH</p>
-  </div>
-  <script>
-    let particles = [];
-    const particleCount = 300;
-
-    function setup() {
-      createCanvas(windowWidth, windowHeight);
-      for (let i = 0; i < particleCount; i++) {
-        particles.push(new Particle());
-      }
-    }
-
-    function draw() {
-      background(0, 20); // Slight transparency for a trailing effect
-      particles.forEach((p) => {
-        p.update();
-        p.show();
-        p.checkMouse();
-      });
-    }
-
-    class Particle {
-      constructor() {
-        this.pos = createVector(random(width), random(height));
-        this.vel = p5.Vector.random2D().mult(random(0.5, 2));
-        this.acc = createVector(0, 0);
-        this.size = random(2, 6);
-      }
-
-      update() {
-        this.pos.add(this.vel);
-        this.edges();
-      }
-
-      edges() {
-        if (this.pos.x < 0 || this.pos.x > width) this.vel.x *= -1;
-        if (this.pos.y < 0 || this.pos.y > height) this.vel.y *= -1;
-      }
-
-      checkMouse() {
-        let mouse = createVector(mouseX, mouseY);
-        let d = dist(this.pos.x, this.pos.y, mouse.x, mouse.y);
-
-        // If close to the mouse/touch, apply repulsion
-        if (d < 100) {
-          let force = p5.Vector.sub(this.pos, mouse);
-          force.setMag(2); // Strength of repulsion
-          this.vel.add(force);
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Particle Effect</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: black;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-      }
 
-      show() {
-        noStroke();
-        fill(255, random(100, 200));
-        ellipse(this.pos.x, this.pos.y, this.size);
-      }
-    }
+        #text-container {
+            position: absolute;
+            text-align: center;
+        }
 
-    function windowResized() {
-      resizeCanvas(windowWidth, windowHeight);
-    }
+        h1 {
+            font-family: Arial, sans-serif;
+            font-size: 24px;
+            margin: 0;
+        }
 
-    function touchMoved() {
-      return false; // Disable scrolling on touch
-    }
-  </script>
+        p {
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="text-container">
+        <h1>OPEN CONTINENTS</h1>
+        <p>JULIUS ONAH</p>
+    </div>
+    <script>
+        let particles = [];
+        const particleCount = 300;
+
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function draw() {
+            background(0, 20); // Slight transparency for a trailing effect
+            particles.forEach((p) => {
+                p.update();
+                p.show();
+                p.checkMouse();
+            });
+        }
+
+        class Particle {
+            constructor() {
+                this.pos = createVector(random(width), random(height));
+                this.vel = p5.Vector.random2D().mult(random(0.5, 2));
+                this.acc = createVector(0, 0);
+                this.size = random(2, 6);
+            }
+
+            update() {
+                this.pos.add(this.vel);
+                this.edges();
+            }
+
+            edges() {
+                if (this.pos.x < 0 || this.pos.x > width) this.vel.x *= -1;
+                if (this.pos.y < 0 || this.pos.y > height) this.vel.y *= -1;
+            }
+
+            checkMouse() {
+                let mouse = createVector(mouseX, mouseY);
+                let d = dist(this.pos.x, this.pos.y, mouse.x, mouse.y);
+
+                // If close to the mouse/touch, apply repulsion
+                if (d < 100) {
+                    let force = p5.Vector.sub(this.pos, mouse);
+                    force.setMag(2); // Strength of repulsion
+                    this.vel.add(force);
+                }
+            }
+
+            show() {
+                noStroke();
+                fill(255, random(100, 200));
+                ellipse(this.pos.x, this.pos.y, this.size);
+            }
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+        }
+
+        function touchMoved() {
+            return false; // Disable scrolling on touch
+        }
+    </script>
 </body>
+
 </html>

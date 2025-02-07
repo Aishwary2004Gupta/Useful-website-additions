@@ -5,106 +5,107 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Particle Effect</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
     <style>
         body {
             margin: 0;
             overflow: hidden;
             background: black;
             color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
 
-        #text-container {
-            position: absolute;
-            text-align: center;
-        }
-
-        h1 {
-            font-family: Arial, sans-serif;
-            font-size: 24px;
-            margin: 0;
-        }
-
-        p {
-            font-family: Arial, sans-serif;
-            font-size: 16px;
-            margin: 0;
+        canvas {
+            display: block;
         }
     </style>
 </head>
 
 <body>
-    <div id="text-container">
-        <h1>OPEN CONTINENTS</h1>
-        <p>JULIUS ONAH</p>
-    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.152.2/three.min.js"></script>
     <script>
-        let particles = [];
-        const particleCount = 300;
+        let scene, camera, renderer, particles, particlePositions, mouse, raycaster;
 
-        function setup() {
-            createCanvas(windowWidth, windowHeight);
+        function init() {
+            // Scene setup
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+            camera.position.z = 100;
+
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // Particle setup
+            const particleCount = 1000;
+            const geometry = new THREE.BufferGeometry();
+            const positions = [];
+            const sizes = [];
+
             for (let i = 0; i < particleCount; i++) {
-                particles.push(new Particle());
+                positions.push((Math.random() - 0.5) * 400); // X
+                positions.push((Math.random() - 0.5) * 400); // Y
+                positions.push((Math.random() - 0.5) * 400); // Z
+                sizes.push(Math.random() * 2 + 1);
             }
-        }
 
-        function draw() {
-            background(0, 20); // Slight transparency for a trailing effect
-            particles.forEach((p) => {
-                p.update();
-                p.show();
-                p.checkMouse();
+            particlePositions = new Float32Array(positions);
+            geometry.setAttribute("position", new THREE.BufferAttribute(particlePositions, 3));
+
+            // Material for particles
+            const material = new THREE.PointsMaterial({
+                color: 0xffffff,
+                size: 2,
+                transparent: true,
+                opacity: 0.8,
             });
+
+            // Particles
+            particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+
+            // Raycaster for mouse interaction
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            // Event listeners
+            window.addEventListener("mousemove", onMouseMove);
+            window.addEventListener("resize", onWindowResize);
+
+            animate();
         }
 
-        class Particle {
-            constructor() {
-                this.pos = createVector(random(width), random(height));
-                this.vel = p5.Vector.random2D().mult(random(0.5, 2));
-                this.acc = createVector(0, 0);
-                this.size = random(2, 6);
-            }
+        function onMouseMove(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-            update() {
-                this.pos.add(this.vel);
-                this.edges();
-            }
+            raycaster.setFromCamera(mouse, camera);
 
-            edges() {
-                if (this.pos.x < 0 || this.pos.x > width) this.vel.x *= -1;
-                if (this.pos.y < 0 || this.pos.y > height) this.vel.y *= -1;
-            }
+            const intersects = raycaster.intersectObject(particles);
 
-            checkMouse() {
-                let mouse = createVector(mouseX, mouseY);
-                let d = dist(this.pos.x, this.pos.y, mouse.x, mouse.y);
+            if (intersects.length > 0) {
+                const particle = intersects[0];
+                const index = particle.index * 3;
 
-                // If close to the mouse/touch, apply repulsion
-                if (d < 100) {
-                    let force = p5.Vector.sub(this.pos, mouse);
-                    force.setMag(2); // Strength of repulsion
-                    this.vel.add(force);
-                }
-            }
+                // Displace the particle
+                particlePositions[index] += (Math.random() - 0.5) * 20;
+                particlePositions[index + 1] += (Math.random() - 0.5) * 20;
+                particlePositions[index + 2] += (Math.random() - 0.5) * 20;
 
-            show() {
-                noStroke();
-                fill(255, random(100, 200));
-                ellipse(this.pos.x, this.pos.y, this.size);
+                particles.geometry.attributes.position.needsUpdate = true;
             }
         }
 
-        function windowResized() {
-            resizeCanvas(windowWidth, windowHeight);
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
         }
 
-        function touchMoved() {
-            return false; // Disable scrolling on touch
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
         }
+
+        init();
     </script>
 </body>
 

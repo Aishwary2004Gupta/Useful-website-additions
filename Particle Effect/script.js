@@ -47,8 +47,8 @@ class Particle {
             this.dx = -vectorToMouse[0] / distanceToMouse;
             this.dy = -vectorToMouse[1] / distanceToMouse;
         } else if (distanceToBase > 1) {
-            this.dx = vectorToBase[0] / distanceToBase * 0.05;
-            this.dy = vectorToBase[1] / distanceToBase * 0.05;
+            this.dx = vectorToBase[0] / distanceToBase * 2;
+            this.dy = vectorToBase[1] / distanceToBase * 0.5;
         } else {
             this.dx = 0;
             this.dy = 0;

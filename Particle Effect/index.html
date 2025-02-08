@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Immersive Horizon</title>
+    <title>Interactive Particles</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         * {
@@ -50,7 +50,7 @@
 </head>
 <body>
     <div class="title-container">
-        <div class="main-title">What's up Coders</div>
+        <div class="main-title">Interactive Particles</div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -80,7 +80,7 @@
                     mouseRadius: 150,
                     mouseStrength: 0.15,
                     particleSpeed: 0.05,
-                    particleSize: 0.25,  // Kept original size
+                    particleSize: 0.25,
                     baseHue: 0.12,
                     returnSpeed: 0.02
                 };
@@ -97,7 +97,6 @@
 
                 for(let i = 0; i < this.params.particleCount; i++) {
                     const i3 = i * 3;
-                    // Create initial positions in a sphere
                     const radius = 40;
                     const theta = Math.random() * Math.PI * 2;
                     const phi = Math.acos((Math.random() * 2) - 1);
@@ -106,17 +105,14 @@
                     positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
                     positions[i3 + 2] = radius * Math.cos(phi);
 
-                    // Store original positions
                     this.originalPositions[i3] = positions[i3];
                     this.originalPositions[i3 + 1] = positions[i3 + 1];
                     this.originalPositions[i3 + 2] = positions[i3 + 2];
 
-                    // Initialize velocities
                     this.velocities[i3] = 0;
                     this.velocities[i3 + 1] = 0;
                     this.velocities[i3 + 2] = 0;
 
-                    // Golden/beige colors
                     colors[i3] = 0.8 + Math.random() * 0.2;
                     colors[i3 + 1] = 0.7 + Math.random() * 0.2;
                     colors[i3 + 2] = 0.4 + Math.random() * 0.2;
@@ -129,7 +125,7 @@
                     size: this.params.particleSize,
                     vertexColors: true,
                     transparent: true,
-                    opacity: 0.9,  // Slightly increased opacity
+                    opacity: 0.9,
                     depthTest: false
                 });
 
@@ -144,7 +140,6 @@
             }
 
             onMouseMove(e) {
-                // Convert mouse position to normalized device coordinates (-1 to +1)
                 this.targetMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
                 this.targetMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
             }
@@ -166,25 +161,20 @@
                 const mouseVector = new THREE.Vector3(this.targetMouse.x, this.targetMouse.y, 0);
                 mouseVector.unproject(this.camera);
 
-                // Smooth mouse movement
                 this.mouse.x += (this.targetMouse.x - this.mouse.x) * 0.1;
                 this.mouse.y += (this.targetMouse.y - this.mouse.y) * 0.1;
 
                 for(let i = 0; i < positions.length; i += 3) {
                     const i3 = i;
-                    
-                    // Calculate distance to mouse
                     const dx = mouseVector.x - positions[i3];
                     const dy = mouseVector.y - positions[i3 + 1];
                     const distance = Math.sqrt(dx * dx + dy * dy);
 
                     if(distance < this.params.mouseRadius) {
-                        // Attract particles to mouse
                         const force = (1 - distance / this.params.mouseRadius) * this.params.mouseStrength;
                         this.velocities[i3] += dx * force;
                         this.velocities[i3 + 1] += dy * force;
                     } else {
-                        // Return particles to original position
                         const odx = this.originalPositions[i3] - positions[i3];
                         const ody = this.originalPositions[i3 + 1] - positions[i3 + 1];
                         const odz = this.originalPositions[i3 + 2] - positions[i3 + 2];
@@ -193,6 +183,14 @@
                         this.velocities[i3 + 1] += ody * this.params.returnSpeed;
                         this.velocities[i3 + 2] += odz * this.params.returnSpeed;
                     }
+
+                    positions[i3] += this.velocities[i3];
+                    positions[i3 + 1] += this.velocities[i3 + 1];
+                    positions[i3 + 2] += this.velocities[i3 + 2];
+
+                    this.velocities[i3] *= 0.95;
+                    this.velocities[i3 + 1] *= 0.95;
+                    this.velocities[i3 + 2] *= 0.95;
                 }
 
                 this.particles.geometry.attributes.position.needsUpdate = true;
@@ -205,7 +203,6 @@
             }
         }
 
-        // Initialize the background
         new ParticleBackground();
     </script>
 </body>

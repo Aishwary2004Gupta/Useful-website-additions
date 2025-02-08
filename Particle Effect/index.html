@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Immersive Horizon</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -48,6 +49,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="title-container">
         <div class="main-title">What's up Coders</div>
@@ -74,7 +76,7 @@
                 this.mouse = new THREE.Vector2(0, 0);
                 this.targetMouse = new THREE.Vector2(0, 0);
                 this.clock = new THREE.Clock();
-                
+
                 this.params = {
                     particleCount: 15000,
                     mouseRadius: 150,
@@ -95,13 +97,13 @@
                 this.originalPositions = new Float32Array(this.params.particleCount * 3);
                 this.velocities = new Float32Array(this.params.particleCount * 3);
 
-                for(let i = 0; i < this.params.particleCount; i++) {
+                for (let i = 0; i < this.params.particleCount; i++) {
                     const i3 = i * 3;
                     // Create initial positions in a sphere
                     const radius = 40;
                     const theta = Math.random() * Math.PI * 2;
                     const phi = Math.acos((Math.random() * 2) - 1);
-                    
+
                     positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
                     positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
                     positions[i3 + 2] = radius * Math.cos(phi);
@@ -170,15 +172,15 @@
                 this.mouse.x += (this.targetMouse.x - this.mouse.x) * 0.1;
                 this.mouse.y += (this.targetMouse.y - this.mouse.y) * 0.1;
 
-                for(let i = 0; i < positions.length; i += 3) {
+                for (let i = 0; i < positions.length; i += 3) {
                     const i3 = i;
-                    
+
                     // Calculate distance to mouse
                     const dx = mouseVector.x - positions[i3];
                     const dy = mouseVector.y - positions[i3 + 1];
                     const distance = Math.sqrt(dx * dx + dy * dy);
 
-                    if(distance < this.params.mouseRadius) {
+                    if (distance < this.params.mouseRadius) {
                         // Attract particles to mouse
                         const force = (1 - distance / this.params.mouseRadius) * this.params.mouseStrength;
                         this.velocities[i3] += dx * force;
@@ -188,7 +190,7 @@
                         const odx = this.originalPositions[i3] - positions[i3];
                         const ody = this.originalPositions[i3 + 1] - positions[i3 + 1];
                         const odz = this.originalPositions[i3 + 2] - positions[i3 + 2];
-                        
+
                         this.velocities[i3] += odx * this.params.returnSpeed;
                         this.velocities[i3 + 1] += ody * this.params.returnSpeed;
                         this.velocities[i3 + 2] += odz * this.params.returnSpeed;
@@ -198,7 +200,7 @@
                     positions[i3] += this.velocities[i3];
                     positions[i3 + 1] += this.velocities[i3 + 1];
                     positions[i3 + 2] += this.velocities[i3 + 2];
-                    
+
                     this.velocities[i3] *= 0.95;
                     this.velocities[i3 + 1] *= 0.95;
                     this.velocities[i3 + 2] *= 0.95;
@@ -218,4 +220,5 @@
         new ParticleBackground();
     </script>
 </body>
+
 </html>

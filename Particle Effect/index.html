@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Open Continents Style Particle Effect</title>
+    <title>Immersive Horizon</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         * {
@@ -13,7 +13,7 @@
         body {
             overflow: hidden;
             font-family: 'Arial', sans-serif;
-            background: #000;
+            background: #0a0a0a;
         }
 
         canvas {
@@ -23,56 +23,55 @@
             z-index: 0;
         }
 
-        .content {
-            position: relative;
-            z-index: 2;
-            color: white;
-            padding: 2rem;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            pointer-events: none;
-        }
-
-        .title {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            letter-spacing: 0.5rem;
-            text-transform: uppercase;
-            opacity: 0.9;
-        }
-
-        .subtitle {
-            font-size: 1.2rem;
-            letter-spacing: 0.2rem;
-            opacity: 0.7;
-        }
-
         .nav {
             position: fixed;
             top: 2rem;
             right: 2rem;
             z-index: 3;
             color: white;
-            pointer-events: all;
+            text-align: right;
         }
 
         .nav a {
-            color: inherit;
+            color: white;
             text-decoration: none;
-            margin-left: 1.5rem;
+            display: block;
+            margin-bottom: 0.5rem;
             font-size: 0.9rem;
-            letter-spacing: 0.1rem;
+            letter-spacing: 0.1em;
+        }
+
+        .title-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            color: white;
+            text-align: center;
+        }
+
+        .main-title {
+            font-size: 4vw;
+            letter-spacing: 0.5em;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            font-weight: 300;
+        }
+
+        .subtitle {
+            font-size: 1.2vw;
+            letter-spacing: 0.3em;
+            opacity: 0.8;
         }
 
         @media (max-width: 768px) {
-            .title {
-                font-size: 2rem;
+            .main-title {
+                font-size: 8vw;
             }
             
             .subtitle {
-                font-size: 1rem;
+                font-size: 3vw;
             }
             
             .nav {
@@ -89,119 +88,144 @@
         <a href="#">Contact</a>
     </nav>
 
-    <div class="content">
-        <h1 class="title">She Waits in the Restless Horizon</h1>
-        <p class="subtitle">An Immersive Digital Experience</p>
+    <div class="title-container">
+        <!-- <div class="main-title">SHE WAITS IN THE RESTLESS<br>HORIZON</div> -->
+        <!-- <div class="subtitle"></div> -->
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // Three.js Setup
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        document.body.appendChild(renderer.domElement);
-
-        // Particles Configuration
-        const particleCount = 15000;
-        const particles = new THREE.BufferGeometry();
-        const posArray = new Float32Array(particleCount * 3);
-        const colorArray = new Float32Array(particleCount * 3);
-
-        // Create Particles
-        for(let i = 0; i < particleCount * 3; i += 3) {
-            posArray[i] = (Math.random() - 0.5) * 10;
-            posArray[i + 1] = (Math.random() - 0.5) * 10;
-            posArray[i + 2] = (Math.random() - 0.5) * 10;
-            
-            // Color variations
-            colorArray[i] = Math.random() * 0.5 + 0.5; // Red
-            colorArray[i + 1] = Math.random() * 0.3;   // Green
-            colorArray[i + 2] = Math.random() * 0.5 + 0.5; // Blue
-        }
-
-        particles.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-        particles.setAttribute('color', new THREE.BufferAttribute(colorArray, 3));
-
-        // Particle Material
-        const particleMaterial = new THREE.PointsMaterial({
-            size: 0.02,
-            vertexColors: true,
-            transparent: true,
-            opacity: 0.8,
-            depthWrite: false
-        });
-
-        // Particle System
-        const particleSystem = new THREE.Points(particles, particleMaterial);
-        scene.add(particleSystem);
-
-        camera.position.z = 5;
-
-        // Mouse Interaction
-        const mouse = new THREE.Vector2();
-        const target = new THREE.Vector2();
-        const windowHalf = new THREE.Vector2(
-            window.innerWidth / 2,
-            window.innerHeight / 2
-        );
-
-        // Event Listeners
-        document.addEventListener('mousemove', (e) => {
-            mouse.x = (e.clientX - windowHalf.x) * 0.0005;
-            mouse.y = (e.clientY - windowHalf.y) * 0.0005;
-        });
-
-        document.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            mouse.x = (e.touches[0].clientX - windowHalf.x) * 0.0005;
-            mouse.y = (e.touches[0].clientY - windowHalf.y) * 0.0005;
-        }, { passive: false });
-
-        // Resize Handler
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            windowHalf.set(
-                window.innerWidth / 2,
-                window.innerHeight / 2
-            );
-        });
-
-        // Animation Loop
-        let time = 0;
-        function animate() {
-            requestAnimationFrame(animate);
-            time += 0.001;
-
-            // Update particle positions
-            const positions = particles.attributes.position.array;
-            for(let i = 0; i < positions.length; i += 3) {
-                positions[i] += Math.sin(time + positions[i] * 2) * 0.01;
-                positions[i + 1] += Math.cos(time + positions[i + 1] * 2) * 0.01;
-                
-                // Mouse interaction
-                positions[i] += (mouse.x - positions[i] * 0.1) * 0.05;
-                positions[i + 1] += (mouse.y - positions[i + 1] * 0.1) * 0.05;
+        class ParticleBackground {
+            constructor() {
+                this.initScene();
+                this.createParticles();
+                this.setupEventListeners();
+                this.animate();
             }
 
-            particles.attributes.position.needsUpdate = true;
-            
-            // Smooth camera follow
-            target.x = mouse.x * 2;
-            target.y = mouse.y * 2;
-            camera.position.x += (target.x - camera.position.x) * 0.05;
-            camera.position.y += (target.y - camera.position.y) * 0.05;
-            camera.lookAt(scene.position);
+            initScene() {
+                this.scene = new THREE.Scene();
+                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                document.body.appendChild(this.renderer.domElement);
 
-            renderer.render(scene, camera);
+                this.mouse = new THREE.Vector2(0, 0);
+                this.clock = new THREE.Clock();
+                
+                this.params = {
+                    particleCount: 15000,
+                    mouseRadius: 100,
+                    mouseStrength: 0.5,
+                    noiseScale: 0.005,
+                    movementSpeed: 0.1,
+                    baseHue: 0.12
+                };
+
+                this.camera.position.z = 50;
+            }
+
+            createParticles() {
+                const geometry = new THREE.BufferGeometry();
+                const positions = new Float32Array(this.params.particleCount * 3);
+                const colors = new Float32Array(this.params.particleCount * 3);
+
+                // Create sandy color palette
+                for(let i = 0; i < this.params.particleCount; i++) {
+                    positions[i*3] = (Math.random() - 0.5) * 100;
+                    positions[i*3+1] = (Math.random() - 0.5) * 100;
+                    positions[i*3+2] = (Math.random() - 0.5) * 100;
+
+                    // Sandy colors (golden/beige tones)
+                    colors[i*3] = 0.8 + Math.random() * 0.2;    // R
+                    colors[i*3+1] = 0.7 + Math.random() * 0.2;  // G 
+                    colors[i*3+2] = 0.4 + Math.random() * 0.2;  // B
+                }
+
+                geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+                this.material = new THREE.PointsMaterial({
+                    size: 0.25,
+                    vertexColors: true,
+                    transparent: true,
+                    opacity: 0.9,
+                    depthTest: false
+                });
+
+                this.particles = new THREE.Points(geometry, this.material);
+                this.scene.add(this.particles);
+            }
+
+            setupEventListeners() {
+                window.addEventListener('mousemove', (e) => this.onMouseMove(e));
+                window.addEventListener('touchmove', (e) => this.onTouchMove(e), { passive: false });
+                window.addEventListener('resize', () => this.onResize());
+            }
+
+            onMouseMove(e) {
+                this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+                this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            }
+
+            onTouchMove(e) {
+                e.preventDefault();
+                this.mouse.x = (e.touches[0].clientX / window.innerWidth) * 2 - 1;
+                this.mouse.y = -(e.touches[0].clientY / window.innerHeight) * 2 + 1;
+            }
+
+            onResize() {
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+
+            updateParticles() {
+                const positions = this.particles.geometry.attributes.position.array;
+                const time = this.clock.getElapsedTime();
+
+                // Convert mouse to 3D space
+                const mouseVector = new THREE.Vector3(this.mouse.x, this.mouse.y, 0);
+                mouseVector.unproject(this.camera);
+                
+                for(let i = 0; i < positions.length; i += 3) {
+                    const x = positions[i];
+                    const y = positions[i+1];
+                    const z = positions[i+2];
+
+                    // Mouse interaction
+                    const dx = mouseVector.x - x;
+                    const dy = mouseVector.y - y;
+                    const distance = Math.sqrt(dx*dx + dy*dy);
+                    
+                    if(distance < this.params.mouseRadius) {
+                        const force = (this.params.mouseRadius - distance) / this.params.mouseRadius;
+                        positions[i] -= dx * force * this.params.mouseStrength;
+                        positions[i+1] -= dy * force * this.params.mouseStrength;
+                    }
+
+                    // Organic noise-based movement
+                    const noise = Math.sin(x * this.params.noiseScale + time) * 
+                                Math.cos(y * this.params.noiseScale + time) * 
+                                Math.sin(z * this.params.noiseScale + time);
+                                
+                    positions[i] += noise * this.params.movementSpeed;
+                    positions[i+1] += noise * this.params.movementSpeed;
+                }
+
+                this.particles.geometry.attributes.position.needsUpdate = true;
+            }
+
+            animate() {
+                requestAnimationFrame(() => this.animate());
+                this.updateParticles();
+                this.renderer.render(this.scene, this.camera);
+            }
         }
 
-        // Initialization
-        animate();
+        // Initialize the background
+        new ParticleBackground();
     </script>
 </body>
 </html>

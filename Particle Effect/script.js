@@ -78,8 +78,8 @@ class Particle{
 
 // Create list of particles
 const particles = [];
-for(let i = 0; i < 10; i++){
-    for(let j = 0; j < 10; j++){
+for(let i = 0; i < 40; i++){
+    for(let j = 0; j < 40; j++){
         particles.push(new Particle(canvas.width / 2 - 150 + i*10, canvas.height / 2 - 150 + j*10));
     }
 }

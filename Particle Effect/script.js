@@ -76,8 +76,8 @@ class Particle {
 let particles = [];
 function initializeParticles() {
     particles = [];
-    const gridSize = 15;
-    const particleSpacing = 20;
+    const gridSize = 25;
+    const particleSpacing = 15;
     const startX = canvas.width / 2 - (gridSize * particleSpacing) / 2;
     const startY = canvas.height / 2 - (gridSize * particleSpacing) / 2;
 

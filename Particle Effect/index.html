@@ -23,24 +23,6 @@
             z-index: 0;
         }
 
-        .nav {
-            position: fixed;
-            top: 2rem;
-            right: 2rem;
-            z-index: 3;
-            color: white;
-            text-align: right;
-        }
-
-        .nav a {
-            color: white;
-            text-decoration: none;
-            display: block;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
-            letter-spacing: 0.1em;
-        }
-
         .title-container {
             position: absolute;
             top: 50%;
@@ -59,30 +41,14 @@
             font-weight: 300;
         }
 
-        .subtitle {
-            font-size: 1.2vw;
-            letter-spacing: 0.3em;
-            opacity: 0.8;
-        }
-
         @media (max-width: 768px) {
             .main-title {
                 font-size: 8vw;
-            }
-            
-            .subtitle {
-                font-size: 3vw;
-            }
-            
-            .nav {
-                top: 1rem;
-                right: 1rem;
             }
         }
     </style>
 </head>
 <body>
-
     <div class="title-container">
         <div class="main-title">What's up Coders</div>
     </div>
@@ -106,15 +72,17 @@
                 document.body.appendChild(this.renderer.domElement);
 
                 this.mouse = new THREE.Vector2(0, 0);
+                this.targetMouse = new THREE.Vector2(0, 0);
                 this.clock = new THREE.Clock();
                 
                 this.params = {
                     particleCount: 15000,
-                    mouseRadius: 100,
-                    mouseStrength: 0.5,
-                    noiseScale: 0.005,
-                    movementSpeed: 0.1,
-                    baseHue: 0.12
+                    mouseRadius: 150,
+                    mouseStrength: 0.15,
+                    particleSpeed: 0.05,
+                    particleSize: 0.2,
+                    baseHue: 0.12,
+                    returnSpeed: 0.02  // Speed at which particles return to original position
                 };
 
                 this.camera.position.z = 50;
@@ -124,27 +92,44 @@
                 const geometry = new THREE.BufferGeometry();
                 const positions = new Float32Array(this.params.particleCount * 3);
                 const colors = new Float32Array(this.params.particleCount * 3);
+                this.originalPositions = new Float32Array(this.params.particleCount * 3);
+                this.velocities = new Float32Array(this.params.particleCount * 3);
 
-                // Create sandy color palette
                 for(let i = 0; i < this.params.particleCount; i++) {
-                    positions[i*3] = (Math.random() - 0.5) * 100;
-                    positions[i*3+1] = (Math.random() - 0.5) * 100;
-                    positions[i*3+2] = (Math.random() - 0.5) * 100;
+                    const i3 = i * 3;
+                    // Create initial positions in a sphere
+                    const radius = 40;
+                    const theta = Math.random() * Math.PI * 2;
+                    const phi = Math.acos((Math.random() * 2) - 1);
+                    
+                    positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+                    positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+                    positions[i3 + 2] = radius * Math.cos(phi);
 
-                    // Sandy colors (golden/beige tones)
-                    colors[i*3] = 0.8 + Math.random() * 0.2;    // R
-                    colors[i*3+1] = 0.7 + Math.random() * 0.2;  // G 
-                    colors[i*3+2] = 0.4 + Math.random() * 0.2;  // B
+                    // Store original positions
+                    this.originalPositions[i3] = positions[i3];
+                    this.originalPositions[i3 + 1] = positions[i3 + 1];
+                    this.originalPositions[i3 + 2] = positions[i3 + 2];
+
+                    // Initialize velocities
+                    this.velocities[i3] = 0;
+                    this.velocities[i3 + 1] = 0;
+                    this.velocities[i3 + 2] = 0;
+
+                    // Golden/beige colors
+                    colors[i3] = 0.8 + Math.random() * 0.2;
+                    colors[i3 + 1] = 0.7 + Math.random() * 0.2;
+                    colors[i3 + 2] = 0.4 + Math.random() * 0.2;
                 }
 
                 geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
                 geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
                 this.material = new THREE.PointsMaterial({
-                    size: 0.25,
+                    size: this.params.particleSize,
                     vertexColors: true,
                     transparent: true,
-                    opacity: 0.9,
+                    opacity: 0.8,
                     depthTest: false
                 });
 
@@ -159,14 +144,15 @@
             }
 
             onMouseMove(e) {
-                this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-                this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+                // Convert mouse position to normalized device coordinates (-1 to +1)
+                this.targetMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+                this.targetMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
             }
 
             onTouchMove(e) {
                 e.preventDefault();
-                this.mouse.x = (e.touches[0].clientX / window.innerWidth) * 2 - 1;
-                this.mouse.y = -(e.touches[0].clientY / window.innerHeight) * 2 + 1;
+                this.targetMouse.x = (e.touches[0].clientX / window.innerWidth) * 2 - 1;
+                this.targetMouse.y = -(e.touches[0].clientY / window.innerHeight) * 2 + 1;
             }
 
             onResize() {
@@ -177,35 +163,45 @@
 
             updateParticles() {
                 const positions = this.particles.geometry.attributes.position.array;
-                const time = this.clock.getElapsedTime();
-
-                // Convert mouse to 3D space
-                const mouseVector = new THREE.Vector3(this.mouse.x, this.mouse.y, 0);
+                const mouseVector = new THREE.Vector3(this.targetMouse.x, this.targetMouse.y, 0);
                 mouseVector.unproject(this.camera);
-                
-                for(let i = 0; i < positions.length; i += 3) {
-                    const x = positions[i];
-                    const y = positions[i+1];
-                    const z = positions[i+2];
 
-                    // Mouse interaction
-                    const dx = mouseVector.x - x;
-                    const dy = mouseVector.y - y;
-                    const distance = Math.sqrt(dx*dx + dy*dy);
+                // Smooth mouse movement
+                this.mouse.x += (this.targetMouse.x - this.mouse.x) * 0.1;
+                this.mouse.y += (this.targetMouse.y - this.mouse.y) * 0.1;
+
+                for(let i = 0; i < positions.length; i += 3) {
+                    const i3 = i;
                     
+                    // Calculate distance to mouse
+                    const dx = mouseVector.x - positions[i3];
+                    const dy = mouseVector.y - positions[i3 + 1];
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
                     if(distance < this.params.mouseRadius) {
-                        const force = (this.params.mouseRadius - distance) / this.params.mouseRadius;
-                        positions[i] -= dx * force * this.params.mouseStrength;
-                        positions[i+1] -= dy * force * this.params.mouseStrength;
+                        // Attract particles to mouse
+                        const force = (1 - distance / this.params.mouseRadius) * this.params.mouseStrength;
+                        this.velocities[i3] += dx * force;
+                        this.velocities[i3 + 1] += dy * force;
+                    } else {
+                        // Return particles to original position
+                        const odx = this.originalPositions[i3] - positions[i3];
+                        const ody = this.originalPositions[i3 + 1] - positions[i3 + 1];
+                        const odz = this.originalPositions[i3 + 2] - positions[i3 + 2];
+                        
+                        this.velocities[i3] += odx * this.params.returnSpeed;
+                        this.velocities[i3 + 1] += ody * this.params.returnSpeed;
+                        this.velocities[i3 + 2] += odz * this.params.returnSpeed;
                     }
 
-                    // Organic noise-based movement
-                    const noise = Math.sin(x * this.params.noiseScale + time) * 
-                                Math.cos(y * this.params.noiseScale + time) * 
-                                Math.sin(z * this.params.noiseScale + time);
-                                
-                    positions[i] += noise * this.params.movementSpeed;
-                    positions[i+1] += noise * this.params.movementSpeed;
+                    // Apply velocity with damping
+                    positions[i3] += this.velocities[i3];
+                    positions[i3 + 1] += this.velocities[i3 + 1];
+                    positions[i3 + 2] += this.velocities[i3 + 2];
+                    
+                    this.velocities[i3] *= 0.95;
+                    this.velocities[i3 + 1] *= 0.95;
+                    this.velocities[i3 + 2] *= 0.95;
                 }
 
                 this.particles.geometry.attributes.position.needsUpdate = true;

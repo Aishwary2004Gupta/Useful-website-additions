@@ -2,14 +2,14 @@
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
 
-canvas.width = window.innerWidth; 
-canvas.height = window.innerHeight; 
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
 window.addEventListener('resize', () => {
-    canvas.width = window.innerWidth; 
-    canvas.height = window.innerHeight;  
-})
-
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    initializeParticles(); // Reinitialize particles on resize
+});
 
 // Create mouse object
 const mouse = {
@@ -22,75 +22,81 @@ canvas.addEventListener('mousemove', (event) => {
     mouse.y = event.y;
 });
 
-
 // Particle class
-class Particle{
-    constructor(x, y){
-        this._baseX = x;
-        this._baseY = y;
-        this._currX = x;
-        this._currY = y;
-        this._size = 5;
-        this._color = 'white';
-        this._dx = 0;
-        this._dy = 0;
+class Particle {
+    constructor(x, y) {
+        this.baseX = x;
+        this.baseY = y;
+        this.currX = x;
+        this.currY = y;
+        this.size = 5;
+        this.color = 'white';
+        this.dx = 0;
+        this.dy = 0;
     }
 
-    update(){
-        // Get vectors and ditances
-        const vectorToMouse = [mouse.x - this._currX , mouse.y - this._currY];
-        const vectorToBase = [this._baseX - this._currX, this._baseY - this._currY];
-        const vectorMouseToBase = [mouse.x - this._baseX, mouse.y - this._baseY];
+    update() {
+        // Get vectors and distances
+        const vectorToMouse = [mouse.x - this.currX, mouse.y - this.currY];
+        const vectorToBase = [this.baseX - this.currX, this.baseY - this.currY];
+        const distanceToMouse = Math.sqrt(vectorToMouse[0] ** 2 + vectorToMouse[1] ** 2);
+        const distanceToBase = Math.sqrt(vectorToBase[0] ** 2 + vectorToBase[1] ** 2);
 
-        const distanceToMouse = Math.sqrt(vectorToMouse[0]**2 + vectorToMouse[1]**2);
-        const distanceToBase = Math.sqrt(vectorToBase[0]**2 + vectorToBase[1]**2);
-        const distanceMouseToBase = Math.sqrt(vectorMouseToBase[0]**2 + vectorMouseToBase[1]**2);
-
-        // Change velocity
-        if (distanceToMouse < 30 && distanceToBase < 60){
-            this._dx = -vectorToMouse[0] / distanceToMouse;
-            this._dy = -vectorToMouse[1] / distanceToMouse;
-        } else if (distanceMouseToBase >= 30 && distanceToBase > 0.5){
-            this._dx = vectorToBase[0] / distanceToBase;
-            this._dy = vectorToBase[1] / distanceToBase;
-        } else{
-            this._dx = 0;
-            this._dy = 0;
+        // Update velocity
+        if (distanceToMouse < 50 && distanceToBase < 100) {
+            this.dx = -vectorToMouse[0] / distanceToMouse;
+            this.dy = -vectorToMouse[1] / distanceToMouse;
+        } else if (distanceToBase > 1) {
+            this.dx = vectorToBase[0] / distanceToBase * 0.05;
+            this.dy = vectorToBase[1] / distanceToBase * 0.05;
+        } else {
+            this.dx = 0;
+            this.dy = 0;
         }
 
-        // Move
-        this._currX += this._dx;
-        this._currY += this._dy;
+        // Move particle
+        this.currX += this.dx;
+        this.currY += this.dy;
 
-        // Change color
-        this._color = `rgb(${255 - Math.floor(distanceToBase) * 3}, ${255 - Math.floor(distanceToBase) * 3}, ${255 - Math.floor(distanceToBase) * 3})`;
+        // Update color based on distance to base
+        const intensity = Math.max(0, 255 - Math.floor(distanceToBase) * 3);
+        this.color = `rgb(${intensity}, ${intensity}, ${intensity})`;
     }
 
-    draw(){
-        ctx.fillStyle = this._color;
+    draw() {
+        ctx.fillStyle = this.color;
         ctx.beginPath();
-        ctx.arc(this._currX, this._currY, this._size, 0, Math.PI * 2);
+        ctx.arc(this.currX, this.currY, this.size, 0, Math.PI * 2);
         ctx.closePath();
         ctx.fill();
     }
 }
 
+// Create particles
+let particles = [];
+function initializeParticles() {
+    particles = [];
+    const gridSize = 15;
+    const particleSpacing = 20;
+    const startX = canvas.width / 2 - (gridSize * particleSpacing) / 2;
+    const startY = canvas.height / 2 - (gridSize * particleSpacing) / 2;
 
-// Create list of particles
-const particles = [];
-for(let i = 0; i < 40; i++){
-    for(let j = 0; j < 40; j++){
-        particles.push(new Particle(canvas.width / 2 - 150 + i*10, canvas.height / 2 - 150 + j*10));
+    for (let i = 0; i < gridSize; i++) {
+        for (let j = 0; j < gridSize; j++) {
+            particles.push(new Particle(startX + i * particleSpacing, startY + j * particleSpacing));
+        }
     }
 }
 
-function mainLoop(){
-    particles.forEach(particle => particle.update());
-
+// Main animation loop
+function mainLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    particles.forEach(particle => particle.draw());
-
+    particles.forEach(particle => {
+        particle.update();
+        particle.draw();
+    });
     requestAnimationFrame(mainLoop);
 }
 
+initializeParticles();
 mainLoop();

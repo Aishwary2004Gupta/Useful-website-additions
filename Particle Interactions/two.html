@@ -93,7 +93,7 @@
                 const ty = particle.originY - particle.y;
                 const dist = Math.sqrt(tx * tx + ty * ty);
                 const angle = Math.atan2(ty, tx);
-                const force = dist * 0.15; // Stronger return force
+                const force = dist * 0.09; // Stronger return force
 
                 if (distance < 100) {
                     const mouseForce = (100 - distance) / 100;

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <style>
         canvas {
@@ -12,6 +13,7 @@
         }
     </style>
 </head>
+
 <body>
     <canvas id="canvas"></canvas>
 
@@ -29,10 +31,10 @@
         function createTextParticles() {
             const tempCanvas = document.createElement('canvas');
             const tempCtx = tempCanvas.getContext('2d');
-            
+
             tempCanvas.width = canvas.width;
             tempCanvas.height = canvas.height;
-            
+
             // Text styling
             const fontSize = Math.min(window.innerWidth / 15, 80);
             tempCtx.font = `bold ${fontSize}px Inter`;
@@ -85,7 +87,7 @@
                 const dx = mouse.x - particle.x;
                 const dy = mouse.y - particle.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
-                
+
                 // Stronger return force
                 const tx = particle.originX - particle.x;
                 const ty = particle.originY - particle.y;
@@ -109,7 +111,7 @@
                 // Draw particle with stable appearance
                 ctx.beginPath();
                 ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(255, 255, 255, ${1 - dist/500})`; // Minimal alpha variation
+                ctx.fillStyle = `rgba(255, 255, 255, ${1 - dist / 500})`; // Minimal alpha variation
                 ctx.fill();
             });
 
@@ -132,4 +134,5 @@
         animate();
     </script>
 </body>
+
 </html>

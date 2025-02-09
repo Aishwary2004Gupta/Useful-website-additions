@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <style>
         canvas {
@@ -12,6 +13,7 @@
         }
     </style>
 </head>
+
 <body>
     <canvas id="canvas"></canvas>
 
@@ -31,21 +33,21 @@
         function createTextParticles() {
             const tempCanvas = document.createElement('canvas');
             const tempCtx = tempCanvas.getContext('2d');
-            
+
             tempCanvas.width = canvas.width;
             tempCanvas.height = canvas.height;
-            
+
             // Text styling
             const fontSize = Math.min(window.innerWidth / 20, 100);
             tempCtx.font = `bold ${fontSize}px Times-New-Roman`;
             tempCtx.fillStyle = 'white';
             tempCtx.textBaseline = 'middle';
-            tempCtx.textAlign = 'center'; 
+            tempCtx.textAlign = 'center';
 
             // Calculate positions
             const text1 = "AISHWARY";
             const text2 = "GUPTA";
-            const x = canvas.width / 2; 
+            const x = canvas.width / 2;
             const y = canvas.height / 2;
 
             // Draw text
@@ -86,7 +88,7 @@
                 const dx = mouse.x - particle.x;
                 const dy = mouse.y - particle.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
-                
+
                 if (distance < 120) {
                     const force = (120 - distance) / 120;
                     const angle = Math.atan2(dy, dx);
@@ -111,7 +113,7 @@
                 // Draw particle
                 ctx.beginPath();
                 ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(1, 1 - dist/100)})`;
+                ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(1, 1 - dist / 100)})`;
                 ctx.fill();
             });
 
@@ -135,4 +137,5 @@
         animate();
     </script>
 </body>
+
 </html>

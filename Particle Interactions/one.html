@@ -92,8 +92,8 @@
                 if (distance < 120) {
                     const force = (120 - distance) / 120;
                     const angle = Math.atan2(dy, dx);
-                    particle.vx -= Math.cos(angle) * force * 8;
-                    particle.vy -= Math.sin(angle) * force * 8;
+                    particle.vx -= Math.cos(angle) * force * 5;
+                    particle.vy -= Math.sin(angle) * force * 5;
                 }
 
                 // Return to position

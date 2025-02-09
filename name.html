@@ -40,16 +40,12 @@
             tempCtx.font = `bold ${fontSize}px Inter`;
             tempCtx.fillStyle = 'white';
             tempCtx.textBaseline = 'middle';
-            tempCtx.textAlign = 'left';
+            tempCtx.textAlign = 'center'; // Center align text
 
             // Calculate positions
-            const margin = 100;
             const text1 = "AISHWARY";
             const text2 = "GUPTA";
-            const x = canvas.width - margin - Math.max(
-                tempCtx.measureText(text1).width,
-                tempCtx.measureText(text2).width
-            );
+            const x = canvas.width / 2; // Center horizontally
             const y = canvas.height / 2;
 
             // Draw text

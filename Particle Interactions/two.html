@@ -62,14 +62,14 @@
                     const index = (y * tempCanvas.width + x) * 4;
                     if (data[index + 3] > 128) {
                         particles.push({
-                            x: Math.random() * canvas.height,
+                            x: x,
                             y: Math.random() * canvas.width,
                             originX: x,
                             originY: y,
                             size: Math.random() * 1.2 + 0.8,
                             vx: 0,
                             vy: 0,
-                            friction: 0.9, // Stronger friction for quicker stabilization
+                            friction: 0.10, // Stronger friction for quicker stabilization
                             ease: 0.1
                         });
                     }

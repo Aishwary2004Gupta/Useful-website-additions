@@ -63,7 +63,7 @@
                     if (data[index + 3] > 128) {
                         particles.push({
                             x: Math.random() * canvas.width,
-                            y: Math.random(),
+                            y: Math.random() * canvas.height,
                             originX: x,
                             originY: y,
                             size: Math.random() * 1.2 + 0.8,

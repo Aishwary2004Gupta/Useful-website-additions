@@ -62,7 +62,7 @@
                     const index = (y * tempCanvas.width + x) * 4;
                     if (data[index + 3] > 128) {
                         particles.push({
-                            x: Math.random() * canvas.width,
+                            x: Math.random() * canvas.height,
                             y: Math.random() * canvas.width,
                             originX: x,
                             originY: y,

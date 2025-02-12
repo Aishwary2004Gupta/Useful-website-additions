@@ -11,6 +11,7 @@ body {
   color: #fff;
   cursor: none; /* Hide the default cursor */
 }
+
 button {
   padding: 20px 50px;
   font-size: 1.2rem;

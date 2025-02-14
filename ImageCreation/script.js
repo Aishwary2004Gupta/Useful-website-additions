@@ -8,6 +8,6 @@ allPaths.forEach((path) => {
 
     path.getBoundingClientRect();
 
-    path.style.transition = "stroke-dashoffset 2s ease";
+    path.style.transition = "stroke-dashoffset 3s ease-in-out";
     path.style.strokeDashoffset = "0";
 });

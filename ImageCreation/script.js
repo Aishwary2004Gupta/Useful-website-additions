@@ -10,4 +10,4 @@ allPaths.forEach((path) => {
 
     path.style.transition = "stroke-dashoffset 2s ease";
     path.style.strokeDashoffset = "0";
-    });
+});

@@ -1,5 +1,5 @@
 body {
-    background: #060606;
+    background: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -8,7 +8,7 @@ body {
 }
 
 svg path{
-    stroke: rgb(239, 235, 235);
+    stroke: rgb(0, 0, 0);
     stroke-width: 20px;
     fill: none;
 }

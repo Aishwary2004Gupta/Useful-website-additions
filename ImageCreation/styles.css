@@ -7,9 +7,15 @@ body {
     margin: 0;
 }
 
-svg path{
-    stroke: rgb(0, 0, 0);
-    stroke-width: 30px;
-    fill: none;
+svg {
+    width: auto;
+    height: 80vh;
 }
 
+svg path {
+    stroke: rgb(0, 0, 0);
+    stroke-width: 5px;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}

@@ -29,6 +29,7 @@ body {
   border-radius: 50%;
   animation: shadowAnimation 1s infinite;
   transform: translateY(95px);
+  filter: blur(5px);
 }
 
 @keyframes bounceAnimation {

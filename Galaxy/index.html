@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +10,7 @@
             margin: 0;
             padding: 0;
         }
-        
+
         canvas {
             width: 100%;
             height: 100%;
@@ -17,6 +18,7 @@
         }
     </style>
 </head>
+
 <body>
     <canvas id="canvas"></canvas>
 
@@ -83,7 +85,7 @@
 
             for (let i = 0; i < parameters.count; i++) {
                 const i3 = i * 3;
-                
+
                 // Position
                 const radius = Math.random() * parameters.radius;
                 const spinAngle = radius * parameters.spin;
@@ -152,4 +154,5 @@
         });
     </script>
 </body>
+
 </html>

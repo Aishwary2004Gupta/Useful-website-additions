@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +11,7 @@
             padding: 0;
             overflow: hidden;
         }
-        
+
         canvas {
             display: block;
             width: 100%;
@@ -19,6 +20,7 @@
         }
     </style>
 </head>
+
 <body>
     <canvas id="canvas"></canvas>
 
@@ -35,7 +37,7 @@
         camera.position.z = 5;
 
         // Renderer
-        const renderer = new THREE.WebGLRenderer({ 
+        const renderer = new THREE.WebGLRenderer({
             canvas: canvas,
             antialias: true
         });
@@ -47,7 +49,7 @@
         const positions = new Float32Array(particleCount * 3);
         const colors = new Float32Array(particleCount * 3);
 
-        for(let i = 0; i < particleCount * 3; i++) {
+        for (let i = 0; i < particleCount * 3; i++) {
             positions[i] = (Math.random() - 0.5) * 10;
             colors[i] = Math.random();
         }
@@ -85,7 +87,7 @@
             const elapsedTime = clock.getElapsedTime();
 
             // Update particle positions
-            for(let i = 0; i < particleCount; i++) {
+            for (let i = 0; i < particleCount; i++) {
                 const i3 = i * 3;
                 const x = geometry.attributes.position.array[i3];
                 geometry.attributes.position.array[i3 + 1] = Math.sin(elapsedTime * 2 + x * 0.5);
@@ -108,4 +110,5 @@
         animate();
     </script>
 </body>
+
 </html>

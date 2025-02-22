@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            cursor: none;
+        }
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="fluid"></canvas>
+
+    <script>
+        const canvas = document.getElementById('fluid');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas size
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // Fluid configuration
+        const particles = [];
+        const particleCount = 2000;
+        const mouse = { x: 0, y: 0, px: 0, py: 0, vx: 0, vy: 0 };
+        const physics = {
+            velocity: 0.5,
+            smoothness: 0.2,
+            blobSize: 40,
+            blobForce: 0.1,
+            friction: 0.85,
+            spacing: 2
+        };
+
+        // Create particles
+        class Particle {
+            constructor() {
+                this.pos = { x: mouse.x, y: mouse.y };
+                this.vel = { x: 0, y: 0 };
+                this.acc = { x: 0, y: 0 };
+                this.size = Math.random() * 2 + 1;
+                this.hue = Math.random() * 360;
+            }
+
+            update() {
+                // Mouse interaction
+                const dx = mouse.x - this.pos.x;
+                const dy = mouse.y - this.pos.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const force = distance < physics.blobSize ? physics.blobForce : -physics.blobForce;
+                
+                this.acc.x += (dx / distance) * force;
+                this.acc.y += (dy / distance) * force;
+                
+                // Physics
+                this.vel.x += this.acc.x * physics.velocity;
+                this.vel.y += this.acc.y * physics.velocity;
+                this.pos.x += this.vel.x;
+                this.pos.y += this.vel.y;
+                
+                // Damping
+                this.vel.x *= physics.friction;
+                this.vel.y *= physics.friction;
+                this.acc.x = 0;
+                this.acc.y = 0;
+                
+                // Color transition
+                this.hue = (this.hue + 0.5) % 360;
+            }
+
+            draw() {
+                ctx.fillStyle = `hsla(${this.hue}, 100%, 50%, 0.3)`;
+                ctx.beginPath();
+                ctx.arc(this.pos.x, this.pos.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Create particle system
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+        }
+
+        // Mouse movement
+        document.addEventListener('mousemove', (e) => {
+            mouse.px = mouse.x;
+            mouse.py = mouse.y;
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+            
+            // Smooth velocity
+            mouse.vx = (mouse.x - mouse.px) * physics.smoothness;
+            mouse.vy = (mouse.y - mouse.py) * physics.smoothness;
+        });
+
+        // Animation loop
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Update particles
+            particles.forEach(particle => {
+                // Apply mouse velocity
+                particle.pos.x += mouse.vx;
+                particle.pos.y += mouse.vy;
+                
+                // Keep particles centered around mouse
+                const dx = mouse.x - particle.pos.x;
+                const dy = mouse.y - particle.pos.y;
+                particle.pos.x += dx * physics.smoothness;
+                particle.pos.y += dy * physics.smoothness;
+                
+                particle.update();
+                particle.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        // Start animation
+        animate();
+    </script>
+</body>
+</html>

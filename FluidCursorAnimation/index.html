@@ -47,6 +47,7 @@
                 this.vy = (Math.random() - 0.5) * 10;
                 this.life = 1;
                 this.radius = Math.random() * 20 + 10;
+                this.hue = Math.random() * 360; // Add random hue for each particle
             }
 
             update() {
@@ -97,14 +98,20 @@
             }
         });
 
+        // Add color utility function
+        function getHueColor(hueOffset = 0) {
+            return `hsl(${(Date.now() * 0.1 + hueOffset) % 360}, 100%, 70%)`;
+        }
+
         function draw() {
             ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Draw trails
+            // Draw rainbow trails
             ctx.filter = 'blur(8px)';
-            points.forEach(point => {
-                ctx.strokeStyle = 'rgba(100, 200, 255, 0.1)';
+            points.forEach((point, i) => {
+                const trailColor = `hsla(${(Date.now() * 0.1 + i * 50) % 360}, 100%, 70%, 0.1)`;
+                ctx.strokeStyle = trailColor;
                 ctx.lineWidth = point.radius * 0.5;
                 ctx.beginPath();
                 ctx.moveTo(point.lastX, point.lastY);
@@ -112,13 +119,13 @@
                 ctx.stroke();
             });
 
-            // Update and draw particles
+            // Update and draw particles with unique colors
             particles = particles.filter(p => p.life > 0.1);
             particles.forEach(p => {
                 p.update();
                 ctx.filter = 'blur(4px)';
                 const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius);
-                gradient.addColorStop(0, `rgba(100, 200, 255, ${p.life})`);
+                gradient.addColorStop(0, `hsla(${p.hue}, 100%, 70%, ${p.life})`);
                 gradient.addColorStop(1, 'transparent');
                 ctx.fillStyle = gradient;
                 ctx.beginPath();
@@ -129,14 +136,15 @@
             // Update points
             points.forEach(point => point.update(mouseX, mouseY));
 
-            // Draw main cursor
+            // Draw main cursor with color cycling
             ctx.filter = 'blur(15px)';
             points.forEach((point, i) => {
                 const gradient = ctx.createRadialGradient(
                     point.x, point.y, 0,
                     point.x, point.y, point.radius
                 );
-                gradient.addColorStop(0, 'rgba(100, 200, 255, 0.4)');
+                const hue = (Date.now() * 0.1 + i * 72) % 360;
+                gradient.addColorStop(0, `hsla(${hue}, 100%, 70%, 0.4)`);
                 gradient.addColorStop(1, 'transparent');
                 
                 ctx.fillStyle = gradient;
@@ -145,18 +153,21 @@
                 ctx.fill();
             });
 
-            // Draw center glow
+            // Draw multi-colored center glow
             ctx.filter = 'blur(8px)';
-            const coreGradient = ctx.createRadialGradient(
-                mouseX, mouseY, 0,
-                mouseX, mouseY, BASE_RADIUS * 0.5
-            );
-            coreGradient.addColorStop(0, 'rgba(150, 220, 255, 0.8)');
-            coreGradient.addColorStop(1, 'transparent');
-            ctx.fillStyle = coreGradient;
-            ctx.beginPath();
-            ctx.arc(mouseX, mouseY, BASE_RADIUS * 0.5, 0, Math.PI * 2);
-            ctx.fill();
+            for (let i = 0; i < 3; i++) {
+                const coreGradient = ctx.createRadialGradient(
+                    mouseX, mouseY, 0,
+                    mouseX, mouseY, BASE_RADIUS * 0.5
+                );
+                const hue = (Date.now() * 0.1 + i * 120) % 360;
+                coreGradient.addColorStop(0, `hsla(${hue}, 100%, 70%, 0.4)`);
+                coreGradient.addColorStop(1, 'transparent');
+                ctx.fillStyle = coreGradient;
+                ctx.beginPath();
+                ctx.arc(mouseX, mouseY, BASE_RADIUS * 0.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
 
             requestAnimationFrame(draw);
         }

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            cursor: none;
+        }
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="fluid"></canvas>
+    <script>
+        const canvas = document.getElementById('fluid');
+        const ctx = canvas.getContext('2d');
+        
+        let mouseX = window.innerWidth / 2;
+        let mouseY = window.innerHeight / 2;
+        let points = [];
+        const NUM_POINTS = 8;
+        const BASE_RADIUS = 80;
+        const NOISE_FACTOR = 15;
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        class FluidPoint {
+            constructor() {
+                this.baseX = 0;
+                this.baseY = 0;
+                this.x = 0;
+                this.y = 0;
+                this.radius = BASE_RADIUS;
+                this.angle = Math.random() * Math.PI * 2;
+            }
+            
+            update(targetX, targetY) {
+                this.baseX += (targetX - this.baseX) * 0.2;
+                this.baseY += (targetY - this.baseY) * 0.2;
+                
+                this.angle += 0.05;
+                this.x = this.baseX + Math.cos(this.angle) * NOISE_FACTOR;
+                this.y = this.baseY + Math.sin(this.angle) * NOISE_FACTOR;
+                
+                this.radius = BASE_RADIUS + Math.sin(Date.now() * 0.005) * 10;
+            }
+        }
+
+        // Create fluid points
+        for (let i = 0; i < NUM_POINTS; i++) {
+            points.push(new FluidPoint());
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        function draw() {
+            // Clear canvas with fade effect
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Update points
+            points.forEach(point => point.update(mouseX, mouseY));
+            
+            // Create gradient blob
+            ctx.beginPath();
+            ctx.filter = 'blur(40px)';
+            
+            points.forEach((point, i) => {
+                const gradient = ctx.createRadialGradient(
+                    point.x, point.y, 0,
+                    point.x, point.y, point.radius
+                );
+                
+                gradient.addColorStop(0, `hsl(${(Date.now() * 0.1 + i * 50) % 360}, 100%, 70%)`);
+                gradient.addColorStop(1, `hsl(${(Date.now() * 0.1 + i * 50 + 60) % 360}, 100%, 40%)`);
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, point.radius, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            // Add core highlight
+            ctx.filter = 'blur(20px)';
+            const coreGradient = ctx.createRadialGradient(
+                mouseX, mouseY, 0,
+                mouseX, mouseY, BASE_RADIUS * 0.8
+            );
+            coreGradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+            coreGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = coreGradient;
+            ctx.arc(mouseX, mouseY, BASE_RADIUS * 0.8, 0, Math.PI * 2);
+            ctx.fill();
+            
+            requestAnimationFrame(draw);
+        }
+
+        // Start animation
+        draw();
+    </script>
+</body>
+</html>

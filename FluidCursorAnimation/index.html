@@ -27,9 +27,10 @@
         let mouseX = window.innerWidth / 2;
         let mouseY = window.innerHeight / 2;
         let points = [];
-        const NUM_POINTS = 8;
-        const BASE_RADIUS = 80;
-        const NOISE_FACTOR = 15;
+        let particles = [];
+        const NUM_POINTS = 5;
+        const BASE_RADIUS = 40;
+        const NOISE_FACTOR = 8;
 
         function resize() {
             canvas.width = window.innerWidth;
@@ -37,6 +38,24 @@
         }
         resize();
         window.addEventListener('resize', resize);
+
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 10;
+                this.vy = (Math.random() - 0.5) * 10;
+                this.life = 1;
+                this.radius = Math.random() * 20 + 10;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life *= 0.95;
+                this.radius *= 0.95;
+            }
+        }
 
         class FluidPoint {
             constructor() {
@@ -46,21 +65,23 @@
                 this.y = 0;
                 this.radius = BASE_RADIUS;
                 this.angle = Math.random() * Math.PI * 2;
+                this.lastX = 0;
+                this.lastY = 0;
             }
 
             update(targetX, targetY) {
-                this.baseX += (targetX - this.baseX) * 0.2;
-                this.baseY += (targetY - this.baseY) * 0.2;
+                this.lastX = this.x;
+                this.lastY = this.y;
+                
+                this.baseX += (targetX - this.baseX) * 0.3;
+                this.baseY += (targetY - this.baseY) * 0.3;
 
-                this.angle += 0.05;
+                this.angle += 0.1;
                 this.x = this.baseX + Math.cos(this.angle) * NOISE_FACTOR;
                 this.y = this.baseY + Math.sin(this.angle) * NOISE_FACTOR;
-
-                this.radius = BASE_RADIUS + Math.sin(Date.now() * 0.005) * 10;
             }
         }
 
-        // Create fluid points
         for (let i = 0; i < NUM_POINTS; i++) {
             points.push(new FluidPoint());
         }
@@ -70,49 +91,76 @@
             mouseY = e.clientY;
         });
 
+        document.addEventListener('click', () => {
+            for (let i = 0; i < 10; i++) {
+                particles.push(new Particle(mouseX, mouseY));
+            }
+        });
+
         function draw() {
-            // Clear canvas with fade effect
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw trails
+            ctx.filter = 'blur(8px)';
+            points.forEach(point => {
+                ctx.strokeStyle = 'rgba(100, 200, 255, 0.1)';
+                ctx.lineWidth = point.radius * 0.5;
+                ctx.beginPath();
+                ctx.moveTo(point.lastX, point.lastY);
+                ctx.lineTo(point.x, point.y);
+                ctx.stroke();
+            });
+
+            // Update and draw particles
+            particles = particles.filter(p => p.life > 0.1);
+            particles.forEach(p => {
+                p.update();
+                ctx.filter = 'blur(4px)';
+                const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius);
+                gradient.addColorStop(0, `rgba(100, 200, 255, ${p.life})`);
+                gradient.addColorStop(1, 'transparent');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+            });
 
             // Update points
             points.forEach(point => point.update(mouseX, mouseY));
 
-            // Create gradient blob
-            ctx.beginPath();
-            ctx.filter = 'blur(40px)';
-
+            // Draw main cursor
+            ctx.filter = 'blur(15px)';
             points.forEach((point, i) => {
                 const gradient = ctx.createRadialGradient(
                     point.x, point.y, 0,
                     point.x, point.y, point.radius
                 );
-
-                gradient.addColorStop(0, `hsl(${(Date.now() * 0.1 + i * 50) % 360}, 100%, 70%)`);
-                gradient.addColorStop(1, `hsl(${(Date.now() * 0.1 + i * 50 + 60) % 360}, 100%, 40%)`);
-
+                gradient.addColorStop(0, 'rgba(100, 200, 255, 0.4)');
+                gradient.addColorStop(1, 'transparent');
+                
                 ctx.fillStyle = gradient;
                 ctx.beginPath();
                 ctx.arc(point.x, point.y, point.radius, 0, Math.PI * 2);
                 ctx.fill();
             });
 
-            // Add core highlight
-            ctx.filter = 'blur(20px)';
+            // Draw center glow
+            ctx.filter = 'blur(8px)';
             const coreGradient = ctx.createRadialGradient(
                 mouseX, mouseY, 0,
-                mouseX, mouseY, BASE_RADIUS * 0.8
+                mouseX, mouseY, BASE_RADIUS * 0.5
             );
-            coreGradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
-            coreGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            coreGradient.addColorStop(0, 'rgba(150, 220, 255, 0.8)');
+            coreGradient.addColorStop(1, 'transparent');
             ctx.fillStyle = coreGradient;
-            ctx.arc(mouseX, mouseY, BASE_RADIUS * 0.8, 0, Math.PI * 2);
+            ctx.beginPath();
+            ctx.arc(mouseX, mouseY, BASE_RADIUS * 0.5, 0, Math.PI * 2);
             ctx.fill();
 
             requestAnimationFrame(draw);
         }
 
-        // Start animation
         draw();
     </script>
 </body>

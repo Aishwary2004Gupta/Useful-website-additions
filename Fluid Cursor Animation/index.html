@@ -125,14 +125,6 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             particles.forEach(particle => {
-                particle.pos.x += mouse.vx;
-                particle.pos.y += mouse.vy;
-
-                const dx = mouse.x - particle.pos.x;
-                const dy = mouse.y - particle.pos.y;
-                particle.pos.x += dx * physics.smoothness;
-                particle.pos.y += dy * physics.smoothness;
-
                 particle.update();
                 particle.draw();
             });

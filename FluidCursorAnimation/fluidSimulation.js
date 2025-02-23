@@ -4,17 +4,17 @@ class FluidSimulation {
         this.colorUpdateTimer = 0;
         this.config = {
             SIM_RESOLUTION: 128,
-            DYE_RESOLUTION: 1024,
-            DENSITY_DISSIPATION: 1,
-            VELOCITY_DISSIPATION: 0.2,
+            DYE_RESOLUTION: 512,
+            DENSITY_DISSIPATION: 0.97,
+            VELOCITY_DISSIPATION: 0.98,
             PRESSURE: 0.8,
             PRESSURE_ITERATIONS: 20,
             CURL: 30,
-            SPLAT_RADIUS: 0.25,
+            SPLAT_RADIUS: 0.3,
             SPLAT_FORCE: 6000,
             SHADING: true,
             COLOR_UPDATE_SPEED: 10,
-            TRANSPARENT: false,
+            TRANSPARENT: true,
             BACK_COLOR: { r: 0, g: 0, b: 0 }
         };
 
@@ -187,51 +187,35 @@ class FluidSimulation {
 
     setupEventListeners() {
         const handleMove = (x, y) => {
-            const rect = this.canvas.getBoundingClientRect();
+            x = x / window.innerWidth;
+            y = 1.0 - y / window.innerHeight;
+            
             const pointer = this.pointers[0];
-            pointer.prevTexcoordX = pointer.texcoordX;
-            pointer.prevTexcoordY = pointer.texcoordY;
-            pointer.texcoordX = (x - rect.left) / this.canvas.width;
-            pointer.texcoordY = (y - rect.top) / this.canvas.height;
-            pointer.deltaX = this.correctDeltaX(pointer.texcoordX - pointer.prevTexcoordX);
-            pointer.deltaY = this.correctDeltaY(pointer.texcoordY - pointer.prevTexcoordY);
-            pointer.moved = true;
-            pointer.down = true;
+            pointer.moved = pointer.down;
+            pointer.prevTexcoordX = pointer.texcoordX || x;
+            pointer.prevTexcoordY = pointer.texcoordY || y;
+            pointer.texcoordX = x;
+            pointer.texcoordY = y;
+            pointer.deltaX = this.correctDeltaX(pointer.texcoordX - pointer.prevTexcoordX) * 10;
+            pointer.deltaY = this.correctDeltaY(pointer.texcoordY - pointer.prevTexcoordY) * 10;
         };
-    
-        // Mouse events
-        this.canvas.addEventListener('mousedown', (e) => {
+
+        // Mouse events with continuous tracking
+        window.addEventListener('mousemove', (e) => {
+            this.pointers[0].down = true;
             handleMove(e.clientX, e.clientY);
         });
-    
-        this.canvas.addEventListener('mousemove', (e) => {
-            if (!this.pointers[0].down) return;
-            handleMove(e.clientX, e.clientY);
-        });
-    
-        window.addEventListener('mouseup', () => {
-            this.pointers[0].down = false;
-        });
-    
+
         // Touch events
-        this.canvas.addEventListener('touchstart', (e) => {
+        window.addEventListener('touchmove', (e) => {
             e.preventDefault();
-            handleMove(e.touches[0].clientX, e.touches[0].clientY);
-        });
-    
-        this.canvas.addEventListener('touchmove', (e) => {
-            e.preventDefault();
+            this.pointers[0].down = true;
             handleMove(e.touches[0].clientX, e.touches[0].clientY);
         }, { passive: false });
-    
-        window.addEventListener('touchend', () => {
-            this.pointers[0].down = false;
-        });
-    
-        // Initial interaction listener
-        document.addEventListener('mousemove', () => {
-            this.running = true;
-            document.removeEventListener('mousemove', this);
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            this.resizeCanvas();
         });
     }
 
@@ -507,10 +491,11 @@ class FluidSimulation {
     }
     
     generateColor() {
-        const c = this.HSVtoRGB(Math.random(), 1.0, 1.0);
-        c.r *= 0.15;
-        c.g *= 0.15;
-        c.b *= 0.15;
+        const hue = Math.random();
+        const c = this.HSVtoRGB(hue, 1.0, 1.0);
+        c.r *= 0.25;
+        c.g *= 0.25;
+        c.b *= 0.25;
         return c;
     }
     
@@ -559,8 +544,12 @@ class Pointer {
     }
 }
 
-// Initialize when ready
-window.addEventListener('load', () => {
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('fluid-canvas');
-    new FluidSimulation(canvas);
+    if (canvas) {
+        const simulation = new FluidSimulation(canvas);
+        // Force initial resize
+        simulation.resizeCanvas();
+    }
 });

@@ -163,6 +163,66 @@ class FluidSimulation {
         return uniforms;
     }
 
+    correctDeltaX(delta) {
+        const aspectRatio = this.canvas.width / this.canvas.height;
+        return aspectRatio < 1 ? delta * aspectRatio : delta;
+    }
+    
+    correctDeltaY(delta) {
+        const aspectRatio = this.canvas.width / this.canvas.height;
+        return aspectRatio > 1 ? delta / aspectRatio : delta;
+    }
+
+    setupEventListeners() {
+        const handleMove = (x, y) => {
+            const rect = this.canvas.getBoundingClientRect();
+            const pointer = this.pointers[0];
+            pointer.prevTexcoordX = pointer.texcoordX;
+            pointer.prevTexcoordY = pointer.texcoordY;
+            pointer.texcoordX = (x - rect.left) / this.canvas.width;
+            pointer.texcoordY = (y - rect.top) / this.canvas.height;
+            pointer.deltaX = this.correctDeltaX(pointer.texcoordX - pointer.prevTexcoordX);
+            pointer.deltaY = this.correctDeltaY(pointer.texcoordY - pointer.prevTexcoordY);
+            pointer.moved = true;
+            pointer.down = true;
+        };
+    
+        // Mouse events
+        this.canvas.addEventListener('mousedown', (e) => {
+            handleMove(e.clientX, e.clientY);
+        });
+    
+        this.canvas.addEventListener('mousemove', (e) => {
+            if (!pointer.down) return;
+            handleMove(e.clientX, e.clientY);
+        });
+    
+        window.addEventListener('mouseup', () => {
+            this.pointers[0].down = false;
+        });
+    
+        // Touch events
+        this.canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleMove(e.touches[0].clientX, e.touches[0].clientY);
+        });
+    
+        this.canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            handleMove(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: false });
+    
+        window.addEventListener('touchend', () => {
+            this.pointers[0].down = false;
+        });
+    
+        // Initial interaction listener
+        document.addEventListener('mousemove', () => {
+            this.running = true;
+            document.removeEventListener('mousemove', this);
+        });
+    }
+
     initBuffers() {
         const gl = this.gl;
         // Vertex buffer

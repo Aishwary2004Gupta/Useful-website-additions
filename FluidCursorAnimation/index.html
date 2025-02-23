@@ -161,7 +161,7 @@
                     mouseX, mouseY, BASE_RADIUS * 0.5
                 );
                 const hue = (Date.now() * 0.1 + i * 120) % 360;
-                coreGradient.addColorStop(0, `hsla(${hue}, 100%, 80%, 10)`); // Increased lightness to 80%
+                coreGradient.addColorStop(0, `hsla(${hue}, 100%, 180%, 10)`); // Increased lightness to 80%
                 coreGradient.addColorStop(1, 'transparent');
                 ctx.fillStyle = coreGradient;
                 ctx.beginPath();

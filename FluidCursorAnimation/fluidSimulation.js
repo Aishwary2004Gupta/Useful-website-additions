@@ -1,6 +1,7 @@
 class FluidSimulation {
     constructor(canvas) {
         this.canvas = canvas;
+        this.colorUpdateTimer = 0;
         this.config = {
             SIM_RESOLUTION: 128,
             DYE_RESOLUTION: 1024,
@@ -65,16 +66,6 @@ class FluidSimulation {
         gl.clearColor(0, 0, 0, 1);
         const halfFloatTexType = isWebGL2 ? gl.HALF_FLOAT : halfFloat.HALF_FLOAT_OES;
 
-        return {
-            gl,
-            ext: {
-                halfFloatTexType,
-                supportLinearFiltering,
-                formatRGBA: this.getSupportedFormat(gl, gl.RGBA, gl.RGBA, halfFloatTexType),
-                formatRG: this.getSupportedFormat(gl, gl.RGBA, gl.RGBA, halfFloatTexType),
-                formatR: this.getSupportedFormat(gl, gl.RGBA, gl.RGBA, halfFloatTexType)
-            }
-        };
         let formatRGBA, formatRG, formatR;
         if (isWebGL2) {
             formatRGBA = this.getSupportedFormat(gl, gl.RGBA16F, gl.RGBA, halfFloatTexType);
@@ -214,7 +205,7 @@ class FluidSimulation {
         });
     
         this.canvas.addEventListener('mousemove', (e) => {
-            if (!pointer.down) return;
+            if (!this.pointers[0].down) return;
             handleMove(e.clientX, e.clientY);
         });
     
@@ -269,22 +260,6 @@ class FluidSimulation {
             width: aspectRatio > 1 ? max : min,
             height: aspectRatio > 1 ? min : max
         };
-    }
-
-    // Add this after the createGLContext() method
-    supportRenderTextureFormat(gl, internalFormat, format, type) {
-        const texture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, 4, 4, 0, format, type, null);
-        
-        const fb = gl.createFramebuffer();
-        gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-        return gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
     }
 
     initFramebuffers() {

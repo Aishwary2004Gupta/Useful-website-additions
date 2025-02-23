@@ -75,6 +75,27 @@ class FluidSimulation {
                 formatR: this.getSupportedFormat(gl, gl.RGBA, gl.RGBA, halfFloatTexType)
             }
         };
+        let formatRGBA, formatRG, formatR;
+        if (isWebGL2) {
+            formatRGBA = this.getSupportedFormat(gl, gl.RGBA16F, gl.RGBA, halfFloatTexType);
+            formatRG = this.getSupportedFormat(gl, gl.RG16F, gl.RG, halfFloatTexType);
+            formatR = this.getSupportedFormat(gl, gl.R16F, gl.RED, halfFloatTexType);
+        } else {
+            formatRGBA = this.getSupportedFormat(gl, gl.RGBA, gl.RGBA, halfFloatTexType);
+            formatRG = this.getSupportedFormat(gl, gl.RGBA, gl.RGBA, halfFloatTexType);
+            formatR = this.getSupportedFormat(gl, gl.RGBA, gl.RGBA, halfFloatTexType);
+        }
+
+        return {
+            gl,
+            ext: {
+                halfFloatTexType,
+                supportLinearFiltering,
+                formatRGBA,
+                formatRG,
+                formatR
+            }
+        };
     }
 
     getSupportedFormat(gl, internalFormat, format, type) {
@@ -236,6 +257,34 @@ class FluidSimulation {
         this.indexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+    }
+    
+    // Add this inside the FluidSimulation class
+    getResolution(resolution) {
+        const aspectRatio = this.canvas.width / this.canvas.height;
+        const min = Math.round(resolution);
+        const max = Math.round(resolution * (aspectRatio > 1 ? aspectRatio : 1));
+        
+        return {
+            width: aspectRatio > 1 ? max : min,
+            height: aspectRatio > 1 ? min : max
+        };
+    }
+
+    // Add this after the createGLContext() method
+    supportRenderTextureFormat(gl, internalFormat, format, type) {
+        const texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, 4, 4, 0, format, type, null);
+        
+        const fb = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+        return gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
     }
 
     initFramebuffers() {

@@ -244,6 +244,220 @@ class FluidSimulation {
 
     // ... (Remaining simulation code from original React implementation)
     // Include all other methods: updateFrame, step, splat, etc.
+    updateFrame() {
+        if (!this.running) return;
+        
+        const now = Date.now();
+        const dt = Math.min((now - this.lastTime) / 1000, 0.016);
+        this.lastTime = now;
+    
+        this.resizeCanvas();
+        this.updateColors(dt);
+        this.applyInputs();
+        this.step(dt);
+        this.render(null);
+        
+        requestAnimationFrame(() => this.updateFrame());
+    }
+    
+    step(dt) {
+        this.gl.disable(this.gl.BLEND);
+        
+        // Curl calculation
+        this.applyProgram(this.programs.curl, {
+            uVelocity: this.velocity.read.attach(0),
+            texelSize: [this.velocity.texelSizeX, this.velocity.texelSizeY]
+        });
+        this.blit(this.curl);
+    
+        // Vorticity confinement
+        this.applyProgram(this.programs.vorticity, {
+            uVelocity: this.velocity.read.attach(0),
+            uCurl: this.curl.attach(1),
+            curl: this.config.CURL,
+            dt,
+            texelSize: [this.velocity.texelSizeX, this.velocity.texelSizeY]
+        });
+        this.blit(this.velocity.write);
+        this.velocity.swap();
+    
+        // Divergence calculation
+        this.applyProgram(this.programs.divergence, {
+            uVelocity: this.velocity.read.attach(0),
+            texelSize: [this.velocity.texelSizeX, this.velocity.texelSizeY]
+        });
+        this.blit(this.divergence);
+    
+        // Pressure solve
+        this.applyProgram(this.programs.clear, {
+            uTexture: this.pressure.read.attach(0),
+            value: this.config.PRESSURE
+        });
+        this.blit(this.pressure.write);
+        this.pressure.swap();
+    
+        for (let i = 0; i < this.config.PRESSURE_ITERATIONS; i++) {
+            this.applyProgram(this.programs.pressure, {
+                uPressure: this.pressure.read.attach(0),
+                uDivergence: this.divergence.attach(1),
+                texelSize: [this.velocity.texelSizeX, this.velocity.texelSizeY]
+            });
+            this.blit(this.pressure.write);
+            this.pressure.swap();
+        }
+    
+        // Gradient subtract
+        this.applyProgram(this.programs.gradientSubtract, {
+            uPressure: this.pressure.read.attach(0),
+            uVelocity: this.velocity.read.attach(1),
+            texelSize: [this.velocity.texelSizeX, this.velocity.texelSizeY]
+        });
+        this.blit(this.velocity.write);
+        this.velocity.swap();
+    
+        // Advection
+        this.applyProgram(this.programs.advection, {
+            uVelocity: this.velocity.read.attach(0),
+            uSource: this.velocity.read.attach(0),
+            dt,
+            dissipation: this.config.VELOCITY_DISSIPATION,
+            texelSize: [this.velocity.texelSizeX, this.velocity.texelSizeY]
+        });
+        this.blit(this.velocity.write);
+        this.velocity.swap();
+    
+        this.applyProgram(this.programs.advection, {
+            uVelocity: this.velocity.read.attach(0),
+            uSource: this.dye.read.attach(1),
+            dt,
+            dissipation: this.config.DENSITY_DISSIPATION,
+            texelSize: [this.dye.texelSizeX, this.dye.texelSizeY]
+        });
+        this.blit(this.dye.write);
+        this.dye.swap();
+    }
+    
+    splat(x, y, dx, dy, color) {
+        this.applyProgram(this.programs.splat, {
+            uTarget: this.velocity.read.attach(0),
+            aspectRatio: this.canvas.width / this.canvas.height,
+            point: [x, y],
+            color: [dx, dy, 0],
+            radius: this.correctRadius(this.config.SPLAT_RADIUS)
+        });
+        this.blit(this.velocity.write);
+        this.velocity.swap();
+    
+        this.applyProgram(this.programs.splat, {
+            uTarget: this.dye.read.attach(0),
+            aspectRatio: this.canvas.width / this.canvas.height,
+            point: [x, y],
+            color: [color.r, color.g, color.b],
+            radius: this.correctRadius(this.config.SPLAT_RADIUS)
+        });
+        this.blit(this.dye.write);
+        this.dye.swap();
+    }
+    
+    // Helper methods
+    applyProgram(program, uniforms) {
+        this.gl.useProgram(program.program);
+        for (const [name, value] of Object.entries(uniforms)) {
+            const location = program.uniforms[name];
+            if (Array.isArray(value)) {
+                this.gl[`uniform${value.length}fv`](location, value);
+            } else if (typeof value === 'number') {
+                this.gl.uniform1f(location, value);
+            }
+        }
+    }
+    
+    blit(target) {
+        const gl = this.gl;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, target?.fbo || null);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+        gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+        gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+    }
+    
+    resizeCanvas() {
+        const dpr = window.devicePixelRatio || 1;
+        const width = Math.floor(this.canvas.clientWidth * dpr);
+        const height = Math.floor(this.canvas.clientHeight * dpr);
+        
+        if (this.canvas.width !== width || this.canvas.height !== height) {
+            this.canvas.width = width;
+            this.canvas.height = height;
+            this.initFramebuffers();
+        }
+    }
+    
+    correctRadius(radius) {
+        const aspectRatio = this.canvas.width / this.canvas.height;
+        return aspectRatio > 1 ? radius * aspectRatio : radius;
+    }
+    
+    // Color and pointer methods
+    updateColors(dt) {
+        this.colorUpdateTimer += dt * this.config.COLOR_UPDATE_SPEED;
+        if (this.colorUpdateTimer >= 1) {
+            this.pointers.forEach(p => p.color = this.generateColor());
+            this.colorUpdateTimer = 0;
+        }
+    }
+    
+    applyInputs() {
+        this.pointers.forEach(pointer => {
+            if (pointer.moved) {
+                pointer.moved = false;
+                this.splat(
+                    pointer.texcoordX,
+                    pointer.texcoordY,
+                    pointer.deltaX * this.config.SPLAT_FORCE,
+                    pointer.deltaY * this.config.SPLAT_FORCE,
+                    pointer.color
+                );
+            }
+        });
+    }
+    
+    generateColor() {
+        const c = this.HSVtoRGB(Math.random(), 1.0, 1.0);
+        c.r *= 0.15;
+        c.g *= 0.15;
+        c.b *= 0.15;
+        return c;
+    }
+    
+    HSVtoRGB(h, s, v) {
+        let r, g, b, i, f, p, q, t;
+        i = Math.floor(h * 6);
+        f = h * 6 - i;
+        p = v * (1 - s);
+        q = v * (1 - f * s);
+        t = v * (1 - (1 - f) * s);
+        
+        switch (i % 6) {
+            case 0: r = v, g = t, b = p; break;
+            case 1: r = q, g = v, b = p; break;
+            case 2: r = p, g = v, b = t; break;
+            case 3: r = p, g = q, b = v; break;
+            case 4: r = t, g = p, b = v; break;
+            case 5: r = v, g = p, b = q; break;
+        }
+        return { r, g, b };
+    }
+    
+    render(target) {
+        this.gl.enable(this.gl.BLEND);
+        this.gl.blendFunc(this.gl.ONE, this.gl.ONE_MINUS_SRC_ALPHA);
+        this.applyProgram(this.programs.display, {
+            uTexture: this.dye.read.attach(0),
+            texelSize: [1/this.canvas.width, 1/this.canvas.height]
+        });
+        this.blit(target);
+    }
 }
 
 class Pointer {

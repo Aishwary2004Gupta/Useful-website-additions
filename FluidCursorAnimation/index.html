@@ -100,7 +100,7 @@
 
         // Add color utility function
         function getHueColor(hueOffset = 0) {
-            return `hsl(${(Date.now() * 0.1 + hueOffset) % 360}, 100%, 70%)`;
+            return `hsl(${(Date.now() * 0.1 + hueOffset) % 360}, 100%, 80%)`; // Increased lightness to 80%
         }
 
         function draw() {
@@ -110,7 +110,7 @@
             // Draw rainbow trails
             ctx.filter = 'blur(8px)';
             points.forEach((point, i) => {
-                const trailColor = `hsla(${(Date.now() * 0.1 + i * 50) % 360}, 100%, 70%, 0.1)`;
+                const trailColor = `hsla(${(Date.now() * 0.1 + i * 50) % 360}, 100%, 80%, 0.1)`; // Increased lightness to 80%
                 ctx.strokeStyle = trailColor;
                 ctx.lineWidth = point.radius * 0.5;
                 ctx.beginPath();
@@ -125,7 +125,7 @@
                 p.update();
                 ctx.filter = 'blur(4px)';
                 const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius);
-                gradient.addColorStop(0, `hsla(${p.hue}, 100%, 70%, ${p.life})`);
+                gradient.addColorStop(0, `hsla(${p.hue}, 100%, 80%, ${p.life})`); // Increased lightness to 80%
                 gradient.addColorStop(1, 'transparent');
                 ctx.fillStyle = gradient;
                 ctx.beginPath();
@@ -144,7 +144,7 @@
                     point.x, point.y, point.radius
                 );
                 const hue = (Date.now() * 0.1 + i * 72) % 360;
-                gradient.addColorStop(0, `hsla(${hue}, 100%, 70%, 0.4)`);
+                gradient.addColorStop(0, `hsla(${hue}, 100%, 80%, 0.4)`); // Increased lightness to 80%
                 gradient.addColorStop(1, 'transparent');
                 
                 ctx.fillStyle = gradient;
@@ -161,7 +161,7 @@
                     mouseX, mouseY, BASE_RADIUS * 0.5
                 );
                 const hue = (Date.now() * 0.1 + i * 120) % 360;
-                coreGradient.addColorStop(0, `hsla(${hue}, 100%, 70%, 0.4)`);
+                coreGradient.addColorStop(0, `hsla(${hue}, 100%, 80%, 0.4)`); // Increased lightness to 80%
                 coreGradient.addColorStop(1, 'transparent');
                 ctx.fillStyle = coreGradient;
                 ctx.beginPath();

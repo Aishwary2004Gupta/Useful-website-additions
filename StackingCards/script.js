@@ -1,3 +1,7 @@
+// Scroll to top when page loads
+window.onbeforeunload = function () {
+    window.scrollTo(0, 0);
+};
 
 let cards = document.querySelectorAll(".card");
 let stackArea = document.querySelector(".stack-area");

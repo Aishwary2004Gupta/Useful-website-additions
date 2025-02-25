@@ -17,26 +17,23 @@
         height: fit-content;
         margin: 0;
         padding: 0;
+        transition: background-color 0.5s ease;
       }
       .stack-area {
         width: 100%;
         height: 300vh;
         position: relative;
-        background: white;
+        background: transparent;
         display: flex;
+        justify-content: center;
       }
-      .left {
+      .card-container {
         height: 100vh;
-        flex-basis: 50%;
         position: sticky;
         top: 0;
-        left: 0;
-      }
-      .right {
-        height: 100vh;
-        flex-basis: 50%;
-        position: sticky;
-        top: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
       /*Styling for the left elements content starts here...*/
       .left {
@@ -80,8 +77,6 @@
         border-radius: 25px;
         margin-bottom: 10px;
         position: absolute;
-        top: calc(50% - 175px);
-        left: calc(50% - 175px);
         transition: 0.5s ease-in-out;
       }
       .card:nth-child(1) {
@@ -125,7 +120,7 @@
   </head>
   <body>
     <div class="stack-area">
-      <div class="right">
+      <div class="card-container">
         <div class="card">
           <div class="sub">Simplified</div>
           <div class="content">Complex tasks are now simple</div>
@@ -147,8 +142,15 @@
 
     <script>
       let cards = document.querySelectorAll(".card");
-
       let stackArea = document.querySelector(".stack-area");
+      
+      // Background colors that contrast with cards
+      const bgColors = [
+        '#1a1a1a',
+        '#004466',
+        '#330033',
+        '#463366'
+      ];
 
       function rotateCards() {
         let angle = 0;
@@ -167,12 +169,16 @@
 
       window.addEventListener("scroll", () => {
         let distance = window.innerHeight * 0.5;
-
         let topVal = stackArea.getBoundingClientRect().top;
-
         let index = -1 * (topVal / distance + 1);
-
         index = Math.floor(index);
+
+        // Update background color based on current card
+        if (index >= 0 && index < bgColors.length) {
+          document.body.style.backgroundColor = bgColors[index];
+        } else {
+          document.body.style.backgroundColor = '#ffffff';
+        }
 
         for (i = 0; i < cards.length; i++) {
           if (i <= index) {

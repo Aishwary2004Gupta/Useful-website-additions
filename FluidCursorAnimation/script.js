@@ -7,6 +7,7 @@ let particles = [];
 let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
 let isMouseMoving = false;
 let initialPattern = true;
+let t = 0;
 
 class Particle {
     constructor(x, y) {
@@ -70,12 +71,13 @@ function animate() {
     handleParticles();
 
     if (initialPattern) {
-        // Move in a circular pattern at the start
-        mouse.x = canvas.width / 2 + Math.sin(Date.now() / 1000) * 100;
-        mouse.y = canvas.height / 2 + Math.cos(Date.now() / 1000) * 100;
+        // Move in the specified pattern at the start
+        mouse.x = (0.5 + 0.2 * Math.cos(0.002 * t) * Math.sin(0.005 * t)) * window.innerWidth;
+        mouse.y = (0.5 + 0.3 * Math.cos(0.005 * t) + 0.1 * Math.cos(0.01 * t)) * window.innerHeight;
         for (let i = 0; i < 5; i++) {
             particles.push(new Particle(mouse.x, mouse.y));
         }
+        t++;
     }
 
     requestAnimationFrame(animate);

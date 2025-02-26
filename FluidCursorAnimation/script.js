@@ -1,3 +1,4 @@
+
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
@@ -71,13 +72,13 @@ function animate() {
     handleParticles();
 
     if (initialPattern) {
-        // Move in the specified pattern at the start
-        mouse.x = (0.5 + 0.2 * Math.cos(0.002 * t) * Math.sin(0.005 * t)) * window.innerWidth;
-        mouse.y = (0.5 + 0.3 * Math.cos(0.005 * t) + 0.1 * Math.cos(0.01 * t)) * window.innerHeight;
+        // Increase speed by adjusting the frequency and time increment
+        mouse.x = (0.5 + 0.2 * Math.cos(0.004 * t) * Math.sin(0.01 * t)) * window.innerWidth;
+        mouse.y = (0.5 + 0.3 * Math.cos(0.01 * t) + 0.1 * Math.cos(0.02 * t)) * window.innerHeight;
         for (let i = 0; i < 5; i++) {
             particles.push(new Particle(mouse.x, mouse.y));
         }
-        t++;
+        t += 2; // Increase the time increment
     }
 
     requestAnimationFrame(animate);

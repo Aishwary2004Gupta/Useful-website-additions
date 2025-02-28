@@ -64,7 +64,7 @@
     }
 
     section span:hover {
-      background: #f00;
+      background: rgb(43, 255, 0);
       transition: 0s;
     }
 

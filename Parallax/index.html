@@ -1,167 +1,200 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Progress Bar</title>
+    <title>Fake 3D</title>
     <!--Google Fonts and Icons-->
     <link
-        href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Round|Material+Icons+Sharp|Material+Icons+Two+Tone"
-        rel="stylesheet" />
+      href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Round|Material+Icons+Sharp|Material+Icons+Two+Tone"
+      rel="stylesheet"
+    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap"
-        rel="stylesheet" />
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        body {
-            width: 100%;
-            height: 100vh;
-            margin: 0;
-            padding: 0;
-        }
+      html::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+      }
+      body {
+        width: 100%;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
 
-        .center {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-            background: linear-gradient(45deg, rgb(15, 18, 25), rgb(16, 45, 98));
-        }
+        background: #1d1e22;
+      }
+      .layer {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        position: absolute;
+        top: 0;
+        left: 0;
 
-        .progress {
-            width: 280px;
-            height: 300px;
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-        }
+        transition: 1.2s cubic-bezier(0.71, 0, 0.38, 1);
+      }
+      #layer1 {
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
+        background: rgb(255, 239, 219);
+        z-index: 2;
+      }
+      .can-container {
+        width: 200px;
+        position: relative;
+        overflow: hidden;
 
-        .bar {
-            width: 75px;
-            border-radius: 3mm;
-            position: relative;
-            animation: progress 1s ease-out;
-        }
-
-        .bar:nth-child(1) {
-            height: calc(150px * 0.5);
-            background: linear-gradient(rgb(246, 225, 73), transparent 100%);
-        }
-
-        .bar:nth-child(2) {
-            height: calc(150px * 0.9);
-            background: linear-gradient(rgb(122, 209, 69), transparent 100%);
-        }
-
-        .bar:nth-child(3) {
-            height: calc(150px * 0.4);
-            background: linear-gradient(rgb(244, 115, 116), transparent 100%);
-        }
-
-        .text {
-            position: absolute;
-            top: -70px;
-            left: 50%;
-            width: 100%;
-            height: fit-content;
-            transform: translate(-50%, 0);
-            color: white;
-            font-family: poppins;
-            font-size: 12px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-        }
-
-        .text span {
-            font-weight: 200;
-        }
-
-        .bar::before {
-            position: absolute;
-            content: "";
-            top: 20px;
-            left: 50%;
-            transform: translate(-50%, 0);
-            width: 8px;
-            height: 8px;
-            background: white;
-            border-radius: 50%;
-        }
-
-        .text::before {
-            position: absolute;
-            content: "";
-            bottom: -55px;
-            left: 50%;
-            transform: translate(-50%, 0);
-            background: linear-gradient(transparent 1%, rgb(255, 255, 255));
-            border-radius: 0.5mm;
-            width: 1px;
-            height: 55px;
-        }
-
-        @keyframes progress {
-            from {
-                height: 0;
-            }
-        }
-
-        .bar:hover::after {
-            position: absolute;
-            content: "";
-            width: 100%;
-            height: 100%;
-            border-radius: 3mm;
-            background: repeating-linear-gradient(45deg,
-                    rgba(255, 255, 255, 0.4) 0,
-                    rgba(255, 255, 255, 0.4) 0.4mm,
-                    transparent 0.4mm,
-                    transparent 1.2mm);
-            animation: move 5s linear infinite;
-            background-size: 200% 100%;
-        }
-
-        @keyframes move {
-            0% {
-                background-position: 100% 0;
-            }
-
-            100% {
-                background-position: 0 0;
-            }
-        }
+        /*adjustment for the label button*/
+        margin-top: 75px;
+      }
+      .can-img {
+        width: 100%;
+      }
+      .wrapper {
+        position: absolute;
+        height: 90%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -53%);
+        mix-blend-mode: multiply;
+        transition: 10s cubic-bezier(0.71, 0, 0.38, 1);
+      }
+      .text {
+        font-family: poppins;
+        font-size: 175px;
+        font-weight: 500;
+        color: rgb(255, 213, 159);
+        position: absolute;
+        transition: 1.2s cubic-bezier(0.71, 0, 0.38, 1);
+        display: none;
+      }
+      .fruits {
+        position: absolute;
+        transition: cubic-bezier(0.71, 0, 0.38, 1) 1.2s;
+        display: none;
+      }
+      .fruits img {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        transition: cubic-bezier(0.71, 0, 0.38, 1) 1.2s;
+      }
+      #layer1 .fruits img:nth-child(1) {
+        width: 125px;
+        translate: -225px -150px;
+      }
+      #layer1 .fruits img:nth-child(2) {
+        width: 180px;
+        translate: 275px -50px;
+      }
+      #layer1 .fruits img:nth-child(3) {
+        width: 250px;
+        translate: -175px 115px;
+      }
+      #layer2 {
+        background: rgb(229, 254, 193);
+        z-index: 1;
+      }
+      #layer2 .text {
+        color: rgb(181, 235, 115);
+      }
+      #layer2 .fruits img:nth-child(1) {
+        width: 75px;
+        translate: 180px 90px;
+      }
+      #layer2 .fruits img:nth-child(2) {
+        width: 275px;
+        translate: 225px -125px;
+      }
+      #layer2 .fruits img:nth-child(3) {
+        width: 200px;
+        translate: -200px 50px;
+      }
+      #toggle {
+        display: none;
+      }
+      .layer label {
+        display: block;
+        font-family: poppins;
+        box-sizing: border-box;
+        padding: 10px 20px;
+        font-size: 16px;
+        border: 0.5mm solid black;
+        border-radius: 10mm;
+        cursor: pointer;
+        margin-top: 75px;
+      }
+      #toggle:checked ~ #layer1 .can-container .wrapper {
+        left: -50%;
+      }
+      #toggle:checked ~ #layer1 .text {
+        translate: 150% 0;
+      }
+      #toggle:checked ~ #layer1 .fruits {
+        translate: 125vw 0;
+      }
+      #toggle:checked ~ #layer1 .fruits img {
+        translate: -100% 0;
+      }
+      #toggle:not(:checked) ~ #layer2 .can-container .wrapper {
+        left: 150%;
+      }
+      #toggle:not(:checked) ~ #layer2 .text {
+        translate: -150% 0;
+      }
+      #toggle:not(:checked) ~ #layer2 .fruits {
+        translate: -125vw 0;
+      }
+      #toggle:not(:checked) ~ #layer2 .fruits img {
+        translate: -100% 0;
+      }
+      #toggle:checked ~ #layer1 {
+      }
     </style>
-</head>
+  </head>
+  <body>
+    <input type="checkbox" id="toggle" />
+    <div class="layer" id="layer1">
+      <div class="text">Orange</div>
 
-<body>
-    <div class="center">
-        <div class="progress">
-            <div class="bar">
-                <div class="text">
-                    <span>HTML</span>
-                    50%
-                </div>
-            </div>
-            <div class="bar">
-                <div class="text">
-                    <span>CSS</span>
-                    90%
-                </div>
-            </div>
-            <div class="bar">
-                <div class="text">
-                    <span>JS</span>
-                    40%
-                </div>
-            </div>
-        </div>
+      <div class="can-container">
+        <img src="../images/can 2.png" alt="" class="can-img" />
+
+        <img src="../images/Contents.png" alt="" class="wrapper" />
+      </div>
+
+      <div class="fruits">
+        <img src="../images/orange-3.png" alt="" />
+        <img src="../images/orange-2.png" alt="" />
+        <img src="../images/orange-1.png" alt="" />
+      </div>
+
+      <label for="toggle">Click to Slide</label>
     </div>
-</body>
+    <div class="layer" id="layer2">
+      <div class="text">Pineapple</div>
 
+      <div class="can-container">
+        <img src="../images/can 2.png" alt="" class="can-img" />
+
+        <img src="../images/Contents-2.png" alt="" class="wrapper" />
+      </div>
+
+      <div class="fruits">
+        <img src="../images/pineapple-3.png" alt="" />
+        <img src="../images/pineapple-2.png" alt="" />
+        <img src="../images/pineapple-1.png" alt="" />
+      </div>
+
+      <label for="toggle">Click to Slide</label>
+    </div>
+  </body>
 </html>

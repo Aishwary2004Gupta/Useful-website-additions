@@ -1,12 +1,7 @@
 
 
 
-{
-    "imports": {
-        "three": "https://unpkg.com/three@0.162.0/build/three.module.js",
-        "three/addons/": "https://unpkg.com/three@0.162.0/examples/jsm/"
-    }
-}
+
 
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';

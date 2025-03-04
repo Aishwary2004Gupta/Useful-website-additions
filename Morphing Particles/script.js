@@ -108,11 +108,11 @@ function initControls() {
     controls.rotateSpeed = 0.5;
     controls.minDistance = 2;
     controls.maxDistance = 10;
-
+    
     controls.addEventListener('start', () => {
         document.body.style.cursor = 'grabbing';
     });
-
+    
     controls.addEventListener('end', () => {
         document.body.style.cursor = 'grab';
     });
@@ -179,21 +179,21 @@ function initTrailEffect() {
             opacity: { value: 0.9 }
         },
         vertexShader: `
-                varying vec2 vUv;
-                void main() {
-                    vUv = uv;
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                }
-            `,
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `,
         fragmentShader: `
-                uniform sampler2D tDiffuse;
-                uniform float opacity;
-                varying vec2 vUv;
-                void main() {
-                    vec4 texel = texture2D(tDiffuse, vUv);
-                    gl_FragColor = opacity * texel;
-                }
-            `
+            uniform sampler2D tDiffuse;
+            uniform float opacity;
+            varying vec2 vUv;
+            void main() {
+                vec4 texel = texture2D(tDiffuse, vUv);
+                gl_FragColor = opacity * texel;
+            }
+        `
     });
 
     const trailPass = new ShaderPass(trailMaterial);
@@ -264,20 +264,20 @@ function createDNAShape() {
     const radius = 1;
     const height = 3;
     const turns = 2;
-
+    
     for (let i = 0; i < numPoints; i++) {
         const t = (i / numPoints) * Math.PI * 2 * turns;
         const x = Math.cos(t) * radius;
         const y = (i / numPoints) * height - height / 2;
         const z = Math.sin(t) * radius;
         points.push(new THREE.Vector3(x, y, z));
-
+        
         const offset = Math.PI;
         const x2 = Math.cos(t + offset) * radius;
         const z2 = Math.sin(t + offset) * radius;
         points.push(new THREE.Vector3(x2, y, z2));
     }
-
+    
     return points;
 }
 

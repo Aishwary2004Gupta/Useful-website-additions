@@ -1,52 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div id="container"></div>
-<div id="ui">
-    <div id="title">Shape Morpher</div>
-    <div class="button" data-shape="sphere">Sphere</div>
-    <div class="button" data-shape="cube">Cube</div>
-    <div class="button" data-shape="torus">Torus</div>
-    <div class="button" data-shape="icosahedron">Icosahedron</div>
-    <div class="button" data-shape="teapot">Teapot</div>
-    <div class="button" data-shape="dna">DNA</div>
-</div>
+    <div id="ui">
+        <div id="title">Shape Morpher</div>
+        <div class="button" data-shape="sphere">Sphere</div>
+        <div class="button" data-shape="cube">Cube</div>
+        <div class="button" data-shape="torus">Torus</div>
+        <div class="button" data-shape="icosahedron">Icosahedron</div>
+        <div class="button" data-shape="teapot">Teapot</div>
+        <div class="button" data-shape="dna">DNA</div>
+    </div>
 
-<div id="controls">
-    <div class="control-group">
-        <div class="slider-container">
-            <label>Particle Size: <span id="sizeValue">0.035</span></label>
-            <input type="range" id="particleSize" min="0.01" max="0.1" step="0.001" value="0.035">
+    <div id="controls">
+        <div class="control-group">
+            <div class="slider-container">
+                <label>Particle Size: <span id="sizeValue">0.035</span></label>
+                <input type="range" id="particleSize" min="0.01" max="0.1" step="0.001" value="0.035">
+            </div>
+            <div class="slider-container">
+                <label>Rotation Speed: <span id="speedValue">0.1</span></label>
+                <input type="range" id="rotationSpeed" min="0" max="0.5" step="0.01" value="0.1">
+            </div>
+            <div class="slider-container">
+                <label>Particle Color:</label>
+                <input type="color" id="particleColor" value="#ff5900">
+            </div>
         </div>
-        <div class="slider-container">
-            <label>Rotation Speed: <span id="speedValue">0.1</span></label>
-            <input type="range" id="rotationSpeed" min="0" max="0.5" step="0.01" value="0.1">
-        </div>
-        <div class="slider-container">
-            <label>Particle Color:</label>
-            <input type="color" id="particleColor" value="#ff5900">
+        <div class="control-group">
+            <div class="slider-container">
+                <label>Bloom Strength: <span id="bloomValue">0.8</span></label>
+                <input type="range" id="bloomStrength" min="0" max="2" step="0.1" value="0.8">
+            </div>
+            <div class="slider-container">
+                <label>Motion Trail: <span id="trailValue">0.3</span></label>
+                <input type="range" id="motionTrail" min="0" max="0.95" step="0.05" value="0.3">
+            </div>
         </div>
     </div>
-    <div class="control-group">
-        <div class="slider-container">
-            <label>Bloom Strength: <span id="bloomValue">0.8</span></label>
-            <input type="range" id="bloomStrength" min="0" max="2" step="0.1" value="0.8">
-        </div>
-        <div class="slider-container">
-            <label>Motion Trail: <span id="trailValue">0.3</span></label>
-            <input type="range" id="motionTrail" min="0" max="0.95" step="0.05" value="0.3">
-        </div>
-    </div>
-</div>
 
-<div id="info">Drag to rotate | Scroll to zoom | Double-click to reset view</div>
+    <div id="info">Drag to rotate | Scroll to zoom | Double-click to reset view</div>
     <script src="script.js"></script>
-    
+
 </body>
+
 </html>

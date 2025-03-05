@@ -78,7 +78,7 @@ input[type="range"] {
     -webkit-appearance: none;
     appearance: none;
     height: 6px;
-    background: linear-gradient(90deg, #ff5900, #ffcc00);
+    background: linear-gradient(90deg, #0000ff, #ffcc00);
     border-radius: 10px;
     outline: none;
     cursor: pointer;

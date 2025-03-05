@@ -109,7 +109,7 @@ input[type="color"] {
     cursor: pointer;
     padding: 12px 18px;
     border-radius: 25px;
-    background: linear-gradient(90deg, #ff5900, #ffcc00);
+    background: linear-gradient(90deg, #00ffc3, #ffcc00);
     color: white;
     font-size: 16px;
     font-weight: bold;

@@ -19,7 +19,7 @@ let trailTexture, trailScene, trailCamera, trailComposer;
 
 const params = {
     particleSize: 0.035,
-    particleColor: 0xff5900,
+    particleColor: 0xf00,
     rotationSpeed: 0.1,
     bloomStrength: 0.8,
     bloomRadius: 0.5,

@@ -76,6 +76,7 @@ body {
 input[type="range"] {
     width: 200px;
     -webkit-appearance: none;
+    appearance: none;
     height: 6px;
     background: linear-gradient(90deg, #ff5900, #ffcc00);
     border-radius: 10px;

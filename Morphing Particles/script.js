@@ -281,6 +281,43 @@ function createDNAShape() {
     return points;
 }
 
+function createTorusKnotShape() {
+    const points = [];
+    const numPoints = 200;
+    const radius = 1.5;
+    const tubeRadius = 0.4;
+    const p = 3;
+    const q = 2;
+    
+    for (let i = 0; i < numPoints; i++) {
+        const t = (i / numPoints) * Math.PI * 2;
+        const x = radius * (2 + Math.cos(q * t)) * Math.cos(p * t);
+        const y = radius * (2 + Math.cos(q * t)) * Math.sin(p * t);
+        const z = tubeRadius * Math.sin(q * t);
+        points.push(new THREE.Vector3(x, y, z));
+    }
+    
+    return points;
+}
+
+function createStarShape() {
+    const points = [];
+    const numPoints = 100;
+    const radius = 1.5;
+    const spikes = 5;
+    
+    for (let i = 0; i < numPoints; i++) {
+        const t = (i / numPoints) * Math.PI * 2;
+        const r = radius * (1 + 0.5 * Math.sin(spikes * t));
+        const x = r * Math.cos(t);
+        const y = r * Math.sin(t);
+        const z = 0;
+        points.push(new THREE.Vector3(x, y, z));
+    }
+    
+    return points;
+}
+
 function morphToShape(shapeType) {
     let targetGeometry;
     let targetVertices = [];
@@ -304,11 +341,17 @@ function morphToShape(shapeType) {
         case 'dna':
             targetVertices = createDNAShape();
             break;
+        case 'torusKnot':
+            targetVertices = createTorusKnotShape();
+            break;
+        case 'star':
+            targetVertices = createStarShape();
+            break;
         default:
             return;
     }
 
-    if (shapeType !== 'dna') {
+    if (shapeType !== 'dna' && shapeType !== 'torusKnot' && shapeType !== 'star') {
         targetGeometry.computeVertexNormals();
         const targetPositionAttribute = targetGeometry.getAttribute('position');
         for (let i = 0; i < targetPositionAttribute.count; i++) {
@@ -327,7 +370,7 @@ function morphToShape(shapeType) {
     }
 
     animationProgress = 0;
-    if (shapeType !== 'dna') {
+    if (shapeType !== 'dna' && shapeType !== 'torusKnot' && shapeType !== 'star') {
         currentGeometry = targetGeometry;
     }
 }

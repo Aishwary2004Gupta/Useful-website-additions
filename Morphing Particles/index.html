@@ -1,137 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Interactive Fluid Sphere Obstacle</title>
-  <style>
-    body { margin: 0; }
-    canvas { display: block; }
-  </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shape Morpher</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <script>
-    let repulsionCenter;
+    <div id="container"></div>
+    <div id="ui">
+        <div id="title">Shape Morpher</div>
+        <div class="button" data-shape="sphere">Sphere</div>
+        <div class="button" data-shape="cube">Cube</div>
+        <div class="button" data-shape="torus">Torus</div>
+        <div class="button" data-shape="icosahedron">Icosahedron</div>
+        <div class="button" data-shape="teapot">Teapot</div>
+        <div class="button" data-shape="dna">DNA</div>
+    </div>
 
-    class Center {
-      constructor(x, y, r) {
-        this.x = x;
-        this.y = y;
-        this.repulseIntensity = r;
-      }
+    <div id="controls">
+        <div class="control-group">
+            <div class="slider-container">
+                <label>Particle Size: <span id="sizeValue">0.035</span></label>
+                <input type="range" id="particleSize" min="0.01" max="0.1" step="0.001" value="0.035">
+            </div>
+            <div class="slider-container">
+                <label>Rotation Speed: <span id="speedValue">0.1</span></label>
+                <input type="range" id="rotationSpeed" min="0" max="0.5" step="0.01" value="0.1">
+            </div>
+            <div class="slider-container">
+                <label>Particle Color:</label>
+                <input type="color" id="particleColor" value="#164f11">
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="slider-container">
+                <label>Bloom Strength: <span id="bloomValue">0.8</span></label>
+                <input type="range" id="bloomStrength" min="0" max="2" step="0.1" value="0.8">
+            </div>
+            <div class="slider-container">
+                <label>Motion Trail: <span id="trailValue">0.3</span></label>
+                <input type="range" id="motionTrail" min="0" max="0.95" step="0.05" value="0.3">
+            </div>
+        </div>
+    </div>
 
-      show() {
-        stroke(255, 0, 0);
-        strokeWeight(3);
-        point(this.x, this.y);
-      }
-    }
+    <div id="info">Drag to rotate | Scroll to zoom | Double-click to reset view</div>
 
-    class Path {
-      constructor() {
-        this.currentX = random(-width, 2 * width);
-        this.currentY = lerp(1.3 * height, -height, pow(random(1), 5));
-        this.positions = [createVector(this.currentX, this.currentY)];
-        this.sw = random(1, 2);
-        this.numberOfParticlesOnPath = 3;
-        this.tOffset = random(1);
-      }
-
-      update() {
-        let velocity = field(this.currentX, this.currentY);
-        this.currentX += timeStep * velocity.x;
-        this.currentY += timeStep * velocity.y;
-        this.positions.push(createVector(this.currentX, this.currentY));
-      }
-
-      show() {
-        strokeWeight(this.sw);
-        let tt = (t + this.tOffset) % 1;
-        let arrayLength = this.positions.length;
-
-        for (let i = 0; i < this.numberOfParticlesOnPath; i++) {
-          let floatIndex = map(i + tt, 0, this.numberOfParticlesOnPath, 0, arrayLength - 1) * 0.999999;
-          let index1 = floor(floatIndex);
-          let index2 = index1 + 1;
-          let interp = floatIndex - floor(floatIndex);
-          let pos = p5.Vector.lerp(this.positions[index1], this.positions[index2], interp);
-
-          let p = floatIndex / (arrayLength - 1);
-          let alpha = 255 * pow(constrain(sin(PI * p), 0, 1), 0.25);
-          stroke(255, alpha);
-          point(pos.x, pos.y);
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.162.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.162.0/examples/jsm/"
         }
-      }
     }
-
-    function field(x, y) {
-      let repulsionAmount = 20;
-      let noiseAmount = 15;
-
-      let velocitySum = createVector(15, -30);
-
-      let centerPos = createVector(repulsionCenter.x, repulsionCenter.y);
-      let vecFromCenterToPos = createVector(x, y).sub(centerPos);
-      let distance = vecFromCenterToPos.mag();
-      vecFromCenterToPos.normalize();
-
-      let intensity = constrain(map(distance, 0, width, 1, 0), 0, 1);
-      intensity = pow(intensity, 25) * repulsionAmount;
-
-      let centerEffect = vecFromCenterToPos.mult(repulsionCenter.repulseIntensity * intensity);
-      velocitySum.add(centerEffect);
-
-      let noiseScale = 0.05;
-      let noiseValueX = noiseAmount * (noise(100 + noiseScale * x, 100 + noiseScale * y) - 0.5);
-      let noiseValueY = noiseAmount * (noise(200 + noiseScale * x, 200 + noiseScale * y) - 0.5);
-      velocitySum.add(createVector(noiseValueX, noiseValueY));
-
-      return velocitySum;
-    }
-
-    function computePathsStep() {
-      for (let i = 0; i < numberOfPaths; i++) {
-        pathsArray[i].update();
-      }
-    }
-
-    function setup() {
-      createCanvas(500, 500, WEBGL);
-      repulsionCenter = new Center(0.5 * width, 0.4 * height, 5);
-
-      for (let i = 0; i < numberOfPaths; i++) {
-        pathsArray[i] = new Path();
-      }
-
-      for (let i = 0; i < numberOfSimulationSteps; i++) {
-        computePathsStep();
-      }
-    }
-
-    function draw() {
-      background(0);
-      t = (mouseX * 1.3 / width) % 1;
-      c = mouseY * 1.0 / height;
-
-      push();
-      translate(0, 50, 0);
-      rotateX(0.95);
-
-      for (let i = 0; i < numberOfPaths; i++) {
-        pathsArray[i].show();
-      }
-
-      let sphereRadius = 6.6 * repulsionCenter.repulseIntensity;
-      push();
-      translate(repulsionCenter.x + 4, repulsionCenter.y - 12);
-      fill(0);
-      noStroke();
-      sphere(sphereRadius);
-      pop();
-
-      pop();
-    }
-  </script>
+    </script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>

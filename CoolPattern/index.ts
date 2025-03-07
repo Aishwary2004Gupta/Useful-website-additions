@@ -62,8 +62,42 @@ function createTriangleGrid(width: number, height: number, size: number): THREE.
     return geometry;
   }
 
-async function createWebGPUMaterial(renderer: WebGPURenderer): Promise<THREE.ShaderMaterial> {
-  // ...
-}
+  async function createWebGPUMaterial(renderer: WebGPURenderer): Promise<THREE.ShaderMaterial> {
+    const vertexShader = `
+      struct Uniforms {
+        time: f32,
+      };
+      @binding(0) @group(0) var<uniform> uniforms: Uniforms;
+  
+      @vertex
+      fn main(@location(0) position: vec3<f32>) -> @builtin(position) vec4<f32> {
+        var pos = position;
+        pos.z = sin(pos.x * 5.0 + pos.y * 5.0 + uniforms.time) * 0.5; // Up-down animation
+        return vec4<f32>(pos, 1.0);
+      }
+    `;
+  
+    const fragmentShader = `
+      @fragment
+      fn main(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
+        let red = vec3<f32>(1.0, 0.0, 0.0);
+        let black = vec3<f32>(0.0, 0.0, 0.0);
+        let color = mix(red, black, position.z + 0.5); // Gradient based on Z position
+        return vec4<f32>(color, 1.0);
+      }
+    `;
+  
+    const material = new THREE.ShaderMaterial({
+      vertexShader,
+      fragmentShader,
+      uniforms: {
+        time: { value: 0 },
+      },
+    });
+  
+    await renderer.initTexture(material); // Important for WebGPU materials!
+  
+    return material;
+  }
 
 init();

@@ -34,8 +34,8 @@ async function init() {
 // Helper Functions (Implement these below)
 function createTriangleGrid(width: number, height: number, size: number): THREE.BufferGeometry {
     const geometry = new THREE.BufferGeometry();
-    const vertices = [];
-    const indices = [];
+    const vertices: number[] = [];
+    const indices: number[] = [];
   
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {

@@ -33,8 +33,34 @@ async function init() {
 
 // Helper Functions (Implement these below)
 function createTriangleGrid(width: number, height: number, size: number): THREE.BufferGeometry {
-  // ...
-}
+    const geometry = new THREE.BufferGeometry();
+    const vertices = [];
+    const indices = [];
+  
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const xPos = (x - width / 2) * size;
+        const yPos = (y - height / 2) * size;
+  
+        vertices.push(xPos, yPos, 0); // Vertex 1
+        vertices.push(xPos + size, yPos, 0); // Vertex 2
+        vertices.push(xPos, yPos + size, 0); // Vertex 3
+  
+        const baseIndex = (y * width + x) * 3;
+        indices.push(baseIndex, baseIndex + 1, baseIndex + 2);
+  
+        vertices.push(xPos + size, yPos + size, 0); // Vertex 4
+        vertices.push(xPos, yPos + size, 0); // Vertex 5
+        vertices.push(xPos + size, yPos, 0); // Vertex 6
+  
+        indices.push(baseIndex + 3, baseIndex + 4, baseIndex + 5);
+      }
+    }
+  
+    geometry.setIndex(indices);
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    return geometry;
+  }
 
 async function createWebGPUMaterial(renderer: WebGPURenderer): Promise<THREE.ShaderMaterial> {
   // ...

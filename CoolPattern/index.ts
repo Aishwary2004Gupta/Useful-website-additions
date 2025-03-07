@@ -33,11 +33,63 @@ async function init() {
 
 // Helper Functions (Implement these below)
 function createTriangleGrid(width: number, height: number, size: number): THREE.BufferGeometry {
-  // ...
+    const vertices = [];
+    const indices = [];
+    
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const xPos = (x - width/2) * size;
+            const yPos = (y - height/2) * size;
+            
+            vertices.push(xPos, yPos, 0);
+            vertices.push(xPos + size, yPos, 0);
+            vertices.push(xPos + size/2, yPos + size, 0);
+        }
+    }
+    
+    for (let i = 0; i < width * height; i++) {
+        const baseIndex = i * 3;
+        indices.push(baseIndex, baseIndex + 1, baseIndex + 2);
+    }
+    
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    geometry.setIndex(indices);
+    geometry.computeVertexNormals();
+    
+    return geometry;
 }
 
 async function createWebGPUMaterial(renderer: WebGPURenderer): Promise<THREE.ShaderMaterial> {
-  // ...
+    const vertexShader = `
+        uniform float time;
+        varying vec2 vUv;
+        
+        void main() {
+            vUv = position.xy;
+            vec3 pos = position;
+            pos.z = sin(time + position.x) * cos(time + position.y) * 0.5;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+        }
+    `;
+    
+    const fragmentShader = `
+        uniform float time;
+        varying vec2 vUv;
+        
+        void main() {
+            vec3 color = 0.5 + 0.5 * cos(time + vUv.xyx + vec3(0,2,4));
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `;
+    
+    return new THREE.ShaderMaterial({
+        uniforms: {
+            time: { value: 0 }
+        },
+        vertexShader,
+        fragmentShader
+    });
 }
 
 init();

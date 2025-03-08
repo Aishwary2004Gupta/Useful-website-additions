@@ -1,41 +1,38 @@
 // script.js
 const { motion, useMotionValue, useSpring } = window.framerMotion;
 
-// Initialize cursor position
-const cursorX = useMotionValue(0);
-const cursorY = useMotionValue(0);
-const cursorScale = useMotionValue(1);
+// Initialize image position
+const imageX = useMotionValue(0);
+const imageY = useMotionValue(0);
 
-// Smooth spring animation for cursor position
-const cursorXSpring = useSpring(cursorX, { stiffness: 500, damping: 30 });
-const cursorYSpring = useSpring(cursorY, { stiffness: 500, damping: 30 });
-const cursorScaleSpring = useSpring(cursorScale, { stiffness: 500, damping: 30 });
+// Smooth spring animation for image position
+const imageXSpring = useSpring(imageX, { stiffness: 500, damping: 30 });
+const imageYSpring = useSpring(imageY, { stiffness: 500, damping: 30 });
 
-// Update cursor position on mouse move
+// Get DOM elements
+const hoverText = document.querySelector('.hover-text');
+const imageContainer = document.getElementById('image-container');
+const hoverImage = document.getElementById('hover-image');
+
+// Update image position on mouse move
 document.addEventListener('mousemove', (e) => {
-    cursorX.set(e.clientX);
-    cursorY.set(e.clientY);
+    imageX.set(e.clientX);
+    imageY.set(e.clientY);
 });
 
-// Scale up cursor when hovering over elements
-const hoverables = document.querySelectorAll('.hoverable');
-hoverables.forEach((item) => {
-    item.addEventListener('mouseenter', () => {
-        cursorScale.set(2); // Scale up
-    });
-    item.addEventListener('mouseleave', () => {
-        cursorScale.set(1); // Reset scale
-    });
+// Show image and update position when hovering over text
+hoverText.addEventListener('mouseenter', () => {
+    imageContainer.style.opacity = '1'; // Show the image
 });
 
-// Apply cursor position and scale to the DOM
-const cursor = document.getElementById('cursor');
-cursorXSpring.onChange((x) => {
-    cursor.style.left = `${x}px`;
+hoverText.addEventListener('mouseleave', () => {
+    imageContainer.style.opacity = '0'; // Hide the image
 });
-cursorYSpring.onChange((y) => {
-    cursor.style.top = `${y}px`;
+
+// Apply image position to the DOM
+imageXSpring.onChange((x) => {
+    imageContainer.style.left = `${x}px`;
 });
-cursorScaleSpring.onChange((scale) => {
-    cursor.style.transform = `translate(-50%, -50%) scale(${scale})`;
+imageYSpring.onChange((y) => {
+    imageContainer.style.top = `${y}px`;
 });

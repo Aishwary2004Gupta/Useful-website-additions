@@ -1,29 +1,41 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const gridContainer = document.querySelector('.grid-container');
-    const cursor = document.getElementById('cursor');
-    const gridItemsCount = 50; // Number of grid items
+// script.js
+const { motion, useMotionValue, useSpring } = window.framerMotion;
 
-    // Create grid items
-    for (let i = 0; i < gridItemsCount; i++) {
-        const gridItem = document.createElement('div');
-        gridItem.classList.add('grid-item');
-        gridContainer.appendChild(gridItem);
-    }
+// Initialize cursor position
+const cursorX = useMotionValue(0);
+const cursorY = useMotionValue(0);
+const cursorScale = useMotionValue(1);
 
-    // Move cursor with mouse
-    document.addEventListener('mousemove', function(e) {
-        cursor.style.left = `${e.pageX}px`;
-        cursor.style.top = `${e.pageY}px`;
+// Smooth spring animation for cursor position
+const cursorXSpring = useSpring(cursorX, { stiffness: 500, damping: 30 });
+const cursorYSpring = useSpring(cursorY, { stiffness: 500, damping: 30 });
+const cursorScaleSpring = useSpring(cursorScale, { stiffness: 500, damping: 30 });
+
+// Update cursor position on mouse move
+document.addEventListener('mousemove', (e) => {
+    cursorX.set(e.clientX);
+    cursorY.set(e.clientY);
+});
+
+// Scale up cursor when hovering over elements
+const hoverables = document.querySelectorAll('.hoverable');
+hoverables.forEach((item) => {
+    item.addEventListener('mouseenter', () => {
+        cursorScale.set(2); // Scale up
     });
-
-    // Change grid item color on hover
-    const gridItems = document.querySelectorAll('.grid-item');
-    gridItems.forEach(item => {
-        item.addEventListener('mouseenter', () => {
-            item.style.backgroundColor = '#555';
-        });
-        item.addEventListener('mouseleave', () => {
-            item.style.backgroundColor = '#ccc';
-        });
+    item.addEventListener('mouseleave', () => {
+        cursorScale.set(1); // Reset scale
     });
+});
+
+// Apply cursor position and scale to the DOM
+const cursor = document.getElementById('cursor');
+cursorXSpring.onChange((x) => {
+    cursor.style.left = `${x}px`;
+});
+cursorYSpring.onChange((y) => {
+    cursor.style.top = `${y}px`;
+});
+cursorScaleSpring.onChange((scale) => {
+    cursor.style.transform = `translate(-50%, -50%) scale(${scale})`;
 });

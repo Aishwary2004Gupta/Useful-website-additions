@@ -1,37 +1,42 @@
+/* styles.css */
 body, html {
     margin: 0;
     padding: 0;
     height: 100%;
     overflow: hidden;
-    background-color: #f0f0f0;
+    font-family: Arial, sans-serif;
+    background-color: #1a1a1a;
+    color: #fff;
 }
 
-.grid-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 10px;
-    padding: 10px;
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     height: 100vh;
 }
 
-.grid-item {
-    background-color: #ccc;
-    border: 1px solid #999;
-    transition: background-color 0.3s;
+.hoverable {
+    padding: 20px;
+    margin: 10px;
+    background-color: #333;
+    border-radius: 10px;
+    cursor: none; /* Hide default cursor */
+    transition: background-color 0.3s ease;
+}
+
+.hoverable:hover {
+    background-color: #555;
 }
 
 #cursor {
     position: absolute;
-    width: 100px;
-    height: 100px;
+    width: 40px;
+    height: 40px;
+    background-color: #fff;
     border-radius: 50%;
-    overflow: hidden;
-    pointer-events: none;
+    pointer-events: none; /* Ensure the cursor doesn't interfere with clicks */
     transform: translate(-50%, -50%);
-}
-
-#cursor img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    mix-blend-mode: difference; /* Makes the cursor stand out on any background */
 }

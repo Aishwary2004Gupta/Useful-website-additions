@@ -7,36 +7,36 @@ body, html {
     font-family: Arial, sans-serif;
     background-color: #1a1a1a;
     color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
+    text-align: center;
 }
 
-.hoverable {
-    padding: 20px;
-    margin: 10px;
-    background-color: #333;
-    border-radius: 10px;
-    cursor: none; /* Hide default cursor */
-    transition: background-color 0.3s ease;
+.hover-text {
+    font-size: 2rem;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
 }
 
-.hoverable:hover {
-    background-color: #555;
-}
-
-#cursor {
+#image-container {
     position: absolute;
-    width: 40px;
-    height: 40px;
-    background-color: #fff;
-    border-radius: 50%;
-    pointer-events: none; /* Ensure the cursor doesn't interfere with clicks */
-    transform: translate(-50%, -50%);
-    mix-blend-mode: difference; /* Makes the cursor stand out on any background */
+    width: 200px;
+    height: 200px;
+    overflow: hidden;
+    border-radius: 10px;
+    pointer-events: none; /* Ensure the image doesn't interfere with hover */
+    opacity: 0; /* Hide the image by default */
+    transition: opacity 0.3s ease;
+}
+
+#hover-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
 }

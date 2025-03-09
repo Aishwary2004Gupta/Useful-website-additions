@@ -8,17 +8,20 @@ document.addEventListener('mousemove', (e) => {
     const x = e.clientX;
     const y = e.clientY;
 
-    // Move the image container to the cursor position
-    imageContainer.style.left = `${x}px`;
-    imageContainer.style.top = `${y}px`;
+    // Move the image container to the cursor position with offset to center it
+    imageContainer.style.left = `${x - imageContainer.offsetWidth / 2}px`;
+    imageContainer.style.top = `${y - imageContainer.offsetHeight / 2}px`;
 });
 
-// Show image when hovering over text
+// Show image and add pop effect when hovering over text
 hoverText.addEventListener('mouseenter', () => {
-    imageContainer.style.opacity = '1'; // Show the image
+    imageContainer.style.opacity = '1';
+    imageContainer.style.transform = 'scale(1.2)';
+    imageContainer.style.transition = 'opacity 0.3s, transform 0.3s';
 });
 
-// Hide image when leaving the text
+// Hide image and reset scale when leaving the text
 hoverText.addEventListener('mouseleave', () => {
-    imageContainer.style.opacity = '0'; // Hide the image
+    imageContainer.style.opacity = '0';
+    imageContainer.style.transform = 'scale(1)';
 });

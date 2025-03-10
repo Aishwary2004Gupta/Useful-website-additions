@@ -38,7 +38,7 @@
 
         // Create the chaotic triangular mesh
         const gridSize = 30;
-        const size = 1;
+        const size = 0.5; // Reduced size to make shapes closer together
         const vertices = [];
         const indices = [];
         const colors = [];
@@ -47,15 +47,15 @@
         const color2 = new THREE.Color(0x000000); // Black
 
         function randomDisplacement() {
-            return (Math.random() - 0.5) * 2.5;
+            return (Math.random() - 0.5) * 1.5; // Reduced displacement for more connected look
         }
 
         for (let x = 0; x < gridSize; x++) {
             for (let z = 0; z < gridSize; z++) {
-                let x0 = x * size;
-                let z0 = z * size;
-                let x1 = (x + 1) * size;
-                let z1 = (z + 1) * size;
+                let x0 = x * size - (gridSize * size / 2); // Center the mesh
+                let z0 = z * size - (gridSize * size / 2); // Center the mesh
+                let x1 = (x + 1) * size - (gridSize * size / 2); // Center the mesh
+                let z1 = (z + 1) * size - (gridSize * size / 2); // Center the mesh
 
                 let y0 = randomDisplacement();
                 let y1 = randomDisplacement();
@@ -114,9 +114,23 @@
         scene.add(directionalLight);
 
         // Animation
+        let time = 0;
         function animate() {
             requestAnimationFrame(animate);
-            mesh.rotation.y += 0.002;
+            time += 0.01;
+            
+            // Add smooth up and down motion
+            mesh.position.y = Math.sin(time) * 0.5;
+            
+            // Add subtle wave effect to vertices
+            const positions = geometry.attributes.position.array;
+            for(let i = 1; i < positions.length; i += 3) {
+                const x = positions[i-1];
+                const z = positions[i+1];
+                positions[i] += Math.sin(time + x + z) * 0.002;
+            }
+            geometry.attributes.position.needsUpdate = true;
+            
             controls.update();
             renderer.render(scene, camera);
         }

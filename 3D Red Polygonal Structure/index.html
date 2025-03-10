@@ -3,147 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Full-Screen Squally Ripple Triangles</title>
+    <title>Chaotic Red Triangles</title>
     <style>
         body { margin: 0; overflow: hidden; }
         canvas { display: block; }
     </style>
 </head>
 <body>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-    <script>
-        // Scene, camera, and renderer setup
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.159.0/build/three.module.js",
+            "three/examples/jsm/controls/OrbitControls.js": "https://unpkg.com/three@0.159.0/examples/jsm/controls/OrbitControls.js"
+        }
+    }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+
+        // Scene, Camera, Renderer
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 5, 10);
+        camera.lookAt(0, 0, 0);
+
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Grid Parameters
-        const gridSize = 50; // Number of triangles along one axis (increase for finer detail)
-        const triangleSize = 1; // Size of each triangle
-        const amplitude = 1.5; // Ripple amplitude
-        const frequency = 2; // Ripple frequency
+        // Orbit Controls
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
 
-        // Geometry and Material
-        const geometry = new THREE.BufferGeometry();
-        const material = new THREE.MeshStandardMaterial({
-            color: 0xff0000, // Red color
-            flatShading: true, // Flat shading for a sharp look
-            metalness: 0.2, // Slight metallic look
-            roughness: 0.5, // Matte finish
-            side: THREE.DoubleSide // Render both sides of the triangles
-        });
-
-        // Generate Vertices and Indices for Triangles
+        // Create the chaotic triangular mesh
+        const gridSize = 30;
+        const size = 1;
         const vertices = [];
         const indices = [];
-        const colors = []; // Store vertex colors for blending
+        const colors = [];
+
+        const color1 = new THREE.Color(0xff0000); // Red
+        const color2 = new THREE.Color(0x000000); // Black
+
+        function randomDisplacement() {
+            return (Math.random() - 0.5) * 2.5;
+        }
 
         for (let x = 0; x < gridSize; x++) {
             for (let z = 0; z < gridSize; z++) {
-                // Define the four corners of a square (two triangles)
-                const x1 = x * triangleSize;
-                const z1 = z * triangleSize;
-                const x2 = (x + 1) * triangleSize;
-                const z2 = (z + 1) * triangleSize;
+                let x0 = x * size;
+                let z0 = z * size;
+                let x1 = (x + 1) * size;
+                let z1 = (z + 1) * size;
 
-                // Add vertices for the square
-                vertices.push(x1, 0, z1); // Vertex 0
-                vertices.push(x2, 0, z1); // Vertex 1
-                vertices.push(x1, 0, z2); // Vertex 2
-                vertices.push(x2, 0, z2); // Vertex 3
+                let y0 = randomDisplacement();
+                let y1 = randomDisplacement();
+                let y2 = randomDisplacement();
+                let y3 = randomDisplacement();
 
-                // Add colors (initially red)
-                for (let i = 0; i < 4; i++) {
-                    colors.push(1, 0, 0); // Red color (RGB)
-                }
+                let baseIndex = vertices.length / 3;
 
-                // Index offsets
-                const baseIndex = (x * gridSize + z) * 4;
-
-                // Triangle 1 (0, 1, 2)
+                // First triangle
+                vertices.push(x0, y0, z0);
+                vertices.push(x1, y1, z0);
+                vertices.push(x0, y2, z1);
                 indices.push(baseIndex, baseIndex + 1, baseIndex + 2);
 
-                // Triangle 2 (2, 1, 3)
-                indices.push(baseIndex + 2, baseIndex + 1, baseIndex + 3);
+                // Second triangle
+                vertices.push(x1, y1, z0);
+                vertices.push(x1, y3, z1);
+                vertices.push(x0, y2, z1);
+                indices.push(baseIndex + 3, baseIndex + 4, baseIndex + 5);
+
+                // Add vertex colors for gradient effect
+                for (let i = 0; i < 6; i++) {
+                    const mixedColor = color1.clone().lerp(color2, Math.random());
+                    colors.push(mixedColor.r, mixedColor.g, mixedColor.b);
+                }
             }
         }
 
-        // Set Buffer Attributes
+        const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3)); // Add color attribute
+        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
         geometry.setIndex(indices);
 
-        // Create Mesh
+        const material = new THREE.MeshStandardMaterial({
+            vertexColors: true,
+            flatShading: true,
+            metalness: 0.5,
+            roughness: 0.4,
+            side: THREE.DoubleSide
+        });
+
         const mesh = new THREE.Mesh(geometry, material);
         scene.add(mesh);
 
-        // Enable vertex colors
-        material.vertexColors = true;
-
-        // Center the grid
-        mesh.position.set(-gridSize / 2, 0, -gridSize / 2);
-
-        // Position the camera to cover the whole screen
-        camera.position.set(0, 10, 10);
-        camera.lookAt(0, 0, 0);
-
-        // Add lighting for depth and highlights
-        const pointLight = new THREE.PointLight(0xffffff, 1, 100);
-        pointLight.position.set(5, 5, 5);
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x222222);
+        scene.add(ambientLight);
+        const pointLight = new THREE.PointLight(0xffffff, 1.5, 100);
+        pointLight.position.set(5, 10, 5);
         scene.add(pointLight);
 
-        const ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
-        scene.add(ambientLight);
-
-        // Animation Variables
-        let time = 0;
-
-        // Animation Loop
+        // Animation
         function animate() {
             requestAnimationFrame(animate);
-
-            // Update vertex positions and colors for squally ripple effect
-            const positions = geometry.attributes.position.array;
-            const colors = geometry.attributes.color.array;
-
-            for (let i = 0; i < positions.length; i += 3) {
-                const x = positions[i];
-                const z = positions[i + 2];
-
-                // Apply squally ripple effect to y-coordinate
-                const rippleHeight = Math.sin(x * frequency + time + Math.random() * 0.05) * amplitude +
-                                    Math.cos(z * frequency + time + Math.random() * 0.05) * amplitude;
-                positions[i + 1] = rippleHeight;
-
-                // Blend color based on height
-                const colorIntensity = Math.max(0, rippleHeight / amplitude); // Normalize height to [0, 1]
-                colors[i] = colorIntensity; // Red component
-                colors[i + 1] = 0; // Green component (always 0)
-                colors[i + 2] = 0; // Blue component (always 0)
-
-                // Add grayish-black color when triangles are lowered
-                if (rippleHeight < 0) {
-                    const grayIntensity = Math.max(0, 1 + rippleHeight / amplitude); // Normalize to [0, 1]
-                    colors[i] = grayIntensity * 0.2; // Dark red (almost black)
-                    colors[i + 1] = grayIntensity * 0.2; // Dark green (almost black)
-                    colors[i + 2] = grayIntensity * 0.2; // Dark blue (almost black)
-                }
-            }
-
-            // Mark the attributes as needing an update
-            geometry.attributes.position.needsUpdate = true;
-            geometry.attributes.color.needsUpdate = true;
-
-            // Render the scene
+            mesh.rotation.y += 0.002;
+            controls.update();
             renderer.render(scene, camera);
-
-            // Increment time for animation
-            time += 0.01;
         }
 
-        // Start Animation
         animate();
 
         // Handle Window Resize

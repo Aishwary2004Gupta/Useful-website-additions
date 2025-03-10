@@ -1,42 +1,43 @@
 /* styles.css */
-body, html {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    overflow: hidden;
-    font-family: Arial, sans-serif;
-    background-color: #1a1a1a;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+body,
+html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+  background-color: #1a1a1a;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .container {
-    text-align: center;
+  text-align: center;
 }
 
 .hover-text {
-    font-size: 2rem;
-    cursor: pointer;
-    position: relative;
-    z-index: 1;
+  font-size: 2rem;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
 }
 
 #image-container {
-    position: absolute;
-    width: 200px;
-    height: 200px;
-    overflow: hidden;
-    border-radius: 10px;
-    pointer-events: none; /* Ensure the image doesn't interfere with hover */
-    opacity: 0; /* Hide the image by default */
-    transition: opacity 0.3s ease;
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 10px;
+  pointer-events: none; /* Ensure the image doesn't interfere with hover */
+  opacity: 0; /* Hide the image by default */
+  transition: opacity 0.3s ease;
 }
 
 #hover-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 10px;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
 }

@@ -101,11 +101,17 @@
         scene.add(mesh);
 
         // Lighting
-        const ambientLight = new THREE.AmbientLight(0x222222);
+        const ambientLight = new THREE.AmbientLight(0x444444); // Increased ambient light
         scene.add(ambientLight);
-        const pointLight = new THREE.PointLight(0xffffff, 1.5, 100);
+        
+        const pointLight = new THREE.PointLight(0xffffff, 2.0, 100); // Increased intensity
         pointLight.position.set(5, 10, 5);
         scene.add(pointLight);
+
+        // Added directional light for additional illumination
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+        directionalLight.position.set(-5, 8, -5);
+        scene.add(directionalLight);
 
         // Animation
         function animate() {

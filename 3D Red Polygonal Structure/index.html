@@ -113,8 +113,8 @@
                 const z = positions[i + 2];
 
                 // Apply squally ripple effect to y-coordinate
-                const rippleHeight = Math.sin(x * frequency + time + Math.random() * 0.5) * amplitude +
-                                    Math.cos(z * frequency + time + Math.random() * 0.5) * amplitude;
+                const rippleHeight = Math.sin(x * frequency + time + Math.random() * 0.05) * amplitude +
+                                    Math.cos(z * frequency + time + Math.random() * 0.05) * amplitude;
                 positions[i + 1] = rippleHeight;
 
                 // Blend color based on height

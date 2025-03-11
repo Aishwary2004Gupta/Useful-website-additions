@@ -39,8 +39,8 @@
         // Grid Parameters
         const gridSize = 30; // Number of triangles along one axis
         const size = 1; // Size of each triangle base
-        const amplitude = 1.5; // Height of the wave
-        const frequency = 2; // Frequency of the wave
+        const amplitude = 3.0; // Increased amplitude for more pronounced peaks and valleys
+        const frequency = 5; // Increased frequency for denser waves
 
         // Create a single geometry for the entire surface
         const geometry = new THREE.BufferGeometry();
@@ -48,8 +48,8 @@
         const indices = [];
         const colors = [];
 
-        const colorRed = new THREE.Color(0xff0000); // Red
-        const colorBlack = new THREE.Color(0x222222); // Grayish-black
+        const colorRed = new THREE.Color(0xff0000); // Vibrant red
+        const colorBlack = new THREE.Color(0x000000); // Darker black
 
         for (let x = 0; x < gridSize; x++) {
             for (let z = 0; z < gridSize; z++) {

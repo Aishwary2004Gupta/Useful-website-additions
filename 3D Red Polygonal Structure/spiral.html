@@ -37,10 +37,10 @@
         controls.enableDamping = true;
 
         // Grid Parameters
-        const gridSize = 30; // Number of triangles along one axis
+        const gridSize = 50; // Increased grid size for more triangles
         const size = 1; // Size of each triangle base
-        const amplitude = 3.0; // Increased amplitude for more pronounced peaks and valleys
-        const frequency = 5; // Increased frequency for denser waves
+        const amplitude = 4.0; // Further increased amplitude for more pronounced peaks and valleys
+        const frequency = 8; // Further increased frequency for denser waves
 
         // Create a single geometry for the entire surface
         const geometry = new THREE.BufferGeometry();
@@ -89,9 +89,9 @@
         // Create Material
         const material = new THREE.MeshStandardMaterial({
             vertexColors: true,
-            flatShading: false, // Smooth shading for a connected surface
-            metalness: 0.3, // Reduced metalness for more brightness
-            roughness: 0.2, // Reduced roughness for more shine
+            flatShading: true, // Flat shading for a more faceted look
+            metalness: 0.6, // Increased metalness for more reflectivity
+            roughness: 0.1, // Reduced roughness for a shinier surface
             side: THREE.DoubleSide
         });
 
@@ -100,14 +100,14 @@
         scene.add(mesh);
 
         // Lighting
-        const ambientLight = new THREE.AmbientLight(0x404040, 2.0); // Increased ambient intensity
+        const ambientLight = new THREE.AmbientLight(0x404040, 1.0); // Reduced ambient intensity for more contrast
         scene.add(ambientLight);
 
-        const pointLight = new THREE.PointLight(0xffffff, 3.0, 100); // Increased point light intensity
+        const pointLight = new THREE.PointLight(0xffffff, 5.0, 100); // Increased point light intensity
         pointLight.position.set(5, 10, 5);
         scene.add(pointLight);
 
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5); // Increased directional light intensity
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 2.0); // Increased directional light intensity
         directionalLight.position.set(-5, 8, -5);
         scene.add(directionalLight);
 

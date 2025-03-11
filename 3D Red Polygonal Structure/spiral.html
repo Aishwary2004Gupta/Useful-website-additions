@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Circular Wave Triangular Surface</title>
+    <title>3D Red Polygonal Structure</title>
     <style>
         body { margin: 0; overflow: hidden; }
         canvas { display: block; }
@@ -37,10 +37,10 @@
         controls.enableDamping = true;
 
         // Grid Parameters
-        const gridSize = 50; // Increased grid size for more triangles
-        const size = 1; // Size of each triangle base
-        const amplitude = 4.0; // Further increased amplitude for more pronounced peaks and valleys
-        const frequency = 8; // Further increased frequency for denser waves
+        const gridSize = 50;
+        const size = 1;
+        const amplitude = 4.0;
+        const frequency = 8;
 
         // Create a single geometry for the entire surface
         const geometry = new THREE.BufferGeometry();
@@ -48,40 +48,32 @@
         const indices = [];
         const colors = [];
 
-        const colorRed = new THREE.Color(0xff0000); // Vibrant red
-        const colorBlack = new THREE.Color(0x000000); // Darker black
+        const colorRed = new THREE.Color(0xff0000);
+        const colorBlack = new THREE.Color(0x000000);
 
         for (let x = 0; x < gridSize; x++) {
             for (let z = 0; z < gridSize; z++) {
-                // Define the four corners of a square (two triangles)
-                const x0 = x * size - (gridSize * size / 2); // Center the mesh
-                const z0 = z * size - (gridSize * size / 2); // Center the mesh
-                const x1 = (x + 1) * size - (gridSize * size / 2); // Center the mesh
-                const z1 = (z + 1) * size - (gridSize * size / 2); // Center the mesh
+                const x0 = x * size - (gridSize * size / 2);
+                const z0 = z * size - (gridSize * size / 2);
+                const x1 = (x + 1) * size - (gridSize * size / 2);
+                const z1 = (z + 1) * size - (gridSize * size / 2);
 
-                // Add vertices for the square
-                vertices.push(x0, 0, z0); // Vertex 0
-                vertices.push(x1, 0, z0); // Vertex 1
-                vertices.push(x0, 0, z1); // Vertex 2
-                vertices.push(x1, 0, z1); // Vertex 3
+                vertices.push(x0, 0, z0);
+                vertices.push(x1, 0, z0);
+                vertices.push(x0, 0, z1);
+                vertices.push(x1, 0, z1);
 
-                // Add colors (initially grayish-black)
                 for (let i = 0; i < 4; i++) {
                     colors.push(colorBlack.r, colorBlack.g, colorBlack.b);
                 }
 
-                // Index offsets
                 const baseIndex = (x * gridSize + z) * 4;
 
-                // Triangle 1 (0, 1, 2)
                 indices.push(baseIndex, baseIndex + 1, baseIndex + 2);
-
-                // Triangle 2 (2, 1, 3)
                 indices.push(baseIndex + 2, baseIndex + 1, baseIndex + 3);
             }
         }
 
-        // Set Buffer Attributes
         geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
         geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
         geometry.setIndex(indices);
@@ -89,9 +81,9 @@
         // Create Material
         const material = new THREE.MeshStandardMaterial({
             vertexColors: true,
-            flatShading: true, // Flat shading for a more faceted look
-            metalness: 0.6, // Increased metalness for more reflectivity
-            roughness: 0.1, // Reduced roughness for a shinier surface
+            flatShading: true,
+            metalness: 0.6,
+            roughness: 0.1,
             side: THREE.DoubleSide
         });
 
@@ -100,14 +92,14 @@
         scene.add(mesh);
 
         // Lighting
-        const ambientLight = new THREE.AmbientLight(0x404040, 1.0); // Reduced ambient intensity for more contrast
+        const ambientLight = new THREE.AmbientLight(0x404040, 1.0);
         scene.add(ambientLight);
 
-        const pointLight = new THREE.PointLight(0xffffff, 5.0, 100); // Increased point light intensity
+        const pointLight = new THREE.PointLight(0xffffff, 5.0, 100);
         pointLight.position.set(5, 10, 5);
         scene.add(pointLight);
 
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 2.0); // Increased directional light intensity
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 2.0);
         directionalLight.position.set(-5, 8, -5);
         scene.add(directionalLight);
 
@@ -115,9 +107,8 @@
         let time = 0;
         function animate() {
             requestAnimationFrame(animate);
-            time += 0.04; // Increased from 0.01 to 0.03 for faster wave movement
+            time += 0.04;
 
-            // Update vertex positions and colors for the circular wave effect
             const positions = geometry.attributes.position.array;
             const colors = geometry.attributes.color.array;
 
@@ -125,24 +116,18 @@
                 const x = positions[i];
                 const z = positions[i + 2];
 
-                // Calculate distance from the center
                 const distance = Math.sqrt(x * x + z * z);
-
-                // Apply circular wave effect to y-coordinate
                 const waveHeight = Math.sin(distance * frequency - time) * amplitude;
                 positions[i + 1] = waveHeight;
 
-                // Blend color based on height
-                const colorIntensity = Math.max(0, waveHeight / amplitude); // Normalize height to [0, 1]
+                const colorIntensity = Math.max(0, waveHeight / amplitude);
                 const mixedColor = colorRed.clone().lerp(colorBlack, 1 - colorIntensity);
 
-                // Update colors for the vertex
                 colors[i] = mixedColor.r;
                 colors[i + 1] = mixedColor.g;
                 colors[i + 2] = mixedColor.b;
             }
 
-            // Mark the attributes as needing an update
             geometry.attributes.position.needsUpdate = true;
             geometry.attributes.color.needsUpdate = true;
 

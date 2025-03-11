@@ -115,7 +115,7 @@
         let time = 0;
         function animate() {
             requestAnimationFrame(animate);
-            time += 0.01;
+            time += 0.04; // Increased from 0.01 to 0.03 for faster wave movement
 
             // Update vertex positions and colors for the circular wave effect
             const positions = geometry.attributes.position.array;

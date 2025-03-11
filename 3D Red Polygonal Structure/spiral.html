@@ -90,8 +90,8 @@
         const material = new THREE.MeshStandardMaterial({
             vertexColors: true,
             flatShading: false, // Smooth shading for a connected surface
-            metalness: 0.5, // Slight metallic look
-            roughness: 0.4, // Matte finish
+            metalness: 0.3, // Reduced metalness for more brightness
+            roughness: 0.2, // Reduced roughness for more shine
             side: THREE.DoubleSide
         });
 
@@ -100,14 +100,14 @@
         scene.add(mesh);
 
         // Lighting
-        const ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
+        const ambientLight = new THREE.AmbientLight(0x404040, 2.0); // Increased ambient intensity
         scene.add(ambientLight);
 
-        const pointLight = new THREE.PointLight(0xffffff, 2.0, 100); // Increased intensity
+        const pointLight = new THREE.PointLight(0xffffff, 3.0, 100); // Increased point light intensity
         pointLight.position.set(5, 10, 5);
         scene.add(pointLight);
 
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5); // Increased directional light intensity
         directionalLight.position.set(-5, 8, -5);
         scene.add(directionalLight);
 

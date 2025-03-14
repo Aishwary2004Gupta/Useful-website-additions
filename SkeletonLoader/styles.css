@@ -1,0 +1,117 @@
+/* General Styles */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f9fafb;
+  }
+  
+  .container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .frame {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  /* Search Icon */
+  .search-icon {
+    position: absolute;
+    z-index: 10;
+    pointer-events: none;
+    left: 24px;
+    top: 24px;
+  }
+  
+  .glow {
+    background: rgba(59, 130, 246, 0.2);
+    padding: 12px;
+    border-radius: 50%;
+    backdrop-filter: blur(4px);
+    animation: glow-pulse 1s infinite ease-in-out;
+  }
+  
+  @keyframes glow-pulse {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+      transform: scale(1);
+    }
+    50% {
+      box-shadow: 0 0 35px rgba(59, 130, 246, 0.4);
+      transform: scale(1.1);
+    }
+  }
+  
+  .search-svg {
+    width: 24px;
+    height: 24px;
+    color: #3b82f6;
+  }
+  
+  /* Grid Layout */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  
+  /* Card Styles */
+  .card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    animation: card-fade 1.5s infinite;
+  }
+  
+  .card-placeholder {
+    height: 128px;
+    background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    animation: shimmer 1.5s infinite linear;
+  }
+  
+  .card-line {
+    height: 12px;
+    background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    animation: shimmer 1.5s infinite linear;
+  }
+  
+  .w-3/4 {
+    width: 75%;
+  }
+  
+  .w-1/2 {
+    width: 50%;
+  }
+  
+  /* Animations */
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+  
+  @keyframes card-fade {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.8;
+    }
+  }

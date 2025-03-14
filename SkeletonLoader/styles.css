@@ -7,8 +7,46 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
+    transition: background-color 0.3s, color 0.3s;
 }
-  
+
+/* Dark mode styles */
+
+body.dark-mode {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+body.dark-mode .frame {
+    background: #1e1e1e;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .card {
+    background: #2c2c2c;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .card-placeholder,
+body.dark-mode .card-line {
+    background: linear-gradient(90deg, #333 25%, #444 50%, #333 75%);
+}
+
+body.dark-mode .search-svg {
+    color: #bb86fc;
+}
+
+/* Dark mode toggle button */
+.dark-mode-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
 .container {
     width: 100%;
     max-width: 1000px;

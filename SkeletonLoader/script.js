@@ -4,10 +4,10 @@ function animateSearchIcon() {
     const positions = [
       { x: 40, y: 60 },
       { x: 360, y: 60 },
-      { x: 680, y: 60 },
+      { x: 690, y: 60 },
       { x: 40, y: 290 },
       { x: 360, y: 290 },
-      { x: 680, y: 290 },
+      { x: 690, y: 290 },
       { x: 40, y: 60 }, // Return to start
     ];
   

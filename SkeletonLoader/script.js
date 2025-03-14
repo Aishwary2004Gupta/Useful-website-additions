@@ -26,3 +26,7 @@ function animateSearchIcon() {
   window.addEventListener('load', () => {
     animateSearchIcon();
   });
+
+  document.getElementById('dark-mode-toggle').addEventListener('click', () => {
+    document.body.classList.toggle('dark-mode');
+});

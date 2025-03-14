@@ -7,9 +7,11 @@ body {
   
   .container {
     width: 100%;
-    max-width: 1200px;
+    max-width: 1000px;
     margin: 0 auto;
     padding: 20px;
+    justify-content: center;
+    align-self: center;
   }
   
   .frame {
@@ -58,7 +60,7 @@ body {
   /* Grid Layout */
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 16px;
   }
   

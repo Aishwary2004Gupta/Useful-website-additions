@@ -30,6 +30,7 @@ body {
     pointer-events: none;
     left: 24px;
     top: 24px;
+    transition: transform 2s ease-in-out;
   }
   
   .glow {

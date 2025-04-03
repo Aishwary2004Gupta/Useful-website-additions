@@ -1,14 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sharp Triangles with Color Blending</title>
     <style>
-        body { margin: 0; overflow: hidden; }
-        canvas { display: block; }
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+        }
     </style>
 </head>
+
 <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script>
@@ -114,7 +122,7 @@
 
                 // Apply wave effect to y-coordinate
                 const waveHeight = Math.sin(x * frequency + time) * amplitude +
-                                   Math.cos(z * frequency + time) * amplitude;
+                    Math.cos(z * frequency + time) * amplitude;
                 positions[i + 1] = waveHeight;
 
                 // Blend color based on height
@@ -154,4 +162,5 @@
         });
     </script>
 </body>
+
 </html>

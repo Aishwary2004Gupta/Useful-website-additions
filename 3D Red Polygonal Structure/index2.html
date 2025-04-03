@@ -1,14 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chaotic Red Triangles</title>
     <style>
-        body { margin: 0; overflow: hidden; }
-        canvas { display: block; }
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+        }
     </style>
 </head>
+
 <body>
     <script type="importmap">
     {
@@ -103,7 +111,7 @@
         // Lighting
         const ambientLight = new THREE.AmbientLight(0x444444); // Increased ambient light
         scene.add(ambientLight);
-        
+
         const pointLight = new THREE.PointLight(0xffffff, 2.0, 100); // Increased intensity
         pointLight.position.set(5, 10, 5);
         scene.add(pointLight);
@@ -118,19 +126,19 @@
         function animate() {
             requestAnimationFrame(animate);
             time += 0.01;
-            
+
             // Add smooth up and down motion
             mesh.position.y = Math.sin(time) * 0.5;
-            
+
             // Add subtle wave effect to vertices
             const positions = geometry.attributes.position.array;
-            for(let i = 1; i < positions.length; i += 3) {
-                const x = positions[i-1];
-                const z = positions[i+1];
+            for (let i = 1; i < positions.length; i += 3) {
+                const x = positions[i - 1];
+                const z = positions[i + 1];
                 positions[i] += Math.sin(time + x + z) * 0.002;
             }
             geometry.attributes.position.needsUpdate = true;
-            
+
             controls.update();
             renderer.render(scene, camera);
         }
@@ -145,4 +153,5 @@
         });
     </script>
 </body>
+
 </html>

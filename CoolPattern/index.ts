@@ -95,7 +95,7 @@ function createTriangleGrid(width: number, height: number, size: number): THREE.
       },
     });
   
-    await renderer.initTexture(material); // Important for WebGPU materials!
+    // Removed unnecessary call to initTexture as it does not exist on WebGPURenderer
   
     return material;
   }

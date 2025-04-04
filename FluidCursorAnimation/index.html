@@ -73,7 +73,7 @@
             update(targetX, targetY) {
                 this.lastX = this.x;
                 this.lastY = this.y;
-                
+
                 this.baseX += (targetX - this.baseX) * 0.3;
                 this.baseY += (targetY - this.baseY) * 0.3;
 
@@ -146,7 +146,7 @@
                 const hue = (Date.now() * 0.1 + i * 72) % 360;
                 gradient.addColorStop(0, `hsla(${hue}, 100%, 80%, 0.4)`); // Increased lightness to 80%
                 gradient.addColorStop(1, 'transparent');
-                
+
                 ctx.fillStyle = gradient;
                 ctx.beginPath();
                 ctx.arc(point.x, point.y, point.radius, 0, Math.PI * 2);

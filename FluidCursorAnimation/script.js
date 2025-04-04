@@ -57,7 +57,7 @@ function handleParticles() {
     }
 }
 
-canvas.addEventListener('mousemove', function(event) {
+canvas.addEventListener('mousemove', function (event) {
     mouse.x = event.x;
     mouse.y = event.y;
     isMouseMoving = true;

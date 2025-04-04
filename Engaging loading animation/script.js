@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const progressBar = document.querySelector('.progress-bar');
     const progressNumber = document.querySelector('.progress-number');
     const loadingScreen = document.querySelector('.loading-screen');

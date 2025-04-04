@@ -1,160 +1,169 @@
 * {
-    padding: 0;
-    margin: 0;
-    box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
 }
 
 html,
 body {
-    display: grid;
-    height: 100%;
-    place-items: center;
-    background-color: #212121;
+  display: grid;
+  height: 100%;
+  place-items: center;
+  background-color: #212121;
 }
 
 body {
-    overflow: hidden;
+  overflow: hidden;
 }
 
 .wrapper {
-    position: relative;
+  position: relative;
 }
 
 .btn-button {
-    background: #fff;
-    border: 3px solid #fff;
-    border-radius: 10rem;
-    cursor: pointer;
-    padding: 2rem;
-    position: relative;
-    z-index: 100;
+  background: #fff;
+  border: 3px solid #fff;
+  border-radius: 10rem;
+  cursor: pointer;
+  padding: 2rem;
+  position: relative;
+  z-index: 100;
 }
 
 .btn-button:hover,
 .btn-button:hover .btn-lid {
-    animation: eye-lid 100ms forwards;
+  animation: eye-lid 100ms forwards;
 }
 
 .btn-button:active .btn-pupil {
-    animation: pupil 100ms infinite 500ms;
-    border-width: 0.5rem;
-    padding: 1rem;
+  animation: pupil 100ms infinite 500ms;
+  border-width: 0.5rem;
+  padding: 1rem;
 }
 
 .btn-lid {
-    border-radius: 10rem;
-    height: 100%;
-    left: 0;
-    position: absolute;
-    top: 0;
-    width: 100%;
-    z-index: 101;
+  border-radius: 10rem;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 101;
 }
 
 .btn-pupil {
-    background: #320f0f;
-    border: 0.8rem solid rgb(157, 241, 67);
-    border-radius: 10rem;
-    padding: 0.7rem;
-    transition: all 200ms ease-out;
+  background: #320f0f;
+  border: 0.8rem solid rgb(157, 241, 67);
+  border-radius: 10rem;
+  padding: 0.7rem;
+  transition: all 200ms ease-out;
 }
 
 .btn-sensor {
-    clip-path: polygon(0 0, 100% 0, 50% 100%, 0 0);
-    height: 130dvmax;
-    overflow: hidden;
-    position: absolute;
-    left: calc(50% - 130dvmax / 2);
-    top: calc(50% - 130dvmax / 2);
-    transform: rotate(calc(var(--a) * 1deg)) translateY(calc(130dvmax * -50 / 100));
-    width: 130dvmax;
-    z-index: 99;
+  clip-path: polygon(0 0, 100% 0, 50% 100%, 0 0);
+  height: 130dvmax;
+  overflow: hidden;
+  position: absolute;
+  left: calc(50% - 130dvmax / 2);
+  top: calc(50% - 130dvmax / 2);
+  transform: rotate(calc(var(--a) * 1deg))
+    translateY(calc(130dvmax * -50 / 100));
+  width: 130dvmax;
+  z-index: 99;
 }
 
-.sensor-n:hover~.btn-button .btn-pupil {
-    transform: translateX(0) translateY(calc(-3 * 20%));
+.sensor-n:hover ~ .btn-button .btn-pupil {
+  transform: translateX(0) translateY(calc(-3 * 20%));
 }
 
-.sensor-ne:hover~.btn-button .btn-pupil {
-    transform: translateX(calc(2 * 20%)) translateY(calc(-2 * 20%));
+.sensor-ne:hover ~ .btn-button .btn-pupil {
+  transform: translateX(calc(2 * 20%)) translateY(calc(-2 * 20%));
 }
 
-.sensor-e:hover~.btn-button .btn-pupil {
-    transform: translateX(calc(3 * 20%)) translateY(0);
+.sensor-e:hover ~ .btn-button .btn-pupil {
+  transform: translateX(calc(3 * 20%)) translateY(0);
 }
 
-.sensor-se:hover~.btn-button .btn-pupil {
-    transform: translateX(calc(2 * 20%)) translateY(calc(2 * 20%));
+.sensor-se:hover ~ .btn-button .btn-pupil {
+  transform: translateX(calc(2 * 20%)) translateY(calc(2 * 20%));
 }
 
-.sensor-s:hover~.btn-button .btn-pupil {
-    transform: translateX(0) translateY(calc(3 * 20%));
+.sensor-s:hover ~ .btn-button .btn-pupil {
+  transform: translateX(0) translateY(calc(3 * 20%));
 }
 
-.sensor-sw:hover~.btn-button .btn-pupil {
-    transform: translateX(calc(-2 * 20%)) translateY(calc(2 * 20%));
+.sensor-sw:hover ~ .btn-button .btn-pupil {
+  transform: translateX(calc(-2 * 20%)) translateY(calc(2 * 20%));
 }
 
-.sensor-w:hover~.btn-button .btn-pupil {
-    transform: translateX(calc(-3 * 20%)) translateY(0);
+.sensor-w:hover ~ .btn-button .btn-pupil {
+  transform: translateX(calc(-3 * 20%)) translateY(0);
 }
 
-.sensor-nw:hover~.btn-button .btn-pupil {
-    transform: translateX(calc(-2 * 20%)) translateY(calc(-2 * 20%));
+.sensor-nw:hover ~ .btn-button .btn-pupil {
+  transform: translateX(calc(-2 * 20%)) translateY(calc(-2 * 20%));
 }
 
 @keyframes pupil {
-    0% {
-        transform: scale(1.2) translate(0%, -10%);
-    }
+  0% {
+    transform: scale(1.2) translate(0%, -10%);
+  }
 
-    25% {
-        transform: scale(1.2) translate(-10%, 10%);
-    }
+  25% {
+    transform: scale(1.2) translate(-10%, 10%);
+  }
 
-    50% {
-        transform: scale(1.2) translate(10%, -5%);
-    }
+  50% {
+    transform: scale(1.2) translate(10%, -5%);
+  }
 
-    75% {
-        transform: scale(1.2) translate(-10%, -5%);
-    }
+  75% {
+    transform: scale(1.2) translate(-10%, -5%);
+  }
 
-    100% {
-        transform: scale(1.2) translate(10%, 10%);
-    }
+  100% {
+    transform: scale(1.2) translate(10%, 10%);
+  }
 }
 
 @keyframes eye-lid {
-    0% {
-        background: #000;
-    }
+  0% {
+    background: #000;
+  }
 
-    25% {
-        background: linear-gradient(0deg,
-                #000 0% 9%,
-                transparent 10% 90%,
-                #000 91% 100%);
-    }
+  25% {
+    background: linear-gradient(
+      0deg,
+      #000 0% 9%,
+      transparent 10% 90%,
+      #000 91% 100%
+    );
+  }
 
-    50% {
-        background: linear-gradient(0deg,
-                #000 0% 18%,
-                transparent 19% 81%,
-                #000 82% 100%);
-    }
+  50% {
+    background: linear-gradient(
+      0deg,
+      #000 0% 18%,
+      transparent 19% 81%,
+      #000 82% 100%
+    );
+  }
 
-    75% {
-        background: linear-gradient(0deg,
-                #000 0% 27%,
-                transparent 28% 72%,
-                #000 73% 100%);
-    }
+  75% {
+    background: linear-gradient(
+      0deg,
+      #000 0% 27%,
+      transparent 28% 72%,
+      #000 73% 100%
+    );
+  }
 
-    100% {
-        background: linear-gradient(0deg,
-                #000 0% 35%,
-                transparent 36% 64%,
-                #000 65% 100%);
-    }
+  100% {
+    background: linear-gradient(
+      0deg,
+      #000 0% 35%,
+      transparent 36% 64%,
+      #000 65% 100%
+    );
+  }
 }

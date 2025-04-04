@@ -7,7 +7,6 @@ This project demonstrates an engaging loading screen animation with a progress b
 - [Features](#features)
 - [Technologies Used](#technologies-used)
 
-
 ## Features
 
 - **Loading Animation:** Displays a progress bar that gradually fills up to indicate the loading process.
@@ -20,4 +19,3 @@ This project demonstrates an engaging loading screen animation with a progress b
 - **HTML5**
 - **CSS3**
 - **JavaScript**
-

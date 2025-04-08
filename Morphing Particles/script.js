@@ -108,11 +108,11 @@ function initControls() {
     controls.rotateSpeed = 0.5;
     controls.minDistance = 2;
     controls.maxDistance = 10;
-    
+
     controls.addEventListener('start', () => {
         document.body.style.cursor = 'grabbing';
     });
-    
+
     controls.addEventListener('end', () => {
         document.body.style.cursor = 'grab';
     });
@@ -264,20 +264,20 @@ function createDNAShape() {
     const radius = 1;
     const height = 3;
     const turns = 2;
-    
+
     for (let i = 0; i < numPoints; i++) {
         const t = (i / numPoints) * Math.PI * 2 * turns;
         const x = Math.cos(t) * radius;
         const y = (i / numPoints) * height - height / 2;
         const z = Math.sin(t) * radius;
         points.push(new THREE.Vector3(x, y, z));
-        
+
         const offset = Math.PI;
         const x2 = Math.cos(t + offset) * radius;
         const z2 = Math.sin(t + offset) * radius;
         points.push(new THREE.Vector3(x2, y, z2));
     }
-    
+
     return points;
 }
 
@@ -288,7 +288,7 @@ function createTorusKnotShape() {
     const tubeRadius = 0.4;
     const p = 3;
     const q = 2;
-    
+
     for (let i = 0; i < numPoints; i++) {
         const t = (i / numPoints) * Math.PI * 2;
         const x = radius * (2 + Math.cos(q * t)) * Math.cos(p * t);
@@ -296,7 +296,7 @@ function createTorusKnotShape() {
         const z = tubeRadius * Math.sin(q * t);
         points.push(new THREE.Vector3(x, y, z));
     }
-    
+
     return points;
 }
 
@@ -305,7 +305,7 @@ function createStarShape() {
     const numPoints = 100;
     const radius = 1.5;
     const spikes = 5;
-    
+
     for (let i = 0; i < numPoints; i++) {
         const t = (i / numPoints) * Math.PI * 2;
         const r = radius * (1 + 0.5 * Math.sin(spikes * t));
@@ -314,7 +314,7 @@ function createStarShape() {
         const z = 0;
         points.push(new THREE.Vector3(x, y, z));
     }
-    
+
     return points;
 }
 

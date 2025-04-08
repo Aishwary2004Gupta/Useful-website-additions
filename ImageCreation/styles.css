@@ -1,14 +1,14 @@
 body {
-    background: #000000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    margin: 0;
+  background: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  margin: 0;
 }
 
-svg path{ 
-    stroke: rgb(255, 255, 255);
-    stroke-width: 20px;
-    fill: none;
+svg path {
+  stroke: rgb(255, 255, 255);
+  stroke-width: 20px;
+  fill: none;
 }

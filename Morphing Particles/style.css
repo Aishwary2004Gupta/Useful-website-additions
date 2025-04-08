@@ -1,160 +1,162 @@
 /* Reset Styles */
-*, *::before, *::after {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-    width: 100%;
-    height: 100vh;
-    overflow: hidden;
-    background: #0d0d0d;
-    font-family: 'Inter', sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: #0d0d0d;
+  font-family: "Inter", sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 /* Main Container */
 #container {
-    width: 100%;
-    height: 100%;
-    position: relative;
+  width: 100%;
+  height: 100%;
+  position: relative;
 }
 
 /* UI Controls */
 #ui {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 10px;
-    z-index: 1000;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  z-index: 1000;
 }
 
 /* Controls Panel */
 #controls {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 /* Glassmorphic Control Groups */
 .control-group {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 20px;
-    border-radius: 12px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease-in-out;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease-in-out;
 }
 
 .control-group:hover {
-    transform: translateY(-2px);
+  transform: translateY(-2px);
 }
 
 /* Sliders & Inputs */
 .slider-container {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .slider-container label {
-    font-size: 14px;
-    color: #fff;
-    font-weight: 500;
+  font-size: 14px;
+  color: #fff;
+  font-weight: 500;
 }
 
 input[type="range"] {
-    width: 200px;
-    -webkit-appearance: none;
-    appearance: none;
-    height: 6px;
-    background: linear-gradient(90deg, #0000ff, #ffcc00);
-    border-radius: 10px;
-    outline: none;
-    cursor: pointer;
-    transition: background 0.3s;
+  width: 200px;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  background: linear-gradient(90deg, #0000ff, #ffcc00);
+  border-radius: 10px;
+  outline: none;
+  cursor: pointer;
+  transition: background 0.3s;
 }
 
 input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 14px;
-    height: 14px;
-    background: white;
-    border-radius: 50%;
-    cursor: pointer;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  background: white;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
 /* Color Picker */
 input[type="color"] {
-    width: 40px;
-    height: 30px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
+  width: 40px;
+  height: 30px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
 /* Modern Buttons */
 .button {
-    cursor: pointer;
-    padding: 12px 18px;
-    border-radius: 25px;
-    background: linear-gradient(90deg, #00ffc3, #ffcc00);
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-    text-transform: uppercase;
-    transition: all 0.3s ease-in-out;
-    text-align: center;
-    box-shadow: 0 4px 10px rgba(255, 89, 0, 0.3);
-    position: relative;
-    overflow: hidden;
+  cursor: pointer;
+  padding: 12px 18px;
+  border-radius: 25px;
+  background: linear-gradient(90deg, #00ffc3, #ffcc00);
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  text-transform: uppercase;
+  transition: all 0.3s ease-in-out;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(255, 89, 0, 0.3);
+  position: relative;
+  overflow: hidden;
 }
 
 .button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 15px rgba(255, 89, 0, 0.4);
+  transform: scale(1.05);
+  box-shadow: 0 6px 15px rgba(255, 89, 0, 0.4);
 }
 
 .button.active {
-    background: rgba(255, 89, 0, 0.9);
-    transform: scale(1.1);
+  background: rgba(255, 89, 0, 0.9);
+  transform: scale(1.1);
 }
 
 /* Title Styling */
 #title {
-    font-size: 26px;
-    font-weight: bold;
-    text-transform: uppercase;
-    text-shadow: 3px 3px 6px rgba(255, 255, 255, 0.2);
-    background: linear-gradient(45deg, #ff5900, #ffcc00);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+  font-size: 26px;
+  font-weight: bold;
+  text-transform: uppercase;
+  text-shadow: 3px 3px 6px rgba(255, 255, 255, 0.2);
+  background: linear-gradient(45deg, #ff5900, #ffcc00);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 /* Info Panel */
 #info {
-    position: absolute;
-    bottom: 20px;
-    left: 20px;
-    color: white;
-    font-size: 14px;
-    opacity: 0.7;
-    font-weight: 500;
-    transition: opacity 0.3s;
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  color: white;
+  font-size: 14px;
+  opacity: 0.7;
+  font-weight: 500;
+  transition: opacity 0.3s;
 }
 
 #info:hover {
-    opacity: 1;
+  opacity: 1;
 }

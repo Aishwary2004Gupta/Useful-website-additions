@@ -7,7 +7,7 @@ canvas.height = window.innerHeight;
 
 let particles = [];
 const mouse = { x: undefined, y: undefined };
-let theme = "light"; 
+let theme = "light";
 
 // Particle class
 class Particle {

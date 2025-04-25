@@ -96,7 +96,7 @@ class Simulation:
         self.input_image = None
         try:
             # Load and resize the input image to match simulation dimensions
-            self.input_image = Image.open('input_image2.jpg').convert('RGB')
+            self.input_image = Image.open('input_image.jpg').convert('RGB')
             self.input_image = self.input_image.resize((WIDTH, HEIGHT))
         except:
             print("No input image found - will skip image mapping")

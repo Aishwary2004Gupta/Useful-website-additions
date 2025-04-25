@@ -212,7 +212,7 @@ class Simulation:
             return
             
         # Read all existing ball data
-        with open('ball_spawns.csv', 'r') as f:
+        with open('ball_spawn.csv', 'r') as f:
             lines = f.readlines()
             
         # Sort balls by step_added to maintain correspondence with CSV
@@ -238,7 +238,7 @@ class Simulation:
             new_lines.append(new_line)
             
         # Write updated data back to CSV
-        with open('ball_spawns.csv', 'w') as f:
+        with open('ball_spawn.csv', 'w') as f:
             f.writelines(new_lines)
 
 
@@ -248,13 +248,13 @@ class Simulation:
         balls_spawned = 0
         if MODE != "SPAWN":
             # Read all balls from CSV at start
-            with open('ball_spawns.csv', 'r') as f:
+            with open('ball_spawn.csv', 'r') as f:
                 for line in f:
                     step, x, y, radius, old_x, old_y, r, g, b = map(float, line.strip().split(','))
                     if balls_spawned >= MAX_OBJECTS:
                         break
         else:
-            with open('ball_spawns.csv', 'w') as f:
+            with open('ball_spawn.csv', 'w') as f:
                 f.write("")  # Clear the file
 
         while running and self.current_step < TOTAL_STEPS:
@@ -283,12 +283,12 @@ class Simulation:
                     # Set old_position based on desired initial velocity
                     new_ball.old_position = new_ball.position - velocity * FIXED_DT
                     # Save ball attributes to CSV
-                    with open('ball_spawns.csv', 'a') as f:
+                    with open('ball_spawn.csv', 'a') as f:
                         f.write(f"{self.current_step},{new_ball.position.x},{new_ball.position.y},{new_ball.radius},{new_ball.old_position.x},{new_ball.old_position.y},{new_ball.color[0]},{new_ball.color[1]},{new_ball.color[2]}\n")
                     self.add_ball(new_ball)
                     balls_spawned += 1
             else:
-                with open('ball_spawns.csv', 'r') as f:
+                with open('ball_spawn.csv', 'r') as f:
                     for _ in range(balls_spawned):  # Skip already processed lines
                         next(f)
                     line = next(f, None)  # Get the next line

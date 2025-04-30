@@ -1,143 +1,146 @@
 <!DOCTYPE html>
 <html>
-
-<head>
+  <head>
     <style>
-        canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0);
-        }
+      canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0);
+      }
     </style>
 
     <title>Particle Name</title>
-</head>
+  </head>
 
-<body>
+  <body>
     <canvas id="canvas"></canvas>
 
     <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-        const mouse = { x: null, y: null };
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+      let particles = [];
+      const mouse = { x: null, y: null };
 
-        // Set canvas size
-        function initCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
+      // Set canvas size
+      function initCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
 
-        // Create particles from text
-        function createTextParticles() {
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
+      // Create particles from text
+      function createTextParticles() {
+        const tempCanvas = document.createElement("canvas");
+        const tempCtx = tempCanvas.getContext("2d");
 
-            tempCanvas.width = canvas.width;
-            tempCanvas.height = canvas.height;
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
 
-            // Text styling
-            const fontSize = Math.min(window.innerWidth / 15, 80);
-            tempCtx.font = `bold ${fontSize}px Times-New-Roman`;
-            tempCtx.fillStyle = 'white';
-            tempCtx.textBaseline = 'middle';
-            tempCtx.textAlign = 'center';
+        // Text styling
+        const fontSize = Math.min(window.innerWidth / 15, 80);
+        tempCtx.font = `bold ${fontSize}px Times-New-Roman`;
+        tempCtx.fillStyle = "white";
+        tempCtx.textBaseline = "middle";
+        tempCtx.textAlign = "center";
 
-            // Calculate positions
-            const text1 = "AISHWARY";
-            const text2 = "GUPTA";
-            const x = canvas.width / 2;
-            const y = canvas.height / 2;
+        // Calculate positions
+        const text1 = "AISHWARY";
+        const text2 = "GUPTA";
+        const x = canvas.width / 2;
+        const y = canvas.height / 2;
 
-            // Draw text
-            tempCtx.fillText(text1, x, y - fontSize);
-            tempCtx.fillText(text2, x, y + fontSize);
+        // Draw text
+        tempCtx.fillText(text1, x, y - fontSize);
+        tempCtx.fillText(text2, x, y + fontSize);
 
-            // Create particles from text pixels
-            const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
-            const data = imageData.data;
-            particles = [];
+        // Create particles from text pixels
+        const imageData = tempCtx.getImageData(
+          0,
+          0,
+          tempCanvas.width,
+          tempCanvas.height
+        );
+        const data = imageData.data;
+        particles = [];
 
-            for (let y = 0; y < tempCanvas.height; y += 4) {
-                for (let x = 0; x < tempCanvas.width; x += 4) {
-                    const index = (y * tempCanvas.width + x) * 4;
-                    if (data[index + 3] > 128) {
-                        particles.push({
-                            x: Math.random() * canvas.width,
-                            y: Math.random() * canvas.height,
-                            originX: x,
-                            originY: y,
-                            size: Math.random() * 1.5 + 0.5,
-                            vx: 0,
-                            vy: 0,
-                            friction: Math.random() * 0.02 + 0.92,
-                            ease: Math.random() * 0.1 + 0.02
-                        });
-                    }
-                }
+        for (let y = 0; y < tempCanvas.height; y += 4) {
+          for (let x = 0; x < tempCanvas.width; x += 4) {
+            const index = (y * tempCanvas.width + x) * 4;
+            if (data[index + 3] > 128) {
+              particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                originX: x,
+                originY: y,
+                size: Math.random() * 1.5 + 0.5,
+                vx: 0,
+                vy: 0,
+                friction: Math.random() * 0.02 + 0.92,
+                ease: Math.random() * 0.1 + 0.02,
+              });
             }
+          }
         }
+      }
 
-        function animate() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+      function animate() {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            particles.forEach(particle => {
-                // Mouse interaction
-                const dx = mouse.x - particle.x;
-                const dy = mouse.y - particle.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
+        particles.forEach((particle) => {
+          // Mouse interaction
+          const dx = mouse.x - particle.x;
+          const dy = mouse.y - particle.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
 
-                if (distance < 120) {
-                    const force = (120 - distance) / 120;
-                    const angle = Math.atan2(dy, dx);
-                    particle.vx -= Math.cos(angle) * force * 5;
-                    particle.vy -= Math.sin(angle) * force * 5;
-                }
+          if (distance < 120) {
+            const force = (120 - distance) / 120;
+            const angle = Math.atan2(dy, dx);
+            particle.vx -= Math.cos(angle) * force * 5;
+            particle.vy -= Math.sin(angle) * force * 5;
+          }
 
-                // Return to position
-                const tx = particle.originX - particle.x;
-                const ty = particle.originY - particle.y;
-                const dist = Math.sqrt(tx * tx + ty * ty);
-                const angle = Math.atan2(ty, tx);
-                const force = dist * 0.01;
+          // Return to position
+          const tx = particle.originX - particle.x;
+          const ty = particle.originY - particle.y;
+          const dist = Math.sqrt(tx * tx + ty * ty);
+          const angle = Math.atan2(ty, tx);
+          const force = dist * 0.01;
 
-                particle.vx += Math.cos(angle) * force;
-                particle.vy += Math.sin(angle) * force;
-                particle.vx *= particle.friction;
-                particle.vy *= particle.friction;
-                particle.x += particle.vx;
-                particle.y += particle.vy;
+          particle.vx += Math.cos(angle) * force;
+          particle.vy += Math.sin(angle) * force;
+          particle.vx *= particle.friction;
+          particle.vy *= particle.friction;
+          particle.x += particle.vx;
+          particle.y += particle.vy;
 
-                // Draw particle
-                ctx.beginPath();
-                ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(1, 1 - dist / 100)})`;
-                ctx.fill();
-            });
-
-            requestAnimationFrame(animate);
-        }
-
-        // Event listeners
-        window.addEventListener('mousemove', (e) => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
+          // Draw particle
+          ctx.beginPath();
+          ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(1, 1 - dist / 100)})`;
+          ctx.fill();
         });
 
-        window.addEventListener('resize', () => {
-            initCanvas();
-            createTextParticles();
-        });
+        requestAnimationFrame(animate);
+      }
 
-        // Initialize
+      // Event listeners
+      window.addEventListener("mousemove", (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+      });
+
+      window.addEventListener("resize", () => {
         initCanvas();
         createTextParticles();
-        animate();
-    </script>
-</body>
+      });
 
+      // Initialize
+      initCanvas();
+      createTextParticles();
+      animate();
+    </script>
+  </body>
 </html>

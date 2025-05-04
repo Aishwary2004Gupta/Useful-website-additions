@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     for (let i = 0; i < 10; i++) {
         const card = document.createElement('div');
         card.className = 'card';
-        card.textContent = 'This is My photo gallery';
+        card.textContent = 'This is My photo gallery This is My photo gallery This is My photo gallery This is My photo gallery This is My photo gallery This is My photo gallery This is My photo gallery This is My photo gallery This is My photo gallery This is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo gallery';
         main.appendChild(card);
     }
     

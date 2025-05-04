@@ -10,12 +10,15 @@
 }
 
 .card {
-    background-color: #fff;
+    /* background-color: #fff; */
     border: 1px solid grey;
     padding: 2rem;
     margin: 2rem 0;
     font-size: 2rem;
     border-radius: 1rem;
+    animation: auto linear reveal both;
+    animation-timeline: view();
+    animation-range: entry 15% contain 15%;
 }
 
 .progress {
@@ -39,5 +42,18 @@
     to {
         transform: scaleX(1);
         background-color: green;
+    }
+}
+
+@keyframes reveal {
+    from {
+        opacity: 0;
+        transform: scaleX(0.9);
+        border-radius: black 0rem 1rem 0rem;
+    }
+
+    to {
+        opacity: 1;
+        transform: scaleX(1);
     }
 }

@@ -16,10 +16,6 @@
     margin: 2rem 0;
     font-size: 2rem;
     border-radius: 1rem;
-    height: 5rem;
-    overflow: auto;
-    scroll-timeline: --card-scroll y;
-    text-decoration-color: #fff;
 }
 
 .progress {
@@ -31,7 +27,7 @@
     background-color : blue ;
     transform-origin: 0 50%;
     animation: glow-progess auto linear;
-    animation-timeline: --card-scroll;
+    animation-timeline: scroll();
 }
 
 @keyframes glow-progess {

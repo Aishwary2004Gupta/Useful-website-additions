@@ -6,11 +6,17 @@ document.addEventListener('DOMContentLoaded', () => {
     progressDiv.className = 'progress';
     main.appendChild(progressDiv);
     
-    // Create 10 cards
-    for (let i = 0; i < 10; i++) {
+    // Create 10 cards with Unsplash images
+    for (let i = 0; i < 8; i++) {
         const card = document.createElement('div');
         card.className = 'card';
-        card.textContent = 'This is My photo gallery This is My photo gallery This is My photo gallery This is My photo gallery This is My photo gallery This is My photo gallery This is My photo gallery This is My photo gallery This is My photo gallery This is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo galleryThis is My photo gallery';
+        
+        const img = document.createElement('img');
+        img.src = `https://picsum.photos/420/300?random=${i}`; // Random image from Picsum
+        img.alt = 'Random Unsplash image';
+        img.loading = 'lazy'; // Enable lazy loading for better performance
+        
+        card.appendChild(img);
         main.appendChild(card);
     }
     

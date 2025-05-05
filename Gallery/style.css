@@ -4,23 +4,35 @@
 }
 
 #root {
-    max-width: 1280px;
+    max-width: 100%;
     margin: 0 auto;
     padding: 2rem;
-    text-align: center;
+    display: flex;
+    overflow-x: auto;
+    gap: 2rem;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+#root::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
 }
 
 .card {
-    /* background-color: #fff; */
+    min-width: 300px;
+    height: 400px;
+    flex-shrink: 0;
     border: 1px solid grey;
     padding: 2rem;
-    margin: 2rem 0;
     font-size: 2rem;
     border-radius: 1rem;
     color: white;
     animation: auto linear reveal both;
     animation-timeline: view();
     animation-range: entry 15% contain 15%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .progress {

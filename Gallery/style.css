@@ -11,7 +11,7 @@
     overflow-x: auto;
     gap: 2rem;
     scrollbar-width: none;
-    -ms-overflow-style: none; /* IE and Edge */
+    -ms-overflow-style: none;
 }
 
 #root::-webkit-scrollbar {

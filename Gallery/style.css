@@ -10,7 +10,7 @@
     display: flex;
     overflow-x: auto;
     gap: 2rem;
-    scrollbar-width: none; /* Firefox */
+    scrollbar-width: none;
     -ms-overflow-style: none; /* IE and Edge */
 }
 

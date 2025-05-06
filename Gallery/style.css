@@ -19,7 +19,7 @@
 }
 
 .card {
-    min-width: 300px;
+    min-width: 100px;
     height: 400px;
     flex-shrink: 0;
     border: 1px solid grey;

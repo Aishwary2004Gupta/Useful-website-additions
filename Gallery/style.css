@@ -88,7 +88,11 @@
         transform: rotateY(0deg) scale(1.35) translateZ(0rem);
         box-shadow: 0px 10px 50px rgba(0, 0, 0, 0.75);
     }
-    50% { /* back to normal */
+    50% { 
+        transform: rotateY(0deg) scale(1.35) translateZ(0rem);
+        box-shadow: 0px 10px 50px rgba(0, 0, 0, 0.75);
+    }
+    52% { /* holding the same animation */
         transform: rotateY(0deg) scale(1.35) translateZ(0rem);
         box-shadow: 0px 10px 50px rgba(0, 0, 0, 0.75);
     }

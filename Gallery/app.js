@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
         card.className = 'card';
 
         const img = document.createElement('img');
-        img.src = `https://www.pexels.com/search/unsplash/?random=${i}`; // Random image from Picsum
+        img.src = `https://picsum.photos/555/355?random=${i}`; // Random image from Picsum
         img.alt = 'Random Unsplash image';
         img.loading = 'lazy'; // Enable lazy loading for better performance
 

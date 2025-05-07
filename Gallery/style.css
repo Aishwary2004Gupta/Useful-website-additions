@@ -97,8 +97,12 @@
         box-shadow: 0px 10px 50px rgba(0, 0, 0, 0.75);
     }
     67% {
-        opacity: 1;
         transform: translateX(0) rotateY(45deg) translateZ(-5rem);
         box-shadow: 0px 10px 50px rgba(0, 0, 0, 0);
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(125%) rotateY(45deg) translateZ(-15rem) scale(0.75);
     }
 }

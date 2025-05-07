@@ -59,7 +59,7 @@
   }
 }
 
-/* @keyframes reveal {
+@keyframes reveal {
   from {
     opacity: 0;
     transform: scale(0.9) rotate(-10deg);
@@ -70,7 +70,7 @@
     opacity: 1;
     transform: scale(1) rotate(0deg);
   }
-} */
+}
 
 /* @keyframes reveal { 
     0% {

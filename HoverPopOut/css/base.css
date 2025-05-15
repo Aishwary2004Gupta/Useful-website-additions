@@ -257,6 +257,11 @@ body #cdawrap {
   gap: 1rem;
 }
 
+.content__inner p {
+  margin: 2em 0;
+  text-align: center;
+}
+
 .content p {
   font-size: 1.25rem;
   margin: 0;
@@ -271,6 +276,16 @@ body #cdawrap {
   user-select: none;
   cursor: pointer;
   color: var(--color-trigger);
+}
+
+.trigger {
+  display: inline-block;
+  cursor: pointer;
+  color: var(--color-link);
+}
+
+.trigger:hover {
+  color: var(--color-link-hover);
 }
 
 /* width */

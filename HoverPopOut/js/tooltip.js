@@ -97,7 +97,7 @@ export class Tooltip {
      */
     #layout() {
         let strHTML = '';
-        
+
         // Create the grid of cells as a string
         for (let row = 0; row < this.rows; row++) {
             for (let col = 0; col < this.cols; col++) {
@@ -108,12 +108,12 @@ export class Tooltip {
 
         // Set the innerHTML of the background element in one operation
         this.DOM.bg.innerHTML = strHTML;
-        
+
         // Set the CSS variables on the tooltip element
         this.DOM.el.style.setProperty('--tt-columns', this.cols);
         this.DOM.el.style.setProperty('--tt-rows', this.rows);
 
-        this.DOM.cells =  [...this.DOM.bg.querySelectorAll('div')];
+        this.DOM.cells = [...this.DOM.bg.querySelectorAll('div')];
     }
 
     /**
@@ -158,7 +158,7 @@ export class Tooltip {
      * @returns {GSAPTimeline} The GSAP timeline object for animations.
      */
     createDefaultTimeline({ duration = 0.1, ease = 'expo' } = {}) {
-        if ( this.tl ) { 
+        if (this.tl) {
             this.tl.kill();
         }
 
@@ -168,16 +168,16 @@ export class Tooltip {
                 ease      // use the ease passed in, or default to 'expo'
             },
             onStart: () => {
-                if ( this.isOpen ) {
-                    gsap.set(this.DOM.el, {zIndex: 99999});
+                if (this.isOpen) {
+                    gsap.set(this.DOM.el, { zIndex: 99999 });
                     this.DOM.el.classList.add('tooltip--show');
                 }
                 else {
-                    gsap.set(this.DOM.el, {zIndex: 0});
+                    gsap.set(this.DOM.el, { zIndex: 0 });
                 }
             },
             onComplete: () => {
-                if ( !this.isOpen ) {
+                if (!this.isOpen) {
                     this.DOM.el.classList.remove('tooltip--show');
                 }
             }
@@ -196,21 +196,21 @@ export class Tooltip {
             stagger: this.isOpen ? 0.2 : 0
         }, this.isOpen ? 0.4 : 0)
 
-        .add(() => {
-            this.DOM.contentTitle.classList[this.isOpen ? 'add' : 'remove']('glitch');
-        }, this.isOpen ? 0.8 : 0)
-        .add(() => {
-            this.DOM.contentDescription.classList[this.isOpen ? 'add' : 'remove']('glitch');
-        }, this.isOpen ? 1 : 0)
+            .add(() => {
+                this.DOM.contentTitle.classList[this.isOpen ? 'add' : 'remove']('glitch');
+            }, this.isOpen ? 0.8 : 0)
+            .add(() => {
+                this.DOM.contentDescription.classList[this.isOpen ? 'add' : 'remove']('glitch');
+            }, this.isOpen ? 1 : 0)
     }
 
     /**
      * Specific animation effects applied to the tooltip cells and content
      */
     animateEffect1(event) {
-        
+
         this.tl = this.createDefaultTimeline();
-        
+
         // Get the mouse position from the event
         const mousePosition = { x: event.clientX, y: event.clientY };
         // Calculate the maximum distance as the diagonal of the page
@@ -235,7 +235,7 @@ export class Tooltip {
             const delay = (distance / maximumDistance) * maximumDelay;
 
             // Apply the animation with the calculated delay
-            if ( this.isOpen ) {
+            if (this.isOpen) {
                 this.tl.fromTo(cell, {
                     opacity: 0
                 }, {
@@ -261,7 +261,7 @@ export class Tooltip {
 
         this.tl = this.createDefaultTimeline();
 
-        if ( this.isOpen ) {
+        if (this.isOpen) {
             this.tl.fromTo(this.DOM.cells, {
                 opacity: 0,
                 scale: 0
@@ -284,11 +284,11 @@ export class Tooltip {
                 }
             }, 0);
         }
-        
+
         this.animateTooltipContent();
 
     }
-    
+
     /**
      * Specific animation effects applied to the tooltip cells and content
      */
@@ -296,11 +296,11 @@ export class Tooltip {
 
         this.tl = this.createDefaultTimeline();
 
-        if ( this.isOpen ) {
+        if (this.isOpen) {
             this.tl.fromTo(this.DOM.cells, {
                 opacity: 0,
                 scale: 0,
-                yPercent: () => gsap.utils.random(-200,200)
+                yPercent: () => gsap.utils.random(-200, 200)
             }, {
                 opacity: 1,
                 scale: 1,
@@ -316,7 +316,7 @@ export class Tooltip {
             this.tl.to(this.DOM.cells, {
                 opacity: 0,
                 scale: 0,
-                yPercent: () => gsap.utils.random(-200,200),
+                yPercent: () => gsap.utils.random(-200, 200),
                 stagger: {
                     each: 0.03,
                     from: 'center',
@@ -336,11 +336,11 @@ export class Tooltip {
 
         this.tl = this.createDefaultTimeline();
 
-        if ( this.isOpen ) {
+        if (this.isOpen) {
             this.tl.fromTo(this.DOM.cells, {
                 opacity: 0,
                 scaleX: 0.8,
-                xPercent: () => gsap.utils.random(-200,200)
+                xPercent: () => gsap.utils.random(-200, 200)
             }, {
                 opacity: 1,
                 scaleX: 1,
@@ -356,7 +356,7 @@ export class Tooltip {
             this.tl.to(this.DOM.cells, {
                 opacity: 0,
                 scaleX: 0.8,
-                xPercent: () => gsap.utils.random(-200,200),
+                xPercent: () => gsap.utils.random(-200, 200),
                 stagger: {
                     each: 0.02,
                     from: 'random',
@@ -373,10 +373,10 @@ export class Tooltip {
      * Specific animation effects applied to the tooltip cells and content
      */
     animateEffect5() {
-        
+
         this.tl = this.createDefaultTimeline();
 
-        if ( this.isOpen ) {
+        if (this.isOpen) {
             this.tl.fromTo(this.DOM.cells, {
                 opacity: 0,
                 scale: 0
@@ -419,7 +419,7 @@ export class Tooltip {
             ease: 'expo'
         });
 
-        if ( this.isOpen ) {
+        if (this.isOpen) {
             this.tl.fromTo(this.DOM.cells, {
                 opacity: 0,
                 scale: 0.3

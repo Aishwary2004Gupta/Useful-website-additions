@@ -64,21 +64,19 @@
           tempCanvas.height
         );
         const data = imageData.data;
-        particles = [];
-
-        for (let y = 0; y < tempCanvas.height; y += 4) {
-          for (let x = 0; x < tempCanvas.width; x += 4) {
+        particles = [];        for (let y = 0; y < tempCanvas.height; y += 2) { // Reduced spacing for more density
+          for (let x = 0; x < tempCanvas.width; x += 2) {
             const index = (y * tempCanvas.width + x) * 4;
             if (data[index + 3] > 128) {
               particles.push({
-                x: Math.random() * canvas.width,
+                x: Math.random() * canvas.width, // Reduced initial spread
                 y: Math.random() * canvas.height,
                 originX: x,
                 originY: y,
-                size: Math.random() * 1.5 + 0.5,
+                size: Math.random() * 2, // Increased particle size
                 vx: 0,
                 vy: 0,
-                friction: Math.random() * 0.02 + 0.92,
+                friction: Math.random() * 0.01 + 0.95, // Increased friction for more stability
                 ease: Math.random() * 0.1 + 0.02,
               });
             }
@@ -86,8 +84,8 @@
         }
       }
 
-      function animate() {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+      function animate() {        
+        ctx.fillStyle = "rgba(0, 0, 0, 0.8)"; // Darker background for better contrast
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         particles.forEach((particle) => {

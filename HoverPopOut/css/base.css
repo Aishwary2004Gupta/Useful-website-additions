@@ -417,7 +417,7 @@ body #cdawrap {
   animation-delay: 12s;
 }
 
-/* @keyframes glitch-anim {
+@keyframes glitch-anim {
   0% {
     transform: translate3d(-5px, 0, 0) scale3d(-1, -1, 1);
     -webkit-clip-path: polygon(0 20%, 100% 20%, 100% 21%, 0 21%);
@@ -460,7 +460,7 @@ body #cdawrap {
     -webkit-clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
     clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
   }
-} */
+}
 
 @media screen and (min-width: 53em) {
   main {

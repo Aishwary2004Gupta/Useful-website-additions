@@ -402,7 +402,7 @@ body #cdawrap {
     border-style: dashed;
   }
 
-/* .glitch {
+.glitch {
   animation-name: glitch-anim;
   animation-duration: 4s;
   animation-timing-function: linear;
@@ -415,7 +415,7 @@ body #cdawrap {
 
 .glitch--2 {
   animation-delay: 12s;
-} */
+}
 
 /* @keyframes glitch-anim {
   0% {

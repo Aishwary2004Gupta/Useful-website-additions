@@ -388,6 +388,20 @@ body #cdawrap {
   transform: rotateY(160deg);
 }
 
+.ring:nth-child(8) {
+    transform: rotateY(4deg)  rotateX(75deg) scale(2);
+    border-style: dashed;
+  }
+  .ring:nth-child(9) {
+    transform: rotateY(4deg)  rotateX(75deg) scale(1.75);
+    border-style: solid;
+  }
+
+  .ring:nth-child(10) {
+    transform: rotateY(4deg) rotateX(75deg) scale(1.5);
+    border-style: dashed;
+  }
+
 /* .glitch {
   animation-name: glitch-anim;
   animation-duration: 4s;

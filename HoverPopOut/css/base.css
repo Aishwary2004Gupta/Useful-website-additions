@@ -468,8 +468,8 @@ body #cdawrap {
 /* Robot Animation Styles */
 #robot {
   position: relative;
-  height: 78vh;
-  width: 20vh;
+  height: 40vh;  /* reduced from 78vh */
+  width: 10vh;   /* reduced from 20vh */
   margin: 0 auto;
   animation: robot var(--cycle) infinite var(--timing);
   z-index: 2;
@@ -488,10 +488,10 @@ body #cdawrap {
 #robot .arm.r { animation: trans var(--cycle) infinite var(--timing); }
 
 #robot .head {
-  top: 10vh;
-  left: 5vh;
-  width: 9vh;
-  height: 10vh;
+  top: 3vh;      /* reduced from 10vh */
+  left: 0.5vh;   /* reduced from 5vh */
+  width: 9vh;  /* reduced from 9vh */
+  height: 10vh;   /* reduced from 10vh */
   margin: 0 auto;
   transform-origin: 20% 150%;
   animation: head var(--cycle) infinite var(--timing);
@@ -499,17 +499,17 @@ body #cdawrap {
 }
 
 #robot .arm {
-  left: 5vh;
-  top: 20.5vh;
-  width: 8vh;
-  height: 5.5vh;
+  left: 0.5vh;   /* reduced from 5vh */
+  top: 13vh;     /* reduced from 20.5vh */
+  width: 8vh;    /* reduced from 8vh */
+  height: 2.75vh; /* reduced from 5.5vh */
 }
 
 #robot .arm div {
   top: 100%;
   left: 0;
   width: 100%;
-  height: 10vh;
+  height: 10vh;   /* reduced from 10vh */
   box-sizing: border-box;
   transform: rotate(5deg);
   animation: arms var(--cycle) infinite var(--timing);
@@ -518,15 +518,15 @@ body #cdawrap {
 #robot .arm.l div { animation-delay: calc(var(--half-cycle) * -1); }
 
 #robot .leg {
-  top: 45vh;
-  left: 5vh;
-  width: 8vh;
-  height: 4vh;
+  top: 37vh;     /* reduced from 45vh */
+  left: 0.5vh;   /* reduced from 5vh */
+  width: 8vh;    /* reduced from 8vh */
+  height: 1vh;   /* reduced from 4vh */
 }
 
 #robot .leg div {
   width: 100%;
-  height: 15vh;
+  height: 15vh; /* reduced from 15vh */
   top: 100%;
   animation: legs1 var(--cycle) infinite var(--timing);
 }
@@ -536,8 +536,9 @@ body #cdawrap {
 
 .shadow {
   position: relative;
-  width: 22vh;
-  height: 3vh;
+  width: 22vh;   /* reduced from 22vh */
+  height: 1vh; /* reduced from 3vh */
+  top: 30vh;    /* reduced from 48vh */
   margin: 0 auto;
   border-radius: 50%;
   background: #05314f;

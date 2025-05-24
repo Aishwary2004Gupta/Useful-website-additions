@@ -413,11 +413,11 @@ body #cdawrap {
 }
 
 .glitch--1 {
-  animation-delay: 16s;
+  animation-delay: 1s;
 }
 
 .glitch--2 {
-  animation-delay: 12s;
+  animation-delay: 2s;
 }
 
 @keyframes glitch-anim {

@@ -16,6 +16,9 @@
   --color-ui-border-deco: #abcb1a;
   --color-ui-meta: #58487e;
   --color-ring: #abcb1a;
+  --cycle: 1.8s;
+  --half-cycle: 0.9s;
+  --timing: ease-in-out;
 }
 
 html,
@@ -460,6 +463,124 @@ body #cdawrap {
     -webkit-clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
     clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
   }
+}
+
+/* Robot Animation Styles */
+#robot {
+  position: relative;
+  height: 78vh;
+  width: 20vh;
+  margin: 0 auto;
+  animation: robot var(--cycle) infinite var(--timing);
+  z-index: 2;
+}
+
+#robot div {
+  position: absolute;
+  transform-origin: 50% 0;
+}
+
+#robot .r div { background: #29516D; }
+#robot .l div { background: #326384; }
+#robot .leg.r, 
+#robot .arm.l { animation: trans var(--cycle) var(--half-cycle) infinite var(--timing); }
+#robot .leg.l, 
+#robot .arm.r { animation: trans var(--cycle) infinite var(--timing); }
+
+#robot .head {
+  top: 10vh;
+  left: 5vh;
+  width: 9vh;
+  height: 10vh;
+  margin: 0 auto;
+  transform-origin: 20% 150%;
+  animation: head var(--cycle) infinite var(--timing);
+  background: #326384;
+}
+
+#robot .arm {
+  left: 5vh;
+  top: 20.5vh;
+  width: 8vh;
+  height: 5.5vh;
+}
+
+#robot .arm div {
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: 10vh;
+  box-sizing: border-box;
+  transform: rotate(5deg);
+  animation: arms var(--cycle) infinite var(--timing);
+}
+
+#robot .arm.l div { animation-delay: calc(var(--half-cycle) * -1); }
+
+#robot .leg {
+  top: 45vh;
+  left: 5vh;
+  width: 8vh;
+  height: 4vh;
+}
+
+#robot .leg div {
+  width: 100%;
+  height: 15vh;
+  top: 100%;
+  animation: legs1 var(--cycle) infinite var(--timing);
+}
+
+#robot .leg div div { animation: legs2 var(--cycle) infinite var(--timing); }
+#robot .leg.r div { animation-delay: calc(var(--half-cycle) * -1); }
+
+.shadow {
+  position: relative;
+  width: 22vh;
+  height: 3vh;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: #05314f;
+  animation: shadow var(--cycle) infinite var(--timing);
+  z-index: 1;
+}
+
+/* Robot Animations */
+@keyframes robot {
+  0%, 50%, 100% { transform: translateY(0vh) rotate(0.2deg); }
+  15%, 65% { transform: translateY(0.15vh) rotate(-0.2deg); }
+}
+
+@keyframes trans {
+  0%, 100% { transform: translateX(0vh); }
+  50% { transform: translateX(1.2vh); }
+}
+
+@keyframes head {
+  0%, 100% { transform: rotate(-1deg); }
+  25%, 75% { transform: rotate(2deg); }
+  50% { transform: rotate(0deg); }
+}
+
+@keyframes arms {
+  0%, 100% { transform: rotate(2deg); }
+  50% { transform: rotate(-10deg); }
+}
+
+@keyframes legs1 {
+  0%, 100% { transform: rotate(10deg); }
+  45% { transform: rotate(-15deg); }
+}
+
+@keyframes legs2 {
+  0%, 100% { transform: rotate(2deg); }
+  33% { transform: rotate(20deg); }
+  50% { transform: rotate(0deg); }
+}
+
+@keyframes shadow {
+  0%, 50%, 100% { transform: scale(1.02); }
+  25%, 75% { transform: scale(0.98); }
 }
 
 @media screen and (min-width: 53em) {

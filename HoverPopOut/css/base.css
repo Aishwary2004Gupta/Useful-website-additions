@@ -582,7 +582,7 @@ body #cdawrap {
 
 @keyframes shadow {
   0%, 50%, 100% { transform: scale(1.02); }
-  25%, 75% { transform: scale(0.98); }
+  25%, 75% { transform: scale(0.8); }
 }
 
 @media screen and (min-width: 53em) {

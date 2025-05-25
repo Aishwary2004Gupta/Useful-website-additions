@@ -392,18 +392,18 @@ body #cdawrap {
 }
 
 .ring:nth-child(8) {
-    transform: rotateY(4deg)  rotateX(75deg) scale(2);
-    border-style: dashed;
-  }
-  .ring:nth-child(9) {
-    transform: rotateY(4deg)  rotateX(75deg) scale(1.75);
-    border-style: solid;
-  }
+  transform: rotateY(4deg) rotateX(75deg) scale(2);
+  border-style: dashed;
+}
+.ring:nth-child(9) {
+  transform: rotateY(4deg) rotateX(75deg) scale(1.75);
+  border-style: solid;
+}
 
-  .ring:nth-child(10) {
-    transform: rotateY(4deg) rotateX(75deg) scale(1.5);
-    border-style: dashed;
-  }
+.ring:nth-child(10) {
+  transform: rotateY(4deg) rotateX(75deg) scale(1.5);
+  border-style: dashed;
+}
 
 .glitch {
   animation-name: glitch-anim;
@@ -469,8 +469,8 @@ body #cdawrap {
 /* Robot Animation Styles */
 #robot {
   position: relative;
-  height: 40vh;  /* reduced from 78vh */
-  width: 10vh;   /* reduced from 20vh */
+  height: 40vh; /* reduced from 78vh */
+  width: 10vh; /* reduced from 20vh */
   margin: 0 auto;
   animation: robot var(--cycle) infinite var(--timing);
   z-index: 2;
@@ -481,18 +481,26 @@ body #cdawrap {
   transform-origin: 50% 0;
 }
 
-#robot .r div { background: #29516D; }
-#robot .l div { background: #326384; }
-#robot .leg.r, 
-#robot .arm.l { animation: trans var(--cycle) var(--half-cycle) infinite var(--timing); }
-#robot .leg.l, 
-#robot .arm.r { animation: trans var(--cycle) infinite var(--timing); }
+#robot .r div {
+  background: #29516d;
+}
+#robot .l div {
+  background: #326384;
+}
+#robot .leg.r,
+#robot .arm.l {
+  animation: trans var(--cycle) var(--half-cycle) infinite var(--timing);
+}
+#robot .leg.l,
+#robot .arm.r {
+  animation: trans var(--cycle) infinite var(--timing);
+}
 
 #robot .head {
-  top: 3vh;      /* reduced from 10vh */
-  left: 0.5vh;   /* reduced from 5vh */
-  width: 9vh;  /* reduced from 9vh */
-  height: 10vh;   /* reduced from 10vh */
+  top: 3vh; /* reduced from 10vh */
+  left: 0.5vh; /* reduced from 5vh */
+  width: 9vh; /* reduced from 9vh */
+  height: 10vh; /* reduced from 10vh */
   margin: 0 auto;
   transform-origin: 20% 150%;
   animation: head var(--cycle) infinite var(--timing);
@@ -500,9 +508,9 @@ body #cdawrap {
 }
 
 #robot .arm {
-  left: 0.5vh;   /* reduced from 5vh */
-  top: 13vh;     /* reduced from 20.5vh */
-  width: 8vh;    /* reduced from 8vh */
+  left: 0.5vh; /* reduced from 5vh */
+  top: 13vh; /* reduced from 20.5vh */
+  width: 8vh; /* reduced from 8vh */
   height: 2.75vh; /* reduced from 5.5vh */
 }
 
@@ -510,19 +518,21 @@ body #cdawrap {
   top: 100%;
   left: 0;
   width: 100%;
-  height: 10vh;   /* reduced from 10vh */
+  height: 10vh; /* reduced from 10vh */
   box-sizing: border-box;
   transform: rotate(5deg);
   animation: arms var(--cycle) infinite var(--timing);
 }
 
-#robot .arm.l div { animation-delay: calc(var(--half-cycle) * -1); }
+#robot .arm.l div {
+  animation-delay: calc(var(--half-cycle) * -1);
+}
 
 #robot .leg {
-  top: 37vh;     /* reduced from 45vh */
-  left: 0.5vh;   /* reduced from 5vh */
-  width: 8vh;    /* reduced from 8vh */
-  height: 1vh;   /* reduced from 4vh */
+  top: 37vh; /* reduced from 45vh */
+  left: 0.5vh; /* reduced from 5vh */
+  width: 8vh; /* reduced from 8vh */
+  height: 1vh; /* reduced from 4vh */
 }
 
 #robot .leg div {
@@ -532,14 +542,18 @@ body #cdawrap {
   animation: legs1 var(--cycle) infinite var(--timing);
 }
 
-#robot .leg div div { animation: legs2 var(--cycle) infinite var(--timing); }
-#robot .leg.r div { animation-delay: calc(var(--half-cycle) * -1); }
+#robot .leg div div {
+  animation: legs2 var(--cycle) infinite var(--timing);
+}
+#robot .leg.r div {
+  animation-delay: calc(var(--half-cycle) * -1);
+}
 
 .shadow {
   position: relative;
-  width: 22vh;   /* reduced from 22vh */
+  width: 22vh; /* reduced from 22vh */
   height: 1vh; /* reduced from 3vh */
-  top: 30vh;    /* reduced from 48vh */
+  top: 30vh; /* reduced from 48vh */
   margin: 0 auto;
   border-radius: 50%;
   background: #05314f;
@@ -549,40 +563,84 @@ body #cdawrap {
 
 /* Robot Animations */
 @keyframes robot {
-  0%, 50%, 100% { transform: translateY(0vh) rotate(0.2deg); }
-  15%, 65% { transform: translateY(0.15vh) rotate(-0.2deg); }
+  0%,
+  50%,
+  100% {
+    transform: translateY(0vh) rotate(0.2deg);
+  }
+  15%,
+  65% {
+    transform: translateY(0.15vh) rotate(-0.2deg);
+  }
 }
 
 @keyframes trans {
-  0%, 100% { transform: translateX(0vh); }
-  50% { transform: translateX(1.2vh); }
+  0%,
+  100% {
+    transform: translateX(0vh);
+  }
+  50% {
+    transform: translateX(1.2vh);
+  }
 }
 
 @keyframes head {
-  0%, 100% { transform: rotate(-1deg); }
-  25%, 75% { transform: rotate(2deg); }
-  50% { transform: rotate(0deg); }
+  0%,
+  100% {
+    transform: rotate(-1deg);
+  }
+  25%,
+  75% {
+    transform: rotate(2deg);
+  }
+  50% {
+    transform: rotate(0deg);
+  }
 }
 
 @keyframes arms {
-  0%, 100% { transform: rotate(2deg); }
-  50% { transform: rotate(-10deg); }
+  0%,
+  100% {
+    transform: rotate(2deg);
+  }
+  50% {
+    transform: rotate(-10deg);
+  }
 }
 
 @keyframes legs1 {
-  0%, 100% { transform: rotate(10deg); }
-  45% { transform: rotate(-15deg); }
+  0%,
+  100% {
+    transform: rotate(10deg);
+  }
+  45% {
+    transform: rotate(-15deg);
+  }
 }
 
 @keyframes legs2 {
-  0%, 100% { transform: rotate(2deg); }
-  33% { transform: rotate(20deg); }
-  50% { transform: rotate(0deg); }
+  0%,
+  100% {
+    transform: rotate(2deg);
+  }
+  33% {
+    transform: rotate(20deg);
+  }
+  50% {
+    transform: rotate(0deg);
+  }
 }
 
 @keyframes shadow {
-  0%, 50%, 100% { transform: scale(1.02); }
-  25%, 75% { transform: scale(0.8); }
+  0%,
+  50%,
+  100% {
+    transform: scale(1.02);
+  }
+  25%,
+  75% {
+    transform: scale(0.8);
+  }
 }
 
 @media screen and (min-width: 53em) {

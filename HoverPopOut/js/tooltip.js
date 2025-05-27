@@ -293,40 +293,46 @@ export class Tooltip {
      * Specific animation effects applied to the tooltip cells and content
      */
     animateEffect3() {
-
-        this.tl = this.createDefaultTimeline();
+        this.tl = this.createDefaultTimeline({
+            duration: 0.6,
+            ease: 'bounce'
+        });
 
         if (this.isOpen) {
             this.tl.fromTo(this.DOM.cells, {
                 opacity: 0,
-                scale: 0,
-                yPercent: () => gsap.utils.random(-200, 200)
+                scale: 0.2,
+                rotation: -45,
+                yPercent: () => gsap.utils.random(-300, 300)
             }, {
                 opacity: 1,
                 scale: 1,
+                rotation: 0,
                 yPercent: 0,
                 stagger: {
-                    each: 0.03,
+                    each: 0.04,
                     from: 'center',
-                    grid: 'auto'
+                    grid: 'auto',
+                    ease: 'elastic.out(1, 0.3)'
                 }
             }, 0);
         }
         else {
             this.tl.to(this.DOM.cells, {
                 opacity: 0,
-                scale: 0,
-                yPercent: () => gsap.utils.random(-200, 200),
+                scale: 0.2,
+                rotation: 45,
+                yPercent: () => gsap.utils.random(-300, 300),
                 stagger: {
                     each: 0.03,
                     from: 'center',
-                    grid: 'auto'
+                    grid: 'auto',
+                    ease: 'back.in(1.7)'
                 }
             }, 0);
         }
 
         this.animateTooltipContent();
-
     }
 
     /**
@@ -373,31 +379,44 @@ export class Tooltip {
      * Specific animation effects applied to the tooltip cells and content
      */
     animateEffect5() {
-
-        this.tl = this.createDefaultTimeline();
+        this.tl = this.createDefaultTimeline({
+            duration: 0.5,
+            ease: 'power2.inOut'
+        });
 
         if (this.isOpen) {
             this.tl.fromTo(this.DOM.cells, {
                 opacity: 0,
-                scale: 0
+                scale: 0.7,
+                rotation: -15,
+                xPercent: -100,
+                yPercent: -100
             }, {
                 opacity: 1,
                 scale: 1,
+                rotation: 0,
+                xPercent: 0,
+                yPercent: 0,
                 stagger: {
-                    each: 0.02,
-                    from: 'center',
-                    grid: 'auto'
+                    each: 0.03,
+                    from: 'start',
+                    grid: 'auto',
+                    axis: 'xy'
                 }
             }, 0);
         }
         else {
             this.tl.to(this.DOM.cells, {
                 opacity: 0,
-                scale: 0,
+                scale: 0.7,
+                rotation: 15,
+                xPercent: 100,
+                yPercent: 100,
                 stagger: {
                     each: 0.02,
-                    from: 'edges',
-                    grid: 'auto'
+                    from: 'end',
+                    grid: 'auto',
+                    axis: 'xy'
                 }
             }, 0);
         }

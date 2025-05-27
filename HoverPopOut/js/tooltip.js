@@ -448,4 +448,90 @@ export class Tooltip {
         this.animateTooltipContent();
 
     }
+
+    /**
+     * Creates a wave-like ripple animation effect for the tooltip cells.
+     */
+    animateEffect7() {
+        this.tl = this.createDefaultTimeline();
+
+        if (this.isOpen) {
+            this.tl.fromTo(this.DOM.cells, {
+                opacity: 0,
+                scale: 0.5,
+                rotation: -180
+            }, {
+                opacity: 1,
+                scale: 1,
+                rotation: 0,
+                stagger: {
+                    each: 0.03,
+                    from: 'center',
+                    grid: 'auto',
+                    ease: 'sine.inOut'
+                }
+            }, 0);
+        } else {
+            this.tl.to(this.DOM.cells, {
+                opacity: 0,
+                scale: 0.5,
+                rotation: 180,
+                stagger: {
+                    each: 0.02,
+                    from: 'center',
+                    grid: 'auto',
+                    ease: 'sine.inOut'
+                }
+            }, 0);
+        }
+
+        this.animateTooltipContent();
+    }
+
+    /**
+     * Creates a spiral animation pattern for the tooltip cells.
+     */
+    animateEffect8() {
+        this.tl = this.createDefaultTimeline({
+            duration: 0.8,
+            ease: 'power2'
+        });
+
+        const rows = this.rows;
+        const cols = this.cols;
+        
+        if (this.isOpen) {
+            this.tl.fromTo(this.DOM.cells, {
+                opacity: 0,
+                scale: 0.1,
+                rotate: -90
+            }, {
+                opacity: 1,
+                scale: 1,
+                rotate: 0,
+                stagger: {
+                    each: 0.04,
+                    from: 'start',
+                    grid: [rows, cols],
+                    axis: null,
+                    ease: 'power2.inOut'
+                }
+            }, 0);
+        } else {
+            this.tl.to(this.DOM.cells, {
+                opacity: 0,
+                scale: 0.1,
+                rotate: 90,
+                stagger: {
+                    each: 0.03,
+                    from: 'end',
+                    grid: [rows, cols],
+                    axis: null,
+                    ease: 'power2.inOut'
+                }
+            }, 0);
+        }
+
+        this.animateTooltipContent();
+    }
 }

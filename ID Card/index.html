@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D ID Card</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        
+        .container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+        }
+        
+        .card-container {
+            position: relative;
+            width: 300px;
+            height: 180px;
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+            cursor: grab;
+        }
+        
+        .card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a1a, #333);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+            box-sizing: border-box;
+            transform-style: preserve-3d;
+        }
+        
+        .card-front {
+            transform: translateZ(1px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .card-back {
+            transform: rotateY(180deg) translateZ(1px);
+            background: linear-gradient(135deg, #333, #1a1a1a);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            width: 40px;
+            height: 40px;
+            background-color: #fff;
+            border-radius: 50%;
+        }
+        
+        .card-title {
+            color: white;
+            font-size: 18px;
+            margin: 0;
+        }
+        
+        .card-body {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-number {
+            color: white;
+            font-size: 14px;
+            letter-spacing: 2px;
+        }
+        
+        .card-chip {
+            width: 40px;
+            height: 30px;
+            background-color: gold;
+            border-radius: 5px;
+        }
+        
+        /* .band {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 400px;
+            height: 20px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.8), rgba(255,255,255,0.2));
+            transform-origin: left center;
+            z-index: -1;
+            border-radius: 10px;
+        } */
+        
+        .light {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 70% 30%, rgba(255,255,255,0.2), transparent 70%);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="band" id="band"></div>
+        <div class="card-container" id="card">
+            <div class="card card-front">
+                <div class="light"></div>
+                <div class="card-header">
+                    <div class="logo"></div>
+                    <h2 class="card-title">ID CARD</h2>
+                </div>
+                <div class="card-body">
+                    <!-- Content would go here -->
+                </div>
+                <div class="card-footer">
+                    <div class="card-number">•••• •••• •••• ••••</div>
+                    <div class="card-chip"></div>
+                </div>
+            </div>
+            <div class="card card-back">
+                <div class="light"></div>
+                <!-- Back content would go here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const card = document.getElementById('card');
+            const band = document.getElementById('band');
+            const container = document.querySelector('.container');
+            
+            let isDragging = false;
+            let startX, startY;
+            let rotateX = 0, rotateY = 0;
+            let targetRotateX = 0, targetRotateY = 0;
+            
+            // Mouse events for desktop
+            container.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                card.style.cursor = 'grabbing';
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                
+                const x = e.clientX;
+                const y = e.clientY;
+                
+                const deltaX = x - startX;
+                const deltaY = y - startY;
+                
+                targetRotateY = deltaX * 0.2;
+                targetRotateX = -deltaY * 0.2;
+                
+                updateBandPosition();
+            });
+            
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                card.style.cursor = 'grab';
+            });
+            
+            // Touch events for mobile
+            container.addEventListener('touchstart', (e) => {
+                isDragging = true;
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+                e.preventDefault();
+            });
+            
+            document.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+                
+                const x = e.touches[0].clientX;
+                const y = e.touches[0].clientY;
+                
+                const deltaX = x - startX;
+                const deltaY = y - startY;
+                
+                targetRotateY = deltaX * 0.2;
+                targetRotateX = -deltaY * 0.2;
+                
+                updateBandPosition();
+                e.preventDefault();
+            });
+            
+            document.addEventListener('touchend', () => {
+                isDragging = false;
+            });
+            
+            // Animation loop
+            function animate() {
+                // Smooth rotation
+                rotateX += (targetRotateX - rotateX) * 0.1;
+                rotateY += (targetRotateY - rotateY) * 0.1;
+                
+                // Apply rotation to card
+                card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                
+                // Reset target rotation when not dragging
+                if (!isDragging) {
+                    targetRotateX *= 0.95;
+                    targetRotateY *= 0.95;
+                    
+                    // Add slight floating animation when idle
+                    if (Math.abs(targetRotateX) < 0.1 && Math.abs(targetRotateY) < 0.1) {
+                        targetRotateX = Math.sin(Date.now() * 0.001) * 2;
+                        targetRotateY = Math.cos(Date.now() * 0.0013) * 2;
+                    }
+                }
+                
+                requestAnimationFrame(animate);
+            }
+            
+            // Update band position based on card rotation
+            function updateBandPosition() {
+                const angle = Math.atan2(rotateY, rotateX);
+                const distance = Math.min(Math.sqrt(rotateX * rotateX + rotateY * rotateY) * 2, 50);
+                
+                band.style.transform = `
+                    translate(-50%, -50%)
+                    rotate(${angle}rad)
+                    scaleX(${1 + distance / 100})
+                `;
+                band.style.opacity = 0.5 + distance / 100;
+            }
+            
+            // Start animation
+            animate();
+            
+            // Initial band position
+            updateBandPosition();
+        });
+    </script>
+</body>
+</html>

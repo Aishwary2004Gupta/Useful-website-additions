@@ -101,20 +101,7 @@
             background-color: gold;
             border-radius: 5px;
         }
-        
-        .band {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 400px;
-            height: 20px;
-            background: linear-gradient(90deg, rgba(255,255,255,0.8), rgba(255,255,255,0.2));
-            transform-origin: left center;
-            z-index: -1;
-            border-radius: 10px;
-        }
-        
-        .light {
+          .light {
             position: absolute;
             width: 100%;
             height: 100%;
@@ -123,9 +110,7 @@
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="band" id="band"></div>
+<body>    <div class="container">
         <div class="card-container" id="card">
             <div class="card card-front">
                 <div class="light"></div>
@@ -149,9 +134,7 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const card = document.getElementById('card');
-            const band = document.getElementById('band');
+        document.addEventListener('DOMContentLoaded', () => {            const card = document.getElementById('card');
             const container = document.querySelector('.container');
             
             let isDragging = false;
@@ -238,25 +221,8 @@
                 
                 requestAnimationFrame(animate);
             }
-            
-            // Update band position based on card rotation
-            function updateBandPosition() {
-                const angle = Math.atan2(rotateY, rotateX);
-                const distance = Math.min(Math.sqrt(rotateX * rotateX + rotateY * rotateY) * 2, 50);
-                
-                band.style.transform = `
-                    translate(-50%, -50%)
-                    rotate(${angle}rad)
-                    scaleX(${1 + distance / 100})
-                `;
-                band.style.opacity = 0.5 + distance / 100;
-            }
-            
-            // Start animation
+              // Start animation
             animate();
-            
-            // Initial band position
-            updateBandPosition();
         });
     </script>
 </body>

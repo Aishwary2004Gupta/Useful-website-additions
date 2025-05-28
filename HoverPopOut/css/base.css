@@ -233,6 +233,7 @@ body #cdawrap {
   grid-area: title;
   font-size: inherit;
   margin: 0;
+  margin-bottom: 0;
   font-weight: inherit;
 }
 

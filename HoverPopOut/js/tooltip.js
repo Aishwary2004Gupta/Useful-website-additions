@@ -340,71 +340,59 @@ export class Tooltip {
      */
     animateEffect4() {
         this.tl = this.createDefaultTimeline({
-            duration: 0.3,
-            ease: 'power2.inOut'
+            duration: 0.2,
+            ease: 'none'
         });
 
-        const glitchOffset = () => gsap.utils.random(-50, 50);
-        const flashDuration = 0.05;
+        const matrixDelay = () => gsap.utils.random(0, 0.5);
+        const matrixDrop = () => gsap.utils.random(-200, 200);
 
         if (this.isOpen) {
             this.tl
                 .set(this.DOM.cells, {
                     opacity: 0,
-                    scale: 0.8,
-                    filter: 'brightness(2) contrast(2)'
+                    scale: 1,
+                    backgroundColor: '#0f0',
+                    filter: 'brightness(1.5) blur(1px)'
                 })
                 .to(this.DOM.cells, {
-                    duration: flashDuration,
+                    duration: 0.4,
                     opacity: 1,
-                    scale: 1.2,
-                    xPercent: glitchOffset,
-                    yPercent: glitchOffset,
+                    yPercent: matrixDrop,
                     stagger: {
-                        amount: 0.3,
-                        from: 'random'
-                    }
+                        each: 0.02,
+                        from: "top",
+                        grid: "auto"
+                    },
+                    ease: "power1.in"
                 })
                 .to(this.DOM.cells, {
                     duration: 0.2,
-                    scale: 1,
-                    xPercent: 0,
+                    backgroundColor: 'transparent',
                     yPercent: 0,
-                    filter: 'brightness(1) contrast(1)',
+                    filter: 'none',
                     stagger: {
-                        amount: 0.1,
-                        from: 'center'
+                        each: 0.02,
+                        from: "random"
                     }
-                });
+                }, "-=0.3");
         } else {
             this.tl
                 .to(this.DOM.cells, {
-                    duration: flashDuration,
-                    opacity: 0.5,
-                    scale: 1.2,
-                    xPercent: glitchOffset,
-                    yPercent: glitchOffset,
-                    filter: 'brightness(2) contrast(2)',
-                    stagger: {
-                        amount: 0.2,
-                        from: 'random'
-                    }
-                })
-                .to(this.DOM.cells, {
-                    duration: 0.1,
+                    duration: 0.3,
                     opacity: 0,
-                    scale: 0.8,
-                    xPercent: glitchOffset,
-                    yPercent: glitchOffset,
+                    yPercent: matrixDrop,
+                    backgroundColor: '#0f0',
+                    filter: 'brightness(1.5) blur(1px)',
                     stagger: {
-                        amount: 0.1,
-                        from: 'random'
+                        each: 0.01,
+                        from: "bottom",
+                        grid: "auto"
                     }
                 });
         }
 
         this.animateTooltipContent();
-
     }
 
     /**

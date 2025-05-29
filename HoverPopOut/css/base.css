@@ -513,10 +513,12 @@ body #cdawrap {
 }
 
 #robot .r div {
-  background: #29516d;
+  background: #0f0;
+  /* box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); */
 }
 #robot .l div {
-  background: #326384;
+  background: #00ff9d;
+  /* box-shadow: 0 0 10px rgba(0, 255, 157, 0.5); */
 }
 #robot .leg.r,
 #robot .arm.l {
@@ -535,7 +537,8 @@ body #cdawrap {
   margin: 0 auto;
   transform-origin: 20% 150%;
   animation: head var(--cycle) infinite var(--timing);
-  background: #326384;
+  background: #0f0;
+  /* box-shadow: 0 0 15px rgba(0, 255, 0, 0.6); */
 }
 
 #robot .arm {
@@ -587,7 +590,8 @@ body #cdawrap {
   top: 30vh; /* reduced from 48vh */
   margin: 0 auto;
   border-radius: 50%;
-  background: #05314f;
+  background: rgba(0, 255, 0, 0.2);
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
   animation: shadow var(--cycle) infinite var(--timing);
   z-index: 1;
 }

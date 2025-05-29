@@ -389,7 +389,7 @@ body #cdawrap {
   border: 1px;
   border-style: dotted;
   border-radius: 50%;
-  color: var(--color-ring);
+  color: #cbf50f;
   animation: opacity 0.75s forwards ease-in-out;
   opacity: 0;
 }

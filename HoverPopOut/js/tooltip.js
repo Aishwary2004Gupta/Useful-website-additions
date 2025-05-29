@@ -339,36 +339,68 @@ export class Tooltip {
      * Specific animation effects applied to the tooltip cells and content
      */
     animateEffect4() {
+        this.tl = this.createDefaultTimeline({
+            duration: 0.3,
+            ease: 'power2.inOut'
+        });
 
-        this.tl = this.createDefaultTimeline();
+        const glitchOffset = () => gsap.utils.random(-50, 50);
+        const flashDuration = 0.05;
 
         if (this.isOpen) {
-            this.tl.fromTo(this.DOM.cells, {
-                opacity: 0,
-                scaleX: 0.8,
-                xPercent: () => gsap.utils.random(-200, 200)
-            }, {
-                opacity: 1,
-                scaleX: 1,
-                xPercent: 0,
-                stagger: {
-                    each: 0.02,
-                    from: 'random',
-                    grid: 'auto'
-                }
-            }, 0);
-        }
-        else {
-            this.tl.to(this.DOM.cells, {
-                opacity: 0,
-                scaleX: 0.8,
-                xPercent: () => gsap.utils.random(-200, 200),
-                stagger: {
-                    each: 0.02,
-                    from: 'random',
-                    grid: 'auto'
-                }
-            }, 0);
+            this.tl
+                .set(this.DOM.cells, {
+                    opacity: 0,
+                    scale: 0.8,
+                    filter: 'brightness(2) contrast(2)'
+                })
+                .to(this.DOM.cells, {
+                    duration: flashDuration,
+                    opacity: 1,
+                    scale: 1.2,
+                    xPercent: glitchOffset,
+                    yPercent: glitchOffset,
+                    stagger: {
+                        amount: 0.3,
+                        from: 'random'
+                    }
+                })
+                .to(this.DOM.cells, {
+                    duration: 0.2,
+                    scale: 1,
+                    xPercent: 0,
+                    yPercent: 0,
+                    filter: 'brightness(1) contrast(1)',
+                    stagger: {
+                        amount: 0.1,
+                        from: 'center'
+                    }
+                });
+        } else {
+            this.tl
+                .to(this.DOM.cells, {
+                    duration: flashDuration,
+                    opacity: 0.5,
+                    scale: 1.2,
+                    xPercent: glitchOffset,
+                    yPercent: glitchOffset,
+                    filter: 'brightness(2) contrast(2)',
+                    stagger: {
+                        amount: 0.2,
+                        from: 'random'
+                    }
+                })
+                .to(this.DOM.cells, {
+                    duration: 0.1,
+                    opacity: 0,
+                    scale: 0.8,
+                    xPercent: glitchOffset,
+                    yPercent: glitchOffset,
+                    stagger: {
+                        amount: 0.1,
+                        from: 'random'
+                    }
+                });
         }
 
         this.animateTooltipContent();

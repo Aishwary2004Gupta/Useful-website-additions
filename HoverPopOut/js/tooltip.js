@@ -340,54 +340,56 @@ export class Tooltip {
      */
     animateEffect4() {
         this.tl = this.createDefaultTimeline({
-            duration: 0.2,
-            ease: 'none'
+            duration: 0.4,
+            ease: 'power2.inOut'
         });
 
-        const matrixDelay = () => gsap.utils.random(0, 0.5);
-        const matrixDrop = () => gsap.utils.random(-200, 200);
+        const scanLine = (i) => {
+            const row = Math.floor(i / this.cols);
+            return row * 0.1; // Delay based on row position
+        };
 
         if (this.isOpen) {
             this.tl
-                .set(this.DOM.cells, {
+                .fromTo(this.DOM.cells, {
                     opacity: 0,
-                    scale: 1,
-                    backgroundColor: '#0f0',
-                    filter: 'brightness(1.5) blur(1px)'
-                })
-                .to(this.DOM.cells, {
-                    duration: 0.4,
+                    rotateY: -90,
+                    scale: 0.5,
+                    color: '#0f0'
+                }, {
                     opacity: 1,
-                    yPercent: matrixDrop,
+                    rotateY: 0,
+                    scale: 1,
                     stagger: {
-                        each: 0.02,
-                        from: "top",
-                        grid: "auto"
-                    },
-                    ease: "power1.in"
+                        each: 0.03,
+                        from: "start",
+                        grid: [this.rows, this.cols],
+                        ease: "steps(3)",
+                        delay: scanLine
+                    }
                 })
                 .to(this.DOM.cells, {
+                    color: 'transparent',
                     duration: 0.2,
-                    backgroundColor: 'transparent',
-                    yPercent: 0,
-                    filter: 'none',
                     stagger: {
                         each: 0.02,
-                        from: "random"
+                        from: "start",
+                        grid: "auto"
                     }
-                }, "-=0.3");
+                }, "-=0.5");
         } else {
             this.tl
                 .to(this.DOM.cells, {
-                    duration: 0.3,
                     opacity: 0,
-                    yPercent: matrixDrop,
-                    backgroundColor: '#0f0',
-                    filter: 'brightness(1.5) blur(1px)',
+                    rotateY: 90,
+                    scale: 0.5,
+                    color: '#0f0',
                     stagger: {
-                        each: 0.01,
-                        from: "bottom",
-                        grid: "auto"
+                        each: 0.02,
+                        from: "end",
+                        grid: [this.rows, this.cols],
+                        ease: "steps(3)",
+                        delay: scanLine
                     }
                 });
         }

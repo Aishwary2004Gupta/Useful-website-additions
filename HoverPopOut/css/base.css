@@ -513,11 +513,11 @@ body #cdawrap {
 }
 
 #robot .r div {
-  background: #0f0;
+  background: rgb(0, 147, 0);
   /* box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); */
 }
 #robot .l div {
-  background: #00ff9d;
+  background: #01955c;
   /* box-shadow: 0 0 10px rgba(0, 255, 157, 0.5); */
 }
 #robot .leg.r,

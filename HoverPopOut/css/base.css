@@ -513,10 +513,10 @@ body #cdawrap {
 }
 
 #robot .r div {
-  background: #29516d;
+  background: #6d6c29;
 }
 #robot .l div {
-  background: #326384;
+  background: #848332;
 }
 #robot .leg.r,
 #robot .arm.l {

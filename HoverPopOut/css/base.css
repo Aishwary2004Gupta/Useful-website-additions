@@ -531,10 +531,10 @@ body #cdawrap {
 /* Robot Animation Styles */
 #robot {
   position: relative;
-  height: 40vh;
-  width: 10vh;
+  height: 78vh;
+  width: 20vh;
   margin: 0 auto;
-  animation: robot var(--cycle) infinite var(--timing);
+  animation: robotIdle var(--cycle) infinite var(--timing);
   z-index: 2;
   cursor: pointer;
 }
@@ -573,175 +573,51 @@ body #cdawrap {
   }
 }
 
-#robot div {
-  position: absolute;
-  transform-origin: 50% 0;
-}
-
-#robot .r div {
-  background: rgb(0, 147, 0);
-  /* box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); */
-}
-#robot .l div {
-  background: #01955c;
-  /* box-shadow: 0 0 10px rgba(0, 255, 157, 0.5); */
-}
-#robot .leg.r,
-#robot .arm.l {
-  animation: trans var(--cycle) var(--half-cycle) infinite var(--timing);
-}
-#robot .leg.l,
-#robot .arm.r {
-  animation: trans var(--cycle) infinite var(--timing);
-}
-
-#robot .head {
-  top: 3vh; /* reduced from 10vh */
-  left: 0.5vh; /* reduced from 5vh */
-  width: 9vh; /* reduced from 9vh */
-  height: 10vh; /* reduced from 10vh */
-  margin: 0 auto;
-  transform-origin: 20% 150%;
-  animation: head var(--cycle) infinite var(--timing);
-  background: #01955c;
-  /* box-shadow: 0 0 15px rgba(0, 255, 0, 0.6); */
-}
-
-#robot .arm {
-  left: 0.5vh; /* reduced from 5vh */
-  top: 13vh; /* reduced from 20.5vh */
-  width: 8vh; /* reduced from 8vh */
-  height: 2.75vh; /* reduced from 5.5vh */
-}
-
-#robot .arm div {
-  top: 100%;
-  left: 0;
-  width: 100%;
-  height: 10vh; /* reduced from 10vh */
-  box-sizing: border-box;
-  transform: rotate(5deg);
-  animation: arms var(--cycle) infinite var(--timing);
-}
-
-#robot .arm.l div {
-  animation-delay: calc(var(--half-cycle) * -1);
-}
-
-#robot .leg {
-  top: 37vh; /* reduced from 45vh */
-  left: 0.5vh; /* reduced from 5vh */
-  width: 8vh; /* reduced from 8vh */
-  height: 1vh; /* reduced from 4vh */
-}
-
-#robot .leg div {
-  width: 100%;
-  height: 15vh; /* reduced from 15vh */
-  top: 100%;
-  animation: legs1 var(--cycle) infinite var(--timing);
-}
-
-#robot .leg div div {
-  animation: legs2 var(--cycle) infinite var(--timing);
-}
-#robot .leg.r div {
-  animation-delay: calc(var(--half-cycle) * -1);
-}
-
-.shadow {
-  position: relative;
-  width: 22vh; /* reduced from 22vh */
-  height: 1vh; /* reduced from 3vh */
-  top: 30vh; /* reduced from 48vh */
-  margin: 0 auto;
-  border-radius: 50%;
-  background: rgba(0, 255, 0, 0.2);
-  box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
-  animation: shadow var(--cycle) infinite var(--timing);
-  z-index: 1;
-}
-
-/* Robot Animations */
-@keyframes robot {
+@keyframes head {
   0%,
-  50%,
-  100% {
-    transform: translateY(0vh) rotate(0.2deg);
-  }
-  15%,
-  65% {
-    transform: translateY(0.15vh) rotate(-0.2deg);
-  }
+  100% { transform: rotate(-5deg); }
+  25%,
+  75% { transform: rotate(15deg); }
+  50% { transform: rotate(0deg); }
 }
 
 @keyframes trans {
   0%,
-  100% {
-    transform: translateX(0vh);
-  }
-  50% {
-    transform: translateX(1.2vh);
-  }
+  100% { transform: translateX(0vh); }
+  50% { transform: translateX(3vh); }
 }
 
-@keyframes head {
+@keyframes arms1 {
   0%,
-  100% {
-    transform: rotate(-1deg);
-  }
-  25%,
-  75% {
-    transform: rotate(2deg);
-  }
-  50% {
-    transform: rotate(0deg);
-  }
+  100% { transform: rotate(50deg); }
+  50% { transform: rotate(-70deg); }
 }
 
-@keyframes arms {
+@keyframes arms2 {
   0%,
-  100% {
-    transform: rotate(2deg);
-  }
-  50% {
-    transform: rotate(-10deg);
-  }
+  100% { transform: rotate(-5deg); }
+  50% { transform: rotate(-100deg); }
 }
 
 @keyframes legs1 {
   0%,
-  100% {
-    transform: rotate(10deg);
-  }
-  45% {
-    transform: rotate(-15deg);
-  }
+  100% { transform: rotate(60deg); }
+  40% { transform: rotate(-90deg); }
 }
 
 @keyframes legs2 {
   0%,
-  100% {
-    transform: rotate(2deg);
-  }
-  33% {
-    transform: rotate(20deg);
-  }
-  50% {
-    transform: rotate(0deg);
-  }
+  100% { transform: rotate(2deg); }
+  33% { transform: rotate(150deg); }
+  50% { transform: rotate(0deg); }
 }
 
 @keyframes shadow {
   0%,
   50%,
-  100% {
-    transform: scale(1.02);
-  }
+  100% { transform: scale(1.5); }
   25%,
-  75% {
-    transform: scale(0.8);
-  }
+  75% { transform: scale(0.98); }
 }
 
 .terminal {

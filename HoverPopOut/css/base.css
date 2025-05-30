@@ -6,16 +6,16 @@
 
 :root {
   font-size: 14px;
-  --color-text: #0f0;
-  --color-bg: #000;
-  --color-link: #0f0;
-  --color-link-hover: #00ff9d;
-  --color-trigger: #0f0;
-  --color-ui-bg: rgba(0, 255, 0, 0.05);
-  --color-ui-border: #0f0;
-  --color-ui-border-deco: #00ff9d;
-  --color-ui-meta: #0f0;
-  --color-ring: #0f0;
+  --color-text: #00ffff;
+  --color-bg: #0a0a1f;
+  --color-link: #00ffff;
+  --color-link-hover: #ff00ff;
+  --color-trigger: #00ffff;
+  --color-ui-bg: rgba(0, 255, 255, 0.05);
+  --color-ui-border: #00ffff;
+  --color-ui-border-deco: #ff00ff;
+  --color-ui-meta: #00ffff;
+  --color-ring: #00ffff;
   --cycle: 1.8s;
   --half-cycle: 0.9s;
   --timing: ease-in-out;
@@ -144,8 +144,8 @@ main {
   grid-template-rows: auto 1fr;
   grid-template-areas: "frame" "content";
   background: 
-    linear-gradient(0deg, rgba(0,255,0,0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,255,0,0.1) 1px, transparent 1px);
+    linear-gradient(0deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 0, 255, 0.1) 1px, transparent 1px);
   background-size: 20px 20px;
   position: relative;
 }
@@ -159,8 +159,8 @@ main::before {
   height: 100%;
   background: repeating-linear-gradient(
     0deg,
-    rgba(0, 255, 0, 0.15) 0px,
-    rgba(0, 255, 0, 0.15) 1px,
+    rgba(0, 255, 255, 0.15) 0px,
+    rgba(0, 255, 255, 0.15) 1px,
     transparent 1px,
     transparent 2px
   );
@@ -173,13 +173,13 @@ main::before {
   background: rgba(0, 0, 0, 0.7);
   padding: 2rem;
   overflow: hidden;
-  box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
   animation: borderPulse 2s infinite;
 }
 
 @keyframes borderPulse {
   0% { border-color: var(--color-ui-border); }
-  50% { border-color: var(--color-ui-border-deco); }
+  50% { border-color: #ff00ff; }
   100% { border-color: var(--color-ui-border); }
 }
 

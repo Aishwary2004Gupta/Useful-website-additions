@@ -62,3 +62,22 @@ triggers.forEach((trigger, index) => {
         }, 40); // Delay before hiding the tooltip
     });
 });
+
+// Add robot animation control
+const robot = document.querySelector('#robot');
+let isRunning = false;
+
+robot.addEventListener('click', () => {
+    isRunning = !isRunning;
+    if (isRunning) {
+        robot.style.animation = 'robotRun 0.7s infinite ease-in-out';
+        document.documentElement.style.setProperty('--cycle', '0.7s');
+        document.documentElement.style.setProperty('--half-cycle', '0.35s');
+        document.documentElement.style.setProperty('--timing', 'ease-in-out');
+    } else {
+        robot.style.animation = 'robotIdle 1.8s infinite ease-in-out';
+        document.documentElement.style.setProperty('--cycle', '1.8s');
+        document.documentElement.style.setProperty('--half-cycle', '0.9s');
+        document.documentElement.style.setProperty('--timing', 'ease-in-out');
+    }
+});

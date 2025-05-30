@@ -531,46 +531,11 @@ body #cdawrap {
 /* Robot Animation Styles */
 #robot {
   position: relative;
-  height: 40vh;
-  width: 10vh;
+  height: 40vh; /* reduced from 78vh */
+  width: 10vh; /* reduced from 20vh */
   margin: 0 auto;
   animation: robot var(--cycle) infinite var(--timing);
   z-index: 2;
-  cursor: pointer;
-}
-
-#robot::after {
-  content: 'Click me';
-  position: absolute;
-  top: -25px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: var(--color-link);
-  opacity: 0;
-  transition: opacity 0.3s;
-  text-shadow: 0 0 5px var(--color-link);
-}
-
-#robot:hover::after {
-  opacity: 1;
-}
-
-/* Update animation keyframes for running */
-@keyframes robotRun {
-  0%, 50%, 100% { transform: translateY(0vh) rotate(7deg); }
-  15%, 65% { transform: translateY(-4vh) rotate(5deg); }
-}
-
-@keyframes robotIdle {
-  0%,
-  50%,
-  100% {
-    transform: translateY(0vh) rotate(0.2deg);
-  }
-  15%,
-  65% {
-    transform: translateY(0.15vh) rotate(-0.2deg);
-  }
 }
 
 #robot div {

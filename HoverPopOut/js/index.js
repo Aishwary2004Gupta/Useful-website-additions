@@ -70,10 +70,10 @@ let isRunning = false;
 robot.addEventListener('click', () => {
     isRunning = !isRunning;
     if (isRunning) {
-        robot.style.animation = 'robotRun 0.7s infinite ease-in-out';
+        robot.style.animation = 'robotRun 0.7s infinite linear';
         document.documentElement.style.setProperty('--cycle', '0.7s');
         document.documentElement.style.setProperty('--half-cycle', '0.35s');
-        document.documentElement.style.setProperty('--timing', 'ease-in-out');
+        document.documentElement.style.setProperty('--timing', 'linear');
     } else {
         robot.style.animation = 'robotIdle 1.8s infinite ease-in-out';
         document.documentElement.style.setProperty('--cycle', '1.8s');

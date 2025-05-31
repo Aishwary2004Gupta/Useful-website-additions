@@ -62,7 +62,3 @@ triggers.forEach((trigger, index) => {
         }, 40); // Delay before hiding the tooltip
     });
 });
-
-// Add robot animation control
-const robot = document.querySelector('#robot');
-let isRunning = false;

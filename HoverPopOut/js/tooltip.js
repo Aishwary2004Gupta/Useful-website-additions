@@ -396,7 +396,7 @@ export class Tooltip {
 
         this.animateTooltipContent();
     }
-
+    
     /**
      * Specific animation effects applied to the tooltip cells and content
      */

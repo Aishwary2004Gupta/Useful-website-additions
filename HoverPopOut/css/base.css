@@ -819,41 +819,16 @@ body #cdawrap {
   }
 }
 
-.dialog-box {
-    position: absolute;
-    top: -40px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.8);
-    border: 1px solid var(--color-link);
-    padding: 8px;
-    border-radius: 4px;
-    font-family: monospace;
-    font-size: 12px;
-    color: var(--color-link);
-    white-space: nowrap;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s, visibility 0.3s;
-    text-shadow: 0 0 5px var(--color-link);
-}
-
-.dialog-box::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 50%;
-    transform: translateX(-50%);
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 5px solid var(--color-link);
-}
-
-#robot:hover .dialog-box {
-    opacity: 1;
-    visibility: visible;
-}
-
-.blinker {
-    animation: blink 1s infinite;
+@media screen and (min-width: 53em) {
+  main {
+    grid-template-columns: 1fr 50vw 1fr;
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas:
+      "frame content meta-4"
+      "meta-2 content meta-3"
+      "meta-2 content meta-1";
+  }
+  .meta {
+    display: block;
+  }
 }

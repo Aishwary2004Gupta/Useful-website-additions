@@ -422,6 +422,51 @@ body #cdawrap {
   margin: 0 auto;
   transform-style: preserve-3d;
   animation: spin 25s 0ms infinite linear;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.globe::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40%;
+  height: 40%;
+  background: radial-gradient(circle at center, #ff00ff 0%, var(--color-link) 100%);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.globe:hover::after {
+  opacity: 1;
+}
+
+.globe:hover {
+  transform: scale(1.2) rotateX(75deg);
+}
+
+.globe:hover .ring {
+  border-width: 2px;
+  transform: rotateX(0deg) !important;
+  box-shadow: 0 0 20px var(--color-link);
+  animation: ringPulse 2s infinite ease-in-out;
+}
+
+@keyframes ringPulse {
+  0%, 100% { box-shadow: 0 0 20px var(--color-link); }
+  50% { box-shadow: 0 0 40px var(--color-link-hover); }
+}
+
+.globe:hover .ring:nth-child(2n) {
+  border-style: dashed;
+  animation-delay: 0.5s;
+}
+
+.globe:hover .ring:nth-child(3n) {
+  border-style: double;
+  animation-delay: 1s;
 }
 
 .ring {

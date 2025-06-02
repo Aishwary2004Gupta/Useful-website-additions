@@ -422,7 +422,7 @@ body #cdawrap {
   margin: 0 auto;
   transform-style: preserve-3d;
   animation: spin 25s 0ms infinite linear;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .globe::after {
@@ -432,40 +432,72 @@ body #cdawrap {
   left: 50%;
   width: 40%;
   height: 40%;
-  background: radial-gradient(circle at center, #ff00ff 0%, var(--color-link) 100%);
+  background: radial-gradient(circle at center, 
+    rgba(255, 0, 255, 0.8) 0%,
+    rgba(0, 255, 255, 0.8) 100%
+  );
   border-radius: 50%;
   transform: translate(-50%, -50%);
   opacity: 0;
-  transition: opacity 0.5s ease;
-}
-
-.globe:hover::after {
-  opacity: 1;
+  transition: all 0.5s ease;
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
 }
 
 .globe:hover {
   transform: scale(1.2) rotateX(75deg);
+  animation-play-state: paused;
+}
+
+.globe:hover::after {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.1);
 }
 
 .globe:hover .ring {
-  border-width: 2px;
+  border-width: 4px;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 255, 255, 0.1) 0%,
+    rgba(255, 0, 255, 0.2) 50%,
+    rgba(0, 255, 255, 0.1) 100%
+  );
+  box-shadow: 
+    0 0 20px rgba(0, 255, 255, 0.5),
+    inset 0 0 15px rgba(255, 0, 255, 0.5);
   transform: rotateX(0deg) !important;
-  box-shadow: 0 0 20px var(--color-link);
   animation: ringPulse 2s infinite ease-in-out;
 }
 
 @keyframes ringPulse {
-  0%, 100% { box-shadow: 0 0 20px var(--color-link); }
-  50% { box-shadow: 0 0 40px var(--color-link-hover); }
+  0%, 100% { 
+    box-shadow: 
+      0 0 20px rgba(0, 255, 255, 0.5),
+      inset 0 0 15px rgba(255, 0, 255, 0.5);
+  }
+  50% { 
+    box-shadow: 
+      0 0 40px rgba(0, 255, 255, 0.8),
+      inset 0 0 30px rgba(255, 0, 255, 0.8);
+  }
 }
 
 .globe:hover .ring:nth-child(2n) {
-  border-style: dashed;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 0, 255, 0.1) 0%,
+    rgba(0, 255, 255, 0.2) 50%,
+    rgba(255, 0, 255, 0.1) 100%
+  );
   animation-delay: 0.5s;
 }
 
 .globe:hover .ring:nth-child(3n) {
-  border-style: double;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 255, 255, 0.2) 0%,
+    rgba(255, 0, 255, 0.1) 50%,
+    rgba(0, 255, 255, 0.2) 100%
+  );
   animation-delay: 1s;
 }
 

@@ -422,6 +422,65 @@ body #cdawrap {
   margin: 0 auto;
   transform-style: preserve-3d;
   animation: spin 25s 0ms infinite linear;
+  transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.globe::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40%;
+  height: 40%;
+  background: radial-gradient(circle at center, 
+        rgba(0, 0, 0, 1) 0%,
+        rgba(0, 0, 0, 0.8) 30%,
+        transparent 70%
+    );
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  transition: all 0.8s ease;
+  box-shadow: 0 0 50px rgba(0, 255, 255, 0.5);
+}
+
+.globe:hover {
+  transform: scale(1.5);
+  animation-play-state: paused;
+}
+
+.globe:hover::after {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(2);
+}
+
+@keyframes blackholeRing {
+  0% { transform: rotate(0deg) scale(1); }
+  100% { transform: rotate(360deg) scale(0); }
+}
+
+.globe:hover .ring {
+  border-width: 1px;
+  border-style: solid;
+  animation: blackholeRing 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  background: linear-gradient(
+        90deg,
+        rgba(0, 255, 255, 0.1) 0%,
+        rgba(255, 0, 255, 0.1) 50%,
+        transparent 100%
+    );
+}
+
+.globe:hover .ring:nth-child(2n) {
+  animation-duration: 1.8s;
+}
+
+.globe:hover .ring:nth-child(3n) {
+  animation-duration: 1.6s;
+}
+
+.globe:hover .ring:nth-child(4n) {
+  animation-duration: 1.4s;
 }
 
 .ring {

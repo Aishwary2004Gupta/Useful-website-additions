@@ -436,6 +436,28 @@ body #cdawrap {
   color: #cbf50f;
   animation: opacity 0.75s forwards ease-in-out;
   opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.globe:hover .ring {
+  transform: rotateX(75deg) !important;
+  border-width: 2px;
+  border-style: solid;
+  box-shadow: 0 0 15px var(--color-link);
+  color: var(--color-link);
+}
+
+.globe:hover .ring:nth-child(2n) {
+  border-style: dashed;
+}
+
+.globe:hover .ring:nth-child(3n) {
+  border-style: dotted;
+}
+
+.globe:hover {
+  transform: scale(1.1);
+  transition: transform 0.3s ease;
 }
 
 .ring:nth-child(1) {

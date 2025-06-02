@@ -444,87 +444,184 @@ body #cdawrap {
   box-shadow: 0 0 50px rgba(0, 255, 255, 0.5);
 }
 
-.globe::before {
-    content: '';
-    position: absolute;
-    inset: -100%;
-    background: radial-gradient(circle at center,
-        transparent 30%,
-        rgba(0, 255, 255, 0.1) 70%,
-        transparent 100%
-    );
-    opacity: 0;
-    transition: opacity 0.5s ease;
-    pointer-events: none;
-}
-
-.globe:hover::before {
-    opacity: 1;
-    animation: gravityPull 2s infinite;
-}
-
-@keyframes gravityPull {
-    0% { transform: scale(1); }
-    50% { transform: scale(0.8); }
-    100% { transform: scale(1); }
+.globe:hover {
+  transform: scale(1.5);
+  animation-play-state: paused;
 }
 
 .globe:hover::after {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1.5);
-    box-shadow: 
-        0 0 50px rgba(0, 255, 255, 0.5),
-        0 0 100px rgba(0, 0, 0, 0.8);
-}
-
-.globe:hover .ring {
-    border-width: 2px;
-    animation: blackholeRing 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    filter: blur(1px);
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(2);
 }
 
 @keyframes blackholeRing {
-    0% { 
-        transform: rotate(0deg) scale(1);
-        filter: blur(0);
-    }
-    100% { 
-        transform: rotate(720deg) scale(0);
-        filter: blur(2px);
-    }
+  0% { transform: rotate(0deg) scale(1); }
+  100% { transform: rotate(360deg) scale(0); }
 }
 
-.globe:hover .ring::before {
-    content: '';
-    position: absolute;
-    width: 4px;
-    height: 4px;
-    background: var(--color-link);
-    border-radius: 50%;
-    top: random(100%);
-    left: random(100%);
-    animation: particleSuck 1s forwards;
+.globe:hover .ring {
+  border-width: 1px;
+  border-style: solid;
+  animation: blackholeRing 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  background: linear-gradient(
+        90deg,
+        rgba(0, 255, 255, 0.1) 0%,
+        rgba(255, 0, 255, 0.1) 50%,
+        transparent 100%
+    );
 }
 
-.globe:hover .ring:nth-child(2n)::before {
-    background: var(--color-link-hover);
-    animation-duration: 0.8s;
+.globe:hover .ring:nth-child(2n) {
+  animation-duration: 1.8s;
 }
 
-@keyframes particleSuck {
-    0% { 
-        transform: translate(0, 0) scale(1); 
-        opacity: 0;
-    }
-    50% { 
-        opacity: 1;
-    }
-    100% { 
-        transform: translate(-50%, -50%) scale(0); 
-        opacity: 0;
-    }
+.globe:hover .ring:nth-child(3n) {
+  animation-duration: 1.6s;
 }
 
+.globe:hover .ring:nth-child(4n) {
+  animation-duration: 1.4s;
+}
+
+.ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 1px;
+  border-style: dotted;
+  border-radius: 50%;
+  color: #cbf50f;
+  animation: opacity 0.75s forwards ease-in-out;
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.globe:hover .ring {
+  transform: rotateX(75deg) !important;
+  border-width: 2px;
+  border-style: solid;
+  box-shadow: 0 0 15px var(--color-link);
+  color: var(--color-link);
+}
+
+.globe:hover .ring:nth-child(2n) {
+  border-style: dashed;
+}
+
+.globe:hover .ring:nth-child(3n) {
+  border-style: dotted;
+}
+
+.globe:hover {
+  transform: scale(1.1);
+  transition: transform 0.3s ease;
+}
+
+.ring:nth-child(1) {
+  transform: rotateY(4deg);
+}
+
+.ring:nth-child(2) {
+  transform: rotateY(30deg);
+}
+
+.ring:nth-child(3) {
+  transform: rotateY(56deg);
+}
+
+.ring:nth-child(4) {
+  transform: rotateY(82deg);
+}
+
+.ring:nth-child(5) {
+  transform: rotateY(108deg);
+}
+
+.ring:nth-child(6) {
+  transform: rotateY(134deg);
+}
+
+.ring:nth-child(7) {
+  transform: rotateY(160deg);
+}
+
+.ring:nth-child(8) {
+  transform: rotateY(4deg) rotateX(75deg) scale(2);
+  border-style: dashed;
+}
+.ring:nth-child(9) {
+  transform: rotateY(4deg) rotateX(75deg) scale(1.75);
+  border-style: solid;
+}
+
+.ring:nth-child(10) {
+  transform: rotateY(4deg) rotateX(75deg) scale(1.5);
+  border-style: dashed;
+}
+
+.glitch {
+  animation-name: glitch-anim;
+  animation-duration: 4s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.glitch--1 {
+  animation-delay: 1s;
+}
+
+.glitch--2 {
+  animation-delay: 2s;
+}
+
+@keyframes glitch-anim {
+  0% {
+    transform: translate3d(-5px, 0, 0) scale3d(-1, -1, 1);
+    -webkit-clip-path: polygon(0 20%, 100% 20%, 100% 21%, 0 21%);
+    clip-path: polygon(0 20%, 100% 20%, 100% 21%, 0 21%);
+  }
+  2% {
+    -webkit-clip-path: polygon(0 33%, 100% 33%, 100% 33%, 0 33%);
+    clip-path: polygon(0 33%, 100% 33%, 100% 33%, 0 33%);
+  }
+  4% {
+    -webkit-clip-path: polygon(0 44%, 100% 44%, 100% 44%, 0 44%);
+    clip-path: polygon(0 44%, 100% 44%, 100% 44%, 0 44%);
+  }
+  5% {
+    -webkit-clip-path: polygon(0 50%, 100% 50%, 100% 20%, 0 20%);
+    clip-path: polygon(0 50%, 100% 50%, 100% 20%, 0 20%);
+  }
+  6% {
+    -webkit-clip-path: polygon(0 70%, 100% 70%, 100% 70%, 0 70%);
+    clip-path: polygon(0 70%, 100% 70%, 100% 70%, 0 70%);
+  }
+  7% {
+    -webkit-clip-path: polygon(0 80%, 100% 80%, 100% 80%, 0 80%);
+    clip-path: polygon(0 80%, 100% 80%, 100% 80%, 0 80%);
+  }
+  8% {
+    -webkit-clip-path: polygon(0 50%, 100% 50%, 100% 55%, 0 55%);
+    clip-path: polygon(0 50%, 100% 50%, 100% 55%, 0 55%);
+  }
+  9% {
+    -webkit-clip-path: polygon(0 70%, 100% 70%, 100% 80%, 0 80%);
+    clip-path: polygon(0 70%, 100% 70%, 100% 80%, 0 80%);
+  }
+  9.9% {
+    transform: translate3d(-5px, 0, 0) scale3d(-1, -1, 1);
+  }
+  10%,
+  100% {
+    transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
+    -webkit-clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
+  }
+}
+
+/* https://codepen.io/web-tiki/pen/NqjKze */
 /* Robot Animation Styles */
 #robot {
   position: relative;

@@ -893,11 +893,11 @@ body #cdawrap {
   animation: glitch-text 3s infinite;
 }
 
-/* @keyframes glitch-text {
+@keyframes glitch-text {
   0%, 100% { text-shadow: 0 0 5px var(--color-link); }
   10% { text-shadow: -1px 1px var(--color-link-hover), 1px -1px var(--color-link); }
   20% { text-shadow: 1px -1px var(--color-link-hover), -1px 1px var(--color-link); }
   30% { text-shadow: 0 0 5px var(--color-link); }
   40% { text-shadow: -2px 0 var(--color-link-hover), 2px 2px var(--color-link); }
   50% { text-shadow: 0 0 5px var(--color-link); }
-} */
+}

@@ -871,7 +871,7 @@ body #cdawrap {
 }
 
 .ui.frame {
-  animation: borderPulse 2s infinite, glitch-anim 4s infinite linear;
+  animation: borderPulse 2s infinite;
   position: relative;
   overflow: hidden;
 }

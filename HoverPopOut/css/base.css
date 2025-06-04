@@ -882,7 +882,7 @@ body #cdawrap {
   inset: 0;
   background: var(--color-ui-border);
   opacity: 0.1;
-  /* animation: glitch-anim 3s infinite linear; */
+  animation: glitch-anim 3s infinite linear;
   pointer-events: none;
 }
 

@@ -907,11 +907,22 @@ body #cdawrap {
     margin-bottom: 1rem;
 }
 
+.matrix-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    padding: 1rem;
+    background: transparent;
+}
+
 .data-stream {
     color: var(--color-link);
     font-size: 1.2rem;
     text-shadow: 0 0 10px var(--color-link);
     animation: streamBlink 1s infinite;
+    margin-bottom: 1rem;
 }
 
 .matrix-rain {
@@ -919,7 +930,6 @@ body #cdawrap {
     justify-content: center;
     gap: 12px;
     flex-wrap: wrap;
-    padding: 1rem;
 }
 
 .symbol {

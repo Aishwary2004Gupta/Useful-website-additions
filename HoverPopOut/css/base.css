@@ -9,7 +9,7 @@
   --color-text: #00ffff;
   --color-bg: #0f0221;
   --color-link: #00ffff;
-  --color-link-hover: #ff00ff;
+  --color-link-hover: #ff00ffff;
   --color-trigger: #00ffff;
   --color-ui-bg: rgba(0, 255, 255, 0.05);
   --color-ui-border: #00ffff;
@@ -900,4 +900,68 @@ body #cdawrap {
   30% { text-shadow: 0 0 5px var(--color-link); }
   40% { text-shadow: -2px 0 var(--color-link-hover), 2px 2px var(--color-link); }
   50% { text-shadow: 0 0 5px var(--color-link); }
+}
+
+.data-stream {
+    color: var(--color-link);
+    animation: streamText 3s infinite;
+}
+
+.neural-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.node {
+    width: 12px;
+    height: 12px;
+    background: var(--color-link);
+    border-radius: 50%;
+    animation: nodeFlash 2s infinite;
+}
+
+.node:nth-child(2n) {
+    animation-delay: 0.3s;
+}
+
+.node:nth-child(3n) {
+    animation-delay: 0.6s;
+}
+
+.matrix-rain {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.symbol {
+    color: var(--color-link);
+    animation: matrixDrop 1.5s infinite;
+    opacity: 0.8;
+}
+
+.symbol:nth-child(2n) {
+    animation-delay: 0.2s;
+}
+
+.symbol:nth-child(3n) {
+    animation-delay: 0.4s;
+}
+
+@keyframes streamText {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+@keyframes nodeFlash {
+    0%, 100% { opacity: 1; box-shadow: 0 0 10px var(--color-link); }
+    50% { opacity: 0.5; box-shadow: 0 0 5px var(--color-link); }
+}
+
+@keyframes matrixDrop {
+    0% { transform: translateY(-10px); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translateY(10px); opacity: 0; }
 }

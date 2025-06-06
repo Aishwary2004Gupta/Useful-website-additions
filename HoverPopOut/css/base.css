@@ -981,3 +981,44 @@ body #cdawrap {
 .symbol:nth-child(4n) { animation-duration: 2.5s; }
 .symbol:nth-child(4n+1) { animation-duration: 1.8s; }
 .symbol:nth-child(4n+2) { animation-duration: 2.2s; }
+
+.analyzing-text {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.typing-effect {
+    color: var(--color-link);
+    font-size: 1.2rem;
+    text-shadow: 0 0 5px var(--color-link);
+    position: relative;
+    display: inline-block;
+    animation: typing 3s steps(16) infinite;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.typing-effect::after {
+    content: '|';
+    position: absolute;
+    right: -4px;
+    animation: blink 0.8s infinite;
+}
+
+@keyframes typing {
+    0%, 90%, 100% {
+        width: 0;
+    }
+    30%, 60% {
+        width: 13.5em;
+    }
+}
+
+@keyframes blink {
+    0%, 100% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+}

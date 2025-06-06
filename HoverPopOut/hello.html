@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carousel</title>
+  <style>
+    /* Carousel Container */
+    .carousel-container {
+      position: relative;
+      width: 300px;
+      overflow: hidden;
+      border: 1px solid #555;
+      border-radius: 24px;
+    }
+
+    /* Carousel Track */
+    .carousel-track {
+      display: flex;
+      transition: transform 0.5s ease-in-out;
+    }
+
+    /* Carousel Item */
+    .carousel-item {
+      min-width: 300px;
+      padding: 20px;
+      background-color: #0D0D0D;
+      color: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      text-align: center;
+    }
+
+    .carousel-item h3 {
+      margin: 16px 0;
+      font-size: 18px;
+    }
+
+    .carousel-item p {
+      font-size: 14px;
+    }
+
+    /* Indicators */
+    .carousel-indicators {
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    .carousel-indicator {
+      height: 8px;
+      width: 8px;
+      margin: 0 4px;
+      background-color: #555;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .carousel-indicator.active {
+      background-color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="carousel-container">
+    <div class="carousel-track">
+      <div class="carousel-item">
+        <h3>Text Animations</h3>
+        <p>Cool text animations for your projects.</p>
+      </div>
+      <div class="carousel-item">
+        <h3>Animations</h3>
+        <p>Smooth animations for your projects.</p>
+      </div>
+      <div class="carousel-item">
+        <h3>Components</h3>
+        <p>Reusable components for your projects.</p>
+      </div>
+      <div class="carousel-item">
+        <h3>Backgrounds</h3>
+        <p>Beautiful backgrounds and patterns for your projects.</p>
+      </div>
+      <div class="carousel-item">
+        <h3>Common UI</h3>
+        <p>Common UI components are coming soon!</p>
+      </div>
+    </div>
+  </div>
+  <div class="carousel-indicators">
+    <div class="carousel-indicator active"></div>
+    <div class="carousel-indicator"></div>
+    <div class="carousel-indicator"></div>
+    <div class="carousel-indicator"></div>
+    <div class="carousel-indicator"></div>
+  </div>
+
+  <script>
+    const track = document.querySelector('.carousel-track');
+    const indicators = document.querySelectorAll('.carousel-indicator');
+    let currentIndex = 0;
+
+    function updateCarousel(index) {
+      track.style.transform = `translateX(-${index * 300}px)`;
+      indicators.forEach((indicator, i) => {
+        indicator.classList.toggle('active', i === index);
+      });
+    }
+
+    indicators.forEach((indicator, index) => {
+      indicator.addEventListener('click', () => {
+        currentIndex = index;
+        updateCarousel(currentIndex);
+      });
+    });
+
+    // Autoplay (optional)
+    setInterval(() => {
+      currentIndex = (currentIndex + 1) % indicators.length;
+      updateCarousel(currentIndex);
+    }, 3000);
+  </script>
+</body>
+</html>

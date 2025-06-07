@@ -574,7 +574,7 @@ body #cdawrap {
 }
 
 #robot .head {
-  top: 3vh; /* reduced from 10vh */
+  top: 3vh; 
   left: 0.5vh; 
   width: 9vh; 
   height: 10vh; 

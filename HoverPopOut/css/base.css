@@ -834,40 +834,40 @@ body #cdawrap {
 }
 
 .speech-bubble {
-    position: absolute;
-    top: -30px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--color-ui-bg);
-    border: 1px solid var(--color-ui-border);
-    padding: 5px 10px;
-    border-radius: 15px;
-    font-size: 12px;
-    color: var(--color-text);
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    text-shadow: 0 0 5px var(--color-text);
-    white-space: nowrap;
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-ui-bg);
+  border: 1px solid var(--color-ui-border);
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 12px;
+  color: var(--color-text);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  text-shadow: 0 0 5px var(--color-text);
+  white-space: nowrap;
 }
 
 .speech-bubble::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 0;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 5px solid var(--color-ui-border);
+  content: "";
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid var(--color-ui-border);
 }
 
 #robot:hover .speech-bubble {
-    opacity: 1;
-    visibility: visible;
-    top: -20px;
+  opacity: 1;
+  visibility: visible;
+  top: -20px;
 }
 
 .ui.frame {
@@ -877,7 +877,7 @@ body #cdawrap {
 }
 
 .ui.frame::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   background: var(--color-ui-border);
@@ -894,131 +894,160 @@ body #cdawrap {
 }
 
 @keyframes glitch-text {
-  0%, 100% { text-shadow: 0 0 5px var(--color-link); }
-  10% { text-shadow: -1px 1px var(--color-link-hover), 1px -1px var(--color-link); }
-  20% { text-shadow: 1px -1px var(--color-link-hover), -1px 1px var(--color-link); }
-  30% { text-shadow: 0 0 5px var(--color-link); }
-  40% { text-shadow: -2px 0 var(--color-link-hover), 2px 2px var(--color-link); }
-  50% { text-shadow: 0 0 5px var(--color-link); }
+  0%,
+  100% {
+    text-shadow: 0 0 5px var(--color-link);
+  }
+  10% {
+    text-shadow: -1px 1px var(--color-link-hover), 1px -1px var(--color-link);
+  }
+  20% {
+    text-shadow: 1px -1px var(--color-link-hover), -1px 1px var(--color-link);
+  }
+  30% {
+    text-shadow: 0 0 5px var(--color-link);
+  }
+  40% {
+    text-shadow: -2px 0 var(--color-link-hover), 2px 2px var(--color-link);
+  }
+  50% {
+    text-shadow: 0 0 5px var(--color-link);
+  }
 }
 
 .data-stream {
-    color: var(--color-link);
-    animation: streamText 3s infinite;
+  color: var(--color-link);
+  animation: streamText 3s infinite;
 }
 
 .neural-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .node {
-    width: 12px;
-    height: 12px;
-    background: var(--color-link);
-    border-radius: 50%;
-    animation: nodeFlash 2s infinite;
+  width: 12px;
+  height: 12px;
+  background: var(--color-link);
+  border-radius: 50%;
+  animation: nodeFlash 2s infinite;
 }
 
 .node:nth-child(2n) {
-    animation-delay: 0.3s;
+  animation-delay: 0.3s;
 }
 
 .node:nth-child(3n) {
-    animation-delay: 0.6s;
+  animation-delay: 0.6s;
 }
 
 .matrix-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 200px;
-    width: 100%;
-    overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  width: 100%;
+  overflow: hidden;
 }
 
 .matrix-rain {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 1rem;
-    padding: 2rem;
-    width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+  width: 100%;
 }
 
 .symbol {
-    color: var(--color-link);
-    font-size: 1.2rem;
-    text-shadow: 0 0 8px var(--color-link);
-    animation: matrixDrop 2s infinite;
-    opacity: 0;
-    transform-origin: center;
+  color: var(--color-link);
+  font-size: 1.2rem;
+  text-shadow: 0 0 8px var(--color-link);
+  animation: matrixDrop 2s infinite;
+  opacity: 0;
+  transform-origin: center;
 }
 
 @keyframes matrixDrop {
-    0% {
-        transform: translateY(-50px) scale(0.5);
-        opacity: 0;
-    }
-    20% {
-        opacity: 1;
-        text-shadow: 0 0 15px var(--color-link);
-    }
-    80% {
-        opacity: 1;
-    }
-    100% {
-        transform: translateY(50px) scale(1);
-        opacity: 0;
-    }
+  0% {
+    transform: translateY(-50px) scale(0.5);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+    text-shadow: 0 0 15px var(--color-link);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(50px) scale(1);
+    opacity: 0;
+  }
 }
 
-.symbol:nth-child(3n) { animation-delay: 0.3s; }
-.symbol:nth-child(3n+1) { animation-delay: 0.6s; }
-.symbol:nth-child(3n+2) { animation-delay: 0.9s; }
-.symbol:nth-child(4n) { animation-duration: 2.5s; }
-.symbol:nth-child(4n+1) { animation-duration: 1.8s; }
-.symbol:nth-child(4n+2) { animation-duration: 2.2s; }
+.symbol:nth-child(3n) {
+  animation-delay: 0.3s;
+}
+.symbol:nth-child(3n + 1) {
+  animation-delay: 0.6s;
+}
+.symbol:nth-child(3n + 2) {
+  animation-delay: 0.9s;
+}
+.symbol:nth-child(4n) {
+  animation-duration: 2.5s;
+}
+.symbol:nth-child(4n + 1) {
+  animation-duration: 1.8s;
+}
+.symbol:nth-child(4n + 2) {
+  animation-duration: 2.2s;
+}
 
 .analyzing-text {
-    text-align: center;
-    margin-bottom: 1rem;
+  text-align: center;
+  margin-bottom: 1rem;
 }
 
 .typing-effect {
-    color: var(--color-link);
-    font-size: 1.2rem;
-    text-shadow: 0 0 5px var(--color-link);
-    position: relative;
-    display: inline-block;
-    animation: typing 3s steps(16) infinite;
-    white-space: nowrap;
-    overflow: hidden;
+  color: var(--color-link);
+  font-size: 1.2rem;
+  text-shadow: 0 0 5px var(--color-link);
+  position: relative;
+  display: inline-block;
+  animation: typing 3s steps(16) infinite;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .typing-effect::after {
-    content: '|';
-    position: absolute;
-    right: -4px;
-    animation: blink 0.8s infinite;
+  content: "|";
+  position: absolute;
+  right: -4px;
+  animation: blink 0.8s infinite;
 }
 
 @keyframes typing {
-    0%, 90%, 100% {
-        width: 0;
-    }
-    30%, 60% {
-        width: 13.5em;
-    }
+  0%,
+  90%,
+  100% {
+    width: 0;
+  }
+  30%,
+  60% {
+    width: 13.5em;
+  }
 }
 
 @keyframes blink {
-    0%, 100% {
-        opacity: 0;
-    }
-    50% {
-        opacity: 1;
-    }
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
 }

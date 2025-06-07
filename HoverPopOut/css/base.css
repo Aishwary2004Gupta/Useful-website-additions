@@ -582,7 +582,7 @@ body #cdawrap {
   transform-origin: 20% 150%;
   animation: head var(--cycle) infinite var(--timing);
   background: #01955c;
-  /* box-shadow: 0 0 15px rgba(0, 255, 0, 0.6); */
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.6);
 }
 
 #robot .arm {

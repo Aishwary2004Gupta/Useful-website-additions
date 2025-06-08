@@ -628,7 +628,7 @@ body #cdawrap {
 
 .shadow {
   position: relative;
-  width: 22vh; /* reduced from 22vh */
+  width: 22vh; 
   height: 1vh; /* reduced from 3vh */
   top: 30vh; /* reduced from 48vh */
   margin: 0 auto;

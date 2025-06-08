@@ -606,7 +606,7 @@ body #cdawrap {
 }
 
 #robot .leg {
-  top: 37vh; /* reduced from 45vh */
+  top: 37vh; 
   left: 0.5vh; /* reduced from 5vh */
   width: 8vh; /* reduced from 8vh */
   height: 1vh; /* reduced from 4vh */

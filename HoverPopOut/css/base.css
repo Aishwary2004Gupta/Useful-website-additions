@@ -589,7 +589,7 @@ body #cdawrap {
   left: 0.5vh; 
   top: 13vh; 
   width: 8vh; 
-  height: 2.75vh; /* reduced from 5.5vh */
+  height: 2.75vh; 
 }
 
 #robot .arm div {

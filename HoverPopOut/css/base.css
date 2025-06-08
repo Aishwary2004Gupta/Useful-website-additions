@@ -614,7 +614,7 @@ body #cdawrap {
 
 #robot .leg div {
   width: 100%;
-  height: 15vh; /* reduced from 15vh */
+  height: 15vh; 
   top: 100%;
   animation: legs1 var(--cycle) infinite var(--timing);
 }

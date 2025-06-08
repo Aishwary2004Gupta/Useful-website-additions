@@ -630,7 +630,7 @@ body #cdawrap {
   position: relative;
   width: 22vh; 
   height: 1vh; 
-  top: 30vh; /* reduced from 48vh */
+  top: 30vh; 
   margin: 0 auto;
   border-radius: 50%;
   background: rgba(0, 255, 0, 0.2);

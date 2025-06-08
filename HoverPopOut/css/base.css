@@ -574,10 +574,10 @@ body #cdawrap {
 }
 
 #robot .head {
-  top: 3vh; 
-  left: 0.5vh; 
-  width: 9vh; 
-  height: 10vh; 
+  top: 3vh;
+  left: 0.5vh;
+  width: 9vh;
+  height: 10vh;
   margin: 0 auto;
   transform-origin: 20% 150%;
   animation: head var(--cycle) infinite var(--timing);
@@ -585,17 +585,17 @@ body #cdawrap {
 }
 
 #robot .arm {
-  left: 0.5vh; 
-  top: 13vh; 
-  width: 8vh; 
-  height: 2.75vh; 
+  left: 0.5vh;
+  top: 13vh;
+  width: 8vh;
+  height: 2.75vh;
 }
 
 #robot .arm div {
   top: 100%;
   left: 0;
   width: 100%;
-  height: 10vh; 
+  height: 10vh;
   box-sizing: border-box;
   transform: rotate(5deg);
   animation: arms var(--cycle) infinite var(--timing);
@@ -606,15 +606,15 @@ body #cdawrap {
 }
 
 #robot .leg {
-  top: 37vh; 
-  left: 0.5vh; 
-  width: 8vh; 
-  height: 1vh; 
+  top: 37vh;
+  left: 0.5vh;
+  width: 8vh;
+  height: 1vh;
 }
 
 #robot .leg div {
   width: 100%;
-  height: 15vh; 
+  height: 15vh;
   top: 100%;
   animation: legs1 var(--cycle) infinite var(--timing);
 }
@@ -628,9 +628,9 @@ body #cdawrap {
 
 .shadow {
   position: relative;
-  width: 22vh; 
-  height: 1vh; 
-  top: 30vh; 
+  width: 22vh;
+  height: 1vh;
+  top: 30vh;
   margin: 0 auto;
   border-radius: 50%;
   background: rgba(0, 255, 0, 0.2);

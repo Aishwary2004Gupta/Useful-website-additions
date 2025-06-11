@@ -954,7 +954,7 @@ body #cdawrap {
 
 .absorption-line {
   position: absolute;
-  top: -2px;
+  bottom: 50px;
   left: 0;
   width: 100%;
   height: 2px;
@@ -969,22 +969,10 @@ body #cdawrap {
   box-shadow: 
     0 0 15px var(--color-link),
     0 0 25px var(--color-link-hover);
-  z-index: 1;
+  z-index: 2;
 }
 
-.absorption-line::before {
-  content: '';
-  position: absolute;
-  top: -10px;
-  left: 0;
-  width: 100%;
-  height: 10px;
-  background: linear-gradient(
-      to top,
-      rgba(0, 255, 255, 0.2),
-      transparent
-    );
-}
+
 
 .matrix-rain {
   display: flex;
@@ -1013,15 +1001,10 @@ body #cdawrap {
     opacity: 1;
     text-shadow: 0 0 15px var(--color-link);
   }
-  90% {
-    opacity: 1;
-    transform: translateY(40px);
-    text-shadow: 0 0 20px var(--color-link-hover);
-  }
   100% {
-    transform: translateY(40px);
-    opacity: 0;
-    filter: blur(2px);
+    opacity: 1;
+    transform: translateY(148px); /* Stop at absorption line */
+    text-shadow: 0 0 20px var(--color-link-hover);
   }
 }
 

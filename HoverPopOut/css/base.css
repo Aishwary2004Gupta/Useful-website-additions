@@ -949,29 +949,6 @@ body #cdawrap {
   min-height: 200px;
   width: 100%;
   overflow: hidden;
-  position: relative;
-  border: 1px solid var(--color-ui-border);
-  padding: 20px;
-}
-
-.absorption-line {
-  position: absolute;
-  bottom: 40px;
-  left: 0;
-  width: 50%;
-  height: 2px;
-  background: linear-gradient(
-      90deg,
-      transparent,
-      var(--color-link) 20%,
-      var(--color-link-hover) 50%,
-      var(--color-link) 80%,
-      transparent
-    );
-  box-shadow: 
-    0 0 15px var(--color-link),
-    0 0 25px var(--color-link-hover);
-  z-index: 2;
 }
 
 .matrix-rain {
@@ -994,19 +971,18 @@ body #cdawrap {
 
 @keyframes matrixDrop {
   0% {
-    transform: translateY(-50px);
+    transform: translateY(-50px) scale(0.5);
     opacity: 0;
   }
   20% {
     opacity: 1;
     text-shadow: 0 0 15px var(--color-link);
   }
-  95% {
+  80% {
     opacity: 1;
-    transform: translateY(100px);
   }
   100% {
-    transform: translateY(100px);
+    transform: translateY(50px) scale(1);
     opacity: 0;
   }
 }

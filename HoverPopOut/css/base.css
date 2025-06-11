@@ -949,30 +949,7 @@ body #cdawrap {
   min-height: 200px;
   width: 100%;
   overflow: hidden;
-  position: relative;
 }
-
-.absorption-line {
-  position: absolute;
-  bottom: 50px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(
-      90deg,
-      transparent,
-      var(--color-link) 20%,
-      var(--color-link-hover) 50%,
-      var(--color-link) 80%,
-      transparent
-    );
-  box-shadow: 
-    0 0 15px var(--color-link),
-    0 0 25px var(--color-link-hover);
-  z-index: 2;
-}
-
-
 
 .matrix-rain {
   display: flex;
@@ -989,22 +966,24 @@ body #cdawrap {
   text-shadow: 0 0 8px var(--color-link);
   animation: matrixDrop 2s infinite;
   opacity: 0;
-  position: relative;
+  transform-origin: center;
 }
 
 @keyframes matrixDrop {
   0% {
-    transform: translateY(-50px);
+    transform: translateY(-50px) scale(0.5);
     opacity: 0;
   }
-  50% {
+  20% {
     opacity: 1;
     text-shadow: 0 0 15px var(--color-link);
   }
-  100% {
+  80% {
     opacity: 1;
-    transform: translateY(148px); /* Stop at absorption line */
-    text-shadow: 0 0 20px var(--color-link-hover);
+  }
+  100% {
+    transform: translateY(50px) scale(1);
+    opacity: 0;
   }
 }
 

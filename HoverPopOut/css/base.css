@@ -958,7 +958,7 @@ body #cdawrap {
   position: absolute;
   bottom: 40px;
   left: 0;
-  width: 100%;
+  width: 50%;
   height: 2px;
   background: linear-gradient(
       90deg,

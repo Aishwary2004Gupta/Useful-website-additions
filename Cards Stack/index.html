@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Stack</title>
+    <style>
+        .stack-container {
+            position: relative;
+            perspective: 600px;
+            width: 200px;
+            height: 200px;
+            margin: 50px auto;
+        }
+
+        .card-rotate {
+            position: absolute;
+            cursor: grab;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        .card {
+            border-radius: 20px;
+            border: 5px solid #fff;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transform-origin: 90% 90%;
+            will-change: transform;
+        }
+
+        .card-image {
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-rotate:active {
+            cursor: grabbing;
+        }
+    </style>
+</head>
+<body>
+    <div class="stack-container" id="stackContainer"></div>
+
+    <script>
+        const images = [
+            { id: 1, img: "https://images.unsplash.com/photo-1480074568708-e7b720bb3f09?q=80&w=500&auto=format" },
+            { id: 2, img: "https://images.unsplash.com/photo-1449844908441-8829872d2607?q=80&w=500&auto=format" },
+            { id: 3, img: "https://images.unsplash.com/photo-1452626212852-811d58933cae?q=80&w=500&auto=format" },
+            { id: 4, img: "https://images.unsplash.com/photo-1572120360610-d971b9d7767c?q=80&w=500&auto=format" }
+        ];
+
+        class Stack {
+            constructor(options) {
+                this.container = document.getElementById('stackContainer');
+                this.randomRotation = options.randomRotation || false;
+                this.sensitivity = options.sensitivity || 180;
+                this.sendToBackOnClick = options.sendToBackOnClick || false;
+                this.cardDimensions = options.cardDimensions || { width: 200, height: 200 };
+                this.cardsData = options.cardsData || images;
+                this.animationConfig = options.animationConfig || { stiffness: 260, damping: 20 };
+                this.cards = [...this.cardsData];
+                
+                this.container.style.width = `${this.cardDimensions.width}px`;
+                this.container.style.height = `${this.cardDimensions.height}px`;
+                
+                this.init();
+            }
+            
+            init() {
+                this.renderCards();
+            }
+            
+            renderCards() {
+                this.container.innerHTML = '';
+                
+                this.cards.forEach((card, index) => {
+                    const randomRotate = this.randomRotation ? Math.random() * 10 - 5 : 0;
+                    const scale = 1 + index * 0.06 - this.cards.length * 0.06;
+                    const rotateZ = (this.cards.length - index - 1) * 4 + randomRotate;
+                    
+                    const cardElement = document.createElement('div');
+                    cardElement.className = 'card-rotate';
+                    cardElement.dataset.id = card.id;
+                    
+                    const cardInner = document.createElement('div');
+                    cardInner.className = 'card';
+                    cardInner.style.width = `${this.cardDimensions.width}px`;
+                    cardInner.style.height = `${this.cardDimensions.height}px`;
+                    cardInner.style.transform = `rotateZ(${rotateZ}deg) scale(${scale})`;
+                    
+                    const img = document.createElement('img');
+                    img.src = card.img;
+                    img.alt = `card-${card.id}`;
+                    img.className = 'card-image';
+                    
+                    cardInner.appendChild(img);
+                    cardElement.appendChild(cardInner);
+                    this.container.appendChild(cardElement);
+                    
+                    if (this.sendToBackOnClick) {
+                        cardInner.addEventListener('click', () => this.sendToBack(card.id));
+                    }
+                    
+                    this.setupDrag(cardElement, card.id);
+                });
+            }
+            
+            setupDrag(element, id) {
+                let posX = 0, posY = 0;
+                let startX = 0, startY = 0;
+                let isDragging = false;
+                let rotateX = 0, rotateY = 0;
+                
+                element.addEventListener('mousedown', startDrag);
+                element.addEventListener('touchstart', startDrag, { passive: false });
+                
+                function startDrag(e) {
+                    e.preventDefault();
+                    isDragging = true;
+                    
+                    const clientX = e.clientX || e.touches[0].clientX;
+                    const clientY = e.clientY || e.touches[0].clientY;
+                    
+                    startX = clientX - posX;
+                    startY = clientY - posY;
+                    
+                    element.style.cursor = 'grabbing';
+                    
+                    document.addEventListener('mousemove', drag);
+                    document.addEventListener('touchmove', drag, { passive: false });
+                    document.addEventListener('mouseup', endDrag);
+                    document.addEventListener('touchend', endDrag);
+                }
+                
+                function drag(e) {
+                    if (!isDragging) return;
+                    e.preventDefault();
+                    
+                    const clientX = e.clientX || e.touches[0].clientX;
+                    const clientY = e.clientY || e.touches[0].clientY;
+                    
+                    posX = clientX - startX;
+                    posY = clientY - startY;
+                    
+                    // Calculate rotation based on drag position
+                    rotateX = (posY / 100) * 60;
+                    rotateY = -(posX / 100) * 60;
+                    
+                    element.style.transform = `translate3d(${posX}px, ${posY}px, 0) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                }
+                
+                const self = this;
+                function endDrag(e) {
+                    if (!isDragging) return;
+                    isDragging = false;
+                    
+                    element.style.cursor = 'grab';
+                    
+                    document.removeEventListener('mousemove', drag);
+                    document.removeEventListener('touchmove', drag);
+                    document.removeEventListener('mouseup', endDrag);
+                    document.removeEventListener('touchend', endDrag);
+                    
+                    // Check if drag exceeded sensitivity
+                    if (Math.abs(posX) > self.sensitivity || Math.abs(posY) > self.sensitivity) {
+                        self.sendToBack(id);
+                    } else {
+                        // Return to original position with animation
+                        posX = 0;
+                        posY = 0;
+                        rotateX = 0;
+                        rotateY = 0;
+                        
+                        element.style.transition = 'transform 0.5s cubic-bezier(0.18, 0.67, 0.6, 0.99)';
+                        element.style.transform = 'translate3d(0, 0, 0) rotateX(0deg) rotateY(0deg)';
+                        
+                        setTimeout(() => {
+                            element.style.transition = '';
+                        }, 500);
+                    }
+                }
+            }
+            
+            sendToBack(id) {
+                const index = this.cards.findIndex(card => card.id === id);
+                if (index !== -1) {
+                    const [card] = this.cards.splice(index, 1);
+                    this.cards.unshift(card);
+                    this.renderCards();
+                }
+            }
+        }
+        
+        // Initialize the stack with options
+        new Stack({
+            randomRotation: true,
+            sensitivity: 180,
+            sendToBackOnClick: false,
+            cardDimensions: { width: 200, height: 200 },
+            cardsData: images
+        });
+    </script>
+</body>
+</html>

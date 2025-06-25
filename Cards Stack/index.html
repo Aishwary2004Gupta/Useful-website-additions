@@ -15,8 +15,22 @@
             background: #f5f5f5;
         }
 
+        .blur-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            background-position: center;
+            background-size: cover;
+            filter: blur(18px) brightness(0.7);
+            transition: background-image 0.4s;
+        }
+
         .stack-container {
             position: relative;
+            z-index: 1;
             perspective: 600px;
             width: 200px;
             height: 200px;
@@ -57,12 +71,13 @@
 </head>
 
 <body>
+    <div class="blur-bg" id="blurBg"></div>
     <div class="stack-container" id="stackContainer"></div>
     <script>
         const images = [
             { id: 1, img: "https://images.unsplash.com/photo-1480074568708-e7b720bb3f09?q=80&w=500&auto=format" },
             { id: 2, img: "https://images.unsplash.com/photo-1449844908441-8829872d2607?q=80&w=500&auto=format" },
-            { id: 3, img: "https://images.unsplash.com/photo-1452626212852-811d58933cae?q=80&w=500&auto=format" },
+            // { id: 3, img: "https://images.unsplash.com/photo-1452626212852-811d58933cae?q=80&w=500&auto=format" },
             { id: 4, img: "https://images.unsplash.com/photo-1572120360610-d971b9d7767c?q=80&w=500&auto=format" },
             { id: 5, img: "https://images.unsplash.com/photo-1570129477492-45c003edd2be?q=80&w=500&auto=format" },
             { id: 6, img: "https://images.unsplash.com/photo-1598228723793-52759bba239c?q=80&w=500&auto=format" }
@@ -122,6 +137,11 @@
 
                     this.setupDrag(cardElement, card.id);
                 });
+
+                // Set blurred background to top card image
+                if (this.cards.length > 0) {
+                    document.getElementById('blurBg').style.backgroundImage = `url('${this.cards[5].img}')`;
+                }
             }
 
             setupDrag(element, id) {

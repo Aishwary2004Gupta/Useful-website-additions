@@ -67,6 +67,14 @@
         .card-rotate:active {
             cursor: grabbing;
         }
+
+        /* Add this to your CSS */
+        .send-to-back {
+            transition: transform 0.4s cubic-bezier(0.18, 0.67, 0.6, 0.99), opacity 0.4s;
+            transform: scale(0.7) translateY(80px);
+            opacity: 0;
+            z-index: 0 !important;
+        }
     </style>
 </head>
 
@@ -223,12 +231,20 @@
             }
 
             sendToBack(id) {
-                const index = this.cards.findIndex(card => card.id === id);
-                if (index !== -1) {
-                    const [card] = this.cards.splice(index, 1);
+                const cardElements = Array.from(this.container.querySelectorAll('.card-rotate'));
+                const cardIndex = this.cards.findIndex(card => card.id === id);
+                const cardElement = cardElements[cardIndex];
+
+                // Add animation class
+                cardElement.classList.add('send-to-back');
+
+                // After animation, move card to back and re-render
+                setTimeout(() => {
+                    cardElement.classList.remove('send-to-back');
+                    const [card] = this.cards.splice(cardIndex, 1);
                     this.cards.unshift(card);
                     this.renderCards();
-                }
+                }, 400); // Match the CSS transition duration
             }
         }
 

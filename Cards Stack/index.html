@@ -6,12 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Card Stack</title>
     <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            background: #f5f5f5;
+        }
+
         .stack-container {
             position: relative;
             perspective: 600px;
             width: 200px;
             height: 200px;
-            margin: 50px auto;
+            /* Remove margin auto and use flex centering */
         }
 
         .card-rotate {

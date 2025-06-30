@@ -44,9 +44,9 @@ const presets = {
     },
     bubble: {
         ...base,
-        radius: 70,
-        width: 140,
-        height: 140,
+        radius: 140,
+        width: 240,
+        height: 240,
         displace: 0,
         frost: 0,
     },
@@ -65,12 +65,12 @@ const presets = {
 }
 
 const config = {
-    ...presets.dock,
+    ...presets.bubble, // changed from presets.dock to presets.bubble
     theme: 'system',
     debug: false,
     top: false,
     // circle, dock, freestyle, etc.
-    preset: 'dock',
+    preset: 'bubble', // changed from 'dock' to 'bubble'
 }
 
 const ctrl = new Pane({

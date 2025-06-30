@@ -378,25 +378,3 @@ gsap.set('.effect', {
     left,
     opacity: 1,
 })
-
-// Remove or comment out Draggable if you want only cursor-following
-// Draggable.create('.effect', {
-//     type: 'x,y',
-// });
-
-// Add mousemove event to move the glass with the cursor
-document.addEventListener('mousemove', (e) => {
-    const effect = document.querySelector('.effect');
-    if (effect) {
-        // Get the bounding rect for centering
-        const size = effect.getBoundingClientRect();
-        const width = size.width;
-        const height = size.height;
-        // Center the effect on the cursor
-        gsap.set(effect, {
-            left: e.clientX - width / 2,
-            top: e.clientY - height / 2,
-            opacity: 1,
-        });
-    }
-});

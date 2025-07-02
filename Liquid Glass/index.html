@@ -9,59 +9,65 @@
 </head>
 
 <body>
-    <header>
+    <!-- Move effect glass to the top and center it -->
+    <div style="display: flex; justify-content: center; margin-top: 2rem;">
+        <div class="effect">
+            <div class="nav-wrap">
+                <nav>
+                    <!-- ...existing code... -->
+                </nav>
+            </div>
+            <svg class="filter" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <filter id="filter" color-interpolation-filters="sRGB">
+                        <!-- the input displacement image -->
+                        <feImage x="0" y="0" width="100%" height="100%" result="map"></feImage>
+                        <!-- the displacement map to use -->
+                        <!-- <feDisplacementMap in2="map" in="SourceGraphic" /> -->
+                        <!-- the chromatic aberration for the people -->
+                        <!-- RED channel with strongest displacement -->
+                        <feDisplacementMap in="SourceGraphic" in2="map" id="redchannel" xChannelSelector="R"
+                            yChannelSelector="G" result="dispRed" />
+                        <feColorMatrix in="dispRed" type="matrix"
+                            values="1 0 0 0 0
+                      0 0 0 0 0
+                      0 0 0 0 0
+                      0 0 0 1 0" result="red" />
+                        <!-- GREEN channel (reference / least displaced) -->
+                        <feDisplacementMap in="SourceGraphic" in2="map" id="greenchannel" xChannelSelector="R"
+                            yChannelSelector="G" result="dispGreen" />
+                        <feColorMatrix in="dispGreen" type="matrix"
+                            values="0 0 0 0 0
+                      0 1 0 0 0
+                      0 0 0 0 0
+                      0 0 0 1 0" result="green" />
+                        <!-- BLUE channel with medium displacement -->
+                        <feDisplacementMap in="SourceGraphic" in2="map" id="bluechannel" xChannelSelector="R"
+                            yChannelSelector="G" result="dispBlue" />
+                        <feColorMatrix in="dispBlue" type="matrix"
+                            values="0 0 0 0 0
+                      0 0 0 0 0
+                      0 0 1 0 0
+                      0 0 0 1 0" result="blue" />
+                        <!-- Blend channels back together -->
+                        <feBlend in="red" in2="green" mode="screen" result="rg" />
+                        <feBlend in="rg" in2="blue" mode="screen" result="output" />
+                        <!-- output blend -->
+                        <feGaussianBlur in="output" stdDeviation="0.7" />
+                    </filter>
+                </defs>
+            </svg>
+            <div class="displacement-debug"></div>
+        </div>
+    </div>
+    <!-- Header below the effect glass -->
+    <header style="text-align: center;">
         <h1 class="fluid">glass<br />displacement</h1>
         <p class="fluid">
             it's not perfect, but neither is the platform.<br />we love it anyway.
         </p>
     </header>
-    <div class="effect">
-        <div class="nav-wrap">
-            <nav>
-                <!--
-                <img src="https://assets.codepen.io/605876/finder.png" />
-                <img src="https://assets.codepen.io/605876/launch-control.png" />
-                <img src="https://assets.codepen.io/605876/safari.png" />
-                <img src="https://assets.codepen.io/605876/calendar.png" />
-                -->
-            </nav>
-        </div>
-        <svg class="filter" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <filter id="filter" color-interpolation-filters="sRGB">
-                    <!-- the input displacement image -->
-                    <feImage x="0" y="0" width="100%" height="100%" result="map"></feImage>
-                    <!-- the displacement map to use -->
-                    <!-- <feDisplacementMap in2="map" in="SourceGraphic" /> -->
-                    <!-- the chromatic aberration for the people -->
-                    <!-- RED channel with strongest displacement -->
-                    <feDisplacementMap in="SourceGraphic" in2="map" id="redchannel" xChannelSelector="R" yChannelSelector="G" result="dispRed" />
-                    <feColorMatrix in="dispRed" type="matrix" values="1 0 0 0 0
-                      0 0 0 0 0
-                      0 0 0 0 0
-                      0 0 0 1 0" result="red" />
-                    <!-- GREEN channel (reference / least displaced) -->
-                    <feDisplacementMap in="SourceGraphic" in2="map" id="greenchannel" xChannelSelector="R" yChannelSelector="G" result="dispGreen" />
-                    <feColorMatrix in="dispGreen" type="matrix" values="0 0 0 0 0
-                      0 1 0 0 0
-                      0 0 0 0 0
-                      0 0 0 1 0" result="green" />
-                    <!-- BLUE channel with medium displacement -->
-                    <feDisplacementMap in="SourceGraphic" in2="map" id="bluechannel" xChannelSelector="R" yChannelSelector="G" result="dispBlue" />
-                    <feColorMatrix in="dispBlue" type="matrix" values="0 0 0 0 0
-                      0 0 0 0 0
-                      0 0 1 0 0
-                      0 0 0 1 0" result="blue" />
-                    <!-- Blend channels back together -->
-                    <feBlend in="red" in2="green" mode="screen" result="rg" />
-                    <feBlend in="rg" in2="blue" mode="screen" result="output" />
-                    <!-- output blend -->
-                    <feGaussianBlur in="output" stdDeviation="0.7" />
-                </filter>
-            </defs>
-        </svg>
-        <div class="displacement-debug"></div>
-    </div>
+    <!-- Main content -->
     <main>
         <!-- dock placeholder and instruction -->
         <section class="placeholder">
@@ -160,7 +166,7 @@
             </p>
         </section>
     </main>
-    
+    <!-- Footer and bear-link at the bottom -->
     <footer>┬┴┬┴┤•ᴥ•ʔ jhey &copy; 2025 ├┬┴┬┴</footer>
     <a aria-label="Follow Jhey" class="bear-link" href="https://twitter.com/intent/follow?screen_name=aish2004gupta"
         target="_blank" rel="noreferrer noopener">
@@ -176,8 +182,7 @@
                 fill="currentColor"></path>
         </svg>
     </a>
-   
+    <script type="module" src="script.js"></script>
 </body>
-<script type="module" src="script.js"></script>
 
 </html>

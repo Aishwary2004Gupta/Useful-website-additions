@@ -307,8 +307,7 @@
     }
 
     body {
-        /* background: light-dark(#fff, #000); */
-        background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+        background: light-dark(#fff, #000);
         overflow-x: hidden;
         min-height: 100vh;
         font-family: 'SF Pro Text', 'SF Pro Icons', 'AOS Icons', 'Helvetica Neue',
@@ -319,7 +318,6 @@
         --size: 45px;
         --line: color-mix(in hsl, canvasText, transparent 80%);
         content: '';
-        height: 100vh;
         width: 100vw;
         position: fixed;
         background: linear-gradient(90deg,

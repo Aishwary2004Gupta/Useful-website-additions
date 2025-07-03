@@ -319,11 +319,16 @@
         --line: color-mix(in hsl, canvasText, transparent 80%);
         content: '';
         width: 100vw;
+        height: 100vh;
         position: fixed;
-        background: linear-gradient(90deg,
-                var(--line) 1px,
-                transparent 1px var(--size)) calc(var(--size) * 0.36) 50% / var(--size) var(--size),
-            linear-gradient(var(--line) 1px, transparent 1px var(--size)) 0% calc(var(--size) * 0.32) / var(--size) var(--size);
+        /* Change from grid lines to a subtle radial dot pattern */
+        background:
+            radial-gradient(circle at 20% 30%, var(--line) 1.5px, transparent 2px),
+            radial-gradient(circle at 60% 70%, var(--line) 1.5px, transparent 2px),
+            radial-gradient(circle at 80% 20%, var(--line) 1.5px, transparent 2px),
+            radial-gradient(circle at 40% 80%, var(--line) 1.5px, transparent 2px);
+        background-size: 120px 120px;
+        background-repeat: repeat;
         mask: linear-gradient(-20deg, transparent 50%, white);
         top: 0;
         transform-style: flat;

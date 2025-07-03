@@ -36,8 +36,8 @@ const presets = {
     },
     pill: {
         ...base,
-        width: 200,
-        height: 80,
+        width: 250,
+        height: 90,
         displace: 0,
         frost: 0,
         radius: 40,
@@ -65,12 +65,12 @@ const presets = {
 }
 
 const config = {
-    ...presets.bubble, 
+    ...presets.pill, 
     theme: 'system',
     debug: false,
     top: false,
     // circle, dock, freestyle
-    preset: 'bubble', 
+    preset: 'pill', 
 }
 
 const ctrl = new Pane({

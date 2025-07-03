@@ -29,10 +29,15 @@
         transition: opacity 0.26s ease-out;
 
         &.arrow--debug {
-            top: 140px;
-            left: 30%;
-            translate: -100% 0;
+            /* Center the arrow text under the lens */
+            left: 10% !important;
+            top: 100px;
+            translate: -130% 0;
             width: 80px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
 
             span {
                 display: inline-block;
@@ -193,6 +198,13 @@
         max-width: 100%;
         position: relative;
         margin-bottom: 200px;
+        /* Center the placeholder horizontally */
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
     }
 
     .dock-placeholder {

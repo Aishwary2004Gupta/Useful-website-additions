@@ -394,6 +394,93 @@
     }
 }
 
+/* Starfield background inspired by the provided SCSS */
+html, body {
+    height: 100%;
+    background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+    overflow: hidden;
+    position: relative;
+}
+
+/* Star layers */
+#stars, #stars2, #stars3 {
+    position: absolute;
+    top: 0; left: 0;
+    right: 0; bottom: 0;
+    display: block;
+    pointer-events: none;
+    z-index: -2;
+}
+
+#stars {
+    width: 1px;
+    height: 1px;
+    background: transparent;
+    box-shadow:
+        1234px 456px #FFF, 234px 1234px #FFF, 567px 890px #FFF, 890px 567px #FFF,
+        345px 678px #FFF, 678px 345px #FFF, 910px 1112px #FFF, 1112px 910px #FFF,
+        1357px 2468px #FFF, 2468px 1357px #FFF, 1590px 753px #FFF, 753px 1590px #FFF;
+    /* Add more for denser stars or generate via JS for full effect */
+    animation: animStar 50s linear infinite;
+}
+#stars:after {
+    content: " ";
+    position: absolute;
+    top: 2000px;
+    width: 1px;
+    height: 1px;
+    background: transparent;
+    box-shadow:
+        1234px 456px #FFF, 234px 1234px #FFF, 567px 890px #FFF, 890px 567px #FFF,
+        345px 678px #FFF, 678px 345px #FFF, 910px 1112px #FFF, 1112px 910px #FFF,
+        1357px 2468px #FFF, 2468px 1357px #FFF, 1590px 753px #FFF, 753px 1590px #FFF;
+}
+
+#stars2 {
+    width: 2px;
+    height: 2px;
+    background: transparent;
+    box-shadow:
+        400px 800px #FFF, 800px 400px #FFF, 1200px 1600px #FFF, 1600px 1200px #FFF,
+        200px 1400px #FFF, 1400px 200px #FFF, 1700px 600px #FFF, 600px 1700px #FFF;
+    animation: animStar 100s linear infinite;
+}
+#stars2:after {
+    content: " ";
+    position: absolute;
+    top: 2000px;
+    width: 2px;
+    height: 2px;
+    background: transparent;
+    box-shadow:
+        400px 800px #FFF, 800px 400px #FFF, 1200px 1600px #FFF, 1600px 1200px #FFF,
+        200px 1400px #FFF, 1400px 200px #FFF, 1700px 600px #FFF, 600px 1700px #FFF;
+}
+
+#stars3 {
+    width: 3px;
+    height: 3px;
+    background: transparent;
+    box-shadow:
+        100px 1800px #FFF, 1800px 100px #FFF, 900px 1900px #FFF, 1900px 900px #FFF;
+    animation: animStar 150s linear infinite;
+}
+#stars3:after {
+    content: " ";
+    position: absolute;
+    top: 2000px;
+    width: 3px;
+    height: 3px;
+    background: transparent;
+    box-shadow:
+        100px 1800px #FFF, 1800px 100px #FFF, 900px 1900px #FFF, 1900px 900px #FFF;
+}
+
+@keyframes animStar {
+    from { transform: translateY(0px); }
+    to   { transform: translateY(-2000px); }
+}
+
 [data-top='true'] div.tp-dfwv {
     top: 8px;
 }

@@ -335,24 +335,20 @@
         width: 100vw;
         height: 100vh;
         position: fixed;
-        /* Replace dot pattern with a soft diagonal stripes pattern */
+        /* Soft, dreamy, glassy bokeh background */
         background:
-            repeating-linear-gradient(
-                135deg,
-                var(--line),
-                var(--line) 2px,
-                transparent 8px,
-                transparent 24px
-            ),
-            repeating-linear-gradient(
-                225deg,
-                var(--line),
-                var(--line) 2px,
-                transparent 8px,
-                transparent 24px
-            );
-        background-size: 60px 60px;
-        background-repeat: repeat;
+            radial-gradient(ellipse at 20% 30%, var(--line) 0 8px, transparent 40px),
+            radial-gradient(ellipse at 60% 70%, var(--line) 0 12px, transparent 60px),
+            radial-gradient(ellipse at 80% 20%, var(--line) 0 10px, transparent 50px),
+            radial-gradient(ellipse at 40% 80%, var(--line) 0 14px, transparent 70px),
+            radial-gradient(ellipse at 70% 40%, var(--line) 0 18px, transparent 80px),
+            radial-gradient(ellipse at 30% 60%, var(--line) 0 10px, transparent 50px),
+            radial-gradient(ellipse at 50% 50%, var(--line) 0 20px, transparent 90px),
+            radial-gradient(ellipse at 85% 80%, var(--line) 0 12px, transparent 60px),
+            radial-gradient(ellipse at 15% 70%, var(--line) 0 16px, transparent 70px);
+        background-size: cover;
+        background-repeat: no-repeat;
+        opacity: 0.35;
         mask: linear-gradient(-20deg, transparent 50%, white);
         top: 0;
         transform-style: flat;

@@ -357,15 +357,13 @@
         height: 2000px;
         display: block;
         pointer-events: none;
-        z-index: 0; /* Changed from -2 to 0 so it's above html background but below content */
-    }
-
-    #stars, #stars2, #stars3 {
+        z-index: 0;
         /* Ensure stars are visible on all backgrounds */
         mix-blend-mode: lighten;
-        opacity: 0.8;
+        opacity: 0.9;
     }
 
+    /* More and brighter stars for both themes */
     #stars {
         width: 1px;
         height: 1px;
@@ -373,8 +371,12 @@
         box-shadow:
             1234px 456px #FFF, 234px 1234px #FFF, 567px 890px #FFF, 890px 567px #FFF,
             345px 678px #FFF, 678px 345px #FFF, 910px 1112px #FFF, 1112px 910px #FFF,
-            1357px 2468px #FFF, 2468px 1357px #FFF, 1590px 753px #FFF, 753px 1590px #FFF;
-        /* Add more for denser stars or generate via JS for full effect */
+            1357px 2468px #FFF, 2468px 1357px #FFF, 1590px 753px #FFF, 753px 1590px #FFF,
+            200px 300px #FFF, 400px 500px #FFF, 600px 700px #FFF, 800px 900px #FFF,
+            1000px 1100px #FFF, 1200px 1300px #FFF, 1400px 1500px #FFF, 1600px 1700px #FFF,
+            1800px 1900px #FFF, 1900px 1800px #FFF, 1700px 1600px #FFF, 1500px 1400px #FFF,
+            1300px 1200px #FFF, 1100px 1000px #FFF, 900px 800px #FFF, 700px 600px #FFF,
+            500px 400px #FFF, 300px 200px #FFF, 100px 100px #FFF, 1950px 1950px #FFF;
         animation: animStar 50s linear infinite;
     }
     #stars:after {
@@ -387,7 +389,12 @@
         box-shadow:
             1234px 456px #FFF, 234px 1234px #FFF, 567px 890px #FFF, 890px 567px #FFF,
             345px 678px #FFF, 678px 345px #FFF, 910px 1112px #FFF, 1112px 910px #FFF,
-            1357px 2468px #FFF, 2468px 1357px #FFF, 1590px 753px #FFF, 753px 1590px #FFF;
+            1357px 2468px #FFF, 2468px 1357px #FFF, 1590px 753px #FFF, 753px 1590px #FFF,
+            200px 300px #FFF, 400px 500px #FFF, 600px 700px #FFF, 800px 900px #FFF,
+            1000px 1100px #FFF, 1200px 1300px #FFF, 1400px 1500px #FFF, 1600px 1700px #FFF,
+            1800px 1900px #FFF, 1900px 1800px #FFF, 1700px 1600px #FFF, 1500px 1400px #FFF,
+            1300px 1200px #FFF, 1100px 1000px #FFF, 900px 800px #FFF, 700px 600px #FFF,
+            500px 400px #FFF, 300px 200px #FFF, 100px 100px #FFF, 1950px 1950px #FFF;
     }
 
     #stars2 {
@@ -396,7 +403,9 @@
         background: transparent;
         box-shadow:
             400px 800px #FFF, 800px 400px #FFF, 1200px 1600px #FFF, 1600px 1200px #FFF,
-            200px 1400px #FFF, 1400px 200px #FFF, 1700px 600px #FFF, 600px 1700px #FFF;
+            200px 1400px #FFF, 1400px 200px #FFF, 1700px 600px #FFF, 600px 1700px #FFF,
+            300px 1700px #FFF, 1700px 300px #FFF, 100px 1500px #FFF, 1500px 100px #FFF,
+            500px 1800px #FFF, 1800px 500px #FFF, 900px 1900px #FFF, 1900px 900px #FFF;
         animation: animStar 100s linear infinite;
     }
     #stars2:after {
@@ -408,7 +417,9 @@
         background: transparent;
         box-shadow:
             400px 800px #FFF, 800px 400px #FFF, 1200px 1600px #FFF, 1600px 1200px #FFF,
-            200px 1400px #FFF, 1400px 200px #FFF, 1700px 600px #FFF, 600px 1700px #FFF;
+            200px 1400px #FFF, 1400px 200px #FFF, 1700px 600px #FFF, 600px 1700px #FFF,
+            300px 1700px #FFF, 1700px 300px #FFF, 100px 1500px #FFF, 1500px 100px #FFF,
+            500px 1800px #FFF, 1800px 500px #FFF, 900px 1900px #FFF, 1900px 900px #FFF;
     }
 
     #stars3 {
@@ -416,7 +427,8 @@
         height: 3px;
         background: transparent;
         box-shadow:
-            100px 1800px #FFF, 1800px 100px #FFF, 900px 1900px #FFF, 1900px 900px #FFF;
+            100px 1800px #FFF, 1800px 100px #FFF, 900px 1900px #FFF, 1900px 900px #FFF,
+            500px 500px #FFF, 1500px 1500px #FFF, 300px 1200px #FFF, 1200px 300px #FFF;
         animation: animStar 150s linear infinite;
     }
     #stars3:after {
@@ -427,7 +439,16 @@
         height: 3px;
         background: transparent;
         box-shadow:
-            100px 1800px #FFF, 1800px 100px #FFF, 900px 1900px #FFF, 1900px 900px #FFF;
+            100px 1800px #FFF, 1800px 100px #FFF, 900px 1900px #FFF, 1900px 900px #FFF,
+            500px 500px #FFF, 1500px 1500px #FFF, 300px 1200px #FFF, 1200px 300px #FFF;
+    }
+
+    /* Make stars visible in light theme by using mix-blend-mode: darken for light backgrounds */
+    [data-theme='light'] #stars,
+    [data-theme='light'] #stars2,
+    [data-theme='light'] #stars3 {
+        mix-blend-mode: darken;
+        opacity: 0.7;
     }
 
     @keyframes animStar {

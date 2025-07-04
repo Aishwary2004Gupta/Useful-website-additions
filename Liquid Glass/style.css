@@ -340,7 +340,6 @@
         overflow-x: hidden;
         overflow-y: auto;
         position: relative;
-        /* fallback for light/dark theme */
         transition: background 0.5s;
     }
     [data-theme='light'] html {
@@ -358,7 +357,13 @@
         height: 2000px;
         display: block;
         pointer-events: none;
-        z-index: -2;
+        z-index: 0; /* Changed from -2 to 0 so it's above html background but below content */
+    }
+
+    #stars, #stars2, #stars3 {
+        /* Ensure stars are visible on all backgrounds */
+        mix-blend-mode: lighten;
+        opacity: 0.8;
     }
 
     #stars {

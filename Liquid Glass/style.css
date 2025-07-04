@@ -335,25 +335,29 @@
         width: 100vw;
         height: 100vh;
         position: fixed;
-        /* Soft, dreamy, glassy bokeh background */
+        /* Glitchy clean background: subtle noise + animated scanlines */
         background:
-            radial-gradient(ellipse at 20% 30%, var(--line) 0 8px, transparent 40px),
-            radial-gradient(ellipse at 60% 70%, var(--line) 0 12px, transparent 60px),
-            radial-gradient(ellipse at 80% 20%, var(--line) 0 10px, transparent 50px),
-            radial-gradient(ellipse at 40% 80%, var(--line) 0 14px, transparent 70px),
-            radial-gradient(ellipse at 70% 40%, var(--line) 0 18px, transparent 80px),
-            radial-gradient(ellipse at 30% 60%, var(--line) 0 10px, transparent 50px),
-            radial-gradient(ellipse at 50% 50%, var(--line) 0 20px, transparent 90px),
-            radial-gradient(ellipse at 85% 80%, var(--line) 0 12px, transparent 60px),
-            radial-gradient(ellipse at 15% 70%, var(--line) 0 16px, transparent 70px);
-        background-size: cover;
-        background-repeat: no-repeat;
-        opacity: 0.35;
-        mask: linear-gradient(-20deg, transparent 50%, white);
+            repeating-linear-gradient(
+                0deg,
+                rgba(0,0,0,0.04) 0px,
+                rgba(0,0,0,0.04) 1px,
+                transparent 2px,
+                transparent 8px
+            ),
+            linear-gradient(120deg, rgba(255,255,255,0.04) 0%, rgba(0,0,0,0.03) 100%);
+        background-size: 100vw 100vh, 100vw 100vh;
+        background-repeat: repeat, no-repeat;
+        opacity: 0.7;
+        animation: glitch-scan 2.5s linear infinite;
         top: 0;
-        transform-style: flat;
+        left: 0;
         pointer-events: none;
         z-index: -1;
+    }
+
+    @keyframes glitch-scan {
+        0% { background-position: 0 0, 0 0; }
+        100% { background-position: 0 8px, 0 0; }
     }
 
     .bear-link {

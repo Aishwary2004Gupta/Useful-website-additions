@@ -333,7 +333,7 @@
     }
 
     /* Starfield background inspired by the provided SCSS, works with theme switching */
-    html {
+    /* html {
         height: 100%;
         min-height: 100%;
         background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
@@ -341,7 +341,7 @@
         overflow-y: auto;
         position: relative;
         transition: background 0.5s;
-    }
+    } */
     [data-theme='light'] html {
         background: radial-gradient(ellipse at bottom, #e0e7ff 0%, #f0fdfa 100%);
     }
@@ -359,20 +359,8 @@
         pointer-events: none;
         z-index: 0;
         opacity: 0.9;
-    }
-
-    /* Default: visible on dark backgrounds */
-    #stars, #stars2, #stars3 {
+        /* Default: visible on dark backgrounds */
         mix-blend-mode: lighten;
-    }
-
-    /* For light theme, use normal blend mode and darker stars for visibility */
-    [data-theme='light'] #stars,
-    [data-theme='light'] #stars2,
-    [data-theme='light'] #stars3 {
-        mix-blend-mode: normal;
-        opacity: 0.7;
-        filter: drop-shadow(0 0 2px #aaa);
     }
 
     /* Many more stars for a denser field */
@@ -463,7 +451,7 @@
         height: 3px;
         background: transparent;
         box-shadow:
-            100px 1800px #FFF, 1800px 100px #FFF, 900px 1900px #FFF, 1900px 900px #FFF,
+            100px 1800px #ffffff, 1800px 100px #FFF, 900px 1900px #FFF, 1900px 900px #FFF,
             500px 500px #FFF, 1500px 1500px #FFF, 300px 1200px #FFF, 1200px 300px #FFF,
             200px 800px #FFF, 800px 200px #FFF, 600px 1600px #FFF, 1600px 600px #FFF;
         animation: animStar 150s linear infinite;
@@ -481,12 +469,45 @@
             200px 800px #FFF, 800px 200px #FFF, 600px 1600px #FFF, 1600px 600px #FFF;
     }
 
-    /* Make stars visible in light theme by using mix-blend-mode: darken for light backgrounds */
+    /* Light theme: black stars for visibility */
     [data-theme='light'] #stars,
+    [data-theme='light'] #stars:after {
+        box-shadow:
+            1234px 456px #000, 234px 1234px #000, 567px 890px #000, 890px 567px #000,
+            345px 678px #000, 678px 345px #000, 910px 1112px #000, 1112px 910px #000,
+            1357px 2468px #000, 2468px 1357px #000, 1590px 753px #000, 753px 1590px #000,
+            200px 300px #000, 400px 500px #000, 600px 700px #000, 800px 900px #000,
+            1000px 1100px #000, 1200px 1300px #000, 1400px 1500px #000, 1600px 1700px #000,
+            1800px 1900px #000, 1900px 1800px #000, 1700px 1600px #000, 1500px 1400px #000,
+            1300px 1200px #000, 1100px 1000px #000, 900px 800px #000, 700px 600px #000,
+            500px 400px #000, 300px 200px #000, 100px 100px #000, 1950px 1950px #000,
+            50px 100px #000, 100px 50px #000, 150px 200px #000, 200px 150px #000,
+            250px 300px #000, 300px 250px #000, 350px 400px #000, 400px 350px #000,
+            450px 500px #000, 500px 450px #000, 550px 600px #000, 600px 550px #000,
+            650px 700px #000, 700px 650px #000, 750px 800px #000, 800px 750px #000,
+            850px 900px #000, 900px 850px #000, 950px 1000px #000, 1000px 950px #000,
+            1050px 1100px #000, 1100px 1050px #000, 1150px 1200px #000, 1200px 1150px #000,
+            1250px 1300px #000, 1300px 1250px #000, 1350px 1400px #000, 1400px 1350px #000,
+            1450px 1500px #000, 1500px 1450px #000, 1550px 1600px #000, 1600px 1550px #000,
+            1650px 1700px #000, 1700px 1650px #000, 1750px 1800px #000, 1800px 1750px #000,
+            1850px 1900px #000, 1900px 1850px #000, 1950px 2000px #000, 2000px 1950px #000;
+    }
     [data-theme='light'] #stars2,
-    [data-theme='light'] #stars3 {
-        mix-blend-mode: darken;
-        opacity: 0.7;
+    [data-theme='light'] #stars2:after {
+        box-shadow:
+            400px 800px #000, 800px 400px #000, 1200px 1600px #000, 1600px 1200px #000,
+            200px 1400px #000, 1400px 200px #000, 1700px 600px #000, 600px 1700px #000,
+            300px 1700px #000, 1700px 300px #000, 100px 1500px #000, 1500px 100px #000,
+            500px 1800px #000, 1800px 500px #000, 900px 1900px #000, 1900px 900px #000,
+            50px 300px #000, 300px 50px #000, 700px 1200px #000, 1200px 700px #000,
+            900px 300px #000, 300px 900px #000, 1500px 400px #000, 400px 1500px #000;
+    }
+    [data-theme='light'] #stars3,
+    [data-theme='light'] #stars3:after {
+        box-shadow:
+            100px 1800px #000, 1800px 100px #000, 900px 1900px #000, 1900px 900px #000,
+            500px 500px #000, 1500px 1500px #000, 300px 1200px #000, 1200px 300px #000,
+            200px 800px #000, 800px 200px #000, 600px 1600px #000, 1600px 600px #000;
     }
 
     @keyframes animStar {

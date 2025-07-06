@@ -318,6 +318,69 @@
       target="_blank"
       rel="noreferrer noopener"
     >
+      <style>
+        .bear-link {
+          display: inline-block;
+        }
+        .bear-link svg {
+          transition: filter 0.2s;
+        }
+        .bear-link:hover svg text {
+          animation: ag-glitch 0.5s infinite linear alternate;
+        }
+        @keyframes ag-glitch {
+          0% {
+            transform: translate(0,0);
+            fill: url(#ag-gradient);
+            filter: url(#ag-text-3d);
+          }
+          10% {
+            transform: translate(-2px,1px) skewX(-5deg);
+            fill: #ff00c8;
+            filter: none;
+          }
+          20% {
+            transform: translate(2px,-1px) skewX(5deg);
+            fill: #00fff0;
+            filter: none;
+          }
+          30% {
+            transform: translate(-1px,2px) skewY(-3deg);
+            fill: #fff200;
+            filter: none;
+          }
+          40% {
+            transform: translate(1px,-2px) skewY(3deg);
+            fill: #00ff85;
+            filter: none;
+          }
+          50% {
+            transform: translate(-2px,1px) skewX(-5deg);
+            fill: #ff00c8;
+            filter: none;
+          }
+          60% {
+            transform: translate(2px,-1px) skewX(5deg);
+            fill: #00fff0;
+            filter: none;
+          }
+          70% {
+            transform: translate(-1px,2px) skewY(-3deg);
+            fill: #fff200;
+            filter: none;
+          }
+          80% {
+            transform: translate(1px,-2px) skewY(3deg);
+            fill: #00ff85;
+            filter: none;
+          }
+          100% {
+            transform: translate(0,0);
+            fill: url(#ag-gradient);
+            filter: url(#ag-text-3d);
+          }
+        }
+      </style>
       <svg
         class="w-9"
         viewBox="0 0 100 100"
@@ -326,15 +389,16 @@
       >
         <defs>
           <linearGradient id="ag-gradient" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-            <stop id="ag-stop1" stop-color="#2563eb"/>
-            <stop id="ag-stop2" offset="1" stop-color="#38bdf8"/>
+            <stop id="ag-stop1" stop-color="#ff00c8"/>
+            <stop id="ag-stop2" offset="0.5" stop-color="#00fff0"/>
+            <stop id="ag-stop3" offset="1" stop-color="#fff200"/>
           </linearGradient>
           <filter id="ag-shadow" x="-30%" y="-30%" width="160%" height="160%">
             <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.18"/>
-            <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#38bdf8" flood-opacity="0.18"/>
+            <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#00fff0" flood-opacity="0.18"/>
           </filter>
           <filter id="ag-text-3d" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="2" stdDeviation="0.5" flood-color="#2563eb" flood-opacity="0.25"/>
+            <feDropShadow dx="0" dy="2" stdDeviation="0.5" flood-color="#ff00c8" flood-opacity="0.25"/>
             <feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="#fff" flood-opacity="0.8"/>
           </filter>
         </defs>
@@ -353,9 +417,11 @@
           AG
         </text>
         <animate 
-          xlink:href="#ag-stop1" attributeName="stop-color" values="#2563eb;#38bdf8;#2563eb" dur="4s" repeatCount="indefinite"/>
+          xlink:href="#ag-stop1" attributeName="stop-color" values="#ff00c8;#00fff0;#fff200;#ff00c8" dur="6s" repeatCount="indefinite"/>
         <animate 
-          xlink:href="#ag-stop2" attributeName="stop-color" values="#38bdf8;#2563eb;#38bdf8" dur="4s" repeatCount="indefinite"/>
+          xlink:href="#ag-stop2" attributeName="stop-color" values="#00fff0;#fff200;#ff00c8;#00fff0" dur="6s" repeatCount="indefinite"/>
+        <animate 
+          xlink:href="#ag-stop3" attributeName="stop-color" values="#fff200;#ff00c8;#00fff0;#fff200" dur="6s" repeatCount="indefinite"/>
       </svg>
     </a>
     <script type="module" src="script.js"></script>

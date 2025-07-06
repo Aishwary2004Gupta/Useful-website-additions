@@ -4,23 +4,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Liquid Glass Lens</title>
+    <title>Liquid Glass Lens - 3D Cards</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Add Google Fonts for fancy text -->
     <link href="https://fonts.googleapis.com/css2?family=Gloria+Hallelujah&family=Montserrat:wght@400;700&family=Quicksand:wght@400;700&display=swap"
         rel="stylesheet">
-    <div>
-        <div id="stars"></div>
-        <div id="stars2"></div>
-        <div id="stars3"></div>
-    </div>
     <style>
+        body {
+            min-height: 100vh;
+            margin: 0;
+            background: transparent;
+            font-family: 'Montserrat', 'Quicksand', Arial, sans-serif;
+            overflow-x: hidden;
+        }
+
+        #stars,
+        #stars2,
+        #stars3 {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 2000px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .cards-3d-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 2.5rem;
+            margin: 4rem auto 2rem auto;
+            max-width: 1200px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-3d {
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18), 0 1.5px 6px 0 rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            margin: 0;
+            padding: 2rem 2.5rem;
+            max-width: 350px;
+            min-width: 280px;
+            min-height: 320px;
+            transform-style: preserve-3d;
+            transition: transform 0.3s cubic-bezier(.25, .8, .25, 1), box-shadow 0.3s;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card-3d:hover {
+            transform: rotateY(8deg) scale(1.03) translateY(-8px);
+            box-shadow: 0 16px 48px 0 rgba(31, 38, 135, 0.22), 0 3px 12px 0 rgba(0, 0, 0, 0.12);
+        }
+
         .main-title {
             font-family: 'Gloria Hallelujah', cursive;
             font-size: 3rem;
             color: #2d3748;
             letter-spacing: 2px;
             margin-bottom: 0.5rem;
+            text-align: center;
         }
 
         .subtitle {
@@ -30,6 +83,7 @@
             font-family: 'Quicksand', 'Montserrat', Arial, sans-serif;
             font-weight: 700;
             letter-spacing: 1px;
+            text-align: center;
         }
 
         .section-title {
@@ -39,18 +93,44 @@
             font-weight: bold;
             font-family: 'Montserrat', 'Quicksand', Arial, sans-serif;
             letter-spacing: 1px;
+            text-align: center;
         }
 
         .fluid {
             font-family: 'Quicksand', 'Montserrat', Arial, sans-serif;
             font-size: 1.1rem;
             letter-spacing: 0.5px;
+            text-align: center;
+        }
+
+        .apps {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        .app {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 90px;
         }
 
         .apps span {
             font-weight: 700;
             color: #334155;
             font-family: 'Montserrat', 'Quicksand', Arial, sans-serif;
+            margin-top: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .emojis {
+            display: flex;
+            gap: 0.7rem;
+            justify-content: center;
+            margin-top: 1.5rem;
         }
 
         .emojis span {
@@ -58,11 +138,47 @@
             font-family: 'Montserrat', 'Quicksand', Arial, sans-serif;
         }
 
+        .images {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.7rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+
+        .images img {
+            width: 90px;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
         footer {
             font-size: 1rem;
             color: #64748b;
             letter-spacing: 1px;
             font-family: 'Montserrat', 'Quicksand', Arial, sans-serif;
+            text-align: center;
+            margin: 2rem 0 1rem 0;
+            z-index: 2;
+            position: relative;
+        }
+
+        .bear-link {
+            color: #2563eb;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 10;
+        }
+
+        @media (max-width: 900px) {
+            .cards-3d-container {
+                flex-direction: column;
+                align-items: center;
+                gap: 2rem;
+            }
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js" type="text/javascript"></script>
@@ -70,82 +186,57 @@
 </head>
 
 <body>
-    <!-- Move effect glass to the top and center it -->
-    <div style="display: flex; justify-content: center; margin-top: 2rem;">
-        <div class="effect">
-            <div class="nav-wrap"></div>
-            <svg class="filter" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <filter id="filter" color-interpolation-filters="sRGB">
-                        <!-- the input displacement image -->
-                        <feImage x="0" y="0" width="100%" height="100%" result="map"></feImage>
-                        <!-- the displacement map to use -->
-                        <!-- <feDisplacementMap in2="map" in="SourceGraphic" /> -->
-                        <!-- the chromatic aberration for the people -->
-                        <!-- RED channel with strongest displacement -->
-                        <feDisplacementMap in="SourceGraphic" in2="map" id="redchannel" xChannelSelector="R"
-                            yChannelSelector="G" result="dispRed" />
-                        <feColorMatrix in="dispRed" type="matrix" values="1 0 0 0 0
-                      0 0 0 0 0
-                      0 0 0 0 0
-                      0 0 0 1 0" result="red" />
-                        <!-- GREEN channel (reference / least displaced) -->
-                        <feDisplacementMap in="SourceGraphic" in2="map" id="greenchannel" xChannelSelector="R"
-                            yChannelSelector="G" result="dispGreen" />
-                        <feColorMatrix in="dispGreen" type="matrix" values="0 0 0 0 0
-                      0 1 0 0 0
-                      0 0 0 0 0
-                      0 0 0 1 0" result="green" />
-                        <!-- BLUE channel with medium displacement -->
-                        <feDisplacementMap in="SourceGraphic" in2="map" id="bluechannel" xChannelSelector="R"
-                            yChannelSelector="G" result="dispBlue" />
-                        <feColorMatrix in="dispBlue" type="matrix" values="0 0 0 0 0
-                      0 0 0 0 0
-                      0 0 1 0 0
-                      0 0 0 1 0" result="blue" />
-                        <!-- Blend channels back together -->
-                        <feBlend in="red" in2="green" mode="screen" result="rg" />
-                        <feBlend in="rg" in2="blue" mode="screen" result="output" />
-                        <!-- output blend -->
-                        <feGaussianBlur in="output" stdDeviation="0.7" />
-                    </filter>
-                </defs>
-            </svg>
-            <div class="displacement-debug"></div>
-        </div>
-    </div>
-    <!-- Header below the effect glass -->
-    <header style="text-align: center;">
+    <!-- Starfield background -->
+    <div id="stars"></div>
+    <div id="stars2"></div>
+    <div id="stars3"></div>
+
+    <header>
         <h1 class="main-title">Liquid Glass Lens</h1>
         <p class="subtitle">
             Experience interactive glassmorphism with real-time SVG displacement.<br>
             Move your mouse and watch the magic!
         </p>
     </header>
-    <!-- Main content -->
-    <main>
-        <!-- dock placeholder and instruction -->
-        <section class="placeholder">
-            <div class="dock-placeholder"></div>
-            <span class="arrow arrow--debug">
-                <span>Try scrolling dragging it using your mouse!</span>
-                <svg viewBox="0 0 122 97" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path fill-rule="evenodd" clip-rule="evenodd"
-                        d="M116.102 0.0996005C114.952 0.334095 112.7 1.53002 111.433 2.53834C110.869 2.98388 109.368 4.15635 108.077 5.11778C103.455 8.6352 102.61 9.40903 102.187 10.4877C101.39 12.5982 102.798 14.5914 105.097 14.5914C106.13 14.5914 108.241 13.7941 109.696 12.8561C110.424 12.3871 111.01 12.0823 111.01 12.1526C111.01 12.692 107.796 17.8274 106.2 19.8206C102.023 25.0733 95.6642 29.6928 86.2548 34.2889C81.0926 36.8214 77.4555 38.2753 73.9123 39.2367C71.7066 39.823 70.6507 39.9871 67.9053 40.0809C66.0516 40.1513 64.5499 40.1747 64.5499 40.1278C64.5499 40.0809 64.808 38.9788 65.1365 37.6891C65.465 36.3993 65.8404 34.1716 66.0047 32.7647C66.4505 28.3796 65.4884 24.2994 63.4704 22.2359C62.1564 20.8758 60.9363 20.3599 59.0121 20.3599C57.6043 20.3599 57.1115 20.4537 55.7975 21.1103C52.8878 22.5407 50.5648 25.9878 49.5089 30.4197C48.453 34.922 49.2742 38.0877 52.3481 41.1127C53.4744 42.2148 54.46 42.9183 55.9852 43.6921C57.1584 44.2549 58.1439 44.7473 58.1909 44.7708C58.5898 45.0053 54.5304 53.4705 52.0666 57.6211C47.4674 65.3125 39.3486 74.575 30.5728 82.0789C22.2427 89.2309 16.7285 92.4435 9.87677 94.1553C8.28116 94.554 7.13138 94.6478 4.2452 94.6478C1.17131 94.6712 0.608154 94.7181 0.608154 95.023C0.608154 95.234 1.19478 95.5857 2.13337 95.9609C3.54126 96.4768 3.96363 96.5472 7.41296 96.5237C10.5572 96.5237 11.4724 96.4299 13.1149 96.0078C21.7265 93.6863 31.1594 87.1908 42.6102 75.7006C49.2977 69.0175 52.5828 64.9373 56.1494 58.9343C58.0501 55.7217 60.6312 50.6801 61.7575 47.9365L62.5553 45.9902L64.0806 46.1543C71.3547 46.9047 77.7136 45.3101 88.3667 40.034C96.2274 36.1414 101.976 32.3426 106.505 28.0748C108.617 26.0816 111.855 22.2828 112.794 20.7117C113.028 20.313 113.286 19.9847 113.357 19.9847C113.427 19.9847 113.662 20.782 113.873 21.72C114.084 22.6814 114.647 24.276 115.093 25.2609C115.82 26.8085 116.008 27.043 116.454 26.9727C116.876 26.9258 117.228 26.4333 117.956 24.9795C119.317 22.2828 119.833 20.2661 120.772 13.8879C121.757 7.25168 121.781 4.4143 120.889 2.56179C119.95 0.615488 118.12 -0.322489 116.102 0.0996005ZM60.7016 25.7767C61.4525 26.9023 61.8279 29.2942 61.6637 31.9205C61.4759 34.7813 60.5139 38.9788 60.0681 38.9788C59.5284 38.9788 57.1584 37.6422 56.2198 36.8214C54.8354 35.6021 54.3426 34.2889 54.5538 32.2957C54.8589 29.2473 56.1964 26.2223 57.5808 25.3547C58.7306 24.6512 60.0681 24.8388 60.7016 25.7767Z"
-                        fill="currentColor"></path>
-                </svg>
-            </span>
-        </section>
-        <!-- some random text stuff -->
-        <section>
-            <br><br>
+
+    <div class="cards-3d-container">
+        <!-- Card 1: Text -->
+        <div class="card-3d">
             <div class="section-title">How does it work?</div>
             <p class="fluid">
                 This demo uses SVG filters to create a dynamic glass lens effect. The displacement map distorts the background, giving a realistic frosted glass look that follows your cursor.
             </p>
-        </section>
-        <!-- app grid -->
-        <section>
+        </div>
+        <!-- Card 2: Images -->
+        <div class="card-3d">
+            <div class="section-title">Gallery</div>
+            <div class="images">
+                <img src="https://images.unsplash.com/photo-1595001354022-29103be3b73a?q=80&w=3270&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                    alt="" />
+                <img src="https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?q=80&w=3270&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                    alt="" />
+                <img src="https://images.unsplash.com/photo-1513682121497-80211f36a7d3?q=80&w=3388&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                    alt="" />
+                <img src="https://images.unsplash.com/photo-1516205651411-aef33a44f7c2?q=80&w=2843&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                    alt="" />
+                <img src="https://images.unsplash.com/photo-1505069190533-da1c9af13346?q=80&w=3387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                    alt="" />
+            </div>
+        </div>
+        <!-- Card 3: Emojis -->
+        <div class="card-3d">
+            <div class="section-title">Emojis</div>
+            <div class="emojis">
+                <span>🧑‍🍳</span>
+                <span>🤓</span>
+                <span>🤪</span>
+                <span>🙄</span>
+                <span>🤠</span>
+                <span>🥸</span>
+            </div>
+        </div>
+        <!-- Card 4: Featured Apps -->
+        <div class="card-3d">
             <div class="section-title">Featured Apps</div>
             <div class="apps">
                 <div class="app">
@@ -173,7 +264,7 @@
                     <span>LinkedIn</span>
                 </div>
                 <div class="app">
-                    <img src="https://assets.codepen.io/605876/signal.png" />
+                    <img src="https://assets.codepen.io/605876/signal.png" style="width:80px;height:80px;object-fit:contain;" />
                     <span>Signal</span>
                 </div>
                 <div class="app">
@@ -181,60 +272,53 @@
                     <span>Camera</span>
                 </div>
             </div>
-        </section>
-        <section>
-            <div class="section-title">Tips & Tricks</div>
-            <p class="fluid">
-                Enable <b>debug</b> to visualize the displacement map.<br>
-                Play with the controls to customize the glass effect.<br>
-                Note: <i>backdrop-filter: url()</i> works best in Chromium browsers.
-            </p>
-        </section>
-        <section class="emojis fluid">
-            <span>🧑‍🍳</span>
-            <span>🤓</span>
-            <span>🤪</span>
-            <span>🙄</span>
-            <span>🤠</span>
-            <span>🥸</span>
-        </section>
-        <section>
-            <div class="section-title">Why Liquid Glass?</div>
-            <p class="fluid">
-                Liquid Glass adapts to any surface and use case.<br>
-                Try different modes or freestyle your own look!
-            </p>
-        </section>
-        <!-- images -->
-        <section class="images">
-            <img src="https://images.unsplash.com/photo-1595001354022-29103be3b73a?q=80&w=3270&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                alt="" />
-            <img src="https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?q=80&w=3270&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                alt="" />
-            <img src="https://images.unsplash.com/photo-1513682121497-80211f36a7d3?q=80&w=3388&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                alt="" />
-            <img src="https://images.unsplash.com/photo-1516205651411-aef33a44f7c2?q=80&w=2843&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                alt="" />
-            <img src="https://images.unsplash.com/photo-1505069190533-da1c9af13346?q=80&w=3387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                alt="" />
-        </section>
-        <section>
-            <div class="section-title">Ready to Explore?</div>
-            <p class="fluid">
-                Dive in and experiment with SVG filters.<br>
-                For best results, use a Chromium-based browser.
-            </p>
-        </section>
-    </main>
-    <!-- Footer and bear-link at the bottom -->
+        </div>
+    </div>
+
     <footer>Made by aish2004gupta &copy; 2025</footer>
     <a aria-label="Follow aish2004gupta" class="bear-link" href="https://twitter.com/intent/follow?screen_name=aish2004gupta"
         target="_blank" rel="noreferrer noopener">
         <svg class="w-9" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="50" cy="50" r="48" stroke="currentColor" stroke-width="4"/>
-            <text x="50" y="68" text-anchor="middle" font-size="60" font-family="Montserrat, Arial, sans-serif" fill="currentColor" font-weight="bold">A</text>
+            <circle cx="50" cy="50" r="48" stroke="currentColor" stroke-width="4" />
+            <text x="50" y="68" text-anchor="middle" font-size="60" font-family="Montserrat, Arial, sans-serif"
+                fill="currentColor" font-weight="bold">A</text>
         </svg>
     </a>
+    <script>
+    // Starfield generator for all themes (white for dark, black for light)
+    function randomStars(n, color) {
+        let arr = [];
+        for (let i = 0; i < n; i++) {
+            arr.push(
+                `${Math.floor(Math.random() * 2000)}px ${Math.floor(Math.random() * 2000)}px ${color}`
+            );
+        }
+        return arr.join(',');
+    }
+    function setStarfieldColors() {
+        // Detect theme: data-theme or system
+        const html = document.documentElement;
+        const themeAttr = html.getAttribute('data-theme');
+        const isLight = themeAttr === 'light' ||
+            (!themeAttr && window.matchMedia('(prefers-color-scheme: light)').matches);
+        const color = isLight ? '#000' : '#FFF';
+        if (document.getElementById('stars')) {
+            document.getElementById('stars').style.boxShadow = randomStars(700, color);
+        }
+        if (document.getElementById('stars2')) {
+            document.getElementById('stars2').style.boxShadow = randomStars(200, color);
+        }
+        if (document.getElementById('stars3')) {
+            document.getElementById('stars3').style.boxShadow = randomStars(100, color);
+        }
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        setStarfieldColors();
+        window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', setStarfieldColors);
+        const observer = new MutationObserver(setStarfieldColors);
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    });
+    </script>
     <script type="module" src="script.js"></script>
 </body>
 

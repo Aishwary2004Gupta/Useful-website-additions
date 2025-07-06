@@ -329,7 +329,8 @@
     }
 
     body::before {
-        content: none !important; /* Remove previous background circles/dots/waves */
+        content: none !important;
+        /* Remove previous background circles/dots/waves */
     }
 
     /* Starfield background inspired by the provided SCSS, works with theme switching */
@@ -345,14 +346,18 @@
     [data-theme='light'] html {
         background: radial-gradient(ellipse at bottom, #e0e7ff 0%, #f0fdfa 100%);
     }
+
     [data-theme='dark'] html {
         background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
     }
 
     /* Star layers */
-    #stars, #stars2, #stars3 {
+    #stars,
+    #stars2,
+    #stars3 {
         position: fixed;
-        top: 0; left: 0;
+        top: 0;
+        left: 0;
         width: 100vw;
         height: 2000px;
         display: block;
@@ -389,6 +394,7 @@
             1850px 1900px #FFF, 1900px 1850px #FFF, 1950px 2000px #FFF, 2000px 1950px #FFF;
         animation: animStar 50s linear infinite;
     }
+
     #stars:after {
         content: " ";
         position: absolute;
@@ -430,6 +436,7 @@
             900px 300px #FFF, 300px 900px #FFF, 1500px 400px #FFF, 400px 1500px #FFF;
         animation: animStar 100s linear infinite;
     }
+
     #stars2:after {
         content: " ";
         position: absolute;
@@ -456,6 +463,7 @@
             200px 800px #FFF, 800px 200px #FFF, 600px 1600px #FFF, 1600px 600px #FFF;
         animation: animStar 150s linear infinite;
     }
+
     #stars3:after {
         content: " ";
         position: absolute;
@@ -492,6 +500,7 @@
             1650px 1700px #000, 1700px 1650px #000, 1750px 1800px #000, 1800px 1750px #000,
             1850px 1900px #000, 1900px 1850px #000, 1950px 2000px #000, 2000px 1950px #000;
     }
+
     [data-theme='light'] #stars2,
     [data-theme='light'] #stars2:after {
         box-shadow:
@@ -502,6 +511,7 @@
             50px 300px #000, 300px 50px #000, 700px 1200px #000, 1200px 700px #000,
             900px 300px #000, 300px 900px #000, 1500px 400px #000, 400px 1500px #000;
     }
+
     [data-theme='light'] #stars3,
     [data-theme='light'] #stars3:after {
         box-shadow:
@@ -511,8 +521,13 @@
     }
 
     @keyframes animStar {
-        from { transform: translateY(0px); }
-        to   { transform: translateY(-2000px); }
+        from {
+            transform: translateY(0px);
+        }
+
+        to {
+            transform: translateY(-2000px);
+        }
     }
 
     .bear-link {

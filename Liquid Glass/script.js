@@ -65,12 +65,12 @@ const presets = {
 }
 
 const config = {
-    ...presets.bubble, 
+    ...presets.bubble,
     theme: 'system',
     debug: false,
     top: false,
     // circle, dock, freestyle
-    preset: 'bubble', 
+    preset: 'bubble',
 }
 
 const ctrl = new Pane({

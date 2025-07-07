@@ -16,12 +16,24 @@
       <div id="stars3"></div>
     </div>
     <style>
+      html {
+        scroll-behavior: smooth;
+        background: #f0f4f8;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Quicksand", "Montserrat", Arial, sans-serif;
+        background: linear-gradient(135deg, #f0f4f8 0%, #e0e7ef 100%);
+        overflow-x: hidden;
+      }
       .main-title {
         font-family: "Gloria Hallelujah", cursive;
         font-size: 3rem;
         color: #2d3748;
         letter-spacing: 2px;
         margin-bottom: 0.5rem;
+        text-shadow: 0 2px 8px #fff8, 0 1px 0 #fff;
       }
 
       .subtitle {
@@ -34,29 +46,115 @@
       }
 
       .section-title {
-        font-size: 1.5rem;
+        font-size: 2rem;
         color: #2563eb;
         margin-bottom: 1rem;
         font-weight: bold;
         font-family: "Montserrat", "Quicksand", Arial, sans-serif;
         letter-spacing: 1px;
+        text-shadow: 0 2px 8px #fff8;
       }
 
       .fluid {
         font-family: "Quicksand", "Montserrat", Arial, sans-serif;
         font-size: 1.1rem;
         letter-spacing: 0.5px;
+        color: #334155;
+      }
+
+      .apps {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 2rem;
+        justify-items: center;
+        margin: 2rem 0;
+      }
+
+      .app {
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 1.5rem;
+        box-shadow: 0 4px 24px 0 #2563eb22;
+        padding: 1.5rem 1rem 1rem 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      .app:hover {
+        transform: translateY(-8px) scale(1.05) rotate(-2deg);
+        box-shadow: 0 8px 32px 0 #38bdf822;
       }
 
       .apps span {
         font-weight: 700;
         color: #334155;
         font-family: "Montserrat", "Quicksand", Arial, sans-serif;
+        margin-top: 0.5rem;
+      }
+
+      .emojis {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        margin: 2rem 0;
       }
 
       .emojis span {
-        font-size: 2rem;
-        font-family: "Montserrat", "Quicksand", Arial, sans-serif;
+        font-size: 2.5rem;
+        filter: drop-shadow(0 2px 6px #38bdf855);
+        transition: transform 0.2s;
+      }
+
+      .emojis span:hover {
+        transform: scale(1.2) rotate(-10deg);
+      }
+
+      .images {
+        display: flex;
+        gap: 1.5rem;
+        overflow-x: auto;
+        padding: 1rem 0;
+        margin-bottom: 2rem;
+      }
+
+      .images img {
+        border-radius: 1.5rem;
+        width: 220px;
+        height: 140px;
+        object-fit: cover;
+        box-shadow: 0 2px 16px #2563eb22;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      .images img:hover {
+        transform: scale(1.07) rotate(-2deg);
+        box-shadow: 0 8px 32px #38bdf822;
+      }
+
+      main {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem 1rem 4rem 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 3rem;
+      }
+
+      section {
+        background: rgba(255, 255, 255, 0.85);
+        border-radius: 2rem;
+        box-shadow: 0 2px 16px #2563eb11;
+        padding: 2rem 2rem 1.5rem 2rem;
+        margin-bottom: 1.5rem;
+        transition: box-shadow 0.2s;
+      }
+
+      section.placeholder {
+        background: transparent;
+        box-shadow: none;
+        padding: 0;
+        margin-bottom: 0;
       }
 
       footer {
@@ -64,6 +162,138 @@
         color: #64748b;
         letter-spacing: 1px;
         font-family: "Montserrat", "Quicksand", Arial, sans-serif;
+        text-align: center;
+        margin: 2rem 0 1rem 0;
+      }
+
+      /* Scroll animation */
+      .scroll-animate {
+        opacity: 0;
+        transform: translateY(40px) scale(0.98);
+        transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+          transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .scroll-animate.visible {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+
+      /* Animate background stars */
+      #stars,
+      #stars2,
+      #stars3 {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      #stars {
+        animation: moveStars 80s linear infinite;
+      }
+
+      #stars2 {
+        animation: moveStars2 120s linear infinite;
+      }
+
+      #stars3 {
+        animation: moveStars3 200s linear infinite;
+      }
+
+      @keyframes moveStars {
+        0% {
+          background-position: 0 0;
+        }
+
+        100% {
+          background-position: 1000px 1000px;
+        }
+      }
+
+      @keyframes moveStars2 {
+        0% {
+          background-position: 0 0;
+        }
+
+        100% {
+          background-position: -1000px 500px;
+        }
+      }
+
+      @keyframes moveStars3 {
+        0% {
+          background-position: 0 0;
+        }
+
+        100% {
+          background-position: 500px -1000px;
+        }
+      }
+
+      .bear-link {
+        display: inline-block;
+      }
+      .bear-link svg {
+        transition: filter 0.2s;
+      }
+      .bear-link:hover svg text {
+        animation: ag-glitch 0.5s infinite linear alternate;
+      }
+      @keyframes ag-glitch {
+        0% {
+          transform: translate(0, 0);
+          fill: url(#ag-gradient);
+          filter: url(#ag-text-3d);
+        }
+        10% {
+          transform: translate(-2px, 1px) skewX(-5deg);
+          fill: #ff00c8;
+          filter: none;
+        }
+        20% {
+          transform: translate(2px, -1px) skewX(5deg);
+          fill: #00fff0;
+          filter: none;
+        }
+        30% {
+          transform: translate(-1px, 2px) skewY(-3deg);
+          fill: #fff200;
+          filter: none;
+        }
+        40% {
+          transform: translate(1px, -2px) skewY(3deg);
+          fill: #00ff85;
+          filter: none;
+        }
+        50% {
+          transform: translate(-2px, 1px) skewX(-5deg);
+          fill: #ff00c8;
+          filter: none;
+        }
+        60% {
+          transform: translate(2px, -1px) skewX(5deg);
+          fill: #00fff0;
+          filter: none;
+        }
+        70% {
+          transform: translate(-1px, 2px) skewY(-3deg);
+          fill: #fff200;
+          filter: none;
+        }
+        80% {
+          transform: translate(1px, -2px) skewY(3deg);
+          fill: #00ff85;
+          filter: none;
+        }
+        100% {
+          transform: translate(0, 0);
+          fill: url(#ag-gradient);
+          filter: url(#ag-text-3d);
+        }
       }
     </style>
     <script
@@ -158,9 +388,9 @@
       </div>
     </div>
     <!-- Header below the effect glass -->
-    <header style="text-align: center">
-      <h1 class="main-title">Liquid Glass Lens</h1>
-      <p class="subtitle">
+    <header style="text-align: center; margin-top: 2rem;">
+      <h1 class="main-title scroll-animate">Liquid Glass Lens</h1>
+      <p class="subtitle scroll-animate">
         Experience interactive glassmorphism with real-time SVG displacement.<br />
         Move your mouse and watch the magic!
       </p>
@@ -168,7 +398,7 @@
     <!-- Main content -->
     <main>
       <!-- dock placeholder and instruction -->
-      <section class="placeholder">
+      <section class="placeholder scroll-animate">
         <div class="dock-placeholder"></div>
         <span class="arrow arrow--debug">
           <span>Try scrolling dragging it using your mouse!</span>
@@ -187,7 +417,7 @@
         </span>
       </section>
       <!-- some random text stuff -->
-      <section>
+      <section class="scroll-animate">
         <br /><br />
         <div class="section-title">How does it work?</div>
         <p class="fluid">
@@ -197,7 +427,7 @@
         </p>
       </section>
       <!-- app grid -->
-      <section>
+      <section class="scroll-animate">
         <div class="section-title">Featured Apps</div>
         <div class="apps">
           <div class="app">
@@ -255,7 +485,7 @@
           </div>
         </div>
       </section>
-      <section>
+      <section class="scroll-animate">
         <div class="section-title">Tips & Tricks</div>
         <p class="fluid">
           Enable <b>debug</b> to visualize the displacement map.<br />
@@ -263,7 +493,7 @@
           Note: <i>backdrop-filter: url()</i> works best in Chromium browsers.
         </p>
       </section>
-      <section class="emojis fluid">
+      <section class="emojis fluid scroll-animate">
         <span>🧑‍🍳</span>
         <span>🤓</span>
         <span>🤪</span>
@@ -271,7 +501,7 @@
         <span>🤠</span>
         <span>🥸</span>
       </section>
-      <section>
+      <section class="scroll-animate">
         <div class="section-title">Why Liquid Glass?</div>
         <p class="fluid">
           Liquid Glass adapts to any surface and use case.<br />
@@ -279,7 +509,7 @@
         </p>
       </section>
       <!-- images -->
-      <section class="images">
+      <section class="images scroll-animate">
         <img
           src="https://images.unsplash.com/photo-1595001354022-29103be3b73a?q=80&w=3270&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
           alt=""
@@ -301,7 +531,7 @@
           alt=""
         />
       </section>
-      <section>
+      <section class="scroll-animate">
         <div class="section-title">Ready to Explore?</div>
         <p class="fluid">
           Dive in and experiment with SVG filters.<br />
@@ -425,5 +655,18 @@
       </svg>
     </a>
     <script type="module" src="script.js"></script>
+    <script>
+      // Scroll animation for sections
+      function onScrollAnimate() {
+        document.querySelectorAll('.scroll-animate').forEach(el => {
+          const rect = el.getBoundingClientRect();
+          if (rect.top < window.innerHeight - 80) {
+            el.classList.add('visible');
+          }
+        });
+      }
+      window.addEventListener('scroll', onScrollAnimate);
+      window.addEventListener('DOMContentLoaded', onScrollAnimate);
+    </script>
   </body>
 </html>

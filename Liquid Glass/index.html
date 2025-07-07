@@ -27,6 +27,37 @@
         background: linear-gradient(135deg, #f0f4f8 0%, #e0e7ef 100%);
         overflow-x: hidden;
       }
+      /* --- STAR BACKGROUNDS FOR THEME --- */
+      #stars {
+        background: url('https://raw.githubusercontent.com/VincentGarreau/particles.js/master/demo/img/stars.png') repeat;
+      }
+      #stars2 {
+        background: url('https://raw.githubusercontent.com/VincentGarreau/particles.js/master/demo/img/stars2.png') repeat;
+      }
+      #stars3 {
+        background: url('https://raw.githubusercontent.com/VincentGarreau/particles.js/master/demo/img/stars3.png') repeat;
+      }
+      #stars, #stars2, #stars3 {
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        pointer-events: none;
+        z-index: 0;
+      }
+      #stars { animation: moveStars 80s linear infinite; }
+      #stars2 { animation: moveStars2 120s linear infinite; }
+      #stars3 { animation: moveStars3 200s linear infinite; }
+      @keyframes moveStars {
+        0% { background-position: 0 0; }
+        100% { background-position: 1000px 1000px; }
+      }
+      @keyframes moveStars2 {
+        0% { background-position: 0 0; }
+        100% { background-position: -1000px 500px; }
+      }
+      @keyframes moveStars3 {
+        0% { background-position: 0 0; }
+        100% { background-position: 500px -1000px; }
+      }
       .main-title {
         font-family: "Gloria Hallelujah", cursive;
         font-size: 3rem;
@@ -388,7 +419,7 @@
       </div>
     </div>
     <!-- Header below the effect glass -->
-    <header style="text-align: center; margin-top: 2rem;">
+    <header style="text-align: center">
       <h1 class="main-title scroll-animate">Liquid Glass Lens</h1>
       <p class="subtitle scroll-animate">
         Experience interactive glassmorphism with real-time SVG displacement.<br />

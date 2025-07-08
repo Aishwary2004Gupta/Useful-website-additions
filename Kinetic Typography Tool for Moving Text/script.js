@@ -1,28 +1,3 @@
-// Add to script.js
-import * as compromise from 'https://cdn.jsdelivr.net/npm/compromise@latest/builds/compromise.min.js';
-
-class KineticWordAdvanced extends KineticWord {
-    constructor(text, x, y) {
-        super(text, x, y);
-        const doc = compromise(text);
-        const isVerb = doc.verbs().length > 0;
-        const isAdjective = doc.adjectives().length > 0;
-
-        if (isVerb) this.velocity.y += 1; // Verbs fall down
-        if (isAdjective) this.rotationSpeed *= 2; // Adjectives spin faster
-    }
-}
-
-
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-const textInput = document.getElementById('textInput');
-const generateBtn = document.getElementById('generateBtn');
-
-// Set canvas size
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
 class KineticWord {
     constructor(text, x, y) {
         this.text = text;
@@ -59,29 +34,53 @@ class KineticWord {
     }
 }
 
+// Use KineticWordAdvanced for word creation
+class KineticWordAdvanced extends KineticWord {
+    constructor(text, x, y) {
+        super(text, x, y);
+        // Use global compromise if available
+        if (window.nlp) {
+            const doc = window.nlp(text);
+            const isVerb = doc.verbs().out('array').length > 0;
+            const isAdjective = doc.adjectives().out('array').length > 0;
+            if (isVerb) this.velocity.y += 1; // Verbs fall down
+            if (isAdjective) this.rotationSpeed *= 2; // Adjectives spin faster
+        }
+    }
+}
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const textInput = document.getElementById('textInput');
+const generateBtn = document.getElementById('generateBtn');
+
+// Set canvas size
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
 let words = [];
 
 function generateKineticText() {
     const inputText = textInput.value;
-    const splitWords = inputText.split(' ');
+    const splitWords = inputText.split(' ').filter(Boolean);
     words = [];
 
-    // Create KineticWord objects
+    // Use KineticWordAdvanced for each word
     splitWords.forEach((word, i) => {
         const x = Math.random() * canvas.width;
         const y = Math.random() * canvas.height;
-        words.push(new KineticWord(word, x, y));
+        words.push(new KineticWordAdvanced(word, x, y));
     });
 }
 
 function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
     words.forEach(word => {
         word.update();
         word.draw();
     });
-    
+
     requestAnimationFrame(animate);
 }
 

@@ -13,14 +13,14 @@ body {
 
 .wheel {
     width: 100%;
-    height: calc(30rem * 0.8);
+    height: calc(30rem * 0.9);
 }
 
 .line p {
     line-height: 0.8;
     padding: 0;
     margin: 0;
-    font-family: monospace;
+    font-family: 'Times New Roman', Times, serif;
     text-transform: uppercase;
     font-size: 3rem;
     font-weight: bold;

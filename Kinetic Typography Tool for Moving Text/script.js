@@ -1,3 +1,19 @@
+// Add to script.js
+import * as compromise from 'https://cdn.jsdelivr.net/npm/compromise@latest/builds/compromise.min.js';
+
+class KineticWordAdvanced extends KineticWord {
+    constructor(text, x, y) {
+        super(text, x, y);
+        const doc = compromise(text);
+        const isVerb = doc.verbs().length > 0;
+        const isAdjective = doc.adjectives().length > 0;
+
+        if (isVerb) this.velocity.y += 1; // Verbs fall down
+        if (isAdjective) this.rotationSpeed *= 2; // Adjectives spin faster
+    }
+}
+
+
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const textInput = document.getElementById('textInput');

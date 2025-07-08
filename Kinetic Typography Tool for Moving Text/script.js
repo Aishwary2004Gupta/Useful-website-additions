@@ -51,45 +51,60 @@ class KineticWordAdvanced extends KineticWord {
 
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-const textInput = document.getElementById('textInput');
-const generateBtn = document.getElementById('generateBtn');
 
-// Set canvas size
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-let words = [];
-
-function generateKineticText() {
-    const inputText = textInput.value;
-    const splitWords = inputText.split(' ').filter(Boolean);
-    words = [];
-
-    // Use KineticWordAdvanced for each word
-    splitWords.forEach((word, i) => {
-        const x = Math.random() * canvas.width;
-        const y = Math.random() * canvas.height;
-        words.push(new KineticWordAdvanced(word, x, y));
-    });
-}
-
-function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    words.forEach(word => {
-        word.update();
-        word.draw();
-    });
-
-    requestAnimationFrame(animate);
-}
-
-// Event listeners
-generateBtn.addEventListener('click', generateKineticText);
-window.addEventListener('resize', () => {
+// Responsive canvas
+function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-});
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
 
-// Start animation
-animate();
+// Wave Kinetic Typography
+const phrase = "HELLO WORLD";
+const baseFontSize = 64;
+const amplitude = 40;
+const waveLength = 180;
+const speed = 2;
+const letterSpacing = 16;
+
+class WaveLetter {
+    constructor(char, index, total) {
+        this.char = char;
+        this.index = index;
+        this.total = total;
+        this.baseX = (canvas.width / 2) - ((total - 1) * (baseFontSize + letterSpacing)) / 2 + index * (baseFontSize + letterSpacing);
+        this.baseY = canvas.height / 2;
+        this.color = `hsl(${(index / total) * 360}, 80%, 60%)`;
+    }
+    draw(time) {
+        const phase = (this.index / this.total) * Math.PI * 2;
+        const y = this.baseY + Math.sin(time / waveLength + phase * speed) * amplitude;
+        ctx.save();
+        ctx.font = `${baseFontSize}px Montserrat, Arial, sans-serif`;
+        ctx.fillStyle = this.color;
+        ctx.shadowColor = "#38bdf8";
+        ctx.shadowBlur = 16;
+        ctx.textBaseline = "middle";
+        ctx.textAlign = "center";
+        ctx.fillText(this.char, this.baseX, y);
+        ctx.restore();
+    }
+}
+
+let letters = [];
+function setupWaveLetters() {
+    letters = [];
+    for (let i = 0; i < phrase.length; i++) {
+        letters.push(new WaveLetter(phrase[i], i, phrase.length));
+    }
+}
+setupWaveLetters();
+window.addEventListener('resize', setupWaveLetters);
+
+function animateWave(time = 0) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    letters.forEach(letter => letter.draw(time));
+    requestAnimationFrame(animateWave);
+}
+animateWave();

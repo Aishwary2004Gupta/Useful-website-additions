@@ -71,31 +71,6 @@ body {
     }
 }
 
-@keyframes wave {
-    0%   { transform: translateY(0) scale(0.9) rotateX(90deg);}
-    10%  { transform: translateY(-10px) scale(1.0) rotateX(60deg);}
-    20%  { transform: translateY(-20px) scale(1.05) rotateX(30deg);}
-    30%  { transform: translateY(-25px) scale(1.08) rotateX(0);}
-    40%  { transform: translateY(-20px) scale(1.05) rotateX(-30deg);}
-    50%  { transform: translateY(-10px) scale(1.0) rotateX(-60deg);}
-    60%  { transform: translateY(0) scale(0.9) rotateX(-90deg);}
-    100% { transform: translateY(0) scale(0.9) rotateX(90deg);}
-}
-
-@keyframes waveX {
-    0%   { transform: translateX(0) scale(0.9);}
-    10%  { transform: translateX(20px) scale(1.0);}
-    20%  { transform: translateX(40px) scale(1.05);}
-    30%  { transform: translateX(50px) scale(1.08);}
-    40%  { transform: translateX(40px) scale(1.05);}
-    50%  { transform: translateX(20px) scale(1.0);}
-    60%  { transform: translateX(0) scale(0.9);}
-    70%  { transform: translateX(-20px) scale(1.0);}
-    80%  { transform: translateX(-40px) scale(1.05);}
-    90%  { transform: translateX(-50px) scale(1.08);}
-    100% { transform: translateX(0) scale(0.9);}
-}
-
 .wheel {
     position: relative;
 }
@@ -111,7 +86,7 @@ body {
 .line p {
     opacity: 0;
     backface-visibility: hidden;
-    animation: 3s infinite forwards linear rotate, 2.5s infinite ease-in-out waveX;
+    animation: 3s infinite forwards linear rotate;
 }
 
 .line:nth-child(2),

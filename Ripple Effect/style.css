@@ -45,3 +45,13 @@ button:hover span {
     height: 120%;
     transition: .4s;
 }
+
+button span:nth-child(1) {
+    transition-delay: .25s;
+    left: 0;
+}
+
+button span:nth-child(2) {
+    transition-delay: .2s;
+    left: 20px;
+}

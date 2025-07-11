@@ -23,5 +23,25 @@ button {
     cursor: pointer;
     outline: inherit;
 
-    
+    width: 220px;
+    height: 80px;
+    position: relative;
+    margin-bottom: 60px;
+    transition: transform 0.3s ease-in-out;
+}
+
+button span {
+    display: block;
+    width: 20px;
+    height: 100%;
+    top: 50%;
+    transform: translate(0, -50%);
+    position: absolute;
+    background: blue;
+    translate: .7s;
+}
+
+button:hover span {
+    height: 120%;
+    transition: .4s;
 }

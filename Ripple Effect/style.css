@@ -42,12 +42,12 @@ button span {
     transform: translate(0, -50%);
     position: absolute;
     background: blue;
-    translate: .7s;
+    translate: .7s cubic-bezier(0, 2, 0.7, 2);
 }
 
 button:hover span {
     height: 120%;
-    transition: .4s;
+    transition: .4s cubic-bezier(0, 2, 0.7, 2);
 }
 
 button span:nth-child(1) {

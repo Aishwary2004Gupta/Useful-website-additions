@@ -10,6 +10,7 @@
     height: auto;
     position: relative;
     margin: 70px auto;
+    filter: url(#ripple-effect);
     /* display: flex;
     flex-direction: column;
     justify-content: center;

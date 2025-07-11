@@ -6,7 +6,7 @@
 
 .container {
     /* position: relative; */
-    width: 220%;
+    width: 220px;
     height: auto;
     position: relative;
     margin: 70px auto;
@@ -93,4 +93,16 @@ button span:nth-child(10) {
 button span:nth-child(11) {
     transition-delay: .25s;
     left: 200px;
+}
+
+p {
+    color: aliceblue;
+    font-size: 12px;
+    z-index: 10;
+    position: relative;
+    transition: .5s;
+}
+
+button:hover p {
+    color: grey;
 }

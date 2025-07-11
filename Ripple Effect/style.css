@@ -55,3 +55,39 @@ button span:nth-child(2) {
     transition-delay: .2s;
     left: 20px;
 }
+button span:nth-child(3) {
+    transition-delay: .15s;
+    left: 40px;
+}
+button span:nth-child(4) {
+    transition-delay: .1s;
+    left: 60px;
+}
+button span:nth-child(5) {
+    transition-delay: .05s;
+    left: 80px;
+}
+button span:nth-child(6) {
+    transition-delay: .0s;
+    left: 100px;
+}
+button span:nth-child(7) {
+    transition-delay: .05s;
+    left: 80px;
+}
+button span:nth-child(8) {
+    transition-delay: .1s;
+    left: 60px;
+}
+button span:nth-child(9) {
+    transition-delay: .15s;
+    left: 40px;
+}
+button span:nth-child(10) {
+    transition-delay: .2s;
+    left: 20px;
+}
+button span:nth-child(11) {
+    transition-delay: .25s;
+    left: 0px;
+}

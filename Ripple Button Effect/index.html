@@ -83,7 +83,7 @@
     <svg>
       <defs>
         <filter id="ripple-effect">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+          <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" id="svg-blur" />
           <feColorMatrix
             in="blur"
             type="matrix"
@@ -92,6 +92,7 @@
                      0 0 1 0 0
                      0 0 0 100 -15"
             result="color"
+            id="svg-matrix"
           />
           <feBlend
             in="SourceGraphic"
@@ -102,5 +103,151 @@
         </filter>
       </defs>
     </svg>
+
+    <div class="config-panel">
+      <div class="config-header">config <span class="config-icon">⦙</span></div>
+      <!-- <div class="config-group">
+        <label><span>debug</span><input type="checkbox" id="debugToggle"></label>
+        <label><span>top</span><input type="checkbox" id="topToggle"></label>
+        <label><span>mode</span>
+          <select id="modeSelect">
+            <option value="bubble">bubble</option>
+            <option value="ripple">ripple</option>
+            <option value="wave">wave</option>
+          </select>
+        </label>
+        <label><span>theme</span>
+          <select id="themeSelect">
+            <option value="system">system</option>
+            <option value="dark">dark</option>
+            <option value="light">light</option>
+          </select>
+        </label>
+      </div> -->
+      <div class="config-group">
+        <label><span>Ripple Color</span><input type="color" id="rippleColor" value="#2196f3"></label>
+        <label><span>Border Radius</span><input type="range" id="borderRadius" min="0" max="40" value="16"></label>
+        <label><span>Blur</span><input type="range" id="blurControl" min="0" max="30" value="10"></label>
+        <!-- <label><span>Matrix (last)</span><input type="range" id="matrixControl" min="-50" max="50" value="-15"></label> -->
+      </div>
+      <div class="config-footer">settings</div>
+    </div>
+
+    <style>
+      .config-panel {
+        position: fixed;
+        top: 32px;
+        right: 32px;
+        width: 220px;
+        background: #23242a;
+        color: #ccc;
+        border-radius: 12px;
+        box-shadow: 0 2px 16px 0 rgba(0,0,0,0.18);
+        font-family: 'Segoe UI', Arial, sans-serif;
+        z-index: 999;
+        padding: 0;
+        overflow: hidden;
+      }
+      .config-header {
+        background: #2c2d33;
+        color: #ccc;
+        font-size: 1.1em;
+        padding: 8px 16px 6px 16px;
+        border-radius: 12px 12px 0 0;
+        font-weight: 500;
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .config-icon {
+        font-size: 1.1em;
+        opacity: 0.5;
+      }
+      .config-group {
+        padding: 10px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .config-group label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.98em;
+        gap: 8px;
+      }
+      .config-group input[type="range"] {
+        width: 90px;
+      }
+      .config-group input[type="color"] {
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: none;
+        border-radius: 6px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+      }
+      .config-footer {
+        background: #23242a;
+        color: #888;
+        font-size: 0.95em;
+        padding: 8px 16px 10px 16px;
+        border-radius: 0 0 12px 12px;
+        letter-spacing: 1px;
+      }
+      .config-panel select, .config-panel input[type="text"] {
+        background: #2c2d33;
+        color: #ccc;
+        border-radius: 6px;
+        border: none;
+        padding: 2px 8px;
+        font-size: 1em;
+      }
+      .config-panel input[type="checkbox"] {
+        accent-color: #2196f3;
+        width: 18px;
+        height: 18px;
+      }
+    </style>
+    <script>
+      // Ripple color control
+      document.getElementById('rippleColor').addEventListener('input', function() {
+        document.querySelectorAll('button span').forEach(span => {
+          span.style.background = this.value;
+        });
+      });
+      // Border radius control
+      document.getElementById('borderRadius').addEventListener('input', function() {
+        document.querySelectorAll('button').forEach(btn => {
+          btn.style.borderRadius = this.value + 'px';
+        });
+      });
+      // Blur control
+      document.getElementById('blurControl').addEventListener('input', function() {
+        document.getElementById('svg-blur').setAttribute('stdDeviation', this.value);
+      });
+      // Matrix control
+      document.getElementById('matrixControl').addEventListener('input', function() {
+        let matrix = document.getElementById('svg-matrix').getAttribute('values').split(/\s+/);
+        matrix[19] = this.value;
+        document.getElementById('svg-matrix').setAttribute('values', matrix.join(' '));
+      });
+      // Mode control (for demo, just logs)
+      document.getElementById('modeSelect').addEventListener('change', function() {
+        console.log('Mode:', this.value);
+      });
+      // Theme control (for demo, just logs)
+      document.getElementById('themeSelect').addEventListener('change', function() {
+        console.log('Theme:', this.value);
+      });
+      // Debug and Top toggles (for demo, just logs)
+      document.getElementById('debugToggle').addEventListener('change', function() {
+        console.log('Debug:', this.checked);
+      });
+      document.getElementById('topToggle').addEventListener('change', function() {
+        console.log('Top:', this.checked);
+      });
+    </script>
   </body>
 </html>

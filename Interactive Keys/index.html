@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>3D Keycaps</title>
+  <style>
+    body { margin: 0; background: #0e0e0e; overflow: hidden; }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r148/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/examples/js/loaders/FontLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/examples/js/geometries/TextGeometry.js"></script>
+  <script>
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color('#0e0e0e');
+
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 100);
+    camera.position.set(0, 5, 10);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    const light = new THREE.PointLight(0xffffff, 1.5);
+    light.position.set(10, 15, 10);
+    scene.add(light);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+
+    // Key creation function
+    const createKey = (text, color, position) => {
+      const geometry = new THREE.BoxGeometry(2, 1, 2);
+      const material = new THREE.MeshStandardMaterial({ color, metalness: 0.4, roughness: 0.3 });
+      const key = new THREE.Mesh(geometry, material);
+      key.position.set(...position);
+      scene.add(key);
+
+      // Add text
+      const loader = new THREE.FontLoader();
+      loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
+        const textGeo = new THREE.TextGeometry(text, {
+          font,
+          size: 0.3,
+          height: 0.05,
+        });
+        const textMat = new THREE.MeshStandardMaterial({ color: 'white' });
+        const textMesh = new THREE.Mesh(textGeo, textMat);
+        textGeo.center();
+        textMesh.position.set(position[0], position[1] + 0.6, position[2]);
+        scene.add(textMesh);
+      });
+    };
+
+    // Create base
+    const baseGeo = new THREE.BoxGeometry(6, 0.3, 5);
+    const baseMat = new THREE.MeshStandardMaterial({ color: '#111111', metalness: 0.8, roughness: 0.2 });
+    const base = new THREE.Mesh(baseGeo, baseMat);
+    base.position.y = -0.5;
+    scene.add(base);
+
+    // Add keycaps
+    createKey('Resend', '#1c1c1c', [0, 0, 0]);
+    createKey('YC', '#ff7f2a', [-1.5, 1, -1.5]);
+    createKey('W23', '#dddddd', [1.5, 1, -1.5]);
+
+    const animate = () => {
+      requestAnimationFrame(animate);
+      renderer.render(scene, camera);
+    };
+    animate();
+  </script>
+</body>
+</html>

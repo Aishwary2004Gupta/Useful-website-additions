@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>3D Keycaps</title>
   <style>
     body { margin: 0; background: #0e0e0e; overflow: hidden; }
@@ -10,12 +10,11 @@
 </head>
 <body>
 
-<!-- ✅ Load Three.js FIRST -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.148.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.148.0/examples/js/loaders/FontLoader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.148.0/examples/js/geometries/TextGeometry.js"></script>
+<!-- ✅ Load compatible versions -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FontLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/geometries/TextGeometry.js"></script>
 
-<!-- ✅ Then run your script -->
 <script>
   const scene = new THREE.Scene();
   scene.background = new THREE.Color('#0e0e0e');
@@ -33,6 +32,18 @@
   scene.add(light);
   scene.add(new THREE.AmbientLight(0xffffff, 0.4));
 
+  const loader = new THREE.FontLoader();
+  let loadedFont = null;
+
+  loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+    loadedFont = font;
+
+    // Create all keys after font is loaded
+    createKey('Resend', '#1c1c1c', [0, 0, 0]);
+    createKey('YC', '#ff7f2a', [-1.5, 1, -1.5]);
+    createKey('W23', '#dddddd', [1.5, 1, -1.5]);
+  });
+
   const createKey = (text, color, position) => {
     const geometry = new THREE.BoxGeometry(2, 1, 2);
     const material = new THREE.MeshStandardMaterial({ color, metalness: 0.4, roughness: 0.3 });
@@ -40,19 +51,18 @@
     key.position.set(...position);
     scene.add(key);
 
-    const loader = new THREE.FontLoader();
-    loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
+    if (loadedFont) {
       const textGeo = new THREE.TextGeometry(text, {
-        font,
+        font: loadedFont,
         size: 0.3,
         height: 0.05,
       });
+      textGeo.center();
       const textMat = new THREE.MeshStandardMaterial({ color: 'white' });
       const textMesh = new THREE.Mesh(textGeo, textMat);
-      textGeo.center();
       textMesh.position.set(position[0], position[1] + 0.6, position[2]);
       scene.add(textMesh);
-    });
+    }
   };
 
   const baseGeo = new THREE.BoxGeometry(6, 0.3, 5);
@@ -60,10 +70,6 @@
   const base = new THREE.Mesh(baseGeo, baseMat);
   base.position.y = -0.5;
   scene.add(base);
-
-  createKey('Resend', '#1c1c1c', [0, 0, 0]);
-  createKey('YC', '#ff7f2a', [-1.5, 1, -1.5]);
-  createKey('W23', '#dddddd', [1.5, 1, -1.5]);
 
   const animate = () => {
     requestAnimationFrame(animate);

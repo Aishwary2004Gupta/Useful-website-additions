@@ -1,0 +1,35 @@
+/* Reset & layout */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body, html {
+  height: 100%;
+  background: #000;               /* black background */
+  font-family: sans-serif;
+}
+
+/* Loader wrapper */
+.loader {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* White dot */
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fff;
+
+  /* keyframe loop */
+  animation: pulse 1s ease-in-out infinite;
+}
+
+/* Animation definition */
+@keyframes pulse {
+  0%   { transform: scale(1);   opacity: 1; }
+  50%  { transform: scale(1.8); opacity: 0; }
+  100% { transform: scale(1);   opacity: 1; }
+}

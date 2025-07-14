@@ -1,18 +1,24 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8"/>
   <title>Merci-Michel Loader Clone</title>
-  <link rel="stylesheet" href="loader.css" />
+  <link rel="stylesheet" href="loader.css"/>
 </head>
 <body>
+
   <div class="loader">
-    <span class="dot"></span>
+    <span class="text back">MERCI-MICHEL</span>
+    <span class="text front">MERCI-MICHEL</span>
   </div>
+
+  <!-- optional: hide loader when the page finishes loading -->
   <script>
-  window.addEventListener('load', () => {
-    document.querySelector('.loader').style.display = 'none';
-  });
-</script>
+    window.addEventListener('load', () => {
+      document.querySelector('.loader').style.opacity = 0;
+      setTimeout(() => document.querySelector('.loader').remove(), 400);
+    });
+  </script>
+
 </body>
 </html>

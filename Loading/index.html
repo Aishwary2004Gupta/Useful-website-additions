@@ -36,25 +36,27 @@
 
     /* 4. Short initials (AG) */
     .short{
+      position:fixed;
+      top:50%; left:50%;
+      transform:translate(-50%,-50%) scale(.4);
       opacity:0;
       font-size:10vw;
-      letter-spacing:.02em;
-      transform:scale(.4);
-      transition:opacity .6s ease,transform .6s ease;
+      transition:opacity .6s ease .2s,
+                 top .8s cubic-bezier(.25,.8,.25,1) .6s,
+                 left .8s cubic-bezier(.25,.8,.25,1) .6s,
+                 font-size .8s ease .6s,
+                 transform .8s ease .6s;
     }
 
-    /* 5. Keyframes for fill */
+    /* 5. Keyframes for initial fill */
     @keyframes fill{to{clip-path:inset(0 0 0 0)}}
   </style>
 </head>
 
 <body>
   <div class="loader">
-    <!-- Full name -->
-    <span class="full back">AISHWARY GUPTA</span>
-    <span class="full front">AISHWARY GUPTA</span>
-
-    <!-- Short initials -->
+    <span class="full back">AISHWARY-GUPTA</span>
+    <span class="full front">AISHWARY-GUPTA</span>
     <span class="short">AG</span>
   </div>
 
@@ -69,8 +71,16 @@
 
       // bring AG in
       short.style.opacity = 1;
-      short.style.transform = 'scale(1)';
+      short.style.transform = 'translate(-50%,-50%) scale(1)';
     }, 5000);
+
+    // after another 1 s (total 6 s) move AG to top-right corner
+    setTimeout(()=>{
+      short.style.top    = '1.2rem';
+      short.style.left   = 'calc(100% - 5rem)';
+      short.style.fontSize = '2rem';
+      short.style.transform = 'translate(0,0)';
+    }, 6000);
   </script>
 </body>
 </html>

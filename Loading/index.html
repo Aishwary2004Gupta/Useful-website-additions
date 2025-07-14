@@ -2,69 +2,75 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <title>Merci-Michel Loader Clone</title>
+  <title>AISHWARY-GUPTA → AG Loader</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
   <style>
     /* 1. Reset */
     *{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%;background:#000;font-family:'Inter',sans-serif}
 
-    html,body{height:100%;background:#000}
-
-    /* 2. Centering wrapper */
+    /* 2. Loader wrapper */
     .loader{
       position:fixed;
       inset:0;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-family:'Inter',sans-serif;
-      font-size:10vw;          /* responsive scale */
+      font-size:10vw;
       letter-spacing:.02em;
       white-space:nowrap;
-      transition:opacity .6s ease;
-    }
-
-    /* 3. Two identical layers */
-    .text{
-      position:absolute;
-      top:50%;
-      left:50%;
-      transform:translate(-50%,-50%);
-      line-height:1;
-    }
-
-    /* 4. Dim background */
-    .back{
-      color:#333;
-    }
-
-    /* 5. Bright fill layer, clipped left→right */
-    .front{
       color:#fff;
-      clip-path:inset(0 100% 0 0);   /* start fully hidden */
+    }
+
+    /* 3. Full name layers */
+    .full{
+      position:absolute;
+      transition:opacity .4s ease;
+    }
+    .full.back{color:#333}
+    .full.front{
+      color:#fff;
+      clip-path:inset(0 100% 0 0);
       animation:fill 5s cubic-bezier(.65,.05,.36,1) forwards;
     }
 
-    /* 6. Keyframes */
-    @keyframes fill{
-      to{clip-path:inset(0 0 0 0)}
+    /* 4. Short initials (AG) */
+    .short{
+      opacity:0;
+      font-size:10vw;
+      letter-spacing:.02em;
+      transform:scale(.4);
+      transition:opacity .6s ease,transform .6s ease;
     }
+
+    /* 5. Keyframes for fill */
+    @keyframes fill{to{clip-path:inset(0 0 0 0)}}
   </style>
 </head>
 
 <body>
   <div class="loader">
-    <span class="text back">AISHWARY-GUPTA</span>
-    <span class="text front">AISHWARY-GUPTA</span>
+    <!-- Full name -->
+    <span class="full back">AISHWARY-GUPTA</span>
+    <span class="full front">AISHWARY-GUPTA</span>
+
+    <!-- Short initials -->
+    <span class="short">AG</span>
   </div>
 
   <script>
-    /* Hide loader when the page is ready */
-    window.addEventListener('load',()=>{
-      const l=document.querySelector('.loader');
-      l.style.opacity=1;
-      setTimeout(()=>l.remove(),4490);
-    });
+    const full  = document.querySelectorAll('.full');
+    const short = document.querySelector('.short');
+
+    // 5 s = 5000 ms
+    setTimeout(()=>{
+      // fade out full name
+      full.forEach(el=>el.style.opacity=0);
+
+      // bring AG in
+      short.style.opacity = 1;
+      short.style.transform = 'scale(1)';
+    }, 5000);
   </script>
 </body>
 </html>

@@ -3,22 +3,68 @@
 <head>
   <meta charset="utf-8"/>
   <title>Merci-Michel Loader Clone</title>
-  <link rel="stylesheet" href="loader.css"/>
-</head>
-<body>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* 1. Reset */
+    *{margin:0;padding:0;box-sizing:border-box}
 
+    html,body{height:100%;background:#000}
+
+    /* 2. Centering wrapper */
+    .loader{
+      position:fixed;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-family:'Inter',sans-serif;
+      font-size:10vw;          /* responsive scale */
+      letter-spacing:.02em;
+      white-space:nowrap;
+      transition:opacity .6s ease;
+    }
+
+    /* 3. Two identical layers */
+    .text{
+      position:absolute;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      line-height:1;
+    }
+
+    /* 4. Dim background */
+    .back{
+      color:#333;
+    }
+
+    /* 5. Bright fill layer, clipped left→right */
+    .front{
+      color:#fff;
+      clip-path:inset(0 100% 0 0);   /* start fully hidden */
+      animation:fill 5s cubic-bezier(.65,.05,.36,1) forwards;
+    }
+
+    /* 6. Keyframes */
+    @keyframes fill{
+      to{clip-path:inset(0 0 0 0)}
+    }
+  </style>
+</head>
+
+<body>
   <div class="loader">
-    <span class="text back">MERCI-MICHEL</span>
-    <span class="text front">MERCI-MICHEL</span>
+    <span class="text back">AISHWARY-GUPTA</span>
+    <span class="text front">AISHWARY-GUPTA</span>
   </div>
 
-  <!-- optional: hide loader when the page finishes loading -->
   <script>
-    window.addEventListener('load', () => {
-      document.querySelector('.loader').style.opacity = 0;
-      setTimeout(() => document.querySelector('.loader').remove(), 400);
+    /* Hide loader when the page is ready */
+    window.addEventListener('load',()=>{
+      const l=document.querySelector('.loader');
+      l.style.opacity=1;
+      setTimeout(()=>l.remove(),4490);
     });
   </script>
-
 </body>
 </html>

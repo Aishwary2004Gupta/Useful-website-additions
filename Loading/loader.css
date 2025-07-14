@@ -1,35 +1,45 @@
-/* Reset & layout */
-* { margin: 0; padding: 0; box-sizing: border-box; }
+/* 1. Reset */
+* { margin:0; padding:0; box-sizing:border-box; }
 
 body, html {
-  height: 100%;
-  background: #000;               /* black background */
-  font-family: sans-serif;
+  height:100%;
+  background:#000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family: "Helvetica Neue", Arial, sans-serif;
 }
 
-/* Loader wrapper */
+/* 2. Loader container */
 .loader {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position:relative;
+  font-size:3rem;
+  letter-spacing:.05em;
+  white-space:nowrap;
+  transition:opacity .4s ease;
 }
 
-/* White dot */
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #fff;
-
-  /* keyframe loop */
-  animation: pulse 1s ease-in-out infinite;
+/* 3. Two identical text layers */
+.text {
+  position:absolute;
+  top:0;
+  left:0;
+  line-height:1;
 }
 
-/* Animation definition */
-@keyframes pulse {
-  0%   { transform: scale(1);   opacity: 1; }
-  50%  { transform: scale(1.8); opacity: 0; }
-  100% { transform: scale(1);   opacity: 1; }
+/* 4. Dull background layer */
+.back {
+  color:#333;
+}
+
+/* 5. Bright fill layer, clipped from left to right */
+.front {
+  color:#fff;
+  clip-path:inset(0 100% 0 0); /* start fully hidden */
+  animation: fill 0.1s cubic-bezier(.65,.05,.36,1) forwards;
+}
+
+/* 6. Keyframes that reveal the bright layer */
+@keyframes fill {
+  to { clip-path:inset(0 0 0 0); }
 }

@@ -1,7 +1,45 @@
 import { Pane } from 'https://cdn.skypack.dev/tweakpane@4.0.4'
 import gsap from 'https://cdn.skypack.dev/gsap@3.13.0'
 import Draggable from 'https://cdn.skypack.dev/gsap@3.13.0/Draggable'
-gsap.registerPlugin(Draggable)
+import ScrollTrigger from 'https://cdn.skypack.dev/gsap@3.13.0/ScrollTrigger'
+gsap.registerPlugin(Draggable, ScrollTrigger)
+
+// Handle loading animation
+window.addEventListener('load', () => {
+    // Hide loader after page is fully loaded
+    const loaderWrapper = document.getElementById('loaderWrapper')
+    if (loaderWrapper) {
+        setTimeout(() => {
+            loaderWrapper.style.opacity = '0'
+            loaderWrapper.style.visibility = 'hidden'
+            
+            // Animate header elements after loader is hidden
+            gsap.from('.main-title', {
+                y: -50,
+                opacity: 0,
+                duration: 1,
+                ease: 'power3.out',
+                delay: 0.2
+            })
+            
+            gsap.from('.subtitle', {
+                y: -30,
+                opacity: 0,
+                duration: 1,
+                ease: 'power3.out',
+                delay: 0.4
+            })
+            
+            gsap.from('.effect', {
+                scale: 0.8,
+                opacity: 0,
+                duration: 1.2,
+                ease: 'elastic.out(1, 0.5)',
+                delay: 0.6
+            })
+        }, 1000) // Wait 1 second before hiding loader
+    }
+})
 
 const base = {
     icons: false,
@@ -377,4 +415,276 @@ gsap.set('.effect', {
     top,
     left,
     opacity: 1,
+})
+
+// Theme toggle functionality
+const themeToggle = document.getElementById('themeToggle')
+const sunIcon = document.querySelector('.sun-icon')
+const moonIcon = document.querySelector('.moon-icon')
+
+// Check for saved theme preference or use system preference
+const savedTheme = localStorage.getItem('theme')
+if (savedTheme) {
+    document.documentElement.dataset.theme = savedTheme
+    updateThemeIcons(savedTheme)
+} else {
+    // Use system preference
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    document.documentElement.dataset.theme = prefersDark ? 'dark' : 'light'
+    updateThemeIcons(prefersDark ? 'dark' : 'light')
+}
+
+// Update theme icons based on current theme
+function updateThemeIcons(theme) {
+    if (theme === 'dark') {
+        sunIcon.style.display = 'none'
+        moonIcon.style.display = 'block'
+    } else {
+        sunIcon.style.display = 'block'
+        moonIcon.style.display = 'none'
+    }
+}
+
+// Toggle theme when button is clicked
+themeToggle.addEventListener('click', () => {
+    const currentTheme = document.documentElement.dataset.theme
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark'
+    
+    // Apply smooth transition
+    document.startViewTransition(() => {
+        document.documentElement.dataset.theme = newTheme
+        updateThemeIcons(newTheme)
+        localStorage.setItem('theme', newTheme)
+    })
+    
+    // Animate the toggle button
+    gsap.to(themeToggle, {
+        rotate: '+=360',
+        duration: 0.6,
+        ease: 'back.out(1.7)'
+    })
+})
+
+// Add scroll animation for sections
+const sections = document.querySelectorAll('section')
+gsap.from(sections, {
+    y: 50,
+    opacity: 0,
+    duration: 0.8,
+    stagger: 0.2,
+    ease: 'power2.out',
+    scrollTrigger: {
+        trigger: 'main',
+        start: 'top 80%',
+        toggleActions: 'play none none none'
+    }
+})
+
+// Scroll to top button functionality
+const scrollTopButton = document.getElementById('scrollTop')
+
+// Show button when user scrolls down 300px from the top
+window.addEventListener('scroll', () => {
+    if (window.pageYOffset > 300) {
+        scrollTopButton.classList.add('visible')
+    } else {
+        scrollTopButton.classList.remove('visible')
+    }
+})
+
+// Scroll to top when button is clicked
+scrollTopButton.addEventListener('click', () => {
+    // Smooth scroll to top
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    })
+    
+    // Add a small animation to the button
+    gsap.to(scrollTopButton, {
+        scale: 0.9,
+        duration: 0.1,
+        yoyo: true,
+        repeat: 1
+    })
+})
+
+// CTA Buttons functionality
+const exploreButton = document.getElementById('exploreButton')
+const resetButton = document.getElementById('resetButton')
+
+// Explore button scrolls to the top and shows the control panel
+exploreButton.addEventListener('click', () => {
+    // Scroll to the top with animation
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    })
+    
+    // Show the control panel by expanding it
+    setTimeout(() => {
+        ctrl.expanded = true
+        
+        // Highlight the effect with a pulse animation
+        gsap.to('.effect', {
+            scale: 1.05,
+            duration: 0.3,
+            yoyo: true,
+            repeat: 1,
+            ease: 'power2.inOut'
+        })
+    }, 800)
+})
+
+// Reset button resets all settings to default
+resetButton.addEventListener('click', () => {
+    // Reset to bubble preset
+    config.preset = 'bubble'
+    document.documentElement.dataset.mode = 'bubble'
+    
+    // Apply the bubble preset values
+    const values = presets.bubble
+    const morph = gsap.timeline({
+        onUpdate: () => {
+            ctrl.refresh()
+        }
+    })
+    
+    for (const [key, value] of Object.entries(values)) {
+        morph.to(
+            config,
+            {
+                [key]: value
+            },
+            0
+        )
+    }
+    
+    // Show success message
+    const successMessage = document.createElement('div')
+    successMessage.textContent = 'Settings reset successfully!'
+    successMessage.style.position = 'fixed'
+    successMessage.style.bottom = '20px'
+    successMessage.style.left = '50%'
+    successMessage.style.transform = 'translateX(-50%)'
+    successMessage.style.padding = '10px 20px'
+    successMessage.style.backgroundColor = 'var(--primary-color)'
+    successMessage.style.color = 'white'
+    successMessage.style.borderRadius = '50px'
+    successMessage.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.2)'
+    successMessage.style.zIndex = '9999'
+    document.body.appendChild(successMessage)
+    
+    // Remove the message after 3 seconds
+    setTimeout(() => {
+        gsap.to(successMessage, {
+            opacity: 0,
+            y: 20,
+            duration: 0.5,
+            onComplete: () => {
+                document.body.removeChild(successMessage)
+            }
+        })
+    }, 3000)
+})
+
+// Add image click functionality to open in modal
+const imageContainers = document.querySelectorAll('.image-container')
+imageContainers.forEach(container => {
+    container.addEventListener('click', () => {
+        const img = container.querySelector('img')
+        const overlay = container.querySelector('.image-overlay')
+        const title = overlay.textContent
+        
+        // Create modal
+        const modal = document.createElement('div')
+        modal.classList.add('image-modal')
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h3>${title}</h3>
+                <img src="${img.src}" alt="${img.alt}">
+            </div>
+        `
+        document.body.appendChild(modal)
+        
+        // Add modal styles dynamically
+        const style = document.createElement('style')
+        style.textContent = `
+            .image-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+            .modal-content {
+                max-width: 90%;
+                max-height: 90%;
+                background-color: var(--bg-color);
+                padding: 20px;
+                border-radius: 10px;
+                position: relative;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+                overflow: auto;
+            }
+            .modal-content img {
+                max-width: 100%;
+                max-height: 70vh;
+                border-radius: 5px;
+                display: block;
+                margin: 0 auto;
+            }
+            .modal-content h3 {
+                text-align: center;
+                margin-bottom: 15px;
+                color: var(--primary-color);
+            }
+            .close-modal {
+                position: absolute;
+                top: 10px;
+                right: 15px;
+                font-size: 28px;
+                cursor: pointer;
+                color: var(--text-color);
+            }
+            .close-modal:hover {
+                color: var(--primary-color);
+            }
+        `
+        document.head.appendChild(style)
+        
+        // Animation
+        setTimeout(() => {
+            modal.style.opacity = '1'
+        }, 10)
+        
+        // Close modal functionality
+        const closeBtn = modal.querySelector('.close-modal')
+        closeBtn.addEventListener('click', () => {
+            modal.style.opacity = '0'
+            setTimeout(() => {
+                document.body.removeChild(modal)
+                document.head.removeChild(style)
+            }, 300)
+        })
+        
+        // Close on click outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.opacity = '0'
+                setTimeout(() => {
+                    document.body.removeChild(modal)
+                    document.head.removeChild(style)
+                }, 300)
+            }
+        })
+    })
 })

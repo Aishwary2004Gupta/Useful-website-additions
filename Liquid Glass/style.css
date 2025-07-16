@@ -1,340 +1,361 @@
-@import url('https://unpkg.com/normalize.css') layer(normalize);
-@import url('https://fonts.googleapis.com/css2?family=Gloria+Hallelujah&display=swap');
+@import url("https://unpkg.com/normalize.css") layer(normalize);
+@import url("https://fonts.googleapis.com/css2?family=Gloria+Hallelujah&display=swap");
 
 @layer normalize, base, demo;
 
 @layer demo {
-    :root {
-        --content-width: 720px;
-        scrollbar-color: canvasText #0000;
-    }
+  :root {
+    --content-width: 720px;
+    scrollbar-color: canvasText #0000;
+  }
 
-    section p {
-        line-height: 1.5;
-    }
+  section p {
+    line-height: 1.5;
+  }
 
-    .emojis {
-        --font-level: 4;
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-    }
+  .emojis {
+    --font-level: 4;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
 
-    .arrow {
+  .arrow {
+    display: inline-block;
+    opacity: 0.8;
+    position: absolute;
+    font-size: 0.875rem;
+    font-family: "Gloria Hallelujah", cursive;
+    transition: opacity 0.26s ease-out;
+
+    &.arrow--debug {
+      /* Center the arrow text under the lens */
+      left: 10% !important;
+      top: 100px;
+      translate: -130% 0;
+      width: 80px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      span {
         display: inline-block;
-        opacity: 0.8;
-        position: absolute;
+        rotate: -24deg;
+        translate: 0 100%;
+      }
+
+      svg {
+        rotate: 20deg;
+        /* bottom: 130%; */
+        translate: 80% -80%;
+        rotate: -25deg;
+        left: 0%;
+        width: 100%;
+      }
+    }
+  }
+
+  .filter {
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+  }
+
+  :is(header, main) {
+    width: var(--content-width);
+    max-width: calc(100vw - 2rem);
+    margin: 0 auto;
+  }
+
+  section {
+    margin-block: 4rem;
+  }
+
+  .images {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+
+    img {
+      width: 300px;
+    }
+  }
+
+  footer {
+    padding: 1rem;
+    text-align: center;
+    font-size: 0.875rem;
+    opacity: 0.7;
+  }
+
+  header {
+    margin-block: 4rem;
+  }
+
+  header p {
+    --font-level: 2;
+    text-wrap: balance;
+    color: color-mix(in oklch, canvasText, canvas 35%);
+  }
+
+  main {
+    flex: 1;
+
+    img {
+      border-radius: 12px;
+    }
+  }
+
+  .apps {
+    display: grid;
+    grid-template-columns: repeat(4, 80px);
+    gap: 1rem;
+  }
+
+  .app {
+    width: 80px;
+    font-size: 0.875rem;
+    font-weight: 300;
+
+    span {
+      display: block;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    img {
+      width: 80px !important;
+      height: 80px !important;
+      object-fit: contain;
+    }
+  }
+
+  .nav-wrap {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: inherit;
+  }
+
+  [data-icons="true"] .effect nav {
+    opacity: 1;
+  }
+
+  [data-mode="dock"] .effect {
+    backdrop-filter: url(#filter) brightness(1.1) saturate(1.5);
+  }
+
+  .effect nav {
+    width: 100%;
+    height: 100%;
+    flex-wrap: wrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem;
+    opacity: 0;
+    overflow: hidden;
+    border-radius: inherit;
+    transition: opacity 0.26s ease-out;
+    /* display: none; */
+
+    img {
+      width: 80px;
+      aspect-ratio: 1;
+    }
+  }
+
+  .effect {
+    opacity: 0;
+    transition: opacity 0.26s ease-out;
+    height: calc(var(--height) * 1px);
+    width: calc(var(--width) * 1px);
+    border-radius: calc(var(--radius) * 1px);
+    position: fixed;
+    z-index: 999999;
+    background: light-dark(
+      hsl(0 0% 100% / var(--frost, 0)),
+      hsl(0 0% 0% / var(--frost, 0))
+    );
+    backdrop-filter: url(#filter);
+    box-shadow: 0 0 2px 1px
+        light-dark(
+          color-mix(in oklch, canvasText, #0000 85%),
+          color-mix(in oklch, canvasText, #0000 65%)
+        )
+        inset,
+      0 0 10px 4px
+        light-dark(
+          color-mix(in oklch, canvasText, #0000 90%),
+          color-mix(in oklch, canvasText, #0000 85%)
+        )
+        inset,
+      0px 4px 16px rgba(17, 17, 26, 0.05), 0px 8px 24px rgba(17, 17, 26, 0.05),
+      0px 16px 56px rgba(17, 17, 26, 0.05),
+      0px 4px 16px rgba(17, 17, 26, 0.05) inset,
+      0px 8px 24px rgba(17, 17, 26, 0.05) inset,
+      0px 16px 56px rgba(17, 17, 26, 0.05) inset;
+
+    * {
+      pointer-events: none;
+    }
+  }
+
+  .placeholder {
+    width: 336px;
+    height: 96px;
+    max-width: 100%;
+    position: relative;
+    margin-bottom: 200px;
+    /* Center the placeholder horizontally */
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dock-placeholder {
+    width: 336px;
+    height: 96px;
+    border-radius: 16px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+  }
+
+  [data-debug="true"] .displacement-debug {
+    translate: 0 calc(100% + 1rem);
+    scale: 1;
+    opacity: 1;
+  }
+
+  .displacement-debug {
+    pointer-events: none;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    inset: 0;
+    translate: 0 calc(200% + 1rem);
+    scale: 0.8;
+    opacity: 0;
+    transition-property: translate, opacity, scale;
+    transition-duration: 0.26s;
+    transition-timing-function: ease-out;
+    z-index: -1;
+
+    .label {
+      position: absolute;
+      left: 50%;
+      top: calc(100% + 0.2lh);
+
+      span {
+        display: inline-block;
         font-size: 0.875rem;
-        font-family: 'Gloria Hallelujah', cursive;
-        transition: opacity 0.26s ease-out;
+        font-family: "Gloria Hallelujah", cursive;
+        padding: 0.5rem 0.75rem;
+        background: color-mix(in oklch, canvas, #0000 25%);
+        backdrop-filter: blur(4px);
+        border-radius: 6px;
+        white-space: nowrap;
+      }
 
-        &.arrow--debug {
-            /* Center the arrow text under the lens */
-            left: 10% !important;
-            top: 100px;
-            translate: -130% 0;
-            width: 80px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-
-            span {
-                display: inline-block;
-                rotate: -24deg;
-                translate: 0 100%;
-            }
-
-            svg {
-                rotate: 20deg;
-                /* bottom: 130%; */
-                translate: 80% -80%;
-                rotate: -25deg;
-                left: 0%;
-                width: 100%;
-            }
-        }
-    }
-
-    .filter {
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
+      svg {
         position: absolute;
-        inset: 0;
+        filter: drop-shadow(0 2px 10px canvas);
+        right: 100%;
+        rotate: 40deg;
+        translate: 25% 60%;
+        scale: -1 1;
+        width: 40px;
+      }
     }
 
-    :is(header, main) {
-        width: var(--content-width);
-        max-width: calc(100vw - 2rem);
-        margin: 0 auto;
+    .displacement-image {
+      height: 100%;
+      width: 100%;
+      pointer-events: none;
+      border-radius: calc(var(--radius) * 1px);
     }
+  }
 
-    section {
-        margin-block: 4rem;
-    }
-
-    .images {
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
-
-        img {
-            width: 300px;
-        }
-    }
-
-    footer {
-        padding: 1rem;
-        text-align: center;
-        font-size: 0.875rem;
-        opacity: 0.7;
-    }
-
-    header {
-        margin-block: 4rem;
-    }
-
-    header p {
-        --font-level: 2;
-        text-wrap: balance;
-        color: color-mix(in oklch, canvasText, canvas 35%);
-    }
-
-    main {
-        flex: 1;
-
-        img {
-            border-radius: 12px;
-        }
-    }
-
-    .apps {
-        display: grid;
-        grid-template-columns: repeat(4, 80px);
-        gap: 1rem;
-    }
-
-    .app {
-        width: 80px;
-        font-size: 0.875rem;
-        font-weight: 300;
-
-        span {
-            display: block;
-            text-align: center;
-            white-space: nowrap;
-        }
-
-        img {
-            width: 80px !important;
-            height: 80px !important;
-            object-fit: contain;
-        }
-    }
-
-    .nav-wrap {
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        border-radius: inherit;
-    }
-
-    [data-icons='true'] .effect nav {
-        opacity: 1;
-    }
-
-    [data-mode='dock'] .effect {
-        backdrop-filter: url(#filter) brightness(1.1) saturate(1.5);
-    }
-
-    .effect nav {
-        width: 100%;
-        height: 100%;
-        flex-wrap: wrap;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0.4rem;
-        opacity: 0;
-        overflow: hidden;
-        border-radius: inherit;
-        transition: opacity 0.26s ease-out;
-        /* display: none; */
-
-        img {
-            width: 80px;
-            aspect-ratio: 1;
-        }
-    }
-
-    .effect {
-        opacity: 0;
-        transition: opacity 0.26s ease-out;
-        height: calc(var(--height) * 1px);
-        width: calc(var(--width) * 1px);
-        border-radius: calc(var(--radius) * 1px);
-        position: fixed;
-        z-index: 999999;
-        background: light-dark(hsl(0 0% 100% / var(--frost, 0)),
-                hsl(0 0% 0% / var(--frost, 0)));
-        backdrop-filter: url(#filter);
-        box-shadow: 0 0 2px 1px light-dark(color-mix(in oklch, canvasText, #0000 85%),
-                color-mix(in oklch, canvasText, #0000 65%)) inset,
-            0 0 10px 4px light-dark(color-mix(in oklch, canvasText, #0000 90%),
-                color-mix(in oklch, canvasText, #0000 85%)) inset,
-            0px 4px 16px rgba(17, 17, 26, 0.05), 0px 8px 24px rgba(17, 17, 26, 0.05),
-            0px 16px 56px rgba(17, 17, 26, 0.05),
-            0px 4px 16px rgba(17, 17, 26, 0.05) inset,
-            0px 8px 24px rgba(17, 17, 26, 0.05) inset,
-            0px 16px 56px rgba(17, 17, 26, 0.05) inset;
-
-        * {
-            pointer-events: none;
-        }
-    }
-
-    .placeholder {
-        width: 336px;
-        height: 96px;
-        max-width: 100%;
-        position: relative;
-        margin-bottom: 200px;
-        /* Center the placeholder horizontally */
-        left: 50%;
-        transform: translateX(-50%);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .dock-placeholder {
-        width: 336px;
-        height: 96px;
-        border-radius: 16px;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        translate: -50% -50%;
-    }
-
-    [data-debug='true'] .displacement-debug {
-        translate: 0 calc(100% + 1rem);
-        scale: 1;
-        opacity: 1;
-    }
-
-    .displacement-debug {
-        pointer-events: none;
-        height: 100%;
-        width: 100%;
-        position: absolute;
-        inset: 0;
-        translate: 0 calc(200% + 1rem);
-        scale: 0.8;
-        opacity: 0;
-        transition-property: translate, opacity, scale;
-        transition-duration: 0.26s;
-        transition-timing-function: ease-out;
-        z-index: -1;
-
-        .label {
-            position: absolute;
-            left: 50%;
-            top: calc(100% + 0.2lh);
-
-            span {
-                display: inline-block;
-                font-size: 0.875rem;
-                font-family: 'Gloria Hallelujah', cursive;
-                padding: 0.5rem 0.75rem;
-                background: color-mix(in oklch, canvas, #0000 25%);
-                backdrop-filter: blur(4px);
-                border-radius: 6px;
-                white-space: nowrap;
-            }
-
-            svg {
-                position: absolute;
-                filter: drop-shadow(0 2px 10px canvas);
-                right: 100%;
-                rotate: 40deg;
-                translate: 25% 60%;
-                scale: -1 1;
-                width: 40px;
-            }
-        }
-
-        .displacement-image {
-            height: 100%;
-            width: 100%;
-            pointer-events: none;
-            border-radius: calc(var(--radius) * 1px);
-        }
-    }
-
-    h1 {
-        --font-level: 6;
-        line-height: 0.9;
-        margin: 0;
-        margin-bottom: 0.25lh;
-    }
+  h1 {
+    --font-level: 6;
+    line-height: 0.9;
+    margin: 0;
+    margin-bottom: 0.25lh;
+  }
 }
 
 @layer base {
-    :root {
-        --font-size-min: 16;
-        --font-size-max: 20;
-        --font-ratio-min: 1.2;
-        --font-ratio-max: 1.33;
-        --font-width-min: 375;
-        --font-width-max: 1500;
-    }
+  :root {
+    --font-size-min: 16;
+    --font-size-max: 20;
+    --font-ratio-min: 1.2;
+    --font-ratio-max: 1.33;
+    --font-width-min: 375;
+    --font-width-max: 1500;
+  }
 
-    html {
-        color-scheme: light dark;
-    }
+  html {
+    color-scheme: light dark;
+  }
 
-    [data-theme='light'] {
-        color-scheme: light only;
-    }
+  [data-theme="light"] {
+    color-scheme: light only;
+  }
 
-    [data-theme='dark'] {
-        color-scheme: dark only;
-    }
+  [data-theme="dark"] {
+    color-scheme: dark only;
+  }
 
-    :where(.fluid) {
-        --fluid-min: calc(var(--font-size-min) * pow(var(--font-ratio-min), var(--font-level, 0)));
-        --fluid-max: calc(var(--font-size-max) * pow(var(--font-ratio-max), var(--font-level, 0)));
-        --fluid-preferred: calc((var(--fluid-max) - var(--fluid-min)) / (var(--font-width-max) - var(--font-width-min)));
-        --fluid-type: clamp((var(--fluid-min) / 16) * 1rem,
-                ((var(--fluid-min) / 16) * 1rem) - (((var(--fluid-preferred) * var(--font-width-min)) / 16) * 1rem) + (var(--fluid-preferred) * var(--variable-unit, 100vi)),
-                (var(--fluid-max) / 16) * 1rem);
-        font-size: var(--fluid-type);
-    }
+  :where(.fluid) {
+    --fluid-min: calc(
+      var(--font-size-min) * pow(var(--font-ratio-min), var(--font-level, 0))
+    );
+    --fluid-max: calc(
+      var(--font-size-max) * pow(var(--font-ratio-max), var(--font-level, 0))
+    );
+    --fluid-preferred: calc(
+      (var(--fluid-max) - var(--fluid-min)) /
+        (var(--font-width-max) - var(--font-width-min))
+    );
+    --fluid-type: clamp(
+      (var(--fluid-min) / 16) * 1rem,
+      ((var(--fluid-min) / 16) * 1rem) -
+        (((var(--fluid-preferred) * var(--font-width-min)) / 16) * 1rem) +
+        (var(--fluid-preferred) * var(--variable-unit, 100vi)),
+      (var(--fluid-max) / 16) * 1rem
+    );
+    font-size: var(--fluid-type);
+  }
 
-    *,
-    *:after,
-    *:before {
-        box-sizing: border-box;
-    }
+  *,
+  *:after,
+  *:before {
+    box-sizing: border-box;
+  }
 
-    body {
-        background: light-dark(#fff, #000);
-        overflow-x: hidden;
-        min-height: 100vh;
-        font-family: 'SF Pro Text', 'SF Pro Icons', 'AOS Icons', 'Helvetica Neue',
-            Helvetica, Arial, sans-serif, system-ui;
-    }
+  body {
+    background: light-dark(#fff, #000);
+    overflow-x: hidden;
+    min-height: 100vh;
+    font-family: "SF Pro Text", "SF Pro Icons", "AOS Icons", "Helvetica Neue",
+      Helvetica, Arial, sans-serif, system-ui;
+  }
 
-    body::before {
-        content: none !important;
-        /* Remove previous background circles/dots/waves */
-    }
+  body::before {
+    content: none !important;
+    /* Remove previous background circles/dots/waves */
+  }
 
-    /* Starfield background inspired by the provided SCSS, works with theme switching */
-    /* html {
+  /* Starfield background inspired by the provided SCSS, works with theme switching */
+  /* html {
         height: 100%;
         min-height: 100%;
         background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
@@ -343,235 +364,241 @@
         position: relative;
         transition: background 0.5s;
     } */
-    [data-theme='light'] html {
-        background: radial-gradient(ellipse at bottom, #e0e7ff 0%, #f0fdfa 100%);
+  [data-theme="light"] html {
+    background: radial-gradient(ellipse at bottom, #e0e7ff 0%, #f0fdfa 100%);
+  }
+
+  [data-theme="dark"] html {
+    background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+  }
+
+  /* Star layers */
+  #stars,
+  #stars2,
+  #stars3 {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 2000px;
+    display: block;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.9;
+    /* Default: visible on dark backgrounds */
+    mix-blend-mode: lighten;
+  }
+
+  /* Many more stars for a denser field */
+  #stars {
+    width: 1px;
+    height: 1px;
+    background: transparent;
+    box-shadow: 1234px 456px #fff, 234px 1234px #fff, 567px 890px #fff,
+      890px 567px #fff, 345px 678px #fff, 678px 345px #fff, 910px 1112px #fff,
+      1112px 910px #fff, 1357px 2468px #fff, 2468px 1357px #fff,
+      1590px 753px #fff, 753px 1590px #fff, 200px 300px #fff, 400px 500px #fff,
+      600px 700px #fff, 800px 900px #fff, 1000px 1100px #fff, 1200px 1300px #fff,
+      1400px 1500px #fff, 1600px 1700px #fff, 1800px 1900px #fff,
+      1900px 1800px #fff, 1700px 1600px #fff, 1500px 1400px #fff,
+      1300px 1200px #fff, 1100px 1000px #fff, 900px 800px #fff, 700px 600px #fff,
+      500px 400px #fff, 300px 200px #fff, 100px 100px #fff, 1950px 1950px #fff,
+      50px 100px #fff, 100px 50px #fff, 150px 200px #fff, 200px 150px #fff,
+      250px 300px #fff, 300px 250px #fff, 350px 400px #fff, 400px 350px #fff,
+      450px 500px #fff, 500px 450px #fff, 550px 600px #fff, 600px 550px #fff,
+      650px 700px #fff, 700px 650px #fff, 750px 800px #fff, 800px 750px #fff,
+      850px 900px #fff, 900px 850px #fff, 950px 1000px #fff, 1000px 950px #fff,
+      1050px 1100px #fff, 1100px 1050px #fff, 1150px 1200px #fff,
+      1200px 1150px #fff, 1250px 1300px #fff, 1300px 1250px #fff,
+      1350px 1400px #fff, 1400px 1350px #fff, 1450px 1500px #fff,
+      1500px 1450px #fff, 1550px 1600px #fff, 1600px 1550px #fff,
+      1650px 1700px #fff, 1700px 1650px #fff, 1750px 1800px #fff,
+      1800px 1750px #fff, 1850px 1900px #fff, 1900px 1850px #fff,
+      1950px 2000px #fff, 2000px 1950px #fff;
+    animation: animStar 50s linear infinite;
+  }
+
+  #stars:after {
+    content: " ";
+    position: absolute;
+    top: 2000px;
+    width: 1px;
+    height: 1px;
+    background: transparent;
+    box-shadow: 1234px 456px #fff, 234px 1234px #fff, 567px 890px #fff,
+      890px 567px #fff, 345px 678px #fff, 678px 345px #fff, 910px 1112px #fff,
+      1112px 910px #fff, 1357px 2468px #fff, 2468px 1357px #fff,
+      1590px 753px #fff, 753px 1590px #fff, 200px 300px #fff, 400px 500px #fff,
+      600px 700px #fff, 800px 900px #fff, 1000px 1100px #fff, 1200px 1300px #fff,
+      1400px 1500px #fff, 1600px 1700px #fff, 1800px 1900px #fff,
+      1900px 1800px #fff, 1700px 1600px #fff, 1500px 1400px #fff,
+      1300px 1200px #fff, 1100px 1000px #fff, 900px 800px #fff, 700px 600px #fff,
+      500px 400px #fff, 300px 200px #fff, 100px 100px #fff, 1950px 1950px #fff,
+      50px 100px #fff, 100px 50px #fff, 150px 200px #fff, 200px 150px #fff,
+      250px 300px #fff, 300px 250px #fff, 350px 400px #fff, 400px 350px #fff,
+      450px 500px #fff, 500px 450px #fff, 550px 600px #fff, 600px 550px #fff,
+      650px 700px #fff, 700px 650px #fff, 750px 800px #fff, 800px 750px #fff,
+      850px 900px #fff, 900px 850px #fff, 950px 1000px #fff, 1000px 950px #fff,
+      1050px 1100px #fff, 1100px 1050px #fff, 1150px 1200px #fff,
+      1200px 1150px #fff, 1250px 1300px #fff, 1300px 1250px #fff,
+      1350px 1400px #fff, 1400px 1350px #fff, 1450px 1500px #fff,
+      1500px 1450px #fff, 1550px 1600px #fff, 1600px 1550px #fff,
+      1650px 1700px #fff, 1700px 1650px #fff, 1750px 1800px #fff,
+      1800px 1750px #fff, 1850px 1900px #fff, 1900px 1850px #fff,
+      1950px 2000px #fff, 2000px 1950px #fff;
+  }
+
+  #stars2 {
+    width: 2px;
+    height: 2px;
+    background: transparent;
+    box-shadow: 400px 800px #fff, 800px 400px #fff, 1200px 1600px #fff,
+      1600px 1200px #fff, 200px 1400px #fff, 1400px 200px #fff,
+      1700px 600px #fff, 600px 1700px #fff, 300px 1700px #fff, 1700px 300px #fff,
+      100px 1500px #fff, 1500px 100px #fff, 500px 1800px #fff, 1800px 500px #fff,
+      900px 1900px #fff, 1900px 900px #fff, 50px 300px #fff, 300px 50px #fff,
+      700px 1200px #fff, 1200px 700px #fff, 900px 300px #fff, 300px 900px #fff,
+      1500px 400px #fff, 400px 1500px #fff;
+    animation: animStar 100s linear infinite;
+  }
+
+  #stars2:after {
+    content: " ";
+    position: absolute;
+    top: 2000px;
+    width: 2px;
+    height: 2px;
+    background: transparent;
+    box-shadow: 400px 800px #fff, 800px 400px #fff, 1200px 1600px #fff,
+      1600px 1200px #fff, 200px 1400px #fff, 1400px 200px #fff,
+      1700px 600px #fff, 600px 1700px #fff, 300px 1700px #fff, 1700px 300px #fff,
+      100px 1500px #fff, 1500px 100px #fff, 500px 1800px #fff, 1800px 500px #fff,
+      900px 1900px #fff, 1900px 900px #fff, 50px 300px #fff, 300px 50px #fff,
+      700px 1200px #fff, 1200px 700px #fff, 900px 300px #fff, 300px 900px #fff,
+      1500px 400px #fff, 400px 1500px #fff;
+  }
+
+  #stars3 {
+    width: 3px;
+    height: 3px;
+    background: transparent;
+    box-shadow: 100px 1800px #ffffff, 1800px 100px #fff, 900px 1900px #fff,
+      1900px 900px #fff, 500px 500px #fff, 1500px 1500px #fff, 300px 1200px #fff,
+      1200px 300px #fff, 200px 800px #fff, 800px 200px #fff, 600px 1600px #fff,
+      1600px 600px #fff;
+    animation: animStar 150s linear infinite;
+  }
+
+  #stars3:after {
+    content: " ";
+    position: absolute;
+    top: 2000px;
+    width: 3px;
+    height: 3px;
+    background: transparent;
+    box-shadow: 100px 1800px #fff, 1800px 100px #fff, 900px 1900px #fff,
+      1900px 900px #fff, 500px 500px #fff, 1500px 1500px #fff, 300px 1200px #fff,
+      1200px 300px #fff, 200px 800px #fff, 800px 200px #fff, 600px 1600px #fff,
+      1600px 600px #fff;
+  }
+
+  /* Light theme: black stars for visibility */
+  [data-theme="light"] #stars,
+  [data-theme="light"] #stars:after {
+    box-shadow: 1234px 456px #000, 234px 1234px #000, 567px 890px #000,
+      890px 567px #000, 345px 678px #000, 678px 345px #000, 910px 1112px #000,
+      1112px 910px #000, 1357px 2468px #000, 2468px 1357px #000,
+      1590px 753px #000, 753px 1590px #000, 200px 300px #000, 400px 500px #000,
+      600px 700px #000, 800px 900px #000, 1000px 1100px #000, 1200px 1300px #000,
+      1400px 1500px #000, 1600px 1700px #000, 1800px 1900px #000,
+      1900px 1800px #000, 1700px 1600px #000, 1500px 1400px #000,
+      1300px 1200px #000, 1100px 1000px #000, 900px 800px #000, 700px 600px #000,
+      500px 400px #000, 300px 200px #000, 100px 100px #000, 1950px 1950px #000,
+      50px 100px #000, 100px 50px #000, 150px 200px #000, 200px 150px #000,
+      250px 300px #000, 300px 250px #000, 350px 400px #000, 400px 350px #000,
+      450px 500px #000, 500px 450px #000, 550px 600px #000, 600px 550px #000,
+      650px 700px #000, 700px 650px #000, 750px 800px #000, 800px 750px #000,
+      850px 900px #000, 900px 850px #000, 950px 1000px #000, 1000px 950px #000,
+      1050px 1100px #000, 1100px 1050px #000, 1150px 1200px #000,
+      1200px 1150px #000, 1250px 1300px #000, 1300px 1250px #000,
+      1350px 1400px #000, 1400px 1350px #000, 1450px 1500px #000,
+      1500px 1450px #000, 1550px 1600px #000, 1600px 1550px #000,
+      1650px 1700px #000, 1700px 1650px #000, 1750px 1800px #000,
+      1800px 1750px #000, 1850px 1900px #000, 1900px 1850px #000,
+      1950px 2000px #000, 2000px 1950px #000;
+  }
+
+  [data-theme="light"] #stars2,
+  [data-theme="light"] #stars2:after {
+    box-shadow: 400px 800px #000, 800px 400px #000, 1200px 1600px #000,
+      1600px 1200px #000, 200px 1400px #000, 1400px 200px #000,
+      1700px 600px #000, 600px 1700px #000, 300px 1700px #000, 1700px 300px #000,
+      100px 1500px #000, 1500px 100px #000, 500px 1800px #000, 1800px 500px #000,
+      900px 1900px #000, 1900px 900px #000, 50px 300px #000, 300px 50px #000,
+      700px 1200px #000, 1200px 700px #000, 900px 300px #000, 300px 900px #000,
+      1500px 400px #000, 400px 1500px #000;
+  }
+
+  [data-theme="light"] #stars3,
+  [data-theme="light"] #stars3:after {
+    box-shadow: 100px 1800px #000, 1800px 100px #000, 900px 1900px #000,
+      1900px 900px #000, 500px 500px #000, 1500px 1500px #000, 300px 1200px #000,
+      1200px 300px #000, 200px 800px #000, 800px 200px #000, 600px 1600px #000,
+      1600px 600px #000;
+  }
+
+  @keyframes animStar {
+    from {
+      transform: translateY(0px);
     }
 
-    [data-theme='dark'] html {
-        background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+    to {
+      transform: translateY(-2000px);
     }
+  }
 
-    /* Star layers */
-    #stars,
-    #stars2,
-    #stars3 {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 2000px;
-        display: block;
-        pointer-events: none;
-        z-index: 0;
-        opacity: 0.9;
-        /* Default: visible on dark backgrounds */
-        mix-blend-mode: lighten;
-    }
+  .bear-link {
+    color: canvasText;
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    width: 48px;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    opacity: 0.8;
+  }
 
-    /* Many more stars for a denser field */
-    #stars {
-        width: 1px;
-        height: 1px;
-        background: transparent;
-        box-shadow:
-            1234px 456px #FFF, 234px 1234px #FFF, 567px 890px #FFF, 890px 567px #FFF,
-            345px 678px #FFF, 678px 345px #FFF, 910px 1112px #FFF, 1112px 910px #FFF,
-            1357px 2468px #FFF, 2468px 1357px #FFF, 1590px 753px #FFF, 753px 1590px #FFF,
-            200px 300px #FFF, 400px 500px #FFF, 600px 700px #FFF, 800px 900px #FFF,
-            1000px 1100px #FFF, 1200px 1300px #FFF, 1400px 1500px #FFF, 1600px 1700px #FFF,
-            1800px 1900px #FFF, 1900px 1800px #FFF, 1700px 1600px #FFF, 1500px 1400px #FFF,
-            1300px 1200px #FFF, 1100px 1000px #FFF, 900px 800px #FFF, 700px 600px #FFF,
-            500px 400px #FFF, 300px 200px #FFF, 100px 100px #FFF, 1950px 1950px #FFF,
-            50px 100px #FFF, 100px 50px #FFF, 150px 200px #FFF, 200px 150px #FFF,
-            250px 300px #FFF, 300px 250px #FFF, 350px 400px #FFF, 400px 350px #FFF,
-            450px 500px #FFF, 500px 450px #FFF, 550px 600px #FFF, 600px 550px #FFF,
-            650px 700px #FFF, 700px 650px #FFF, 750px 800px #FFF, 800px 750px #FFF,
-            850px 900px #FFF, 900px 850px #FFF, 950px 1000px #FFF, 1000px 950px #FFF,
-            1050px 1100px #FFF, 1100px 1050px #FFF, 1150px 1200px #FFF, 1200px 1150px #FFF,
-            1250px 1300px #FFF, 1300px 1250px #FFF, 1350px 1400px #FFF, 1400px 1350px #FFF,
-            1450px 1500px #FFF, 1500px 1450px #FFF, 1550px 1600px #FFF, 1600px 1550px #FFF,
-            1650px 1700px #FFF, 1700px 1650px #FFF, 1750px 1800px #FFF, 1800px 1750px #FFF,
-            1850px 1900px #FFF, 1900px 1850px #FFF, 1950px 2000px #FFF, 2000px 1950px #FFF;
-        animation: animStar 50s linear infinite;
-    }
+  :where(.x-link, .bear-link):is(:hover, :focus-visible) {
+    opacity: 1;
+  }
 
-    #stars:after {
-        content: " ";
-        position: absolute;
-        top: 2000px;
-        width: 1px;
-        height: 1px;
-        background: transparent;
-        box-shadow:
-            1234px 456px #FFF, 234px 1234px #FFF, 567px 890px #FFF, 890px 567px #FFF,
-            345px 678px #FFF, 678px 345px #FFF, 910px 1112px #FFF, 1112px 910px #FFF,
-            1357px 2468px #FFF, 2468px 1357px #FFF, 1590px 753px #FFF, 753px 1590px #FFF,
-            200px 300px #FFF, 400px 500px #FFF, 600px 700px #FFF, 800px 900px #FFF,
-            1000px 1100px #FFF, 1200px 1300px #FFF, 1400px 1500px #FFF, 1600px 1700px #FFF,
-            1800px 1900px #FFF, 1900px 1800px #FFF, 1700px 1600px #FFF, 1500px 1400px #FFF,
-            1300px 1200px #FFF, 1100px 1000px #FFF, 900px 800px #FFF, 700px 600px #FFF,
-            500px 400px #FFF, 300px 200px #FFF, 100px 100px #FFF, 1950px 1950px #FFF,
-            50px 100px #FFF, 100px 50px #FFF, 150px 200px #FFF, 200px 150px #FFF,
-            250px 300px #FFF, 300px 250px #FFF, 350px 400px #FFF, 400px 350px #FFF,
-            450px 500px #FFF, 500px 450px #FFF, 550px 600px #FFF, 600px 550px #FFF,
-            650px 700px #FFF, 700px 650px #FFF, 750px 800px #FFF, 800px 750px #FFF,
-            850px 900px #FFF, 900px 850px #FFF, 950px 1000px #FFF, 1000px 950px #FFF,
-            1050px 1100px #FFF, 1100px 1050px #FFF, 1150px 1200px #FFF, 1200px 1150px #FFF,
-            1250px 1300px #FFF, 1300px 1250px #FFF, 1350px 1400px #FFF, 1400px 1350px #FFF,
-            1450px 1500px #FFF, 1500px 1450px #FFF, 1550px 1600px #FFF, 1600px 1550px #FFF,
-            1650px 1700px #FFF, 1700px 1650px #FFF, 1750px 1800px #FFF, 1800px 1750px #FFF,
-            1850px 1900px #FFF, 1900px 1850px #FFF, 1950px 2000px #FFF, 2000px 1950px #FFF;
-    }
+  .bear-link svg {
+    width: 75%;
+  }
 
-    #stars2 {
-        width: 2px;
-        height: 2px;
-        background: transparent;
-        box-shadow:
-            400px 800px #FFF, 800px 400px #FFF, 1200px 1600px #FFF, 1600px 1200px #FFF,
-            200px 1400px #FFF, 1400px 200px #FFF, 1700px 600px #FFF, 600px 1700px #FFF,
-            300px 1700px #FFF, 1700px 300px #FFF, 100px 1500px #FFF, 1500px 100px #FFF,
-            500px 1800px #FFF, 1800px 500px #FFF, 900px 1900px #FFF, 1900px 900px #FFF,
-            50px 300px #FFF, 300px 50px #FFF, 700px 1200px #FFF, 1200px 700px #FFF,
-            900px 300px #FFF, 300px 900px #FFF, 1500px 400px #FFF, 400px 1500px #FFF;
-        animation: animStar 100s linear infinite;
-    }
-
-    #stars2:after {
-        content: " ";
-        position: absolute;
-        top: 2000px;
-        width: 2px;
-        height: 2px;
-        background: transparent;
-        box-shadow:
-            400px 800px #FFF, 800px 400px #FFF, 1200px 1600px #FFF, 1600px 1200px #FFF,
-            200px 1400px #FFF, 1400px 200px #FFF, 1700px 600px #FFF, 600px 1700px #FFF,
-            300px 1700px #FFF, 1700px 300px #FFF, 100px 1500px #FFF, 1500px 100px #FFF,
-            500px 1800px #FFF, 1800px 500px #FFF, 900px 1900px #FFF, 1900px 900px #FFF,
-            50px 300px #FFF, 300px 50px #FFF, 700px 1200px #FFF, 1200px 700px #FFF,
-            900px 300px #FFF, 300px 900px #FFF, 1500px 400px #FFF, 400px 1500px #FFF;
-    }
-
-    #stars3 {
-        width: 3px;
-        height: 3px;
-        background: transparent;
-        box-shadow:
-            100px 1800px #ffffff, 1800px 100px #FFF, 900px 1900px #FFF, 1900px 900px #FFF,
-            500px 500px #FFF, 1500px 1500px #FFF, 300px 1200px #FFF, 1200px 300px #FFF,
-            200px 800px #FFF, 800px 200px #FFF, 600px 1600px #FFF, 1600px 600px #FFF;
-        animation: animStar 150s linear infinite;
-    }
-
-    #stars3:after {
-        content: " ";
-        position: absolute;
-        top: 2000px;
-        width: 3px;
-        height: 3px;
-        background: transparent;
-        box-shadow:
-            100px 1800px #FFF, 1800px 100px #FFF, 900px 1900px #FFF, 1900px 900px #FFF,
-            500px 500px #FFF, 1500px 1500px #FFF, 300px 1200px #FFF, 1200px 300px #FFF,
-            200px 800px #FFF, 800px 200px #FFF, 600px 1600px #FFF, 1600px 600px #FFF;
-    }
-
-    /* Light theme: black stars for visibility */
-    [data-theme='light'] #stars,
-    [data-theme='light'] #stars:after {
-        box-shadow:
-            1234px 456px #000, 234px 1234px #000, 567px 890px #000, 890px 567px #000,
-            345px 678px #000, 678px 345px #000, 910px 1112px #000, 1112px 910px #000,
-            1357px 2468px #000, 2468px 1357px #000, 1590px 753px #000, 753px 1590px #000,
-            200px 300px #000, 400px 500px #000, 600px 700px #000, 800px 900px #000,
-            1000px 1100px #000, 1200px 1300px #000, 1400px 1500px #000, 1600px 1700px #000,
-            1800px 1900px #000, 1900px 1800px #000, 1700px 1600px #000, 1500px 1400px #000,
-            1300px 1200px #000, 1100px 1000px #000, 900px 800px #000, 700px 600px #000,
-            500px 400px #000, 300px 200px #000, 100px 100px #000, 1950px 1950px #000,
-            50px 100px #000, 100px 50px #000, 150px 200px #000, 200px 150px #000,
-            250px 300px #000, 300px 250px #000, 350px 400px #000, 400px 350px #000,
-            450px 500px #000, 500px 450px #000, 550px 600px #000, 600px 550px #000,
-            650px 700px #000, 700px 650px #000, 750px 800px #000, 800px 750px #000,
-            850px 900px #000, 900px 850px #000, 950px 1000px #000, 1000px 950px #000,
-            1050px 1100px #000, 1100px 1050px #000, 1150px 1200px #000, 1200px 1150px #000,
-            1250px 1300px #000, 1300px 1250px #000, 1350px 1400px #000, 1400px 1350px #000,
-            1450px 1500px #000, 1500px 1450px #000, 1550px 1600px #000, 1600px 1550px #000,
-            1650px 1700px #000, 1700px 1650px #000, 1750px 1800px #000, 1800px 1750px #000,
-            1850px 1900px #000, 1900px 1850px #000, 1950px 2000px #000, 2000px 1950px #000;
-    }
-
-    [data-theme='light'] #stars2,
-    [data-theme='light'] #stars2:after {
-        box-shadow:
-            400px 800px #000, 800px 400px #000, 1200px 1600px #000, 1600px 1200px #000,
-            200px 1400px #000, 1400px 200px #000, 1700px 600px #000, 600px 1700px #000,
-            300px 1700px #000, 1700px 300px #000, 100px 1500px #000, 1500px 100px #000,
-            500px 1800px #000, 1800px 500px #000, 900px 1900px #000, 1900px 900px #000,
-            50px 300px #000, 300px 50px #000, 700px 1200px #000, 1200px 700px #000,
-            900px 300px #000, 300px 900px #000, 1500px 400px #000, 400px 1500px #000;
-    }
-
-    [data-theme='light'] #stars3,
-    [data-theme='light'] #stars3:after {
-        box-shadow:
-            100px 1800px #000, 1800px 100px #000, 900px 1900px #000, 1900px 900px #000,
-            500px 500px #000, 1500px 1500px #000, 300px 1200px #000, 1200px 300px #000,
-            200px 800px #000, 800px 200px #000, 600px 1600px #000, 1600px 600px #000;
-    }
-
-    @keyframes animStar {
-        from {
-            transform: translateY(0px);
-        }
-
-        to {
-            transform: translateY(-2000px);
-        }
-    }
-
-    .bear-link {
-        color: canvasText;
-        position: fixed;
-        top: 1rem;
-        left: 1rem;
-        width: 48px;
-        aspect-ratio: 1;
-        display: grid;
-        place-items: center;
-        opacity: 0.8;
-    }
-
-    :where(.x-link, .bear-link):is(:hover, :focus-visible) {
-        opacity: 1;
-    }
-
-    .bear-link svg {
-        width: 75%;
-    }
-
-    /* Utilities */
-    .sr-only {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        white-space: nowrap;
-        border-width: 0;
-    }
+  /* Utilities */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
 }
 
-[data-top='true'] div.tp-dfwv {
-    top: 8px;
+[data-top="true"] div.tp-dfwv {
+  top: 8px;
 }
 
 div.tp-dfwv {
-    position: fixed;
-    width: 280px;
-    bottom: 8px;
-    top: unset;
-    view-transition-name: pane;
+  position: fixed;
+  width: 280px;
+  bottom: 8px;
+  top: unset;
+  view-transition-name: pane;
 }

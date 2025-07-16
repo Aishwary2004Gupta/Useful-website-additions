@@ -6,40 +6,84 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Liquid Glass Lens</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
+  <meta name="description" content="Liquid Glass Lens - A beautiful UI effect demonstration with customizable glass morphism effects">
   <!-- Add Google Fonts for fancy text -->
   <link
     href="https://fonts.googleapis.com/css2?family=Gloria+Hallelujah&family=Montserrat:wght@400;700&family=Quicksand:wght@400;700&display=swap"
     rel="stylesheet" />
-  <div>
+</head>
+<body>
+    <!-- Loading animation -->
+    <div class="loader-wrapper" id="loaderWrapper">
+        <div class="loader">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </div>
+    
     <div id="stars"></div>
     <div id="stars2"></div>
     <div id="stars3"></div>
-  </div>
   <style>
     .main-title {
       font-family: "Gloria Hallelujah", cursive;
-      font-size: 3rem;
-      color: #2d3748;
+      font-size: 3.5rem;
+      background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
       letter-spacing: 2px;
       margin-bottom: 0.5rem;
+      text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+      position: relative;
+      display: inline-block;
+    }
+
+    .main-title::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+      border-radius: 3px;
     }
 
     .subtitle {
       font-size: 1.25rem;
-      color: #64748b;
+      color: var(--text-color);
       margin-bottom: 2rem;
       font-family: "Quicksand", "Montserrat", Arial, sans-serif;
       font-weight: 700;
       letter-spacing: 1px;
+      opacity: 0.9;
     }
 
     .section-title {
-      font-size: 1.5rem;
-      color: #2563eb;
-      margin-bottom: 1rem;
+      font-size: 1.75rem;
+      color: var(--primary-color);
+      margin-bottom: 1.5rem;
       font-weight: bold;
       font-family: "Montserrat", "Quicksand", Arial, sans-serif;
       letter-spacing: 1px;
+      position: relative;
+      display: inline-block;
+    }
+    
+    .section-title::before {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 40px;
+      height: 3px;
+      background-color: var(--accent-color);
+      border-radius: 3px;
     }
 
     .fluid {
@@ -216,33 +260,98 @@
       </p>
     </section>
     <!-- images -->
-    <section class="images">
-      <img
-        src="https://images.unsplash.com/photo-1595001354022-29103be3b73a?q=80&w=3270&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-        alt="" />
-      <img
-        src="https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?q=80&w=3270&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-        alt="" />
-      <img
-        src="https://images.unsplash.com/photo-1513682121497-80211f36a7d3?q=80&w=3388&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-        alt="" />
-      <img
-        src="https://images.unsplash.com/photo-1516205651411-aef33a44f7c2?q=80&w=2843&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-        alt="" />
-      <img
-        src="https://images.unsplash.com/photo-1505069190533-da1c9af13346?q=80&w=3387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-        alt="" />
-    </section>
     <section>
+      <div class="section-title">Inspiring Gallery</div>
+      <div class="images">
+        <div class="image-container">
+          <img
+            src="https://images.unsplash.com/photo-1595001354022-29103be3b73a?q=80&w=3270&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            alt="Abstract Glass Art" />
+          <div class="image-overlay">Abstract Glass Art</div>
+        </div>
+        <div class="image-container">
+          <img
+            src="https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?q=80&w=3270&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            alt="Modern Architecture" />
+          <div class="image-overlay">Modern Architecture</div>
+        </div>
+        <div class="image-container">
+          <img
+            src="https://images.unsplash.com/photo-1513682121497-80211f36a7d3?q=80&w=3388&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            alt="Liquid Reflections" />
+          <div class="image-overlay">Liquid Reflections</div>
+        </div>
+        <div class="image-container">
+          <img
+            src="https://images.unsplash.com/photo-1516205651411-aef33a44f7c2?q=80&w=2843&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            alt="Crystal Formations" />
+          <div class="image-overlay">Crystal Formations</div>
+        </div>
+        <div class="image-container">
+          <img
+            src="https://images.unsplash.com/photo-1505069190533-da1c9af13346?q=80&w=3387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            alt="Transparent Textures" />
+          <div class="image-overlay">Transparent Textures</div>
+        </div>
+        <div class="image-container">
+          <img
+            src="https://images.unsplash.com/photo-1557682250-81f3414fbd49?q=80&w=3329&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            alt="Gradient Patterns" />
+          <div class="image-overlay">Gradient Patterns</div>
+        </div>
+      </div>
+    </section>
+    <section class="cta-section">
       <div class="section-title">Ready to Explore?</div>
       <p class="fluid">
         Dive in and experiment with SVG filters.<br />
         For best results, use a Chromium-based browser.
       </p>
+      <div class="cta-buttons">
+        <button class="cta-button primary" id="exploreButton">Start Exploring</button>
+        <button class="cta-button secondary" id="resetButton">Reset Settings</button>
+      </div>
+      <div class="features-grid">
+        <div class="feature">
+          <div class="feature-icon">🎨</div>
+          <h3>Customizable</h3>
+          <p>Adjust settings to create your perfect glass effect</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">⚡</div>
+          <h3>Performant</h3>
+          <p>Optimized for smooth interactions on all devices</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🔍</div>
+          <h3>Interactive</h3>
+          <p>Engage with the lens to see real-time changes</p>
+        </div>
+      </div>
     </section>
   </main>
   <!-- Footer and bear-link at the bottom -->
-  <footer>Made by aish2004gupta &copy; 2025</footer>
+  <footer>
+    <p>Made with ❤️ by aish2004gupta &copy; 2025</p>
+    <p>Liquid Glass Lens - Experience the magic of interactive glassmorphism</p>
+  </footer>
+  
+  <!-- Theme toggle button -->
+  <div class="theme-toggle" id="themeToggle">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="sun-icon">
+      <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" />
+    </svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="moon-icon" style="display:none;">
+      <path d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" />
+    </svg>
+  </div>
+  
+  <!-- Scroll to top button -->
+  <div class="scroll-top" id="scrollTop">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="18 15 12 9 6 15"></polyline>
+    </svg>
+  </div>
   <a aria-label="Follow aish2004gupta" class="bear-link"
     href="https://twitter.com/intent/follow?screen_name=aish2004gupta" target="_blank" rel="noreferrer noopener">
     <style>

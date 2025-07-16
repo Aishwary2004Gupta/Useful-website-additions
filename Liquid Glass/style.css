@@ -31,46 +31,7 @@
     margin-top: 4rem;
   }
   
-  .cta-buttons {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    margin: 2rem 0;
-    flex-wrap: wrap;
-  }
-  
-  .cta-button {
-    padding: 0.75rem 1.5rem;
-    border-radius: 50px;
-    font-weight: bold;
-    font-family: "Montserrat", sans-serif;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: none;
-    outline: none;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  .cta-button.primary {
-    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-    color: white;
-  }
-  
-  .cta-button.secondary {
-    background: color-mix(in oklch, var(--bg-color), transparent 50%);
-    color: var(--text-color);
-    border: 2px solid var(--primary-color);
-  }
-  
-  .cta-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
-  }
-  
-  .cta-button:active {
-    transform: translateY(0);
-  }
+
   
   /* Features Grid */
   .features-grid {

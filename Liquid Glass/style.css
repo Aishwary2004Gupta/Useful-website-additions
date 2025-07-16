@@ -986,4 +986,5 @@ div.tp-dfwv {
   bottom: 8px;
   top: unset;
   view-transition-name: pane;
+  z-index: 1000000;
 }

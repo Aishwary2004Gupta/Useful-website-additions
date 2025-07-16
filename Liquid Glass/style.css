@@ -232,47 +232,7 @@
     transform: rotate(30deg);
   }
   
-  /* Scroll to top button */
-  .scroll-top {
-    position: fixed;
-    bottom: 80px;
-    right: 20px;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    z-index: 100;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-  }
-  
-  .scroll-top.visible {
-    opacity: 1;
-    visibility: visible;
-  }
-  
-  .scroll-top:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
-  }
-  
-  .scroll-top svg {
-    width: 24px;
-    height: 24px;
-    fill: white;
-    transition: transform 0.3s ease;
-  }
-  
-  .scroll-top:hover svg {
-    transform: translateY(-2px);
-  }
+  /* Scroll to top button styles removed */
 
   header {
     margin-block: 4rem;

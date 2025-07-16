@@ -417,53 +417,10 @@ gsap.set('.effect', {
     opacity: 1,
 })
 
-// Theme toggle functionality
-const themeToggle = document.getElementById('themeToggle')
-const sunIcon = document.querySelector('.sun-icon')
-const moonIcon = document.querySelector('.moon-icon')
-
-// Check for saved theme preference or use system preference
-const savedTheme = localStorage.getItem('theme')
-if (savedTheme) {
-    document.documentElement.dataset.theme = savedTheme
-    updateThemeIcons(savedTheme)
-} else {
-    // Use system preference
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    document.documentElement.dataset.theme = prefersDark ? 'dark' : 'light'
-    updateThemeIcons(prefersDark ? 'dark' : 'light')
-}
-
-// Update theme icons based on current theme
-function updateThemeIcons(theme) {
-    if (theme === 'dark') {
-        sunIcon.style.display = 'none'
-        moonIcon.style.display = 'block'
-    } else {
-        sunIcon.style.display = 'block'
-        moonIcon.style.display = 'none'
-    }
-}
-
-// Toggle theme when button is clicked
-themeToggle.addEventListener('click', () => {
-    const currentTheme = document.documentElement.dataset.theme
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark'
-    
-    // Apply smooth transition
-    document.startViewTransition(() => {
-        document.documentElement.dataset.theme = newTheme
-        updateThemeIcons(newTheme)
-        localStorage.setItem('theme', newTheme)
-    })
-    
-    // Animate the toggle button
-    gsap.to(themeToggle, {
-        rotate: '+=360',
-        duration: 0.6,
-        ease: 'back.out(1.7)'
-    })
-})
+// Theme toggle functionality removed
+// Use system preference for theme
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+document.documentElement.dataset.theme = prefersDark ? 'dark' : 'light'
 
 // Add scroll animation for sections
 const sections = document.querySelectorAll('section')

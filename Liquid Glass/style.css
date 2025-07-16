@@ -933,6 +933,47 @@
     white-space: nowrap;
     border-width: 0;
   }
+  
+  /* Tooltip system */
+  [data-tooltip] {
+    position: relative;
+    cursor: help;
+  }
+  
+  [data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 12px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+    z-index: 10;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(10px);
+  }
+  
+  [data-tooltip]:hover::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
+  
+  /* For larger tooltips */
+  [data-tooltip-large]::after {
+    content: attr(data-tooltip-large);
+    white-space: normal;
+    width: 200px;
+    text-align: center;
+  }
 }
 
 [data-top="true"] div.tp-dfwv {

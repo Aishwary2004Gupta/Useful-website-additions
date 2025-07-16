@@ -480,34 +480,7 @@ gsap.from(sections, {
     }
 })
 
-// Scroll to top button functionality
-const scrollTopButton = document.getElementById('scrollTop')
-
-// Show button when user scrolls down 300px from the top
-window.addEventListener('scroll', () => {
-    if (window.pageYOffset > 300) {
-        scrollTopButton.classList.add('visible')
-    } else {
-        scrollTopButton.classList.remove('visible')
-    }
-})
-
-// Scroll to top when button is clicked
-scrollTopButton.addEventListener('click', () => {
-    // Smooth scroll to top
-    window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-    })
-    
-    // Add a small animation to the button
-    gsap.to(scrollTopButton, {
-        scale: 0.9,
-        duration: 0.1,
-        yoyo: true,
-        repeat: 1
-    })
-})
+// Scroll to top button functionality removed
 
 
 

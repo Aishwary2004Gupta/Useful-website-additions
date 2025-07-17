@@ -1,4 +1,4 @@
-/* ---------- 配置 ---------- */
+/* ---------- CONFIG ---------- */
 const GRID_SIZE   = 8;
 const RADIUS      = 4;
 const MAX_ANGLE   = 60;
@@ -10,7 +10,7 @@ const cubes = [];
 let userActive = false;
 let idleTimer, simRAF;
 
-/* 创建网格 */
+/* ---------- build grid ---------- */
 for (let r = 0; r < GRID_SIZE; r++) {
   for (let c = 0; c < GRID_SIZE; c++) {
     const cube = document.createElement('div');
@@ -28,16 +28,22 @@ for (let r = 0; r < GRID_SIZE; r++) {
   }
 }
 
-/* 工具函数 */
+/* ---------- helpers ---------- */
 const lerp = (a,b,t)=>a+(b-a)*t;
 
-/* 倾斜逻辑（仅对命中立方体生效） */
+/* ---------- tilt + 3-D radius ---------- */
 function tiltAt(rowCenter,colCenter){
   cubes.forEach(cube=>{
     const r = +cube.dataset.row;
     const c = +cube.dataset.col;
     const dist = Math.hypot(r-rowCenter,c-colCenter);
-    if (dist <= RADIUS){
+    const inside = dist <= RADIUS;
+
+    // smooth 2D⇄3D
+    cube.classList.toggle('is-3d', inside);
+
+    // tilt only if inside radius
+    if (inside){
       const pct = 1 - dist/RADIUS;
       const angle = pct * MAX_ANGLE;
       cube.style.transform = `rotateX(${-angle}deg) rotateY(${angle}deg)`;
@@ -47,7 +53,7 @@ function tiltAt(rowCenter,colCenter){
   });
 }
 
-/* 点击涟漪 */
+/* ---------- ripple ---------- */
 function ripple(rx,ry){
   const rowHit = Math.floor(ry);
   const colHit = Math.floor(rx);
@@ -81,45 +87,32 @@ function ripple(rx,ry){
   });
 }
 
-/* 扁平化所有立方体 */
-function flattenAll(){
-  cubes.forEach(c=>{
-    c.classList.remove('is-3d');
-    c.style.transform = '';
-  });
-}
-
-/* 鼠标移动：仅把“当前立方体”变 3D */
-scene.addEventListener('pointermove', e=>{
+/* ---------- pointer events ---------- */
+function onPointerMove(ev){
   userActive = true;
   clearTimeout(idleTimer);
 
   const rect = scene.getBoundingClientRect();
   const cellW = rect.width / GRID_SIZE;
   const cellH = rect.height / GRID_SIZE;
-  const col = Math.floor((e.clientX - rect.left) / cellW);
-  const row = Math.floor((e.clientY - rect.top) / cellH);
-  const idx = row * GRID_SIZE + col;
-  const targetCube = cubes[idx];
-  if(!targetCube) return;
-
-  flattenAll();
-  targetCube.classList.add('is-3d');
-  tiltAt(row + 0.5, col + 0.5);
+  const colCenter = (ev.clientX - rect.left) / cellW;
+  const rowCenter = (ev.clientY - rect.top) / cellH;
+  tiltAt(rowCenter, colCenter);
   idleTimer = setTimeout(()=> userActive = false, 3000);
-});
+}
 
-scene.addEventListener('pointerleave', flattenAll);
-scene.addEventListener('click', e=>{
+scene.addEventListener('pointermove', onPointerMove);
+scene.addEventListener('pointerleave', ()=> tiltAt(-10,-10)); // all outside radius → 2-D
+scene.addEventListener('click', ev=>{
   const rect = scene.getBoundingClientRect();
-  const col = Math.floor((e.clientX - rect.left) / (rect.width / GRID_SIZE));
-  const row = Math.floor((e.clientY - rect.top) / (rect.height / GRID_SIZE));
+  const col = (ev.clientX - rect.left) / (rect.width / GRID_SIZE);
+  const row = (ev.clientY - rect.top) / (rect.height / GRID_SIZE);
   ripple(col, row);
 });
 
-/* 空闲自动动画 */
-let simPos = {x:Math.random()*GRID_SIZE, y:Math.random()*GRID_SIZE};
-let simTarget = {x:Math.random()*GRID_SIZE, y:Math.random()*GRID_SIZE};
+/* ---------- idle auto-animation ---------- */
+let simPos   = {x:Math.random()*GRID_SIZE, y:Math.random()*GRID_SIZE};
+let simTarget= {x:Math.random()*GRID_SIZE, y:Math.random()*GRID_SIZE};
 
 function idleLoop(){
   if(!userActive){

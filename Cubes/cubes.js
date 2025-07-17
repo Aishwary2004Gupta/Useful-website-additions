@@ -31,7 +31,7 @@ for (let r = 0; r < GRID_SIZE; r++) {
 /* ---------- helpers ---------- */
 const lerp = (a,b,t)=>a+(b-a)*t;
 
-/* ---------- tilt + 3-D radius ---------- */
+/* ---------- tilt & 3-D radius ---------- */
 function tiltAt(rowCenter,colCenter){
   cubes.forEach(cube=>{
     const r = +cube.dataset.row;
@@ -39,16 +39,14 @@ function tiltAt(rowCenter,colCenter){
     const dist = Math.hypot(r-rowCenter,c-colCenter);
     const inside = dist <= RADIUS;
 
-    // smooth 2D⇄3D
     cube.classList.toggle('is-3d', inside);
 
-    // tilt only if inside radius
     if (inside){
       const pct = 1 - dist/RADIUS;
       const angle = pct * MAX_ANGLE;
       cube.style.transform = `rotateX(${-angle}deg) rotateY(${angle}deg)`;
     }else{
-      cube.style.transform = '';
+      cube.style.transform = ''; // 复位动作由 1.2 s CSS 过渡完成
     }
   });
 }
@@ -58,8 +56,8 @@ function ripple(rx,ry){
   const rowHit = Math.floor(ry);
   const colHit = Math.floor(rx);
   const spreadDelay = 0.15 / RIPPLE_SPEED;
-  const animDur     = 0.3 / RIPPLE_SPEED;
-  const hold        = 0.6 / RIPPLE_SPEED;
+  const animDur = 0.3 / RIPPLE_SPEED;
+  const hold = 0.6 / RIPPLE_SPEED;
 
   const rings = {};
   cubes.forEach(cube=>{
@@ -102,7 +100,7 @@ function onPointerMove(ev){
 }
 
 scene.addEventListener('pointermove', onPointerMove);
-scene.addEventListener('pointerleave', ()=> tiltAt(-10,-10)); // all outside radius → 2-D
+scene.addEventListener('pointerleave', ()=> tiltAt(-100, -100)); // 平滑复位
 scene.addEventListener('click', ev=>{
   const rect = scene.getBoundingClientRect();
   const col = (ev.clientX - rect.left) / (rect.width / GRID_SIZE);

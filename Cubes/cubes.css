@@ -2,15 +2,10 @@
   --cube-face-border: 2px dashed #5227FF;
   --cube-face-bg: #1a1a2e;
   --ripple-color: #ff6b6b;
-
-  /* NEW: actual cube depth */
-  --cube-depth: 3.5vmin;
-
-  /* scene perspective */
   --perspective: 1200px;
-
   --grid-size: 8;
   --cell-gap: 5%;
+  --cube-depth: 3.5vmin;
 }
 
 *{box-sizing:border-box;margin:0;padding:0}

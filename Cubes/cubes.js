@@ -2,8 +2,7 @@
 const GRID_SIZE   = 8;
 const RADIUS      = 4;
 const MAX_ANGLE   = 60;
-const RIPPLE_SPEED = 1.5;
-const IDLE_SPEED   = 0.02;
+const IDLE_SPEED  = 0.02;
 
 const scene = document.getElementById('scene');
 const cubes = [];
@@ -30,6 +29,7 @@ for (let r = 0; r < GRID_SIZE; r++) {
 
 /* ---------- helpers ---------- */
 const lerp = (a,b,t)=>a+(b-a)*t;
+const hue2rgb = (h)=>`hsl(${h},100%,60%)`;
 
 /* ---------- tilt + 3-D radius ---------- */
 function tiltAt(rowCenter,colCenter){
@@ -39,10 +39,8 @@ function tiltAt(rowCenter,colCenter){
     const dist = Math.hypot(r-rowCenter,c-colCenter);
     const inside = dist <= RADIUS;
 
-    // smooth 2D⇄3D
     cube.classList.toggle('is-3d', inside);
 
-    // tilt only if inside radius
     if (inside){
       const pct = 1 - dist/RADIUS;
       const angle = pct * MAX_ANGLE;
@@ -53,13 +51,15 @@ function tiltAt(rowCenter,colCenter){
   });
 }
 
-/* ---------- ripple ---------- */
+/* ---------- RGB ripple ---------- */
 function ripple(rx,ry){
   const rowHit = Math.floor(ry);
   const colHit = Math.floor(rx);
-  const spreadDelay = 0.15 / RIPPLE_SPEED;
-  const animDur     = 0.3 / RIPPLE_SPEED;
-  const hold        = 0.6 / RIPPLE_SPEED;
+  const speed = 1.2; // synced with CSS var(--ripple-s)
+
+  const spreadDelay = 0.15 / speed;
+  const animDur     = 0.35 / speed;
+  const hold        = 0.6 / speed;
 
   const rings = {};
   cubes.forEach(cube=>{
@@ -74,9 +74,11 @@ function ripple(rx,ry){
   Object.keys(rings).map(Number).sort((a,b)=>a-b).forEach(ring=>{
     const delay = ring * spreadDelay;
     const faces = rings[ring];
+    const hue = (Date.now()/10 + ring*40) % 360;
+
     faces.forEach(f=>{
       f.style.transition = `background ${animDur}s ease-out ${delay}s`;
-      f.style.background = 'var(--ripple-color)';
+      f.style.background = hue2rgb(hue);
     });
     setTimeout(()=>{
       faces.forEach(f=>{
@@ -87,7 +89,7 @@ function ripple(rx,ry){
   });
 }
 
-/* ---------- pointer events ---------- */
+/* ---------- pointer ---------- */
 function onPointerMove(ev){
   userActive = true;
   clearTimeout(idleTimer);
@@ -102,7 +104,7 @@ function onPointerMove(ev){
 }
 
 scene.addEventListener('pointermove', onPointerMove);
-scene.addEventListener('pointerleave', ()=> tiltAt(-100,-100)); // all outside radius → 2-D
+scene.addEventListener('pointerleave', ()=> tiltAt(-100, -100));
 scene.addEventListener('click', ev=>{
   const rect = scene.getBoundingClientRect();
   const col = (ev.clientX - rect.left) / (rect.width / GRID_SIZE);

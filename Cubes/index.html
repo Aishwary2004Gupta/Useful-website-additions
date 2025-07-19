@@ -1,290 +1,373 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8"/>
-  <title>Interactive Cube Playground</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <style>
-    :root{
-      /* default values – will be overwritten by the panel */
-      --grid-size:8;
-      --max-angle:60;
-      --radius:4;
-      --cube-depth:4vmin;
-      --cell-gap:5%;
-      --border-style:2px dashed #5227ff;
-      --perspective:1200px;
-      --tilt-dur:1.8s;          /* 3-D ⇄ 2-D transition time */
-      --ripple-s:1.2;
-      --bg:#111;
-    }
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:var(--bg);
-      font-family:sans-serif;
-    }
+  <head>
+    <meta charset="utf-8" />
+    <title>Interactive Cube Playground</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+      :root {
+        /* default values – will be overwritten by the panel */
+        --grid-size: 8;
+        --max-angle: 60;
+        --radius: 4;
+        --cube-depth: 4vmin;
+        --cell-gap: 5%;
+        --border-style: 2px dashed #5227ff;
+        --perspective: 1200px;
+        --tilt-dur: 1.8s; /* 3-D ⇄ 2-D transition time */
+        --ripple-s: 1.2;
+        --bg: #111;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg);
+        font-family: sans-serif;
+      }
 
-    /* ===== Scene ===== */
-    #scene{
-      width:60vmin;
-      aspect-ratio:1/1;
-      display:grid;
-      grid-template-columns:repeat(var(--grid-size),1fr);
-      grid-template-rows:repeat(var(--grid-size),1fr);
-      gap:var(--cell-gap);
-      perspective:var(--perspective);
-    }
+      /* ===== Scene ===== */
+      #scene {
+        width: 60vmin;
+        aspect-ratio: 1/1;
+        display: grid;
+        grid-template-columns: repeat(var(--grid-size), 1fr);
+        grid-template-rows: repeat(var(--grid-size), 1fr);
+        gap: var(--cell-gap);
+        perspective: var(--perspective);
+      }
 
-    /* 2-D */
-    .cube{
-      position:relative;
-      width:100%;height:100%;
-      transform-style:flat;
-      transition:transform var(--tilt-dur) cubic-bezier(.25,.8,.25,1),
-                 transform-style var(--tilt-dur);
-    }
-    .cube-face{
-      position:absolute;inset:0;
-      background:#1a1a2e;
-      border:var(--border-style);
-      transition:background .3s,transform .3s;
-      backface-visibility:hidden;
-    }
-    .cube-face:not(.cube-face--front){display:none;}
+      /* 2-D */
+      .cube {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transform-style: flat;
+        transition: transform var(--tilt-dur) cubic-bezier(0.25, 0.8, 0.25, 1),
+          transform-style var(--tilt-dur);
+      }
+      .cube-face {
+        position: absolute;
+        inset: 0;
+        background: #1a1a2e;
+        border: var(--border-style);
+        transition: background 0.3s, transform 0.3s;
+        backface-visibility: hidden;
+      }
+      .cube-face:not(.cube-face--front) {
+        display: none;
+      }
 
-    /* 3-D */
-    .cube.is-3d{
-      transform-style:preserve-3d;
-    }
-    .cube.is-3d .cube-face{display:block;}
-    .cube.is-3d .cube-face--front  {transform:rotateY(0deg) translateZ(calc(var(--cube-depth) * .5));}
-    .cube.is-3d .cube-face--back   {transform:rotateY(180deg) translateZ(calc(var(--cube-depth) * .5));}
-    .cube.is-3d .cube-face--left   {transform:rotateY(-90deg) translateZ(calc(var(--cube-depth) * .5));}
-    .cube.is-3d .cube-face--right  {transform:rotateY(90deg) translateZ(calc(var(--cube-depth) * .5));}
-    .cube.is-3d .cube-face--top    {transform:rotateX(90deg) translateZ(calc(var(--cube-depth) * .5));}
-    .cube.is-3d .cube-face--bottom {transform:rotateX(-90deg) translateZ(calc(var(--cube-depth) * .5));}
+      /* 3-D */
+      .cube.is-3d {
+        transform-style: preserve-3d;
+      }
+      .cube.is-3d .cube-face {
+        display: block;
+      }
+      .cube.is-3d .cube-face--front {
+        transform: rotateY(0deg) translateZ(calc(var(--cube-depth) * 0.5));
+      }
+      .cube.is-3d .cube-face--back {
+        transform: rotateY(180deg) translateZ(calc(var(--cube-depth) * 0.5));
+      }
+      .cube.is-3d .cube-face--left {
+        transform: rotateY(-90deg) translateZ(calc(var(--cube-depth) * 0.5));
+      }
+      .cube.is-3d .cube-face--right {
+        transform: rotateY(90deg) translateZ(calc(var(--cube-depth) * 0.5));
+      }
+      .cube.is-3d .cube-face--top {
+        transform: rotateX(90deg) translateZ(calc(var(--cube-depth) * 0.5));
+      }
+      .cube.is-3d .cube-face--bottom {
+        transform: rotateX(-90deg) translateZ(calc(var(--cube-depth) * 0.5));
+      }
 
-    /* ===== Control Panel ===== */
-    #panel{
-      position:fixed;
-      top:1rem;right:1rem;
-      width:260px;
-      background:#222a;
-      border:1px solid #444;
-      border-radius:8px;
-      padding:1rem;
-      color:#eee;
-      font-size:13px;
-      display:flex;
-      flex-direction:column;
-      gap:.6rem;
-      backdrop-filter:blur(4px);
-    }
-    label{display:flex;justify-content:space-between;align-items:center}
-    input[type=range]{width:110px}
-    select{width:110px}
-  </style>
-</head>
-<body>
+      /* ===== Control Panel ===== */
+      #panel {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        width: 260px;
+        background: #222a;
+        border: 1px solid #444;
+        border-radius: 8px;
+        padding: 1rem;
+        color: #eee;
+        font-size: 13px;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        backdrop-filter: blur(4px);
+      }
+      label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      input[type="range"] {
+        width: 110px;
+      }
+      select {
+        width: 110px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="scene"></div>
 
-  <div id="scene"></div>
+    <!--  Control Panel  -->
+    <div id="panel">
+      <label
+        >Grid Size
+        <input type="range" id="gridSize" min="3" max="16" value="8" />
+      </label>
+      <label
+        >Max Angle
+        <input type="range" id="maxAngle" min="0" max="90" value="60" />
+      </label>
+      <label
+        >Radius
+        <input type="range" id="radius" min="1" max="10" value="4" />
+      </label>
+      <label
+        >3-D⇄2-D Speed (ms)
+        <input
+          type="range"
+          id="tiltDur"
+          min="200"
+          max="4000"
+          step="100"
+          value="1800"
+        />
+      </label>
+      <label
+        >Cube Depth
+        <input type="range" id="cubeDepth" min="1" max="8" value="4" />
+      </label>
+      <label
+        >Border Style
+        <select id="borderStyle">
+          <option value="2px dashed #5227ff">Dashed Purple</option>
+          <option value="1px solid #fff">Solid White</option>
+          <option value="none">None</option>
+        </select>
+      </label>
+    </div>
 
-  <!--  Control Panel  -->
-  <div id="panel">
-    <label>Grid Size
-      <input type="range" id="gridSize" min="3" max="16" value="8">
-    </label>
-    <label>Max Angle
-      <input type="range" id="maxAngle" min="0" max="90" value="60">
-    </label>
-    <label>Radius
-      <input type="range" id="radius" min="1" max="10" value="4">
-    </label>
-    <label>3-D⇄2-D Speed (ms)
-      <input type="range" id="tiltDur" min="200" max="4000" step="100" value="1800">
-    </label>
-    <label>Cube Depth
-      <input type="range" id="cubeDepth" min="1" max="8" value="4">
-    </label>
-    <label>Border Style
-      <select id="borderStyle">
-        <option value="2px dashed #5227ff">Dashed Purple</option>
-        <option value="1px solid #fff">Solid White</option>
-        <option value="none">None</option>
-      </select>
-    </label>
-  </div>
+    <script>
+      /* ---------- CONFIG ---------- */
+      const GRID_SIZE = 8;
+      const IDLE_SPEED = 0.02;
 
-  <script>
-    /* ---------- CONFIG ---------- */
-    const GRID_SIZE   = 8;
-    const IDLE_SPEED  = 0.02;
+      const scene = document.getElementById("scene");
+      const cubes = [];
+      let userActive = false;
+      let idleTimer, simRAF;
 
-    const scene = document.getElementById('scene');
-    const cubes = [];
-    let userActive = false;
-    let idleTimer, simRAF;
+      /* ---------- Controls ---------- */
+      const panel = document.getElementById("panel");
+      const ui = {
+        gridSize: panel.querySelector("#gridSize"),
+        maxAngle: panel.querySelector("#maxAngle"),
+        radius: panel.querySelector("#radius"),
+        tiltDur: panel.querySelector("#tiltDur"),
+        cubeDepth: panel.querySelector("#cubeDepth"),
+        border: panel.querySelector("#borderStyle"),
+      };
 
-    /* ---------- Controls ---------- */
-    const panel = document.getElementById('panel');
-    const ui = {
-      gridSize : panel.querySelector('#gridSize'),
-      maxAngle : panel.querySelector('#maxAngle'),
-      radius   : panel.querySelector('#radius'),
-      tiltDur  : panel.querySelector('#tiltDur'),
-      cubeDepth: panel.querySelector('#cubeDepth'),
-      border   : panel.querySelector('#borderStyle')
-    };
+      /* 实时更新根变量 */
+      Object.keys(ui).forEach((k) => {
+        ui[k].addEventListener("input", updateVars);
+      });
+      function updateVars() {
+        document.documentElement.style.setProperty(
+          "--grid-size",
+          ui.gridSize.value
+        );
+        document.documentElement.style.setProperty(
+          "--max-angle",
+          ui.maxAngle.value
+        );
+        document.documentElement.style.setProperty("--radius", ui.radius.value);
+        document.documentElement.style.setProperty(
+          "--tilt-dur",
+          ui.tiltDur.value + "ms"
+        );
+        document.documentElement.style.setProperty(
+          "--cube-depth",
+          ui.cubeDepth.value + "vmin"
+        );
+        document.documentElement.style.setProperty(
+          "--border-style",
+          ui.border.value
+        );
+        rebuildGrid(); // 重新绘制网格
+      }
 
-    /* 实时更新根变量 */
-    Object.keys(ui).forEach(k=>{
-      ui[k].addEventListener('input', updateVars);
-    });
-    function updateVars(){
-      document.documentElement.style.setProperty('--grid-size', ui.gridSize.value);
-      document.documentElement.style.setProperty('--max-angle', ui.maxAngle.value);
-      document.documentElement.style.setProperty('--radius', ui.radius.value);
-      document.documentElement.style.setProperty('--tilt-dur', ui.tiltDur.value + 'ms');
-      document.documentElement.style.setProperty('--cube-depth', ui.cubeDepth.value + 'vmin');
-      document.documentElement.style.setProperty('--border-style', ui.border.value);
-      rebuildGrid(); // 重新绘制网格
-    }
+      /* ---------- dynamic grid ---------- */
+      function rebuildGrid() {
+        scene.innerHTML = "";
+        cubes.length = 0;
+        const size = +getComputedStyle(
+          document.documentElement
+        ).getPropertyValue("--grid-size");
+        for (let r = 0; r < size; r++) {
+          for (let c = 0; c < size; c++) {
+            const cube = document.createElement("div");
+            cube.className = "cube";
+            cube.dataset.row = r;
+            cube.dataset.col = c;
 
-    /* ---------- dynamic grid ---------- */
-    function rebuildGrid(){
-      scene.innerHTML = '';
-      cubes.length = 0;
-      const size = +getComputedStyle(document.documentElement).getPropertyValue('--grid-size');
-      for(let r=0;r<size;r++){
-        for(let c=0;c<size;c++){
-          const cube = document.createElement('div');
-          cube.className = 'cube';
-          cube.dataset.row = r;
-          cube.dataset.col = c;
-
-          ['front','back','left','right','top','bottom'].forEach(f=>{
-            const face = document.createElement('div');
-            face.className = `cube-face cube-face--${f}`;
-            cube.appendChild(face);
-          });
-          scene.appendChild(cube);
-          cubes.push(cube);
+            ["front", "back", "left", "right", "top", "bottom"].forEach((f) => {
+              const face = document.createElement("div");
+              face.className = `cube-face cube-face--${f}`;
+              cube.appendChild(face);
+            });
+            scene.appendChild(cube);
+            cubes.push(cube);
+          }
         }
       }
-    }
 
-    /* ---------- helpers ---------- */
-    const lerp = (a,b,t)=>a+(b-a)*t;
+      /* ---------- helpers ---------- */
+      const lerp = (a, b, t) => a + (b - a) * t;
 
-    /* ---------- tilt + radius ---------- */
-    function tiltAt(rowCenter,colCenter){
-      const maxAngle = +getComputedStyle(document.documentElement).getPropertyValue('--max-angle');
-      const radius   = +getComputedStyle(document.documentElement).getPropertyValue('--radius');
-      cubes.forEach(cube=>{
-        const r = +cube.dataset.row;
-        const c = +cube.dataset.col;
-        const dist = Math.hypot(r-rowCenter,c-colCenter);
-        const inside = dist <= radius;
+      /* ---------- tilt + radius ---------- */
+      function tiltAt(rowCenter, colCenter) {
+        const maxAngle = +getComputedStyle(
+          document.documentElement
+        ).getPropertyValue("--max-angle");
+        const radius = +getComputedStyle(
+          document.documentElement
+        ).getPropertyValue("--radius");
+        cubes.forEach((cube) => {
+          const r = +cube.dataset.row;
+          const c = +cube.dataset.col;
+          const dist = Math.hypot(r - rowCenter, c - colCenter);
+          const inside = dist <= radius;
 
-        cube.classList.toggle('is-3d', inside);
+          cube.classList.toggle("is-3d", inside);
 
-        if(inside){
-          const pct = 1 - dist/radius;
-          const angle = pct * maxAngle;
-          cube.style.transform = `rotateX(${-angle}deg) rotateY(${angle}deg)`;
-        }else{
-          cube.style.transform = '';
-        }
-      });
-    }
-
-    /* ---------- RGB ripple ---------- */
-    function ripple(rx,ry){
-      const size   = +getComputedStyle(document.documentElement).getPropertyValue('--grid-size');
-      const rowHit = Math.floor(ry);
-      const colHit = Math.floor(rx);
-      const speed  = 1.2;
-
-      const spreadDelay = 0.15 / speed;
-      const animDur     = 0.35 / speed;
-      const hold        = 0.6 / speed;
-
-      const rings = {};
-      cubes.forEach(cube=>{
-        const r = +cube.dataset.row;
-        const c = +cube.dataset.col;
-        const dist = Math.hypot(r-rowHit,c-colHit);
-        const ring = Math.round(dist);
-        if(!rings[ring]) rings[ring]=[];
-        rings[ring].push(...cube.querySelectorAll('.cube-face'));
-      });
-
-      Object.keys(rings).map(Number).sort((a,b)=>a-b).forEach(ring=>{
-        const delay = ring * spreadDelay;
-        const faces = rings[ring];
-        const hue = (Date.now()/5 + ring*40) % 360;
-
-        faces.forEach(f=>{
-          f.style.transition = `background ${animDur}s ease-out ${delay}s`;
-          f.style.background = `hsl(${hue},100%,60%)`;
+          if (inside) {
+            const pct = 1 - dist / radius;
+            const angle = pct * maxAngle;
+            cube.style.transform = `rotateX(${-angle}deg) rotateY(${angle}deg)`;
+          } else {
+            cube.style.transform = "";
+          }
         });
-        setTimeout(()=>{
-          faces.forEach(f=>{
-            f.style.transition = `background ${animDur}s ease-out`;
-            f.style.background = 'var(--cube-face-bg)';
-          });
-        }, (delay + animDur + hold) * 1000);
-      });
-    }
-
-    /* ---------- events ---------- */
-    function onPointerMove(ev){
-      userActive = true;
-      clearTimeout(idleTimer);
-      const rect = scene.getBoundingClientRect();
-      const size = +getComputedStyle(document.documentElement).getPropertyValue('--grid-size');
-      const cellW = rect.width / size;
-      const cellH = rect.height / size;
-      const colCenter = (ev.clientX - rect.left) / cellW;
-      const rowCenter = (ev.clientY - rect.top) / cellH;
-      tiltAt(rowCenter, colCenter);
-      idleTimer = setTimeout(()=>userActive=false, 3000);
-    }
-
-    scene.addEventListener('pointermove', onPointerMove);
-    scene.addEventListener('pointerleave', ()=> tiltAt(-100,-100));
-    scene.addEventListener('click', ev=>{
-      const rect = scene.getBoundingClientRect();
-      const size = +getComputedStyle(document.documentElement).getPropertyValue('--grid-size');
-      const col = (ev.clientX - rect.left) / (rect.width/size);
-      const row = (ev.clientY - rect.top) / (rect.height/size);
-      ripple(col, row);
-    });
-
-    /* ---------- idle auto-animation ---------- */
-    let simPos   = {x:Math.random()*GRID_SIZE, y:Math.random()*GRID_SIZE};
-    let simTarget= {x:Math.random()*GRID_SIZE, y:Math.random()*GRID_SIZE};
-
-    function idleLoop(){
-      if(!userActive){
-        const size = +getComputedStyle(document.documentElement).getPropertyValue('--grid-size');
-        simPos.x = lerp(simPos.x, simTarget.x, IDLE_SPEED);
-        simPos.y = lerp(simPos.y, simTarget.y, IDLE_SPEED);
-        tiltAt(simPos.y, simPos.x);
-        if(Math.hypot(simPos.x - simTarget.x, simPos.y - simTarget.y) < 0.1){
-          simTarget = {x:Math.random()*size, y:Math.random()*size};
-        }
       }
-      simRAF = requestAnimationFrame(idleLoop);
-    }
 
-    /* ---------- init ---------- */
-    rebuildGrid();
-    idleLoop();
-  </script>
-</body>
+      /* ---------- RGB ripple ---------- */
+      function ripple(rx, ry) {
+        const size = +getComputedStyle(
+          document.documentElement
+        ).getPropertyValue("--grid-size");
+        const rowHit = Math.floor(ry);
+        const colHit = Math.floor(rx);
+        const speed = 1.2;
+
+        const spreadDelay = 0.15 / speed;
+        const animDur = 0.35 / speed;
+        const hold = 0.6 / speed;
+
+        const rings = {};
+        cubes.forEach((cube) => {
+          const r = +cube.dataset.row;
+          const c = +cube.dataset.col;
+          const dist = Math.hypot(r - rowHit, c - colHit);
+          const ring = Math.round(dist);
+          if (!rings[ring]) rings[ring] = [];
+          rings[ring].push(...cube.querySelectorAll(".cube-face"));
+        });
+
+        Object.keys(rings)
+          .map(Number)
+          .sort((a, b) => a - b)
+          .forEach((ring) => {
+            const delay = ring * spreadDelay;
+            const faces = rings[ring];
+            const hue = (Date.now() / 5 + ring * 40) % 360;
+
+            faces.forEach((f) => {
+              f.style.transition = `background ${animDur}s ease-out ${delay}s`;
+              f.style.background = `hsl(${hue},100%,60%)`;
+            });
+            setTimeout(() => {
+              faces.forEach((f) => {
+                f.style.transition = `background ${animDur}s ease-out`;
+                f.style.background = "var(--cube-face-bg)";
+              });
+            }, (delay + animDur + hold) * 1000);
+          });
+      }
+
+      /* ---------- events ---------- */
+      function onPointerMove(ev) {
+        userActive = true;
+        clearTimeout(idleTimer);
+        const rect = scene.getBoundingClientRect();
+        const size = +getComputedStyle(
+          document.documentElement
+        ).getPropertyValue("--grid-size");
+        const cellW = rect.width / size;
+        const cellH = rect.height / size;
+        const colCenter = (ev.clientX - rect.left) / cellW;
+        const rowCenter = (ev.clientY - rect.top) / cellH;
+        tiltAt(rowCenter, colCenter);
+        idleTimer = setTimeout(() => (userActive = false), 3000);
+      }
+
+      scene.addEventListener("pointermove", onPointerMove);
+      scene.addEventListener("pointerleave", () => tiltAt(-100, -100));
+      scene.addEventListener("click", (ev) => {
+        const rect = scene.getBoundingClientRect();
+        const size = +getComputedStyle(
+          document.documentElement
+        ).getPropertyValue("--grid-size");
+        const col = (ev.clientX - rect.left) / (rect.width / size);
+        const row = (ev.clientY - rect.top) / (rect.height / size);
+        ripple(col, row);
+      });
+
+      /* ---------- idle auto-animation ---------- */
+      let simPos = {
+        x: Math.random() * GRID_SIZE,
+        y: Math.random() * GRID_SIZE,
+      };
+      let simTarget = {
+        x: Math.random() * GRID_SIZE,
+        y: Math.random() * GRID_SIZE,
+      };
+
+      function idleLoop() {
+        if (!userActive) {
+          const size = +getComputedStyle(
+            document.documentElement
+          ).getPropertyValue("--grid-size");
+          simPos.x = lerp(simPos.x, simTarget.x, IDLE_SPEED);
+          simPos.y = lerp(simPos.y, simTarget.y, IDLE_SPEED);
+          tiltAt(simPos.y, simPos.x);
+          if (
+            Math.hypot(simPos.x - simTarget.x, simPos.y - simTarget.y) < 0.1
+          ) {
+            simTarget = { x: Math.random() * size, y: Math.random() * size };
+          }
+        }
+        simRAF = requestAnimationFrame(idleLoop);
+      }
+
+      /* ---------- init ---------- */
+      rebuildGrid();
+      idleLoop();
+    </script>
+  </body>
 </html>

@@ -1,0 +1,113 @@
+      :root {
+        /* default values – will be overwritten by the panel */
+        --grid-size: 8;
+        --max-angle: 60;
+        --radius: 4;
+        --cube-depth: 5vmin;
+        --cell-gap: 5%;
+        --border-style: 2px dashed #5227ff;
+        --perspective: 1200px;
+        --tilt-dur: 1.8s; /* 3-D ⇄ 2-D transition time */
+        --ripple-s: 1.2;
+        --bg: #111;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg);
+        font-family: sans-serif;
+      }
+
+      /* ===== Scene ===== */
+      #scene {
+        width: 60vmin;
+        aspect-ratio: 1/1;
+        display: grid;
+        grid-template-columns: repeat(var(--grid-size), 1fr);
+        grid-template-rows: repeat(var(--grid-size), 1fr);
+        gap: var(--cell-gap);
+        perspective: var(--perspective);
+      }
+
+      /* 2-D */
+      .cube {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transform-style: flat;
+        transition: transform var(--tilt-dur) cubic-bezier(0.25, 0.8, 0.25, 1),
+          transform-style var(--tilt-dur);
+      }
+      .cube-face {
+        position: absolute;
+        inset: 0;
+        background: #1a1a2e;
+        border: var(--border-style);
+        transition: background 0.3s, transform 0.3s;
+        backface-visibility: hidden;
+      }
+      .cube-face:not(.cube-face--front) {
+        display: none;
+      }
+
+      /* 3-D */
+      .cube.is-3d {
+        transform-style: preserve-3d;
+      }
+      .cube.is-3d .cube-face {
+        display: block;
+      }
+      .cube.is-3d .cube-face--front {
+        transform: rotateY(0deg) translateZ(calc(var(--cube-depth) * 0.5));
+      }
+      .cube.is-3d .cube-face--back {
+        transform: rotateY(180deg) translateZ(calc(var(--cube-depth) * 0.5));
+      }
+      .cube.is-3d .cube-face--left {
+        transform: rotateY(-90deg) translateZ(calc(var(--cube-depth) * 0.5));
+      }
+      .cube.is-3d .cube-face--right {
+        transform: rotateY(90deg) translateZ(calc(var(--cube-depth) * 0.5));
+      }
+      .cube.is-3d .cube-face--top {
+        transform: rotateX(90deg) translateZ(calc(var(--cube-depth) * 0.5));
+      }
+      .cube.is-3d .cube-face--bottom {
+        transform: rotateX(-90deg) translateZ(calc(var(--cube-depth) * 0.5));
+      }
+
+      /* ===== Control Panel ===== */
+      #panel {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        width: 260px;
+        background: #222a;
+        border: 1px solid #444;
+        border-radius: 8px;
+        padding: 1rem;
+        color: #eee;
+        font-size: 13px;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        backdrop-filter: blur(4px);
+      }
+      label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      input[type="range"] {
+        width: 110px;
+      }
+      select {
+        width: 110px;
+      }

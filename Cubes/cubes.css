@@ -7,15 +7,18 @@
         --cell-gap: 5%;
         --border-style: 2px dashed #5227ff;
         --perspective: 1200px;
-        --tilt-dur: 1.8s; /* 3-D ⇄ 2-D transition time */
+        --tilt-dur: 1.8s;
+        /* 3-D ⇄ 2-D transition time */
         --ripple-s: 1.2;
         --bg: #111;
       }
+
       * {
         box-sizing: border-box;
         margin: 0;
         padding: 0;
       }
+
       body {
         min-height: 100vh;
         display: flex;
@@ -45,6 +48,7 @@
         transition: transform var(--tilt-dur) cubic-bezier(0.25, 0.8, 0.25, 1),
           transform-style var(--tilt-dur);
       }
+
       .cube-face {
         position: absolute;
         inset: 0;
@@ -53,6 +57,7 @@
         transition: background 0.3s, transform 0.3s;
         backface-visibility: hidden;
       }
+
       .cube-face:not(.cube-face--front) {
         display: none;
       }
@@ -61,24 +66,31 @@
       .cube.is-3d {
         transform-style: preserve-3d;
       }
+
       .cube.is-3d .cube-face {
         display: block;
       }
+
       .cube.is-3d .cube-face--front {
         transform: rotateY(0deg) translateZ(calc(var(--cube-depth) * 0.5));
       }
+
       .cube.is-3d .cube-face--back {
         transform: rotateY(180deg) translateZ(calc(var(--cube-depth) * 0.5));
       }
+
       .cube.is-3d .cube-face--left {
         transform: rotateY(-90deg) translateZ(calc(var(--cube-depth) * 0.5));
       }
+
       .cube.is-3d .cube-face--right {
         transform: rotateY(90deg) translateZ(calc(var(--cube-depth) * 0.5));
       }
+
       .cube.is-3d .cube-face--top {
         transform: rotateX(90deg) translateZ(calc(var(--cube-depth) * 0.5));
       }
+
       .cube.is-3d .cube-face--bottom {
         transform: rotateX(-90deg) translateZ(calc(var(--cube-depth) * 0.5));
       }
@@ -100,14 +112,17 @@
         gap: 0.6rem;
         backdrop-filter: blur(4px);
       }
+
       label {
         display: flex;
         justify-content: space-between;
         align-items: center;
       }
+
       input[type="range"] {
         width: 110px;
       }
+
       select {
         width: 110px;
       }

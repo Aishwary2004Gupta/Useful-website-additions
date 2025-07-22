@@ -4,12 +4,55 @@ body, html {
     width: 100%;
     height: 100%;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     background-color: #000;
+    color: white;
+    font-family: Arial, sans-serif;
 }
 
-.container {
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+nav a {
+    color: white;
+    margin: 0 10px;
+    text-decoration: none;
+}
+
+.content {
+    text-align: center;
+    margin-top: 50px;
+}
+
+.content h1 {
+    font-size: 36px;
+    margin-bottom: 20px;
+}
+
+.content button {
+    margin: 10px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #fff;
+    color: #000;
+    cursor: pointer;
+}
+
+.canvas-container {
     position: relative;
     width: 100%;
     height: 100%;
@@ -20,25 +63,51 @@ body, html {
     height: 100%;
 }
 
-.controls {
+.demo-toggle {
     position: absolute;
     bottom: 20px;
-    left: 20px;
+    right: 20px;
+}
+
+.config-panel {
+    position: absolute;
+    bottom: 20px;
+    left: -300px;
+    width: 300px;
     background-color: rgba(0, 0, 0, 0.7);
+    transition: left 0.3s;
     padding: 20px;
     border-radius: 10px;
+}
+
+.config-panel.open {
+    left: 0;
+}
+
+.config-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.config-header h2 {
+    margin: 0;
+}
+
+.config-header button {
+    background: none;
+    border: none;
     color: white;
+    cursor: pointer;
+    font-size: 24px;
 }
 
-.controls h2 {
-    margin-top: 0;
-}
-
-.controls label {
+.config-body label {
     display: block;
     margin-bottom: 10px;
 }
 
-.controls input[type="range"] {
+.config-body input[type="range"] {
     width: 100%;
 }

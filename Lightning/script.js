@@ -180,4 +180,18 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('size').addEventListener('input', (e) => {
         gl.uniform1f(uSizeLocation, e.target.value);
     });
+
+    // Toggle config panel
+    document.getElementById('configPanel').addEventListener('click', (e) => {
+        if (e.target.id === 'closeConfig') {
+            document.getElementById('configPanel').classList.remove('open');
+        } else if (e.target.classList.contains('config-panel')) {
+            document.getElementById('configPanel').classList.add('open');
+        }
+    });
+
+    // Toggle demo content
+    document.getElementById('demoContent').addEventListener('change', (e) => {
+        document.querySelector('.content').style.display = e.target.checked ? 'block' : 'none';
+    });
 });

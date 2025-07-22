@@ -7,32 +7,10 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="header">
-        <div class="logo">React Bits</div>
-        <nav>
-            <a href="#">Home</a>
-            <a href="#">Docs</a>
-        </nav>
-    </div>
-    <div class="content">
-        <button id="newBackground">New Background</button>
-        <h1>The power of nature's fury,<br>with React Bits!</h1>
-        <button id="getStarted">Get Started</button>
-        <button id="learnMore">Learn More</button>
-    </div>
-    <div class="canvas-container">
+    <div class="container">
         <canvas id="lightning-canvas"></canvas>
-    </div>
-    <div class="demo-toggle">
-        <label for="demoContent">Demo Content</label>
-        <input type="checkbox" id="demoContent" checked>
-    </div>
-    <div class="config-panel" id="configPanel">
-        <div class="config-header">
+        <div class="controls">
             <h2>Customize</h2>
-            <button id="closeConfig">X</button>
-        </div>
-        <div class="config-body">
             <label for="hue">Hue</label>
             <input type="range" id="hue" min="0" max="360" value="260">
 

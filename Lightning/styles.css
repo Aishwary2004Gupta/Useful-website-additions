@@ -7,8 +7,6 @@ body, html {
     justify-content: center;
     align-items: center;
     background-color: #000;
-    color: white;
-    font-family: Arial, sans-serif;
 }
 
 .container {
@@ -29,51 +27,18 @@ body, html {
     background-color: rgba(0, 0, 0, 0.7);
     padding: 20px;
     border-radius: 10px;
+    color: white;
 }
 
-.config-panel {
-    display: none;
-    margin-top: 10px;
+.controls h2 {
+    margin-top: 0;
 }
 
-.config-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.controls label {
+    display: block;
     margin-bottom: 10px;
 }
 
-.config-header h2 {
-    margin: 0;
-}
-
-.config-header button {
-    background: none;
-    border: none;
-    color: white;
-    cursor: pointer;
-    font-size: 24px;
-}
-
-.config-body {
-    display: flex;
-    flex-direction: column;
-}
-
-.config-item {
-    margin-bottom: 15px;
-}
-
-.config-item label {
-    display: block;
-    margin-bottom: 5px;
-}
-
-.config-item select {
+.controls input[type="range"] {
     width: 100%;
-    padding: 5px;
-    border-radius: 5px;
-    border: none;
-    background-color: #222;
-    color: white;
 }

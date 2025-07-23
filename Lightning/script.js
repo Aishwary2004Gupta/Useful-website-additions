@@ -144,8 +144,11 @@ document.addEventListener('DOMContentLoaded', () => {
         gl.uniform2f(iResolutionLocation, canvas.width, canvas.height);
         const currentTime = performance.now();
         gl.uniform1f(iTimeLocation, (currentTime - startTime) / 1000.0);
-        gl.uniform1f(uHueLocation, parseFloat(document.getElementById('hue').value));
-        gl.uniform1f(uXOffsetLocation, parseFloat(document.getElementById('xOffset').value));
+        gl.uniform1f(uHueLocation, document.getElementById('hue').value);
+        gl.uniform1f(uXOffsetLocation, document.getElementById('xOffset').value);
+        gl.uniform1f(uSpeedLocation, document.getElementById('speed').value);
+        gl.uniform1f(uIntensityLocation, document.getElementById('intensity').value);
+        gl.uniform1f(uSizeLocation, document.getElementById('size').value);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
         requestAnimationFrame(render);
     };
@@ -158,22 +161,23 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Update uniforms on input change
-    document.getElementById('hue').addEventListener('change', (e) => {
-        gl.uniform1f(uHueLocation, parseFloat(e.target.value));
+    document.getElementById('hue').addEventListener('input', (e) => {
+        gl.uniform1f(uHueLocation, e.target.value);
     });
 
-    document.getElementById('xOffset').addEventListener('change', (e) => {
-        gl.uniform1f(uXOffsetLocation, parseFloat(e.target.value));
+    document.getElementById('xOffset').addEventListener('input', (e) => {
+        gl.uniform1f(uXOffsetLocation, e.target.value);
     });
 
-    // Toggle config panel visibility
-    document.getElementById('toggleConfig').addEventListener('click', () => {
-        const configPanel = document.querySelector('.config-panel');
-        configPanel.style.display = configPanel.style.display === 'block' ? 'none' : 'block';
+    document.getElementById('speed').addEventListener('input', (e) => {
+        gl.uniform1f(uSpeedLocation, e.target.value);
     });
 
-    document.getElementById('closeConfig').addEventListener('click', () => {
-        const configPanel = document.querySelector('.config-panel');
-        configPanel.style.display = 'none';
+    document.getElementById('intensity').addEventListener('input', (e) => {
+        gl.uniform1f(uIntensityLocation, e.target.value);
+    });
+
+    document.getElementById('size').addEventListener('input', (e) => {
+        gl.uniform1f(uSizeLocation, e.target.value);
     });
 });

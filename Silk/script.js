@@ -1,37 +1,24 @@
-const canvas = document.getElementById('silk-canvas');
-const ctx = canvas.getContext('2d');
+document.addEventListener('DOMContentLoaded', () => {
+    const silkPlane = document.getElementById('silk-plane');
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-let width = canvas.width;
-let height = canvas.height;
-
-function draw() {
-    ctx.fillStyle = document.getElementById('color').value;
-    ctx.fillRect(0, 0, width, height);
-
-    ctx.filter = `url(#filter)`;
-    ctx.drawImage(canvas, 0, 0, width, height);
-}
-
-function resizeCanvas() {
+    // Add noise effect using JavaScript
+    const canvas = document.createElement('canvas');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    width = canvas.width;
-    height = canvas.height;
-    draw();
-}
+    document.body.appendChild(canvas);
 
-window.addEventListener('resize', resizeCanvas);
+    const ctx = canvas.getContext('2d');
 
-document.getElementById('demoBtn').addEventListener('click', () => {
-    const demo = document.getElementById('demo');
-    demo.classList.toggle('visible');
+    function drawNoise() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let i = 0; i < canvas.width; i += 10) {
+            for (let j = 0; j < canvas.height; j += 10) {
+                const noise = Math.random() * 255;
+                ctx.fillStyle = `rgba(255, 255, 255, ${noise / 255})`;
+                ctx.fillRect(i, j, 10, 10);
+            }
+        }
+    }
+
+    setInterval(drawNoise, 100);
 });
-
-document.querySelectorAll('#config-panel input, #config-panel button').forEach(element => {
-    element.addEventListener('input', draw);
-});
-
-draw();

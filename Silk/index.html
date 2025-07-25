@@ -1,14 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Silk Effect</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <div id="silk-plane"></div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silk Effect Simulation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="config-panel">
+        <label>Speed: <input type="range" id="speed" min="0" max="20" value="5"></label><br>
+        <label>Scale: <input type="range" id="scale" min="0" max="2" step="0.01" value="1"></label><br>
+        <label>Noise Intensity: <input type="range" id="noiseIntensity" min="0" max="2" step="0.01" value="1.5"></label><br>
+        <label>Rotation: <input type="range" id="rotation" min="0" max="360" value="0"></label><br>
+        <label>Color: <input type="color" id="color" value="#7B7481"></label><br>
+        <button id="demoBtn">Demo</button>
+    </div>
+    <div id="demo" class="hidden">
+        <h1>Silk Effect Demo</h1>
+        <p>This is a demo of the silk effect with customizable options.</p>
+    </div>
+    <canvas id="silk-canvas"></canvas>
     <script src="script.js"></script>
-  </body>
+</body>
 </html>
-

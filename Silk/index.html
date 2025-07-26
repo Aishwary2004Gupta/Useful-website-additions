@@ -14,7 +14,7 @@
       body {
         height: 100%;
         overflow: hidden;
-        font-family: 'Segoe UI', sans-serif;
+        font-family: "Segoe UI", sans-serif;
         background: #000;
         color: white;
       }
@@ -38,10 +38,28 @@
   </head>
   <body>
     <div id="controls">
-      <label>Speed: <input type="range" id="speed" min="0" max="10" step="0.1" value="5" /></label>
-      <label>Scale: <input type="range" id="scale" min="0.1" max="3" step="0.1" value="1" /></label>
-      <label>Noise Intensity: <input type="range" id="noise" min="0" max="5" step="0.1" value="1.5" /></label>
-      <label>Rotation: <input type="range" id="rotation" min="-3.14" max="3.14" step="0.01" value="0" /></label>
+      <label
+        >Speed:
+        <input type="range" id="speed" min="0" max="10" step="0.1" value="5"
+      /></label>
+      <label
+        >Scale:
+        <input type="range" id="scale" min="0.1" max="3" step="0.1" value="1"
+      /></label>
+      <label
+        >Noise Intensity:
+        <input type="range" id="noise" min="0" max="5" step="0.1" value="1.5"
+      /></label>
+      <label
+        >Rotation:
+        <input
+          type="range"
+          id="rotation"
+          min="-3.14"
+          max="3.14"
+          step="0.01"
+          value="0"
+      /></label>
       <label>Color: <input type="color" id="color" value="#4a00e0" /></label>
     </div>
 
@@ -125,14 +143,11 @@
 
       const positionBuffer = gl.createBuffer();
       gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-        -1, -1,
-        1, -1,
-        -1, 1,
-        -1, 1,
-        1, -1,
-        1, 1,
-      ]), gl.STATIC_DRAW);
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]),
+        gl.STATIC_DRAW
+      );
 
       const positionLocation = gl.getAttribLocation(program, "position");
       gl.enableVertexAttribArray(positionLocation);
@@ -155,10 +170,22 @@
 
         gl.uniform1f(uTime, time);
         gl.uniform3f(uColor, rgb.r / 255, rgb.g / 255, rgb.b / 255);
-        gl.uniform1f(uSpeed, parseFloat(document.getElementById("speed").value));
-        gl.uniform1f(uScale, parseFloat(document.getElementById("scale").value));
-        gl.uniform1f(uNoiseIntensity, parseFloat(document.getElementById("noise").value));
-        gl.uniform1f(uRotation, parseFloat(document.getElementById("rotation").value));
+        gl.uniform1f(
+          uSpeed,
+          parseFloat(document.getElementById("speed").value)
+        );
+        gl.uniform1f(
+          uScale,
+          parseFloat(document.getElementById("scale").value)
+        );
+        gl.uniform1f(
+          uNoiseIntensity,
+          parseFloat(document.getElementById("noise").value)
+        );
+        gl.uniform1f(
+          uRotation,
+          parseFloat(document.getElementById("rotation").value)
+        );
 
         gl.drawArrays(gl.TRIANGLES, 0, 6);
         requestAnimationFrame(render);

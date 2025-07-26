@@ -1,135 +1,183 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Silk Effect</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Silk Background</title>
     <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background: #000;
-        }
-        canvas {
-            display: block;
-            width: 100vw;
-            height: 100vh;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+        font-family: 'Segoe UI', sans-serif;
+        background: #000;
+        color: white;
+      }
+      #controls {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 1rem;
+        border-radius: 12px;
+        z-index: 10;
+      }
+      label {
+        display: block;
+        margin-top: 10px;
+      }
+      canvas {
+        display: block;
+      }
     </style>
-</head>
-<body>
-    <canvas id="silkCanvas"></canvas>
+  </head>
+  <body>
+    <div id="controls">
+      <label>Speed: <input type="range" id="speed" min="0" max="10" step="0.1" value="5" /></label>
+      <label>Scale: <input type="range" id="scale" min="0.1" max="3" step="0.1" value="1" /></label>
+      <label>Noise Intensity: <input type="range" id="noise" min="0" max="5" step="0.1" value="1.5" /></label>
+      <label>Rotation: <input type="range" id="rotation" min="-3.14" max="3.14" step="0.01" value="0" /></label>
+      <label>Color: <input type="color" id="color" value="#4a00e0" /></label>
+    </div>
+
+    <canvas id="bg"></canvas>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Configuration
-            const config = {
-                speed: 5,
-                scale: 1,
-                color: "#7B7481",
-                noiseIntensity: 1.5,
-                rotation: 0
-            };
+      const canvas = document.getElementById("bg");
+      const gl = canvas.getContext("webgl");
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
 
-            // Canvas setup
-            const canvas = document.getElementById('silkCanvas');
-            const ctx = canvas.getContext('2d');
-            
-            // Set canvas to full window size
-            function resizeCanvas() {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            }
-            resizeCanvas();
-            window.addEventListener('resize', resizeCanvas);
+      const vertexShaderSource = `
+        attribute vec2 position;
+        varying vec2 vUv;
+        void main() {
+          vUv = position * 0.5 + 0.5;
+          gl_Position = vec4(position, 0.0, 1.0);
+        }
+      `;
 
-            // Convert hex to RGB
-            function hexToRgb(hex) {
-                hex = hex.replace("#", "");
-                const r = parseInt(hex.substring(0, 2), 16) / 255;
-                const g = parseInt(hex.substring(2, 4), 16) / 255;
-                const b = parseInt(hex.substring(4, 6), 16) / 255;
-                return [r, g, b];
-            }
+      const fragmentShaderSource = `
+        precision mediump float;
+        varying vec2 vUv;
 
-            // Time variable for animation
-            let time = 0;
+        uniform float uTime;
+        uniform vec3 uColor;
+        uniform float uSpeed;
+        uniform float uScale;
+        uniform float uRotation;
+        uniform float uNoiseIntensity;
 
-            // Noise function
-            function noise(x, y) {
-                const e = 2.71828182845904523536;
-                const r = (e * Math.sin(e * x), e * Math.sin(e * y));
-                return (r[0] * r[1] * (1.0 + x)) % 1;
-            }
+        const float e = 2.71828182845904523536;
 
-            // Rotate coordinates
-            function rotate(x, y, angle) {
-                const c = Math.cos(angle);
-                const s = Math.sin(angle);
-                return [c * x - s * y, s * x + c * y];
-            }
+        float noise(vec2 texCoord) {
+          float G = e;
+          vec2 r = (G * sin(G * texCoord));
+          return fract(r.x * r.y * (1.0 + texCoord.x));
+        }
 
-            // Main render function
-            function render() {
-                const width = canvas.width;
-                const height = canvas.height;
-                
-                // Create image data for direct pixel manipulation
-                const imageData = ctx.createImageData(width, height);
-                const data = imageData.data;
-                
-                const [r, g, b] = hexToRgb(config.color);
-                const scale = config.scale;
-                const noiseIntensity = config.noiseIntensity;
-                const rotation = config.rotation;
-                const speed = config.speed;
-                
-                for (let y = 0; y < height; y++) {
-                    for (let x = 0; x < width; x++) {
-                        // Normalized coordinates
-                        const nx = x / width;
-                        const ny = y / height;
-                        
-                        // Rotate coordinates
-                        const [rx, ry] = rotate(nx - 0.5, ny - 0.5, rotation);
-                        const texX = (rx + 0.5) * scale;
-                        const texY = (ry + 0.5) * scale;
-                        
-                        // Add wave effect
-                        const waveY = texY + 0.03 * Math.sin(8.0 * texX - time * speed);
-                        
-                        // Generate pattern
-                        const pattern = 0.6 + 0.4 * Math.sin(
-                            5.0 * (texX + waveY + 
-                                  Math.cos(3.0 * texX + 5.0 * waveY) + 
-                                  0.02 * time * speed) +
-                            Math.sin(20.0 * (texX + waveY - 0.1 * time * speed))
-                        );
-                        
-                        // Add noise
-                        const rnd = noise(x, y);
-                        const noiseEffect = rnd / 15.0 * noiseIntensity;
-                        
-                        // Calculate final color
-                        const idx = (y * width + x) * 4;
-                        data[idx] = Math.max(0, Math.min(255, (r * pattern - noiseEffect) * 255));
-                        data[idx + 1] = Math.max(0, Math.min(255, (g * pattern - noiseEffect) * 255));
-                        data[idx + 2] = Math.max(0, Math.min(255, (b * pattern - noiseEffect) * 255));
-                        data[idx + 3] = 255; // Alpha
-                    }
-                }
-                
-                ctx.putImageData(imageData, 0, 0);
-                time += 0.01;
-                requestAnimationFrame(render);
-            }
+        vec2 rotate(vec2 uv, float angle) {
+          float c = cos(angle);
+          float s = sin(angle);
+          mat2 rot = mat2(c, -s, s, c);
+          return rot * uv;
+        }
 
-            // Start animation
-            render();
+        void main() {
+          float rnd = noise(gl_FragCoord.xy);
+          vec2 uv = rotate(vUv * uScale, uRotation);
+          vec2 tex = uv * uScale;
+          float tOffset = uSpeed * uTime;
 
-            // Expose config for easy tweaking in console
-            window.silkConfig = config;
-        });
+          tex.y += 0.03 * sin(8.0 * tex.x - tOffset);
+
+          float pattern = 0.6 +
+                          0.4 * sin(5.0 * (tex.x + tex.y +
+                                           cos(3.0 * tex.x + 5.0 * tex.y) +
+                                           0.02 * tOffset) +
+                                   sin(20.0 * (tex.x + tex.y - 0.1 * tOffset)));
+
+          vec4 col = vec4(uColor, 1.0) * vec4(pattern) - rnd / 15.0 * uNoiseIntensity;
+          col.a = 1.0;
+          gl_FragColor = col;
+        }
+      `;
+
+      const createShader = (type, source) => {
+        const shader = gl.createShader(type);
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
+        return shader;
+      };
+
+      const program = gl.createProgram();
+      const vs = createShader(gl.VERTEX_SHADER, vertexShaderSource);
+      const fs = createShader(gl.FRAGMENT_SHADER, fragmentShaderSource);
+      gl.attachShader(program, vs);
+      gl.attachShader(program, fs);
+      gl.linkProgram(program);
+      gl.useProgram(program);
+
+      const positionBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+        -1, -1,
+        1, -1,
+        -1, 1,
+        -1, 1,
+        1, -1,
+        1, 1,
+      ]), gl.STATIC_DRAW);
+
+      const positionLocation = gl.getAttribLocation(program, "position");
+      gl.enableVertexAttribArray(positionLocation);
+      gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+      const uTime = gl.getUniformLocation(program, "uTime");
+      const uColor = gl.getUniformLocation(program, "uColor");
+      const uSpeed = gl.getUniformLocation(program, "uSpeed");
+      const uScale = gl.getUniformLocation(program, "uScale");
+      const uRotation = gl.getUniformLocation(program, "uRotation");
+      const uNoiseIntensity = gl.getUniformLocation(program, "uNoiseIntensity");
+
+      let time = 0;
+      const render = () => {
+        time += 0.01;
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+        const rgb = hexToRgb(document.getElementById("color").value);
+
+        gl.uniform1f(uTime, time);
+        gl.uniform3f(uColor, rgb.r / 255, rgb.g / 255, rgb.b / 255);
+        gl.uniform1f(uSpeed, parseFloat(document.getElementById("speed").value));
+        gl.uniform1f(uScale, parseFloat(document.getElementById("scale").value));
+        gl.uniform1f(uNoiseIntensity, parseFloat(document.getElementById("noise").value));
+        gl.uniform1f(uRotation, parseFloat(document.getElementById("rotation").value));
+
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        requestAnimationFrame(render);
+      };
+
+      const hexToRgb = (hex) => {
+        const bigint = parseInt(hex.replace("#", ""), 16);
+        return {
+          r: (bigint >> 16) & 255,
+          g: (bigint >> 8) & 255,
+          b: bigint & 255,
+        };
+      };
+
+      render();
+      window.addEventListener("resize", () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      });
     </script>
-</body>
+  </body>
 </html>

@@ -5,60 +5,82 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Silk Background</title>
 
-
-
     <div id="demoToggleContainer">
-  <button id="demoToggle">Show Demo</button>
-</div>
+      <button id="demoToggle">Show Demo</button>
+    </div>
 
-<div id="demoContent">
-  <div>🚀 Welcome to Slik Backgrounf website</div>
-  <div style="font-size: 1em; margin-top: 20px;">Silk touch is a good enhancement, to your page</div>
-  <div style="margin-top: 30px;">
-    <button style="margin: 5px; padding: 10px 20px; font-size: 1em; border-radius: 10px; border: none; cursor: pointer;">Get Started</button>
-    <button style="margin: 5px; padding: 10px 20px; font-size: 1em; border-radius: 10px; background: #222; color: white; border: none; cursor: pointer;">Learn More</button>
-  </div>
-</div>
-
+    <div id="demoContent">
+      <div>🚀 Welcome to Slik Backgrounf website</div>
+      <div style="font-size: 1em; margin-top: 20px">
+        Silk touch is a good enhancement, to your page
+      </div>
+      <div style="margin-top: 30px">
+        <button
+          style="
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+          "
+        >
+          Get Started
+        </button>
+        <button
+          style="
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: 10px;
+            background: #222;
+            color: white;
+            border: none;
+            cursor: pointer;
+          "
+        >
+          Learn More
+        </button>
+      </div>
+    </div>
 
     <style>
       #demoToggleContainer {
-  position: fixed;
-  bottom: 10px;
-  right: 10px;
-  z-index: 10;
-}
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        z-index: 10;
+      }
 
-#demoToggle {
-  padding: 8px 12px;
-  background: #444;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
+      #demoToggle {
+        padding: 8px 12px;
+        background: #444;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
 
-#demoContent {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 5;
-  pointer-events: none;
-  color: white;
-  display: none;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  font-size: 2em;
-  text-align: center;
-}
+      #demoContent {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 5;
+        pointer-events: none;
+        color: white;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        font-size: 2em;
+        text-align: center;
+      }
 
-#demoContent.active {
-  display: flex;
-}
-
+      #demoContent.active {
+        display: flex;
+      }
 
       * {
         margin: 0;
@@ -134,18 +156,17 @@
     <canvas id="bg"></canvas>
 
     <script>
-      document.getElementById('demoToggle').addEventListener('click', () => {
-  const demoContent = document.getElementById('demoContent');
-  const toggleBtn = document.getElementById('demoToggle');
-  if (demoContent.classList.contains('active')) {
-    demoContent.classList.remove('active');
-    toggleBtn.textContent = 'Show Demo';
-  } else {
-    demoContent.classList.add('active');
-    toggleBtn.textContent = 'Hide Demo';
-  }
-});
-
+      document.getElementById("demoToggle").addEventListener("click", () => {
+        const demoContent = document.getElementById("demoContent");
+        const toggleBtn = document.getElementById("demoToggle");
+        if (demoContent.classList.contains("active")) {
+          demoContent.classList.remove("active");
+          toggleBtn.textContent = "Show Demo";
+        } else {
+          demoContent.classList.add("active");
+          toggleBtn.textContent = "Hide Demo";
+        }
+      });
 
       const canvas = document.getElementById("bg");
       const gl = canvas.getContext("webgl");

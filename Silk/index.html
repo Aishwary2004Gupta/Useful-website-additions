@@ -1,14 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Silk Effect</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <div id="silk-plane"></div>
-    <script src="script.js"></script>
-  </body>
-</html>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+        }
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="silkCanvas"></canvas>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Configuration
+            const config = {
+                speed: 5,
+                scale: 1,
+                color: "#7B7481",
+                noiseIntensity: 1.5,
+                rotation: 0
+            };
+
+            // Canvas setup
+            const canvas = document.getElementById('silkCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas to full window size
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            // Convert hex to RGB
+            function hexToRgb(hex) {
+                hex = hex.replace("#", "");
+                const r = parseInt(hex.substring(0, 2), 16) / 255;
+                const g = parseInt(hex.substring(2, 4), 16) / 255;
+                const b = parseInt(hex.substring(4, 6), 16) / 255;
+                return [r, g, b];
+            }
+
+            // Time variable for animation
+            let time = 0;
+
+            // Noise function
+            function noise(x, y) {
+                const e = 2.71828182845904523536;
+                const r = (e * Math.sin(e * x), e * Math.sin(e * y));
+                return (r[0] * r[1] * (1.0 + x)) % 1;
+            }
+
+            // Rotate coordinates
+            function rotate(x, y, angle) {
+                const c = Math.cos(angle);
+                const s = Math.sin(angle);
+                return [c * x - s * y, s * x + c * y];
+            }
+
+            // Main render function
+            function render() {
+                const width = canvas.width;
+                const height = canvas.height;
+                
+                // Create image data for direct pixel manipulation
+                const imageData = ctx.createImageData(width, height);
+                const data = imageData.data;
+                
+                const [r, g, b] = hexToRgb(config.color);
+                const scale = config.scale;
+                const noiseIntensity = config.noiseIntensity;
+                const rotation = config.rotation;
+                const speed = config.speed;
+                
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        // Normalized coordinates
+                        const nx = x / width;
+                        const ny = y / height;
+                        
+                        // Rotate coordinates
+                        const [rx, ry] = rotate(nx - 0.5, ny - 0.5, rotation);
+                        const texX = (rx + 0.5) * scale;
+                        const texY = (ry + 0.5) * scale;
+                        
+                        // Add wave effect
+                        const waveY = texY + 0.03 * Math.sin(8.0 * texX - time * speed);
+                        
+                        // Generate pattern
+                        const pattern = 0.6 + 0.4 * Math.sin(
+                            5.0 * (texX + waveY + 
+                                  Math.cos(3.0 * texX + 5.0 * waveY) + 
+                                  0.02 * time * speed) +
+                            Math.sin(20.0 * (texX + waveY - 0.1 * time * speed))
+                        );
+                        
+                        // Add noise
+                        const rnd = noise(x, y);
+                        const noiseEffect = rnd / 15.0 * noiseIntensity;
+                        
+                        // Calculate final color
+                        const idx = (y * width + x) * 4;
+                        data[idx] = Math.max(0, Math.min(255, (r * pattern - noiseEffect) * 255));
+                        data[idx + 1] = Math.max(0, Math.min(255, (g * pattern - noiseEffect) * 255));
+                        data[idx + 2] = Math.max(0, Math.min(255, (b * pattern - noiseEffect) * 255));
+                        data[idx + 3] = 255; // Alpha
+                    }
+                }
+                
+                ctx.putImageData(imageData, 0, 0);
+                time += 0.01;
+                requestAnimationFrame(render);
+            }
+
+            // Start animation
+            render();
+
+            // Expose config for easy tweaking in console
+            window.silkConfig = config;
+        });
+    </script>
+</body>
+</html>

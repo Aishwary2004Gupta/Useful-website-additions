@@ -15,83 +15,86 @@
 }
 
 #demoContent {
-  display: none;
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  z-index: 10;
-  padding: 40px;
-  color: white;
-  pointer-events: none; 
-  font-family: sans-serif;
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    padding: 40px;
+    color: white;
+    pointer-events: none;
+    font-family: sans-serif;
 }
 
 #demoContent.active {
-  display: block;
+    display: block;
 }
 
 .demo-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 32px;
-  border-radius: 9999px;
-  background: rgba(0, 0, 0, 0.2);
-  max-width: 900px;
-  margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 32px;
+    border-radius: 9999px;
+    background: rgba(0, 0, 0, 0.2);
+    max-width: 900px;
+    margin: 0 auto;
 }
 
 .demo-logo {
-  font-size: 1.2rem;
-  font-weight: bold;
+    font-size: 1.2rem;
+    font-weight: bold;
 }
 
 .demo-nav a {
-  color: white;
-  margin-left: 20px;
-  text-decoration: none;
-  font-weight: 500;
+    color: white;
+    margin-left: 20px;
+    text-decoration: none;
+    font-weight: 500;
 }
 
 .demo-main {
-  text-align: center;
-  margin-top: 100px;
+    text-align: center;
+    margin-top: 100px;
 }
 
 .demo-btn {
-  border: 1px solid #555;
-  background: transparent;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 999px;
-  margin-bottom: 20px;
-  cursor: pointer;
+    border: 1px solid #555;
+    background: transparent;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 999px;
+    margin-bottom: 20px;
+    cursor: pointer;
 }
 
 .demo-title {
-  font-size: 2.5rem;
-  font-weight: 800;
-  max-width: 700px;
-  margin: 20px auto;
+    font-size: 2.5rem;
+    font-weight: 800;
+    max-width: 700px;
+    margin: 20px auto;
 }
 
 .demo-actions button {
-  padding: 12px 24px;
-  font-size: 1rem;
-  margin: 10px;
-  border-radius: 9999px;
-  cursor: pointer;
+    padding: 12px 24px;
+    font-size: 1rem;
+    margin: 10px;
+    border-radius: 9999px;
+    cursor: pointer;
 }
 
 .demo-primary {
-  background: white;
-  color: black;
-  border: none;
+    background: white;
+    color: black;
+    border: none;
 }
 
 .demo-secondary {
-  background: rgba(255, 255, 255, 0.1);
-  color: #888;
-  border: 1px solid #444;
+    background: rgba(255, 255, 255, 0.1);
+    color: #888;
+    border: 1px solid #444;
 }
 
 

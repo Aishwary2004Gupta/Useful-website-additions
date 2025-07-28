@@ -125,8 +125,8 @@ body {
 }
 
 #controls {
-    position: absolute;
-    top: 20px;
+    position: fixed;
+    bottom: 20px;
     left: 20px;
     background: rgba(0, 0, 0, 0.5);
     padding: 1rem;
@@ -144,11 +144,11 @@ canvas {
 }
 
 #toggleControlsBtn {
-    position: absolute;
+    position: fixed;
     font-size: 1rem;
-    font-weight: 600;
-    top: 20px;
-    right: 20px;
+    font-weight: 1000;
+    bottom: 70px; /* just above the Hide Demo button */
+    right: 10px;
     z-index: 11;
     padding: 0.5rem 1rem;
     background: linear-gradient(135deg, #6e00ff, #a100ff);

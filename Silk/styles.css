@@ -156,13 +156,17 @@ canvas {
 
 #toggleControlsBtn {
     position: absolute;
+    font-size: 1rem;
+    font-weight: 600;
     top: 20px;
     right: 20px;
     z-index: 11;
     padding: 0.5rem 1rem;
-    background: rgba(255, 255, 255, 0.1);
+    background: linear-gradient(135deg, #6e00ff, #a100ff);
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 9999px;
     cursor: pointer;
+    box-shadow: 0 4px 12px rgba(160, 0, 255, 0.4);
+    transition: all 0.3s ease;
 }

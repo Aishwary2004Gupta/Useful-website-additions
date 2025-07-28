@@ -36,7 +36,6 @@
 }
 
 
-/* Responsive Demo Content */
 #demoContent {
     display: none;
     position: absolute;
@@ -50,80 +49,9 @@
     pointer-events: none;
     font-family: sans-serif;
 }
+
 #demoContent.active {
     display: block;
-}
-
-@media (max-width: 900px) {
-    #demoContent {
-        padding: 16px;
-    }
-    .demo-header {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 12px 10px;
-        max-width: 100%;
-        border-radius: 18px;
-    }
-    .demo-main {
-        margin-top: 40px;
-    }
-    .demo-title {
-        font-size: 1.5rem;
-        max-width: 95vw;
-    }
-    .demo-actions button {
-        font-size: 0.95rem;
-        padding: 10px 16px;
-    }
-}
-
-@media (max-width: 600px) {
-    #demoContent {
-        padding: 4vw 2vw;
-    }
-    .demo-header {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 8px 4px;
-        border-radius: 12px;
-    }
-    .demo-logo {
-        font-size: 1rem;
-    }
-    .demo-title {
-        font-size: 1.1rem;
-        margin: 10px auto;
-    }
-    .demo-main {
-        margin-top: 20px;
-    }
-    .demo-actions button {
-        font-size: 0.9rem;
-        padding: 8px 10px;
-        margin: 6px;
-    }
-    #controls {
-        left: 2vw;
-        top: 10vw;
-        padding: 0.5rem;
-        border-radius: 8px;
-        font-size: 0.95em;
-    }
-    #toggleControlsBtn {
-        top: 10vw;
-        right: 2vw;
-        padding: 0.4rem 0.7rem;
-        font-size: 0.95em;
-    }
-    #demoToggleContainer {
-        bottom: 2vw;
-        right: 2vw;
-    }
-    #demoToggle {
-        font-size: 0.95em;
-        padding: 8px 14px;
-    }
 }
 
 .demo-header {

@@ -1,20 +1,9 @@
-
-
 #demoToggleContainer {
     position: fixed;
     bottom: 10px;
     right: 10px;
     z-index: 10;
 }
-
-/* #demoToggle {
-    padding: 8px 12px;
-    background: #444;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-} */
 
 #demoToggle {
     padding: 10px 20px;

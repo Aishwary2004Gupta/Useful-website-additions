@@ -165,11 +165,4 @@
           }
         });
 
-        const toggleBtn = document.getElementById('toggleDemoBtn');
-const demoContent = document.getElementById('demoContent');
-
-toggleBtn.addEventListener('click', () => {
-  toggleBtn.classList.toggle('active');
-  demoContent.classList.toggle('active');
-});
-
+        

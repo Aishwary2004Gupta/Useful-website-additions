@@ -7,14 +7,34 @@
     z-index: 10;
 }
 
-#demoToggle {
+/* #demoToggle {
     padding: 8px 12px;
     background: #444;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
+} */
+
+#demoToggle {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #6e00ff, #a100ff);
+    color: white;
+    border: none;
+    border-radius: 9999px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(160, 0, 255, 0.4);
+    transition: all 0.3s ease;
 }
+
+#demoToggle:hover {
+    background: linear-gradient(135deg, #7f1fff, #c04bff);
+    box-shadow: 0 6px 16px rgba(160, 0, 255, 0.6);
+    transform: translateY(-2px);
+}
+
 
 #demoContent {
     display: none;

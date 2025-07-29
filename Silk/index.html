@@ -7,6 +7,16 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <!-- AG logo in top right corner -->
+    <a
+      href="https://twitter.com/your_twitter_handle"
+      id="ag-logo"
+      target="_blank"
+      style="color: white; text-decoration: none; position: fixed; top: 20px; right: 20px; z-index: 100;"
+    >
+      <span style="font-size: 1.5rem; font-weight: bold; letter-spacing: 2px">AG</span>
+    </a>
+
     <!-- Move this here -->
     <div id="demoToggleContainer">
       <button id="demoToggle">Show Demo</button>
@@ -15,17 +25,7 @@
     <div id="demoContent">
       <!-- class= "active" (to showcase) -->
       <header class="demo-header">
-        <a
-          href="https://twitter.com/your_twitter_handle"
-          class="demo-logo"
-          target="_blank"
-          style="text-decoration: none"
-        >
-          <span
-            style="font-size: 1.5rem; font-weight: bold; letter-spacing: 2px"
-            >AG</span
-          >
-        </a>
+        <!-- Remove AG logo from here -->
         <div class="demo-logo">🔎 Search Bar</div>
         <nav class="demo-nav">
           <a href="#">Home</a>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Particle Starburst</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      overflow: hidden;
+      height: 100%;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const particles = [];
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+
+    for (let i = 0; i < 1000; i++) {
+      const angle = Math.random() * 2 * Math.PI;
+      const speed = Math.random() * 2 + 0.5;
+      particles.push({
+        x: centerX,
+        y: centerY,
+        dx: Math.cos(angle) * speed,
+        dy: Math.sin(angle) * speed,
+        life: 0
+      });
+    }
+
+    function animate() {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "white";
+      for (const p of particles) {
+        p.x += p.dx;
+        p.y += p.dy;
+        p.life++;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Optional: reset or remove particles after life exceeds threshold
+        if (p.life > 200) {
+          p.x = centerX;
+          p.y = centerY;
+          p.life = 0;
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+  </script>
+</body>
+</html>

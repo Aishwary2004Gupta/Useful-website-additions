@@ -11,19 +11,11 @@
     <a
       href="https://x.com/intent/follow?screen_name=aish2004gupta"
       id="ag-logo"
+      class="ag-logo"
       target="_blank"
-      style="
-        color: white;
-        text-decoration: none;
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 100;
-      "
+      style="position: fixed; top: 20px; right: 20px; z-index: 100;"
     >
-      <span style="font-size: 1.5rem; font-weight: bold; letter-spacing: 2px"
-        >AG</span
-      >
+      <span>AG</span>
     </a>
 
     <!-- Move this here -->
@@ -78,6 +70,14 @@
           step="0.01"
           value="0"
       /></label>
+      <label>Color: <input type="color" id="color" value="#0043e0" /></label>
+    </div>
+
+    <canvas id="bg"></canvas>
+
+    <script src="script.js"></script>
+  </body>
+</html>
       <label>Color: <input type="color" id="color" value="#0043e0" /></label>
     </div>
 

@@ -166,3 +166,21 @@ canvas {
     box-shadow: 0 6px 16px rgba(160, 0, 255, 0.6);
     transform: translateY(-2px);
 }
+
+.ag-logo {
+    color: white;
+    text-decoration: none;
+    font-size: 1.5rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+    transition: 
+        color 0.2s,
+        text-shadow 0.2s,
+        transform 0.2s;
+}
+
+.ag-logo:hover, .ag-logo:focus {
+    color: #fff;
+    text-shadow: 0 0 16px #a100ff, 0 2px 8px #fff;
+    transform: scale(1.18) translateY(-3px);
+}

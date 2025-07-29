@@ -1,22 +1,22 @@
 
-      document.getElementById("demoToggle").addEventListener("click", () => {
-        const demoContent = document.getElementById("demoContent");
-        const toggleBtn = document.getElementById("demoToggle");
-        if (demoContent.classList.contains("active")) {
-          demoContent.classList.remove("active");
-          toggleBtn.textContent = "Show Demo";
-        } else {
-          demoContent.classList.add("active");
-          toggleBtn.textContent = "Hide Demo";
-        }
-      });
+document.getElementById("demoToggle").addEventListener("click", () => {
+    const demoContent = document.getElementById("demoContent");
+    const toggleBtn = document.getElementById("demoToggle");
+    if (demoContent.classList.contains("active")) {
+        demoContent.classList.remove("active");
+        toggleBtn.textContent = "Show Demo";
+    } else {
+        demoContent.classList.add("active");
+        toggleBtn.textContent = "Hide Demo";
+    }
+});
 
-      const canvas = document.getElementById("bg");
-      const gl = canvas.getContext("webgl");
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+const canvas = document.getElementById("bg");
+const gl = canvas.getContext("webgl");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-      const vertexShaderSource = `
+const vertexShaderSource = `
         attribute vec2 position;
         varying vec2 vUv;
         void main() {
@@ -25,7 +25,7 @@
         }
       `;
 
-      const fragmentShaderSource = `
+const fragmentShaderSource = `
         precision mediump float;
         varying vec2 vUv;
 
@@ -71,98 +71,98 @@
         }
       `;
 
-      const createShader = (type, source) => {
-        const shader = gl.createShader(type);
-        gl.shaderSource(shader, source);
-        gl.compileShader(shader);
-        return shader;
-      };
+const createShader = (type, source) => {
+    const shader = gl.createShader(type);
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+    return shader;
+};
 
-      const program = gl.createProgram();
-      const vs = createShader(gl.VERTEX_SHADER, vertexShaderSource);
-      const fs = createShader(gl.FRAGMENT_SHADER, fragmentShaderSource);
-      gl.attachShader(program, vs);
-      gl.attachShader(program, fs);
-      gl.linkProgram(program);
-      gl.useProgram(program);
+const program = gl.createProgram();
+const vs = createShader(gl.VERTEX_SHADER, vertexShaderSource);
+const fs = createShader(gl.FRAGMENT_SHADER, fragmentShaderSource);
+gl.attachShader(program, vs);
+gl.attachShader(program, fs);
+gl.linkProgram(program);
+gl.useProgram(program);
 
-      const positionBuffer = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-      gl.bufferData(
-        gl.ARRAY_BUFFER,
-        new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]),
-        gl.STATIC_DRAW
-      );
+const positionBuffer = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+gl.bufferData(
+    gl.ARRAY_BUFFER,
+    new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]),
+    gl.STATIC_DRAW
+);
 
-      const positionLocation = gl.getAttribLocation(program, "position");
-      gl.enableVertexAttribArray(positionLocation);
-      gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+const positionLocation = gl.getAttribLocation(program, "position");
+gl.enableVertexAttribArray(positionLocation);
+gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
 
-      const uTime = gl.getUniformLocation(program, "uTime");
-      const uColor = gl.getUniformLocation(program, "uColor");
-      const uSpeed = gl.getUniformLocation(program, "uSpeed");
-      const uScale = gl.getUniformLocation(program, "uScale");
-      const uRotation = gl.getUniformLocation(program, "uRotation");
-      const uNoiseIntensity = gl.getUniformLocation(program, "uNoiseIntensity");
+const uTime = gl.getUniformLocation(program, "uTime");
+const uColor = gl.getUniformLocation(program, "uColor");
+const uSpeed = gl.getUniformLocation(program, "uSpeed");
+const uScale = gl.getUniformLocation(program, "uScale");
+const uRotation = gl.getUniformLocation(program, "uRotation");
+const uNoiseIntensity = gl.getUniformLocation(program, "uNoiseIntensity");
 
-      let time = 0;
-      const render = () => {
-        time += 0.01;
-        gl.viewport(0, 0, canvas.width, canvas.height);
-        gl.clear(gl.COLOR_BUFFER_BIT);
+let time = 0;
+const render = () => {
+    time += 0.01;
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.clear(gl.COLOR_BUFFER_BIT);
 
-        const rgb = hexToRgb(document.getElementById("color").value);
+    const rgb = hexToRgb(document.getElementById("color").value);
 
-        gl.uniform1f(uTime, time);
-        gl.uniform3f(uColor, rgb.r / 255, rgb.g / 255, rgb.b / 255);
-        gl.uniform1f(
-          uSpeed,
-          parseFloat(document.getElementById("speed").value)
-        );
-        gl.uniform1f(
-          uScale,
-          parseFloat(document.getElementById("scale").value)
-        );
-        gl.uniform1f(
-          uNoiseIntensity,
-          parseFloat(document.getElementById("noise").value)
-        );
-        gl.uniform1f(
-          uRotation,
-          parseFloat(document.getElementById("rotation").value)
-        );
+    gl.uniform1f(uTime, time);
+    gl.uniform3f(uColor, rgb.r / 255, rgb.g / 255, rgb.b / 255);
+    gl.uniform1f(
+        uSpeed,
+        parseFloat(document.getElementById("speed").value)
+    );
+    gl.uniform1f(
+        uScale,
+        parseFloat(document.getElementById("scale").value)
+    );
+    gl.uniform1f(
+        uNoiseIntensity,
+        parseFloat(document.getElementById("noise").value)
+    );
+    gl.uniform1f(
+        uRotation,
+        parseFloat(document.getElementById("rotation").value)
+    );
 
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
-        requestAnimationFrame(render);
-      };
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+    requestAnimationFrame(render);
+};
 
-      const hexToRgb = (hex) => {
-        const bigint = parseInt(hex.replace("#", ""), 16);
-        return {
-          r: (bigint >> 16) & 255,
-          g: (bigint >> 8) & 255,
-          b: bigint & 255,
-        };
-      };
+const hexToRgb = (hex) => {
+    const bigint = parseInt(hex.replace("#", ""), 16);
+    return {
+        r: (bigint >> 16) & 255,
+        g: (bigint >> 8) & 255,
+        b: bigint & 255,
+    };
+};
 
-      render();
-      window.addEventListener("resize", () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-      });
+render();
+window.addEventListener("resize", () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
 
-      document
-        .getElementById("toggleControlsBtn")
-        .addEventListener("click", () => {
-          const controls = document.getElementById("controls");
-          const btn = document.getElementById("toggleControlsBtn");
-          if (controls.style.display === "none") {
+document
+    .getElementById("toggleControlsBtn")
+    .addEventListener("click", () => {
+        const controls = document.getElementById("controls");
+        const btn = document.getElementById("toggleControlsBtn");
+        if (controls.style.display === "none") {
             controls.style.display = "block";
             btn.textContent = "Hide Controls";
-          } else {
+        } else {
             controls.style.display = "none";
             btn.textContent = "Show Controls";
-          }
-        });
+        }
+    });
 
-        
+

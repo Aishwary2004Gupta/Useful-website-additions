@@ -147,7 +147,8 @@ canvas {
     position: fixed;
     font-size: 1rem;
     font-weight: 1000;
-    bottom: 70px; /* just above the Hide Demo button */
+    bottom: 70px;
+    /* just above the Hide Demo button */
     right: 10px;
     z-index: 11;
     padding: 0.5rem 1rem;

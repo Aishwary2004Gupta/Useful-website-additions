@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>2D Particle Explosion</title>
+  <title>Rotating 2D Particle Explosion</title>
   <style>
     body {
       margin: 0;
-      background: black;
       overflow: hidden;
+      background: black;
     }
     canvas {
       display: block;
@@ -20,10 +20,10 @@
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
 
-  let width, height;
-  let centerX, centerY;
+  let width, height, centerX, centerY;
   const particles = [];
-  const numParticles = 500;
+  const numParticles = 600;
+  let rotation = 0;
 
   function resize() {
     width = canvas.width = window.innerWidth;
@@ -41,8 +41,8 @@
     }
 
     reset() {
-      this.x = centerX;
-      this.y = centerY;
+      this.x = 0;
+      this.y = 0;
       const angle = Math.random() * Math.PI * 2;
       const speed = Math.random() * 2 + 1;
       this.vx = Math.cos(angle) * speed;
@@ -52,10 +52,9 @@
     update() {
       this.x += this.vx;
       this.y += this.vy;
-
       if (
-        this.x < 0 || this.x > width ||
-        this.y < 0 || this.y > height
+        this.x + centerX < 0 || this.x + centerX > width ||
+        this.y + centerY < 0 || this.y + centerY > height
       ) {
         this.reset();
       }
@@ -75,10 +74,15 @@
     ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
     ctx.fillRect(0, 0, width, height);
 
-    // Draw source dot
+    ctx.save();
+    ctx.translate(centerX, centerY);
+    ctx.rotate(rotation);
+    rotation += 0.002; // slow rotation
+
+    // Source center dot
     ctx.beginPath();
     ctx.fillStyle = 'white';
-    ctx.arc(centerX, centerY, 3, 0, Math.PI * 2);
+    ctx.arc(0, 0, 3.5, 0, Math.PI * 2);
     ctx.fill();
 
     particles.forEach(p => {
@@ -86,6 +90,7 @@
       p.draw();
     });
 
+    ctx.restore();
     requestAnimationFrame(animate);
   }
 

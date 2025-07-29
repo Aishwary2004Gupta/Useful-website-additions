@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Continuous Center Burst</title>
+  <meta charset="UTF-8" />
+  <title>Center Burst Particles</title>
   <style>
     html, body {
       margin: 0;
@@ -32,7 +32,7 @@
     class Particle {
       constructor() {
         const angle = Math.random() * Math.PI * 2;
-        const speed = Math.random() * 3 + 0.5;
+        const speed = Math.random() * 2 + 0.5;
         this.x = centerX;
         this.y = centerY;
         this.dx = Math.cos(angle) * speed;
@@ -48,31 +48,37 @@
 
       draw() {
         ctx.beginPath();
-        ctx.arc(this.x, this.y, 1.5, 0, Math.PI * 2);
+        ctx.arc(this.x, this.y, 0.7, 0, Math.PI * 2); // smaller particle
         ctx.fill();
       }
+    }
+
+    function drawCenterDot() {
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, 4, 0, Math.PI * 2); // slightly bigger center
+      ctx.fillStyle = "white";
+      ctx.fill();
     }
 
     function animate() {
       ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Add new particles continuously
-      for (let i = 0; i < 10; i++) {
+      // Add new particles
+      for (let i = 0; i < 8; i++) {
         particles.push(new Particle());
       }
 
       ctx.fillStyle = "white";
+
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.update();
         p.draw();
-
-        if (p.life > 200) {
-          particles.splice(i, 1); // remove old particle
-        }
+        if (p.life > 150) particles.splice(i, 1);
       }
 
+      drawCenterDot();
       requestAnimationFrame(animate);
     }
 

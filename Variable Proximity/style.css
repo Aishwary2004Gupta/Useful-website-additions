@@ -1,0 +1,21 @@
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #111;
+  color: white;
+  font-family: "Roboto Flex", sans-serif;
+}
+
+#container {
+  position: relative;
+  padding: 40px;
+}
+
+.proximity-letter {
+  display: inline-block;
+  transition: font-variation-settings 0.1s linear;
+  font-variation-settings: 'wght' 400, 'opsz' 9;
+}

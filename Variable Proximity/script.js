@@ -10,6 +10,7 @@ const label = "Hover me! And then star this GitHub repo, or else...";
 label.split("").forEach((char, index) => {
     const span = document.createElement("span");
     span.className = "proximity-letter";
+    span.style.fontSize = "3rem"; // Increased font size
     //to add the spaces in betten the words
     if (char === " ") {
         span.textContent = "\u00A0"; // non-breaking space for visible gap

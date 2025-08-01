@@ -5,7 +5,7 @@ const fromSettings = { wght: 400, opsz: 9 };
 const toSettings = { wght: 1000, opsz: 40 };
 const falloff = "linear";
 
-const label = "Hover me! And then star this GitHub repo, or else...this repo";
+const label = "Hover me! And then star this GitHub repo, or else...";
 
 label.split("").forEach((char, index) => {
     const span = document.createElement("span");

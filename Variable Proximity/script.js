@@ -7,19 +7,40 @@ const falloff = "linear";
 
 const label = "Hover me! And then star this GitHub repo, or else...";
 
-label.split("").forEach((char, index) => {
+let i = 0;
+while (i < label.length) {
+    // Check if the current position starts the word "this"
+    if (label.slice(i, i + 4) === "this") {
+        const link = document.createElement("a");
+        link.href = "https://github.com/Aishwary2004Gupta/Useful-website-additions/tree/main/Variable%20Proximity";
+        link.target = "_blank";
+        link.style.textDecoration = "underline";
+        link.style.color = "blue";
+        // Each letter in "this" gets its own span for proximity effect
+        "this".split("").forEach(letterChar => {
+            const span = document.createElement("span");
+            span.className = "proximity-letter";
+            span.style.fontSize = "6rem";
+            span.textContent = letterChar;
+            link.appendChild(span);
+        });
+        textElement.appendChild(link);
+        i += 4; // Skip "this"
+        continue;
+    }
     const span = document.createElement("span");
     span.className = "proximity-letter";
     span.style.fontSize = "6rem"; // Increased font size
     //to add the spaces in betten the words
-    if (char === " ") {
+    if (label[i] === " ") {
         span.textContent = "\u00A0"; // non-breaking space for visible gap
         span.classList.add("proximity-space");
     } else {
-        span.textContent = char;
+        span.textContent = label[i];
     }
     textElement.appendChild(span);
-});
+    i++;
+}
 
 const letters = [...document.querySelectorAll(".proximity-letter")];
 
@@ -61,4 +82,5 @@ function animateProximity(e) {
     });
 }
 
+window.addEventListener("mousemove", animateProximity);
 window.addEventListener("mousemove", animateProximity);

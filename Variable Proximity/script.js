@@ -5,20 +5,29 @@ const fromSettings = { wght: 400, opsz: 9 };
 const toSettings = { wght: 1000, opsz: 40 };
 const falloff = "linear";
 
-const label = "Hover me! And then star this GitHub repo, or else...";
+const labelLines = [
+    "Hover me! And then star this GitHub repo,",
+    "or else..."
+];
 
-label.split("").forEach((char, index) => {
-    const span = document.createElement("span");
-    span.className = "proximity-letter";
-    span.style.fontSize = "3rem"; // Increased font size
-    //to add the spaces in betten the words
-    if (char === " ") {
-        span.textContent = "\u00A0"; // non-breaking space for visible gap
-        span.classList.add("proximity-space");
-    } else {
-        span.textContent = char;
+labelLines.forEach((line, lineIndex) => {
+    line.split("").forEach((char, index) => {
+        const span = document.createElement("span");
+        span.className = "proximity-letter";
+        span.style.fontSize = "3rem"; // Increased font size
+        //to add the spaces in betten the words
+        if (char === " ") {
+            span.textContent = "\u00A0"; // non-breaking space for visible gap
+            span.classList.add("proximity-space");
+        } else {
+            span.textContent = char;
+        }
+        textElement.appendChild(span);
+    });
+    // Add line break except after last line
+    if (lineIndex < labelLines.length - 1) {
+        textElement.appendChild(document.createElement("br"));
     }
-    textElement.appendChild(span);
 });
 
 const letters = [...document.querySelectorAll(".proximity-letter")];

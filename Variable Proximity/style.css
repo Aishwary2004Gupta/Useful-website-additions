@@ -10,8 +10,7 @@ body {
 }
 
 #container {
-      text-align: center;        /* center text inside */
-
+  text-align: center;
   position: relative;
   padding: 40px;
 }

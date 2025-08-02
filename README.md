@@ -27,5 +27,3 @@ Contributions are welcome! Please submit pull requests or open issues for sugges
 ## License
 
 This project is licensed under the MIT License.
-
-

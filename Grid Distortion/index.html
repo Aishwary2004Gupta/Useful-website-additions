@@ -19,6 +19,12 @@
     canvas {
       display: block;
     }
+    .tp-dfwv {
+      position: absolute !important;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+    }
   </style>
 </head>
 <body>
@@ -34,29 +40,20 @@
       gridSize: 64,
       distortionPower: 0.15,
       distortionRadius: 0.2,
-      distortEdges: true
+      distortEdges: true,
+      changeImage: () => loadTexture(),
     };
 
     const ctrl = new Pane({ title: 'Config', expanded: true });
-    ctrl.addBinding(config, 'gridSize', { min: 4, max: 128, step: 1, label: 'Grid Size' });
+    ctrl.addBinding(config, 'gridSize', { min: 4, max: 128, step: 1, label: 'Grid Size' }).on('change', () => regenerateDistortion());
     ctrl.addBinding(config, 'distortionPower', { min: 0.01, max: 1, step: 0.01, label: 'Power' });
     ctrl.addBinding(config, 'distortionRadius', { min: 0.01, max: 1, step: 0.01, label: 'Radius' });
     ctrl.addBinding(config, 'distortEdges', { label: 'Distort Edges' });
-
-    const imageConfig = { changeImage: () => loadTexture() };
-    ctrl.addButton({ title: 'Change Image' }).on('click', imageConfig.changeImage);
+    ctrl.addButton({ title: 'Change Image' }).on('click', () => config.changeImage());
 
     let renderer, scene, camera, plane, material, uniforms, dataTexture;
 
     const initScene = () => {
-      if (renderer) {
-        renderer.dispose();
-        scene.clear();
-        plane.geometry.dispose();
-        plane.material.dispose();
-        container.innerHTML = '';
-      }
-
       scene = new THREE.Scene();
       camera = new THREE.OrthographicCamera(-1, 1, 1, -1, -1000, 1000);
       camera.position.z = 2;
@@ -64,6 +61,7 @@
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setSize(container.clientWidth, container.clientHeight);
       renderer.setPixelRatio(window.devicePixelRatio);
+      container.innerHTML = '';
       container.appendChild(renderer.domElement);
 
       uniforms = {
@@ -92,6 +90,31 @@
         }
       `;
 
+      material = new THREE.ShaderMaterial({
+        side: THREE.DoubleSide,
+        uniforms,
+        vertexShader,
+        fragmentShader
+      });
+
+      generateDistortionGrid();
+    };
+
+    const generateDistortionGrid = () => {
+      if (plane) {
+        scene.remove(plane);
+        plane.geometry.dispose();
+      }
+
+      const size = config.gridSize;
+      const geometry = new THREE.PlaneGeometry(2, 2, size - 1, size - 1);
+      plane = new THREE.Mesh(geometry, material);
+      scene.add(plane);
+
+      regenerateDistortion();
+    };
+
+    const regenerateDistortion = () => {
       const size = config.gridSize;
       const data = new Float32Array(4 * size * size);
       for (let i = 0; i < size * size; i++) {
@@ -102,17 +125,6 @@
       dataTexture = new THREE.DataTexture(data, size, size, THREE.RGBAFormat, THREE.FloatType);
       dataTexture.needsUpdate = true;
       uniforms.uDataTexture.value = dataTexture;
-
-      material = new THREE.ShaderMaterial({
-        side: THREE.DoubleSide,
-        uniforms,
-        vertexShader,
-        fragmentShader
-      });
-
-      const geometry = new THREE.PlaneGeometry(2, 2, size - 1, size - 1);
-      plane = new THREE.Mesh(geometry, material);
-      scene.add(plane);
     };
 
     const loadTexture = () => {
@@ -135,7 +147,7 @@
 
     const animate = () => {
       requestAnimationFrame(animate);
-      if (!dataTexture) return;
+      if (!dataTexture || !uniforms.uTexture.value) return;
 
       uniforms.time.value += 0.05;
       const d = dataTexture.image.data;
@@ -167,10 +179,6 @@
       dataTexture.needsUpdate = true;
       renderer.render(scene, camera);
     };
-
-    ctrl.on('change', () => {
-      initScene();
-    });
 
     initScene();
     loadTexture();

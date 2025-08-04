@@ -1,4 +1,16 @@
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.module.js";
+const style = document.createElement('style');
+      style.innerHTML = `
+      .tp-dfwv {
+        position: fixed !important;
+        top: 20px !important;
+        right: 20px !important;
+        left: auto !important;
+        z-index: 1000 !important;
+      }
+      `;
+      document.head.appendChild(style);
+
+      import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.module.js";
       import { Pane } from "https://cdn.skypack.dev/tweakpane@4.0.4";
 
       const container = document.getElementById("container");

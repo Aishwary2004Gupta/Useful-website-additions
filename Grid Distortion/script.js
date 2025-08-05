@@ -23,6 +23,8 @@ let config = {
     changeImage: () => loadTexture(),
 };
 
+let nextTexture = null;
+
 const ctrl = new Pane({ title: "Config", expanded: true });
 ctrl
     .addBinding(config, "gridSize", {

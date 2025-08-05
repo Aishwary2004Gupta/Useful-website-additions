@@ -214,5 +214,5 @@ const animate = () => {
 };
 
 initScene();
-loadTexture();
+preloadNextTexture();
 animate();

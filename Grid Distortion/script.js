@@ -174,18 +174,44 @@ const loadTexture = () => {
 function showLoadingSpinner(show) {
     if (!changeImageButtonElem) return;
     if (show) {
-        changeImageButtonElem.innerHTML = `<span class="spinner" style="display:inline-block;width:16px;height:16px;border:2px solid #ccc;border-top:2px solid #333;border-radius:50%;animation:spin 1s linear infinite;margin-right:6px;vertical-align:middle;"></span> Change Image`;
+        changeImageButtonElem.innerHTML = `
+            <span class="spinner-centered"></span>
+        `;
+        changeImageButtonElem.style.position = "relative";
+        changeImageButtonElem.style.height = "38px";
+        changeImageButtonElem.style.width = "120px";
+        changeImageButtonElem.disabled = true;
     } else {
         changeImageButtonElem.innerHTML = `Change Image`;
+        changeImageButtonElem.style.position = "";
+        changeImageButtonElem.style.height = "";
+        changeImageButtonElem.style.width = "";
+        changeImageButtonElem.disabled = false;
     }
 }
 
-// Add spinner CSS
+// Add improved spinner CSS
 const spinnerStyle = document.createElement('style');
 spinnerStyle.innerHTML = `
 @keyframes spin {
     0% { transform: rotate(0deg);}
     100% { transform: rotate(360deg);}
+}
+.spinner-centered {
+    display: block;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 32px;
+    height: 32px;
+    margin-left: -16px;
+    margin-top: -16px;
+    border: 4px solid #ccc;
+    border-top: 4px solid #333;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    background: transparent;
+    z-index: 2;
 }
 `;
 document.head.appendChild(spinnerStyle);

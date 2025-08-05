@@ -52,6 +52,7 @@ ctrl
     .on("click", () => config.changeImage());
 
 let renderer, scene, camera, plane, material, uniforms, dataTexture;
+let changeImageButtonElem = null; // Reference to button DOM element
 
 const initScene = () => {
     scene = new THREE.Scene();
@@ -142,17 +143,21 @@ const regenerateDistortion = () => {
 
 const preloadNextTexture = () => {
     const url = `https://picsum.photos/1920/1080?random=${Date.now()}`;
+    showLoadingSpinner(true); // Show spinner while loading
     new THREE.TextureLoader().load(url, (texture) => {
         texture.minFilter = THREE.LinearFilter;
         nextTexture = texture;
+        showLoadingSpinner(false); // Hide spinner after loaded
     });
 };
 
 const loadTexture = () => {
+    showLoadingSpinner(true); // Show spinner while loading
     if (nextTexture) {
         uniforms.uTexture.value = nextTexture;
         nextTexture = null;
         preloadNextTexture();
+        showLoadingSpinner(false); // Hide spinner after loaded
     } else {
         // Fallback: load immediately if not preloaded
         const url = `https://picsum.photos/1920/1080?random=${Date.now()}`;
@@ -160,11 +165,43 @@ const loadTexture = () => {
             texture.minFilter = THREE.LinearFilter;
             uniforms.uTexture.value = texture;
             preloadNextTexture();
+            showLoadingSpinner(false); // Hide spinner after loaded
         });
     }
 };
 
-let mouse = { x: 0, y: 0, prevX: 0, prevY: 0, vX: 0, vY: 0 };
+// Spinner logic
+function showLoadingSpinner(show) {
+    if (!changeImageButtonElem) return;
+    if (show) {
+        changeImageButtonElem.innerHTML = `<span class="spinner" style="display:inline-block;width:16px;height:16px;border:2px solid #ccc;border-top:2px solid #333;border-radius:50%;animation:spin 1s linear infinite;margin-right:6px;vertical-align:middle;"></span> Change Image`;
+    } else {
+        changeImageButtonElem.innerHTML = `Change Image`;
+    }
+}
+
+// Add spinner CSS
+const spinnerStyle = document.createElement('style');
+spinnerStyle.innerHTML = `
+@keyframes spin {
+    0% { transform: rotate(0deg);}
+    100% { transform: rotate(360deg);}
+}
+`;
+document.head.appendChild(spinnerStyle);
+
+// Find the Change Image button DOM element after pane is rendered
+setTimeout(() => {
+    // Tweakpane renders buttons as <button> elements with the title text
+    const buttons = document.querySelectorAll('.tp-dfwv button');
+    buttons.forEach(btn => {
+        if (btn.textContent.trim() === "Change Image") {
+            changeImageButtonElem = btn;
+        }
+    });
+}, 100);
+
+const mouse = { x: 0, y: 0, prevX: 0, prevY: 0, vX: 0, vY: 0 };
 container.addEventListener("mousemove", (e) => {
     const rect = container.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width;
@@ -215,4 +252,5 @@ const animate = () => {
 
 initScene();
 preloadNextTexture();
+loadTexture(); // <-- Ensure initial image loads immediately
 animate();

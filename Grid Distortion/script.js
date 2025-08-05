@@ -149,11 +149,19 @@ const preloadNextTexture = () => {
 };
 
 const loadTexture = () => {
-    const url = `https://picsum.photos/1920/1080?random=${Date.now()}`;
-    new THREE.TextureLoader().load(url, (texture) => {
-        texture.minFilter = THREE.LinearFilter;
-        uniforms.uTexture.value = texture;
-    });
+    if (nextTexture) {
+        uniforms.uTexture.value = nextTexture;
+        nextTexture = null;
+        preloadNextTexture();
+    } else {
+        // Fallback: load immediately if not preloaded
+        const url = `https://picsum.photos/1920/1080?random=${Date.now()}`;
+        new THREE.TextureLoader().load(url, (texture) => {
+            texture.minFilter = THREE.LinearFilter;
+            uniforms.uTexture.value = texture;
+            preloadNextTexture();
+        });
+    }
 };
 
 let mouse = { x: 0, y: 0, prevX: 0, prevY: 0, vX: 0, vY: 0 };

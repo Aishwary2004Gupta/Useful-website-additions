@@ -175,17 +175,14 @@ function showLoadingSpinner(show) {
     if (!changeImageButtonElem) return;
     if (show) {
         changeImageButtonElem.innerHTML = `
-            <span class="spinner-centered"></span>
+            <span class="spinner-overlay"></span>
+            <span class="spinner-text">Change Image</span>
         `;
         changeImageButtonElem.style.position = "relative";
-        changeImageButtonElem.style.height = "38px";
-        changeImageButtonElem.style.width = "120px";
         changeImageButtonElem.disabled = true;
     } else {
         changeImageButtonElem.innerHTML = `Change Image`;
         changeImageButtonElem.style.position = "";
-        changeImageButtonElem.style.height = "";
-        changeImageButtonElem.style.width = "";
         changeImageButtonElem.disabled = false;
     }
 }
@@ -197,21 +194,26 @@ spinnerStyle.innerHTML = `
     0% { transform: rotate(0deg);}
     100% { transform: rotate(360deg);}
 }
-.spinner-centered {
-    display: block;
+.spinner-overlay {
     position: absolute;
     left: 50%;
     top: 50%;
-    width: 32px;
-    height: 32px;
-    margin-left: -16px;
-    margin-top: -16px;
-    border: 4px solid #ccc;
-    border-top: 4px solid #333;
+    width: 24px;
+    height: 24px;
+    margin-left: -12px;
+    margin-top: -12px;
+    border: 3px solid #ccc;
+    border-top: 3px solid #333;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
     background: transparent;
     z-index: 2;
+    pointer-events: none;
+}
+.spinner-text {
+    position: relative;
+    z-index: 1;
+    opacity: 0.7;
 }
 `;
 document.head.appendChild(spinnerStyle);

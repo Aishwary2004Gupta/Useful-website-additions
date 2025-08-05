@@ -140,6 +140,14 @@ const regenerateDistortion = () => {
     uniforms.uDataTexture.value = dataTexture;
 };
 
+const preloadNextTexture = () => {
+    const url = `https://picsum.photos/1920/1080?random=${Date.now()}`;
+    new THREE.TextureLoader().load(url, (texture) => {
+        texture.minFilter = THREE.LinearFilter;
+        nextTexture = texture;
+    });
+};
+
 const loadTexture = () => {
     const url = `https://picsum.photos/1920/1080?random=${Date.now()}`;
     new THREE.TextureLoader().load(url, (texture) => {

@@ -170,10 +170,12 @@ body {
 
 .card--text-autohide .card__title {
   -webkit-line-clamp: 1;
+  line-clamp: 1;
 }
 
 .card--text-autohide .card__description {
   -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 /* Particle Highlight */

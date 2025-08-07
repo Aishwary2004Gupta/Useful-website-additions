@@ -12,8 +12,8 @@
 
 .card-grid {
   display: grid;
-  gap: 0.5em;
-  padding: 0.75em;
+  gap: 2em; /* Increased gap for better spacing */
+  padding: 2em; /* Increased padding */
   max-width: 54em;
   font-size: clamp(1rem, 0.9rem + 0.5vw, 1.5rem);
 }
@@ -105,9 +105,10 @@
 @media (max-width: 599px) {
   .card-grid {
     grid-template-columns: 1fr;
-    width: 90%;
+    width: 95%;
     margin: 0 auto;
-    padding: 0.5em;
+    padding: 1em; /* Increased padding */
+    gap: 1.2em;   /* Increased gap */
   }
 
   .card {
@@ -119,12 +120,14 @@
 @media (min-width: 600px) {
   .card-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 2em; /* Ensure gap is consistent */
   }
 }
 
 @media (min-width: 1024px) {
   .card-grid {
     grid-template-columns: repeat(4, 1fr);
+    gap: 2.5em; /* Even more gap for large screens */
   }
 
   .card:nth-child(3) {

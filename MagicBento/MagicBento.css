@@ -7,8 +7,10 @@
   --purple-border: rgba(132, 0, 255, 0.8);
   --border-color: #392e4e;
   --background-dark: #060010;
+
   --glow-radius: 200px;
   --transition: 0.3s ease;
+
   color-scheme: light dark;
 }
 
@@ -19,6 +21,7 @@ body {
   color: var(--white);
 }
 
+/* Layout Grid */
 .card-grid {
   display: grid;
   gap: 0.75em;
@@ -44,29 +47,35 @@ body {
   .card-grid {
     grid-template-columns: repeat(4, 1fr);
   }
+
   .card:nth-child(3) {
     grid-column: span 2;
     grid-row: span 2;
   }
+
   .card:nth-child(4) {
     grid-column: 1 / span 2;
     grid-row: 2 / span 2;
   }
+
   .card:nth-child(6) {
     grid-column: 4;
     grid-row: 3;
   }
 }
 
+/* Card Style */
 .card {
   position: relative;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+
   aspect-ratio: 4 / 3;
   min-height: 200px;
   width: 100%;
   padding: 1.5em;
+
   border-radius: 20px;
   border: 1px solid var(--border-color);
   background: var(--background-dark);
@@ -74,16 +83,19 @@ body {
   font-weight: 300;
   overflow: hidden;
   transition: var(--transition);
+
   --glow-x: 50%;
   --glow-y: 50%;
   --glow-intensity: 0;
 }
 
+/* Hover Effect */
 .card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
+/* Glow Border */
 .card--border-glow::after {
   content: '';
   position: absolute;
@@ -116,6 +128,7 @@ body {
     0 0 30px var(--purple-glow);
 }
 
+/* Card Content */
 .card__header,
 .card__content {
   display: flex;
@@ -165,6 +178,7 @@ body {
   line-clamp: 2;
 }
 
+/* Particle Highlight */
 .particle-container {
   position: relative;
   overflow: hidden;
@@ -187,6 +201,7 @@ body {
               0 0 30px var(--purple-glow);
 }
 
+/* Global spotlight */
 .global-spotlight {
   mix-blend-mode: screen;
   will-change: transform, opacity;
@@ -194,6 +209,7 @@ body {
   pointer-events: none;
 }
 
+/* Section wrapper */
 .bento-section {
   position: relative;
   user-select: none;

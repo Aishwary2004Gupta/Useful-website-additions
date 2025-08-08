@@ -55,13 +55,13 @@ class ParticleCard {
     this.el.addEventListener("mouseenter", () => {
       this.hovered = true;
       this.spawnParticles();
-      if (this.enableTilt) gsap.to(this.el, {rotateX:5, rotateY:5, duration:0.3, ease:"power2.out", transformPerspective:1000});
+      if (this.enableTilt) gsap.to(this.el, { rotateX: 5, rotateY: 5, duration: 0.3, ease: "power2.out", transformPerspective: 1000 });
     });
     this.el.addEventListener("mouseleave", () => {
       this.hovered = false;
       this.clearAll();
-      if (this.enableTilt) gsap.to(this.el, {rotateX:0, rotateY:0, duration:0.3, ease:"power2.out"});
-      if (this.enableMagnetism) gsap.to(this.el, {x:0, y:0, duration:0.3, ease:"power2.out"});
+      if (this.enableTilt) gsap.to(this.el, { rotateX: 0, rotateY: 0, duration: 0.3, ease: "power2.out" });
+      if (this.enableMagnetism) gsap.to(this.el, { x: 0, y: 0, duration: 0.3, ease: "power2.out" });
     });
     this.el.addEventListener("mousemove", (e) => {
       const rect = this.el.getBoundingClientRect();
@@ -69,10 +69,10 @@ class ParticleCard {
       const cx = rect.width / 2, cy = rect.height / 2;
 
       if (this.enableTilt) {
-        gsap.to(this.el, { rotateX: ((y-cy)/cy)*-10, rotateY: ((x-cx)/cx)*10, duration:0.1, ease:"power2.out", transformPerspective:1000 });
+        gsap.to(this.el, { rotateX: ((y - cy) / cy) * -10, rotateY: ((x - cx) / cx) * 10, duration: 0.1, ease: "power2.out", transformPerspective: 1000 });
       }
       if (this.enableMagnetism) {
-        gsap.to(this.el, ({ x: (x-cx)*0.05, y: (y-cy)*0.05 }), { duration:0.3, ease:"power2.out"});
+        gsap.to(this.el, ({ x: (x - cx) * 0.05, y: (y - cy) * 0.05 }), { duration: 0.3, ease: "power2.out" });
       }
     });
     this.el.addEventListener("click", (e) => {
@@ -80,29 +80,29 @@ class ParticleCard {
       const rect = this.el.getBoundingClientRect();
       const x = e.clientX - rect.left, y = e.clientY - rect.top;
       const maxDist = Math.max(
-        Math.hypot(x,y),
-        Math.hypot(x-rect.width,y),
-        Math.hypot(x,y-rect.height),
-        Math.hypot(x-rect.width,y-rect.height)
+        Math.hypot(x, y),
+        Math.hypot(x - rect.width, y),
+        Math.hypot(x, y - rect.height),
+        Math.hypot(x - rect.width, y - rect.height)
       );
       const ripple = document.createElement("div");
       ripple.style.cssText = `
-        position:absolute; width:${maxDist*2}px; height:${maxDist*2}px;
+        position:absolute; width:${maxDist * 2}px; height:${maxDist * 2}px;
         border-radius:50%;
         background:radial-gradient(circle, rgba(${this.glowColor},0.4) 0%, rgba(${this.glowColor},0.2) 30%, transparent 70%);
-        left:${x-maxDist}px; top:${y-maxDist}px;
+        left:${x - maxDist}px; top:${y - maxDist}px;
         pointer-events:none; z-index:1000;
       `;
       this.el.appendChild(ripple);
-      gsap.fromTo(ripple, {scale:0, opacity:1}, {scale:1, opacity:0, duration:0.8, ease:"power2.out", onComplete: ()=>ripple.remove()});
+      gsap.fromTo(ripple, { scale: 0, opacity: 1 }, { scale: 1, opacity: 0, duration: 0.8, ease: "power2.out", onComplete: () => ripple.remove() });
     });
   }
 
   spawnParticles() {
     if (this.memo.length === 0) {
       const rect = this.el.getBoundingClientRect();
-      for (let i=0; i<this.particleCount; i++) {
-        this.memo.push(createParticle(Math.random()*rect.width, Math.random()*rect.height, this.glowColor));
+      for (let i = 0; i < this.particleCount; i++) {
+        this.memo.push(createParticle(Math.random() * rect.width, Math.random() * rect.height, this.glowColor));
       }
     }
     this.memo.forEach((p, i) => {
@@ -111,15 +111,15 @@ class ParticleCard {
         const clone = p.cloneNode(true);
         this.el.appendChild(clone);
         this.particles.push(clone);
-        gsap.fromTo(clone, {scale:0, opacity:0}, {scale:1, opacity:1, duration:0.3, ease:"back.out(1.7)"});
-        gsap.to(clone, { x:(Math.random()-0.5)*100, y:(Math.random()-0.5)*100, rotation:Math.random()*360, duration:2+Math.random()*2, ease:"none", repeat:-1, yoyo:true });
-        gsap.to(clone, { opacity:0.3, duration:1.5, ease:"power2.inOut", repeat:-1, yoyo:true });
+        gsap.fromTo(clone, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(1.7)" });
+        gsap.to(clone, { x: (Math.random() - 0.5) * 100, y: (Math.random() - 0.5) * 100, rotation: Math.random() * 360, duration: 2 + Math.random() * 2, ease: "none", repeat: -1, yoyo: true });
+        gsap.to(clone, { opacity: 0.3, duration: 1.5, ease: "power2.inOut", repeat: -1, yoyo: true });
       }, i * 100);
     });
   }
 
   clearAll() {
-    this.particles.forEach(p => gsap.to(p, { scale:0, opacity:0, duration:0.3, ease:"back.in(1.7)", onComplete: ()=>p.remove() }));
+    this.particles.forEach(p => gsap.to(p, { scale: 0, opacity: 0, duration: 0.3, ease: "back.in(1.7)", onComplete: () => p.remove() }));
     this.particles = [];
   }
 }
@@ -141,8 +141,8 @@ class GlobalSpotlight {
   onMouseMove(e) {
     const sectionRect = this.container.closest(".bento-section").getBoundingClientRect();
     if (e.clientX < sectionRect.left || e.clientX > sectionRect.right || e.clientY < sectionRect.top || e.clientY > sectionRect.bottom) {
-      gsap.to(this.el, {opacity:0, duration:0.3, ease:"power2.out"});
-      this.container.querySelectorAll(".card").forEach(c=>c.style.setProperty("--glow-intensity", 0));
+      gsap.to(this.el, { opacity: 0, duration: 0.3, ease: "power2.out" });
+      this.container.querySelectorAll(".card").forEach(c => c.style.setProperty("--glow-intensity", 0));
       return;
     }
     const { proximity, fadeDistance } = calculateSpotlight(this.spotlightRadius);
@@ -150,25 +150,25 @@ class GlobalSpotlight {
 
     this.container.querySelectorAll(".card").forEach(card => {
       const cr = card.getBoundingClientRect();
-      const cx = cr.left + cr.width/2, cy = cr.top + cr.height/2;
-      const dist = Math.hypot(e.clientX - cx, e.clientY - cy) - Math.max(cr.width, cr.height)/2;
+      const cx = cr.left + cr.width / 2, cy = cr.top + cr.height / 2;
+      const dist = Math.hypot(e.clientX - cx, e.clientY - cy) - Math.max(cr.width, cr.height) / 2;
       const eff = Math.max(0, dist);
       minDist = Math.min(minDist, eff);
       let glowIntensity = 0;
       if (eff <= proximity) glowIntensity = 1;
-      else if (eff <= fadeDistance) glowIntensity = (fadeDistance - eff)/(fadeDistance - proximity);
+      else if (eff <= fadeDistance) glowIntensity = (fadeDistance - eff) / (fadeDistance - proximity);
       updateGlow(card, e.clientX, e.clientY, glowIntensity, this.spotlightRadius);
     });
 
-    gsap.to(this.el, { left: e.clientX, top: e.clientY, duration:0.1, ease:"power2.out" });
+    gsap.to(this.el, { left: e.clientX, top: e.clientY, duration: 0.1, ease: "power2.out" });
     const targetOpacity = minDist <= proximity
       ? 0.8
-      : (minDist <= fadeDistance ? ((fadeDistance - minDist)/(fadeDistance - proximity))*0.8 : 0);
-    gsap.to(this.el, { opacity: targetOpacity, duration: targetOpacity>0 ? 0.2 : 0.5, ease:"power2.out" });
+      : (minDist <= fadeDistance ? ((fadeDistance - minDist) / (fadeDistance - proximity)) * 0.8 : 0);
+    gsap.to(this.el, { opacity: targetOpacity, duration: targetOpacity > 0 ? 0.2 : 0.5, ease: "power2.out" });
   }
   onMouseLeave() {
-    this.container.querySelectorAll(".card").forEach(c=>c.style.setProperty("--glow-intensity", 0));
-    gsap.to(this.el, { opacity: 0, duration: 0.3, ease:"power2.out" });
+    this.container.querySelectorAll(".card").forEach(c => c.style.setProperty("--glow-intensity", 0));
+    gsap.to(this.el, { opacity: 0, duration: 0.3, ease: "power2.out" });
   }
 }
 

@@ -203,7 +203,7 @@ class GlobalSpotlight {
   }
 }
 
-// Add global config object
+// Move config object near the top
 const config = {
   spotlightRadius: DEFAULT_SPOTLIGHT_RADIUS,
   starsEffect: true,
@@ -214,26 +214,28 @@ const config = {
   disableAnimations: false
 };
 
-// Setup control panel
-const pane = new Pane({
-  title: 'Magic Bento Controls',
-  expanded: true
-});
-
-pane.addInput(config, 'spotlightRadius', {
-  min: 100,
-  max: 500,
-  step: 10,
-  label: 'Spotlight Radius'
-});
-pane.addInput(config, 'starsEffect');
-pane.addInput(config, 'spotlightEffect');
-pane.addInput(config, 'tiltEffect');
-pane.addInput(config, 'clickEffect');
-pane.addInput(config, 'magnetism');
-pane.addInput(config, 'disableAnimations');
-
 document.addEventListener("DOMContentLoaded", () => {
+  // Initialize Tweakpane at the start of DOMContentLoaded
+  const pane = new Pane({
+    title: 'Magic Bento Controls',
+    expanded: true,
+    container: document.getElementById('controlPanel')
+  });
+
+  // Add inputs after pane is initialized
+  pane.addInput(config, 'spotlightRadius', {
+    min: 100,
+    max: 500,
+    step: 10,
+    label: 'Spotlight Radius'
+  });
+  pane.addInput(config, 'starsEffect');
+  pane.addInput(config, 'spotlightEffect');
+  pane.addInput(config, 'tiltEffect');
+  pane.addInput(config, 'clickEffect');
+  pane.addInput(config, 'magnetism');
+  pane.addInput(config, 'disableAnimations');
+
   const grid = document.getElementById("cardGrid");
 
   cardData.forEach(cfg => {

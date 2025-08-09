@@ -4,7 +4,7 @@ const cardData = [
   { color: "#060010", title: "Collaboration", description: "Work together seamlessly", label: "Teamwork" },
   { color: "#060010", title: "Automation", description: "Streamline workflows", label: "Efficiency" },
   { color: "#060010", title: "Integration", description: "Connect favorite tools", label: "Connectivity" },
-  { color: "#060010", title: "Security", description: "Enterprise‑grade protection", label: "Protection" },
+  { color: "#060010", title: "Security", description: "Enterprise-grade protection", label: "Protection" },
 ];
 
 const DEFAULT_PARTICLE_COUNT = 12;

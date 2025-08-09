@@ -1,3 +1,5 @@
+import { Pane } from "https://cdn.skypack.dev/tweakpane@4.0.4";
+
 const cardData = [
   { color: "#060010", title: "Analytics", description: "Track user behavior", label: "Insights" },
   { color: "#060010", title: "Dashboard", description: "Centralized data view", label: "Overview" },
@@ -54,29 +56,54 @@ class ParticleCard {
   setupEvents() {
     this.el.addEventListener("mouseenter", () => {
       this.hovered = true;
-      this.spawnParticles();
-      if (this.enableTilt) gsap.to(this.el, { rotateX: 5, rotateY: 5, duration: 0.3, ease: "power2.out", transformPerspective: 1000 });
+      if (config.starsEffect && !config.disableAnimations) {
+        this.spawnParticles();
+      }
+      if (config.tiltEffect && !config.disableAnimations) {
+        gsap.to(this.el, { rotateX: 5, rotateY: 5, duration: 0.3, ease: "power2.out", transformPerspective: 1000 });
+      }
     });
+
     this.el.addEventListener("mouseleave", () => {
       this.hovered = false;
       this.clearAll();
-      if (this.enableTilt) gsap.to(this.el, { rotateX: 0, rotateY: 0, duration: 0.3, ease: "power2.out" });
-      if (this.enableMagnetism) gsap.to(this.el, { x: 0, y: 0, duration: 0.3, ease: "power2.out" });
+      if (config.tiltEffect && !config.disableAnimations) {
+        gsap.to(this.el, { rotateX: 0, rotateY: 0, duration: 0.3, ease: "power2.out" });
+      }
+      if (config.magnetism && !config.disableAnimations) {
+        gsap.to(this.el, { x: 0, y: 0, duration: 0.3, ease: "power2.out" });
+      }
     });
+
     this.el.addEventListener("mousemove", (e) => {
+      if (config.disableAnimations) return;
+      
       const rect = this.el.getBoundingClientRect();
       const x = e.clientX - rect.left, y = e.clientY - rect.top;
       const cx = rect.width / 2, cy = rect.height / 2;
 
-      if (this.enableTilt) {
-        gsap.to(this.el, { rotateX: ((y - cy) / cy) * -10, rotateY: ((x - cx) / cx) * 10, duration: 0.1, ease: "power2.out", transformPerspective: 1000 });
+      if (config.tiltEffect) {
+        gsap.to(this.el, { 
+          rotateX: ((y - cy) / cy) * -10,
+          rotateY: ((x - cx) / cx) * 10,
+          duration: 0.1,
+          ease: "power2.out",
+          transformPerspective: 1000
+        });
       }
-      if (this.enableMagnetism) {
-        gsap.to(this.el, ({ x: (x - cx) * 0.05, y: (y - cy) * 0.05 }), { duration: 0.3, ease: "power2.out" });
+      
+      if (config.magnetism) {
+        gsap.to(this.el, {
+          x: (x - cx) * 0.05,
+          y: (y - cy) * 0.05,
+          duration: 0.3,
+          ease: "power2.out"
+        });
       }
     });
+
     this.el.addEventListener("click", (e) => {
-      if (!this.clickEffect) return;
+      if (!config.clickEffect || config.disableAnimations) return;
       const rect = this.el.getBoundingClientRect();
       const x = e.clientX - rect.left, y = e.clientY - rect.top;
       const maxDist = Math.max(
@@ -139,13 +166,17 @@ class GlobalSpotlight {
     this.container.addEventListener("mouseleave", this.onMouseLeave.bind(this));
   }
   onMouseMove(e) {
+    if (!config.spotlightEffect || config.disableAnimations) {
+      this.onMouseLeave();
+      return;
+    }
     const sectionRect = this.container.closest(".bento-section").getBoundingClientRect();
     if (e.clientX < sectionRect.left || e.clientX > sectionRect.right || e.clientY < sectionRect.top || e.clientY > sectionRect.bottom) {
       gsap.to(this.el, { opacity: 0, duration: 0.3, ease: "power2.out" });
       this.container.querySelectorAll(".card").forEach(c => c.style.setProperty("--glow-intensity", 0));
       return;
     }
-    const { proximity, fadeDistance } = calculateSpotlight(this.spotlightRadius);
+    const { proximity, fadeDistance } = calculateSpotlight(config.spotlightRadius);
     let minDist = Infinity;
 
     this.container.querySelectorAll(".card").forEach(card => {
@@ -172,6 +203,36 @@ class GlobalSpotlight {
   }
 }
 
+// Add global config object
+const config = {
+  spotlightRadius: DEFAULT_SPOTLIGHT_RADIUS,
+  starsEffect: true,
+  spotlightEffect: true,
+  tiltEffect: true,
+  clickEffect: true,
+  magnetism: true,
+  disableAnimations: false
+};
+
+// Setup control panel
+const pane = new Pane({
+  title: 'Magic Bento Controls',
+  expanded: true
+});
+
+pane.addInput(config, 'spotlightRadius', {
+  min: 100,
+  max: 500,
+  step: 10,
+  label: 'Spotlight Radius'
+});
+pane.addInput(config, 'starsEffect');
+pane.addInput(config, 'spotlightEffect');
+pane.addInput(config, 'tiltEffect');
+pane.addInput(config, 'clickEffect');
+pane.addInput(config, 'magnetism');
+pane.addInput(config, 'disableAnimations');
+
 document.addEventListener("DOMContentLoaded", () => {
   const grid = document.getElementById("cardGrid");
 
@@ -193,14 +254,24 @@ document.addEventListener("DOMContentLoaded", () => {
     new ParticleCard(card, {
       particleCount: DEFAULT_PARTICLE_COUNT,
       glowColor: DEFAULT_GLOW_COLOR,
-      enableTilt: true,
-      clickEffect: true,
-      enableMagnetism: true
+      enableTilt: config.tiltEffect,
+      clickEffect: config.clickEffect,
+      enableMagnetism: config.magnetism
     });
   });
 
   new GlobalSpotlight(grid, {
-    spotlightRadius: DEFAULT_SPOTLIGHT_RADIUS,
+    spotlightRadius: config.spotlightRadius,
     glowColor: DEFAULT_GLOW_COLOR
+  });
+
+  // Add live update handler
+  pane.on('change', (ev) => {
+    const cards = grid.querySelectorAll('.card');
+    cards.forEach(card => {
+      if (ev.presetKey === 'spotlightRadius') {
+        card.style.setProperty('--glow-radius', `${config.spotlightRadius}px`);
+      }
+    });
   });
 });

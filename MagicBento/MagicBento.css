@@ -13,10 +13,9 @@
 .card-grid {
   display: grid;
   gap: 2em;
-  /* Increased gap for better spacing */
   padding: 2em;
-  /* Increased padding */
-  max-width: 54em;
+  max-width: 100%;
+  margin: 0 auto;
   font-size: clamp(1rem, 0.9rem + 0.5vw, 1.5rem);
 }
 
@@ -36,7 +35,6 @@
   font-weight: 300;
   overflow: hidden;
   transition: all 0.3s ease;
-
   --glow-x: 50%;
   --glow-y: 50%;
   --glow-intensity: 0;
@@ -110,9 +108,7 @@
     width: 95%;
     margin: 0 auto;
     padding: 1em;
-    /* Increased padding */
     gap: 1.2em;
-    /* Increased gap */
   }
 
   .card {
@@ -125,14 +121,12 @@
   .card-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 2em;
-    /* Ensure gap is consistent */
   }
 }
 
 @media (min-width: 1024px) {
   .card-grid {
     grid-template-columns: repeat(4, 1fr);
-    /* gap: 1em; Even more gap for large screens */
   }
 
   .card:nth-child(3) {
@@ -151,7 +145,6 @@
   }
 }
 
-/* Border glow effect */
 .card--border-glow::after {
   content: '';
   position: absolute;
@@ -200,7 +193,6 @@
   box-shadow: 0 4px 20px rgba(46, 24, 78, 0.2), 0 0 30px var(--purple-glow);
 }
 
-/* Global spotlight styles */
 .global-spotlight {
   mix-blend-mode: screen;
   will-change: transform, opacity;

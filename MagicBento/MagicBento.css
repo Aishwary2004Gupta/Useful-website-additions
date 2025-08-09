@@ -41,9 +41,6 @@
   --glow-y: 50%;
   --glow-intensity: 0;
   --glow-radius: 200px;
-
-  transform-style: preserve-3d;
-  backface-visibility: hidden;
 }
 
 .card:hover {
@@ -214,9 +211,4 @@
 .bento-section {
   position: relative;
   user-select: none;
-}
-
-/* Remove React-specific classes */
-.card--react-particle {
-    display: none;
 }

@@ -1,4 +1,3 @@
-import { useRef, useEffect, useState } from 'react';
 import { gsap } from 'gsap';
 import './MagicBento.css';
 
@@ -153,53 +152,54 @@ class ParticleCard {
   }
 }
 
-const MagicBento = ({
-  textAutoHide = true,
-  enableStars = true,
-  enableSpotlight = true,
-  enableBorderGlow = true,
-  enableTilt = true,
-  enableMagnetism = true,
-  clickEffect = true,
-  spotlightRadius = DEFAULT_SPOTLIGHT_RADIUS,
-  particleCount = DEFAULT_PARTICLE_COUNT,
-  glowColor = DEFAULT_GLOW_COLOR
-}) => {
-  const gridRef = useRef(null);
-  const [isMobile] = useState(window.innerWidth < 768);
-
-  useEffect(() => {
-    if (!gridRef.current) return;
+// Replace React component with vanilla JS initialization
+document.addEventListener('DOMContentLoaded', () => {
+    const gridRef = document.getElementById('cardGrid');
     
-    const grid = gridRef.current;
+    // Create spotlight
     const spotlight = document.createElement('div');
     spotlight.className = 'global-spotlight';
     document.body.appendChild(spotlight);
 
     const config = {
-      spotlightRadius: spotlightRadius,
-      starsEffect: enableStars,
-      spotlightEffect: enableSpotlight,
-      tiltEffect: enableTilt,
-      clickEffect: clickEffect,
-      magnetism: enableMagnetism,
-      disableAnimations: false
+        spotlightRadius: DEFAULT_SPOTLIGHT_RADIUS,
+        starsEffect: true,
+        spotlightEffect: true,
+        tiltEffect: true,
+        clickEffect: true,
+        magnetism: true,
+        disableAnimations: false
     };
 
-    const mouseMoveHandler = (e) => {
-      if (!config.spotlightEffect || config.disableAnimations) {
-        return;
-      }
-      const sectionRect = grid.closest(".bento-section").getBoundingClientRect();
-      if (e.clientX < sectionRect.left || e.clientX > sectionRect.right || e.clientY < sectionRect.top || e.clientY > sectionRect.bottom) {
-        gsap.to(spotlight, { opacity: 0, duration: 0.3, ease: "power2.out" });
-        grid.querySelectorAll(".card").forEach(c => c.style.setProperty("--glow-intensity", 0));
-        return;
-      }
-      const { proximity, fadeDistance } = calculateSpotlight(config.spotlightRadius);
-      let minDist = Infinity;
+    // Initialize cards
+    cardData.forEach(cfg => {
+        const card = document.createElement('div');
+        card.className = 'card card--text-autohide card--border-glow';
+        card.style.backgroundColor = cfg.color;
+        card.innerHTML = `
+            <div class="card__header"><div class="card__label">${cfg.label}</div></div>
+            <div class="card__content">
+                <h2 class="card__title">${cfg.title}</h2>
+                <p class="card__description">${cfg.description}</p>
+            </div>
+        `;
+        gridRef.appendChild(card);
 
-      grid.querySelectorAll(".card").forEach(card => {
+        new ParticleCard(card, {
+            particleCount: DEFAULT_PARTICLE_COUNT,
+            glowColor: DEFAULT_GLOW_COLOR,
+            enableTilt: config.tiltEffect,
+            clickEffect: config.clickEffect,
+            enableMagnetism: config.magnetism
+        });
+    });
+
+    // Initialize spotlight effect
+    new GlobalSpotlight(gridRef, {
+        spotlightRadius: config.spotlightRadius,
+        glowColor: DEFAULT_GLOW_COLOR
+    });
+});
         const cr = card.getBoundingClientRect();
         const cx = cr.left + cr.width / 2, cy = cr.top + cr.height / 2;
         const dist = Math.hypot(e.clientX - cx, e.clientY - cy) - Math.max(cr.width, cr.height) / 2;

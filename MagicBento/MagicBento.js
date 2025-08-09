@@ -1,3 +1,6 @@
+import { Pane } from 'https://cdn.skypack.dev/tweakpane@4.0.4';
+
+
 const cardData = [
   { color: "#060010", title: "Analytics", description: "Track user behavior", label: "Insights" },
   { color: "#060010", title: "Dashboard", description: "Centralized data view", label: "Overview" },
@@ -7,7 +10,7 @@ const cardData = [
   { color: "#060010", title: "Security", description: "Enterprise-grade protection", label: "Protection" },
 ];
 
-const DEFAULT_PARTICLE_COUNT = 12;
+const DEFAULT_PARTICLE_COUNT = 12
 const DEFAULT_SPOTLIGHT_RADIUS = 300;
 const DEFAULT_GLOW_COLOR = "132, 0, 255";
 

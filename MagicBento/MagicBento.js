@@ -13,7 +13,6 @@ const DEFAULT_PARTICLE_COUNT = 12;
 const DEFAULT_SPOTLIGHT_RADIUS = 300;
 const DEFAULT_GLOW_COLOR = "132, 0, 255";
 
-// Your existing code here...
 
 const createParticle = (x, y, glowColor) => {
   const el = document.createElement("div");

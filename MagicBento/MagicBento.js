@@ -76,10 +76,10 @@ function attachCardEffects(cardEl) {
       const rect = cardEl.getBoundingClientRect();
       const centerX = rect.width / 2, centerY = rect.height / 2;
       particles.forEach((p, i) => {
-        let angle = (Date.now()/100 + i*360/config.particleCount) * Math.PI/180;
-        let r = 30 + 12*Math.sin(Date.now()/(400+i*60));
-        p.style.left = (centerX + r*Math.cos(angle)) + 'px';
-        p.style.top = (centerY + r*Math.sin(angle)) + 'px';
+        let angle = (Date.now() / 100 + i * 360 / config.particleCount) * Math.PI / 180;
+        let r = 30 + 12 * Math.sin(Date.now() / (400 + i * 60));
+        p.style.left = (centerX + r * Math.cos(angle)) + 'px';
+        p.style.top = (centerY + r * Math.sin(angle)) + 'px';
       });
     }
     // Tilt
@@ -87,43 +87,43 @@ function attachCardEffects(cardEl) {
       const rect = cardEl.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      const centerX = rect.width/2, centerY = rect.height/2;
+      const centerX = rect.width / 2, centerY = rect.height / 2;
       if (config.enableTilt) {
-        cardEl.style.transform = `perspective(900px) rotateX(${((y-centerY)/centerY)*-10}deg) rotateY(${((x-centerX)/centerX)*10}deg)`;
+        cardEl.style.transform = `perspective(900px) rotateX(${((y - centerY) / centerY) * -10}deg) rotateY(${((x - centerX) / centerX) * 10}deg)`;
       }
       if (config.enableMagnetism) {
-        cardEl.style.left = ((x-centerX)*0.05) + "px";
-        cardEl.style.top = ((y-centerY)*0.05) + "px";
+        cardEl.style.left = ((x - centerX) * 0.05) + "px";
+        cardEl.style.top = ((y - centerY) * 0.05) + "px";
         cardEl.style.position = "relative";
       }
     }
   });
-  cardEl.addEventListener('mouseleave', ()=>{
+  cardEl.addEventListener('mouseleave', () => {
     cardEl.style.setProperty('--glow-intensity', 0);
     if (config.enableTilt) cardEl.style.transform = "";
     if (config.enableMagnetism) {
-      cardEl.style.left="";cardEl.style.top="";cardEl.style.position="";
+      cardEl.style.left = ""; cardEl.style.top = ""; cardEl.style.position = "";
     }
-    particles.forEach(p=>p.remove());
-    particles=[];
+    particles.forEach(p => p.remove());
+    particles = [];
   });
   // Click ripple effect
-  cardEl.addEventListener('click', e=>{
+  cardEl.addEventListener('click', e => {
     if (!config.clickEffect) return;
     const rect = cardEl.getBoundingClientRect();
     const x = e.clientX - rect.left, y = e.clientY - rect.top;
     const maxD = Math.max(rect.width, rect.height);
     const ripple = document.createElement('div');
-    ripple.style.cssText = `position:absolute;pointer-events:none;z-index:30;width:${2*maxD}px;height:${2*maxD}px;border-radius:50%;background:radial-gradient(circle,rgba(${config.glowColor},.4) 0%, rgba(${config.glowColor},.2) 30%,transparent 70%);left:${x-maxD}px;top:${y-maxD}px;opacity:1;transform:scale(0);transition:transform 0.8s cubic-bezier(.2,.68,.6,.99),opacity 0.8s;`;
+    ripple.style.cssText = `position:absolute;pointer-events:none;z-index:30;width:${2 * maxD}px;height:${2 * maxD}px;border-radius:50%;background:radial-gradient(circle,rgba(${config.glowColor},.4) 0%, rgba(${config.glowColor},.2) 30%,transparent 70%);left:${x - maxD}px;top:${y - maxD}px;opacity:1;transform:scale(0);transition:transform 0.8s cubic-bezier(.2,.68,.6,.99),opacity 0.8s;`;
     cardEl.appendChild(ripple);
-    setTimeout(()=>{ripple.style.transform="scale(1)";ripple.style.opacity=0;},0);
-    setTimeout(()=>{ripple.remove();},900);
+    setTimeout(() => { ripple.style.transform = "scale(1)"; ripple.style.opacity = 0; }, 0);
+    setTimeout(() => { ripple.remove(); }, 900);
   });
 }
 
 // ----- Global Spotlight effect -----
 const spotlight = document.getElementById("globalSpotlight");
-document.addEventListener('mousemove', e=>{
+document.addEventListener('mousemove', e => {
   if (!config.enableSpotlight) {
     spotlight.style.opacity = 0; return;
   }
@@ -133,18 +133,18 @@ document.addEventListener('mousemove', e=>{
     e.clientY >= gridRect.top && e.clientY <= gridRect.bottom
   ) {
     spotlight.style.opacity = 0.8;
-    spotlight.style.left = e.clientX+'px';
-    spotlight.style.top = e.clientY+'px';
+    spotlight.style.left = e.clientX + 'px';
+    spotlight.style.top = e.clientY + 'px';
     spotlight.style.background = `radial-gradient(circle,rgba(${config.glowColor},.15) 0%,rgba(${config.glowColor},.08) 30%,transparent 80%)`;
   } else {
     spotlight.style.opacity = 0;
-    grid.querySelectorAll('.card').forEach(card=>card.style.setProperty('--glow-intensity', 0));
+    grid.querySelectorAll('.card').forEach(card => card.style.setProperty('--glow-intensity', 0));
   }
 });
-spotlight.style.width = spotlight.style.height = config.spotlightRadius*2+"px";
+spotlight.style.width = spotlight.style.height = config.spotlightRadius * 2 + "px";
 
 // ----- Responsive update -----
-window.addEventListener('resize', ()=> spotlight.style.display = config.enableSpotlight ? 'block':'none');
+window.addEventListener('resize', () => spotlight.style.display = config.enableSpotlight ? 'block' : 'none');
 
 // ----- TweakPane Controls -----
 const pane = new Pane({ container: document.getElementById('pane-container'), title: "MagicBento Config" });
@@ -155,14 +155,14 @@ pane.addInput(config, "enableBorderGlow", { label: "Border Glow" }).on('change',
 pane.addInput(config, "enableTilt", { label: "Tilt 3D" });
 pane.addInput(config, "enableMagnetism", { label: "Magnetism" });
 pane.addInput(config, "clickEffect", { label: "Ripple on Click" });
-pane.addInput(config, "spotlightRadius", { min: 100, max: 500, step: 10 }).on('change', v=>{
-  spotlight.style.width = spotlight.style.height = v.value*2+"px";
+pane.addInput(config, "spotlightRadius", { min: 100, max: 500, step: 10 }).on('change', v => {
+  spotlight.style.width = spotlight.style.height = v.value * 2 + "px";
 });
-pane.addInput(config, "particleCount", { min: 0, max: 32, step:1 }).on('change', renderCards);
+pane.addInput(config, "particleCount", { min: 0, max: 32, step: 1 }).on('change', renderCards);
 pane.addInput(config, "glowColor", { label: "Glow Color (r,g,b)" }).on('change', v => {
   document.documentElement.style.setProperty('--glow-color', config.glowColor);
   renderCards();
 });
 
 // Update cards live on most changes
-pane.on('change', ()=> renderCards());
+pane.on('change', () => renderCards());

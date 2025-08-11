@@ -28,28 +28,33 @@
     // Create a new Tweakpane instance
     const pane = new Pane();
 
-    // Add controls to the Tweakpane
-    pane.addInput(config, 'spotlightRadius', { min: 100, max: 1000, step: 1 });
-    pane.addInput(config, 'starsEffect', { view: 'toggle' });
-    pane.addInput(config, 'spotlightEffect', { view: 'toggle' });
-    pane.addInput(config, 'tiltEffect', { view: 'toggle' });
-    pane.addInput(config, 'clickEffect', { view: 'toggle' });
-    pane.addInput(config, 'magnetism', { view: 'toggle' });
-    pane.addInput(config, 'disableAllAnimations', { view: 'toggle' });
+    // Check if the pane instance is correctly created
+    if (!pane) {
+      console.error('Tweakpane instance could not be created.');
+    } else {
+      // Add controls to the Tweakpane
+      pane.addInput(config, 'spotlightRadius', { min: 100, max: 1000, step: 1 });
+      pane.addInput(config, 'starsEffect', { view: 'toggle' });
+      pane.addInput(config, 'spotlightEffect', { view: 'toggle' });
+      pane.addInput(config, 'tiltEffect', { view: 'toggle' });
+      pane.addInput(config, 'clickEffect', { view: 'toggle' });
+      pane.addInput(config, 'magnetism', { view: 'toggle' });
+      pane.addInput(config, 'disableAllAnimations', { view: 'toggle' });
 
-    // Function to update your application based on the config
-    function updateApplication() {
-      console.log('Updated config:', config);
-      // Add your application logic here to apply the new config
-    }
+      // Function to update your application based on the config
+      function updateApplication() {
+        console.log('Updated config:', config);
+        // Add your application logic here to apply the new config
+      }
 
-    // Listen for changes in the Tweakpane controls
-    pane.on('change', () => {
+      // Listen for changes in the Tweakpane controls
+      pane.on('change', () => {
+        updateApplication();
+      });
+
+      // Initial update
       updateApplication();
-    });
-
-    // Initial update
-    updateApplication();
+    }
   </script>
 </body>
 </html>

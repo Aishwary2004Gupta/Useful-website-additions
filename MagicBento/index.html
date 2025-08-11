@@ -1,24 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Magic Bento</title>
-    <link rel="stylesheet" href="MagicBento.css" />
-  </head>
-  <body>
-    <section class="bento-section">
-      <div class="card-grid" id="cardGrid"></div>
-    </section>
-
-    <script
-      type="module"
-      src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"
-    ></script>
-    <script
-      type="module"
-      src="https://cdn.skypack.dev/tweakpane@4.0.4"
-    ></script>
-    <script type="module" src="MagicBento.js"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <title>Magic Bento HTML/CSS/JS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="magicbento.css">
+</head>
+<body>
+  <div id="pane-container"></div>
+  <div class="bento-section">
+    <div class="card-grid" id="cardGrid"></div>
+    <div class="global-spotlight" id="globalSpotlight"></div>
+  </div>
+  <script src="https://cdn.skypack.dev/tweakpane@4.0.4"></script>
+  <script src="magicbento.js"></script>
+</body>
 </html>

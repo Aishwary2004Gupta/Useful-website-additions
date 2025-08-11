@@ -1,874 +1,920 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Magic Bento Grid</title>
     <style>
-        :root {
-            --hue: 27;
-            --sat: 69%;
-            --white: hsl(0, 0%, 100%);
-            --purple-primary: rgba(132, 0, 255, 1);
-            --purple-glow: rgba(132, 0, 255, 0.2);
-            --purple-border: rgba(132, 0, 255, 0.8);
-            --border-color: #392e4e;
-            --background-dark: #060010;
-            color-scheme: light dark;
-        }
+      :root {
+        --hue: 27;
+        --sat: 69%;
+        --white: hsl(0, 0%, 100%);
+        --purple-primary: rgba(132, 0, 255, 1);
+        --purple-glow: rgba(132, 0, 255, 0.2);
+        --purple-border: rgba(132, 0, 255, 0.8);
+        --border-color: #392e4e;
+        --background-dark: #060010;
+        color-scheme: light dark;
+      }
 
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            background-color: #0a0018;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            color: white;
-        }
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        background-color: #0a0018;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        color: white;
+      }
 
+      .card-grid {
+        display: grid;
+        gap: 0.5em;
+        padding: 0.75em;
+        max-width: 54em;
+        font-size: clamp(1rem, 0.9rem + 0.5vw, 1.5rem);
+      }
+
+      .card {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        aspect-ratio: 4/3;
+        min-height: 200px;
+        width: 100%;
+        max-width: 100%;
+        padding: 1.25em;
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+        background: var(--background-dark);
+        font-weight: 300;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        --glow-x: 50%;
+        --glow-y: 50%;
+        --glow-intensity: 0;
+        --glow-radius: 200px;
+      }
+
+      .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      }
+
+      .card__header,
+      .card__content {
+        display: flex;
+        position: relative;
+        color: var(--white);
+      }
+
+      .card__header {
+        gap: 0.75em;
+        justify-content: space-between;
+      }
+
+      .card__content {
+        flex-direction: column;
+      }
+
+      .card__label {
+        font-size: 16px;
+      }
+
+      .card__title,
+      .card__description {
+        --clamp-title: 1;
+        --clamp-desc: 2;
+      }
+
+      .card__title {
+        font-weight: 400;
+        font-size: 16px;
+        margin: 0 0 0.25em;
+      }
+
+      .card__description {
+        font-size: 12px;
+        line-height: 1.2;
+        opacity: 0.9;
+      }
+
+      .card--text-autohide .card__title,
+      .card--text-autohide .card__description {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .card--text-autohide .card__title {
+        -webkit-line-clamp: var(--clamp-title);
+        line-clamp: var(--clamp-title);
+      }
+
+      .card--text-autohide .card__description {
+        -webkit-line-clamp: var(--clamp-desc);
+        line-clamp: var(--clamp-desc);
+      }
+
+      @media (max-width: 599px) {
         .card-grid {
-            display: grid;
-            gap: 0.5em;
-            padding: 0.75em;
-            max-width: 54em;
-            font-size: clamp(1rem, 0.9rem + 0.5vw, 1.5rem);
+          grid-template-columns: 1fr;
+          width: 90%;
+          margin: 0 auto;
+          padding: 0.5em;
         }
 
         .card {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            position: relative;
-            aspect-ratio: 4/3;
-            min-height: 200px;
-            width: 100%;
-            max-width: 100%;
-            padding: 1.25em;
-            border-radius: 20px;
-            border: 1px solid var(--border-color);
-            background: var(--background-dark);
-            font-weight: 300;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            --glow-x: 50%;
-            --glow-y: 50%;
-            --glow-intensity: 0;
-            --glow-radius: 200px;
+          width: 100%;
+          min-height: 180px;
+        }
+      }
+
+      @media (min-width: 600px) {
+        .card-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      @media (min-width: 1024px) {
+        .card-grid {
+          grid-template-columns: repeat(4, 1fr);
         }
 
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        .card:nth-child(3) {
+          grid-column: span 2;
+          grid-row: span 2;
         }
 
-        .card__header,
-        .card__content {
-            display: flex;
-            position: relative;
-            color: var(--white);
+        .card:nth-child(4) {
+          grid-column: 1 / span 2;
+          grid-row: 2 / span 2;
         }
 
-        .card__header {
-            gap: 0.75em;
-            justify-content: space-between;
+        .card:nth-child(6) {
+          grid-column: 4;
+          grid-row: 3;
         }
+      }
 
-        .card__content {
-            flex-direction: column;
-        }
+      /* Border glow effect */
+      .card--border-glow::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        padding: 6px;
+        background: radial-gradient(
+          var(--glow-radius) circle at var(--glow-x) var(--glow-y),
+          rgba(132, 0, 255, calc(var(--glow-intensity) * 0.8)) 0%,
+          rgba(132, 0, 255, calc(var(--glow-intensity) * 0.4)) 30%,
+          transparent 60%
+        );
+        border-radius: inherit;
+        mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        mask-composite: subtract;
+        -webkit-mask: linear-gradient(#fff 0 0) content-box,
+          linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+        z-index: 1;
+      }
 
-        .card__label {
-            font-size: 16px;
-        }
+      .card--border-glow:hover::after {
+        opacity: 1;
+      }
 
-        .card__title,
-        .card__description {
-            --clamp-title: 1;
-            --clamp-desc: 2;
-        }
+      .card--border-glow:hover {
+        box-shadow: 0 4px 20px rgba(46, 24, 78, 0.4),
+          0 0 30px var(--purple-glow);
+      }
 
-        .card__title {
-            font-weight: 400;
-            font-size: 16px;
-            margin: 0 0 0.25em;
-        }
+      .particle-container {
+        position: relative;
+        overflow: hidden;
+      }
 
-        .card__description {
-            font-size: 12px;
-            line-height: 1.2;
-            opacity: 0.9;
-        }
+      .particle {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: rgba(132, 0, 255, 1);
+        box-shadow: 0 0 6px rgba(132, 0, 255, 0.6);
+        pointer-events: none;
+        z-index: 100;
+      }
 
-        .card--text-autohide .card__title,
-        .card--text-autohide .card__description {
-            display: -webkit-box;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+      .particle::before {
+        content: "";
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: rgba(132, 0, 255, 0.2);
+        border-radius: 50%;
+        z-index: -1;
+      }
 
-        .card--text-autohide .card__title {
-            -webkit-line-clamp: var(--clamp-title);
-            line-clamp: var(--clamp-title);
-        }
+      .particle-container:hover {
+        box-shadow: 0 4px 20px rgba(46, 24, 78, 0.2),
+          0 0 30px var(--purple-glow);
+      }
 
-        .card--text-autohide .card__description {
-            -webkit-line-clamp: var(--clamp-desc);
-            line-clamp: var(--clamp-desc);
-        }
+      /* Global spotlight styles */
+      .global-spotlight {
+        position: fixed;
+        width: 800px;
+        height: 800px;
+        border-radius: 50%;
+        pointer-events: none;
+        background: radial-gradient(
+          circle,
+          rgba(132, 0, 255, 0.15) 0%,
+          rgba(132, 0, 255, 0.08) 15%,
+          rgba(132, 0, 255, 0.04) 25%,
+          rgba(132, 0, 255, 0.02) 40%,
+          rgba(132, 0, 255, 0.01) 65%,
+          transparent 70%
+        );
+        z-index: 200;
+        opacity: 0;
+        transform: translate(-50%, -50%);
+        mix-blend-mode: screen;
+      }
 
-        @media (max-width: 599px) {
-            .card-grid {
-                grid-template-columns: 1fr;
-                width: 90%;
-                margin: 0 auto;
-                padding: 0.5em;
-            }
-
-            .card {
-                width: 100%;
-                min-height: 180px;
-            }
-        }
-
-        @media (min-width: 600px) {
-            .card-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (min-width: 1024px) {
-            .card-grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-
-            .card:nth-child(3) {
-                grid-column: span 2;
-                grid-row: span 2;
-            }
-
-            .card:nth-child(4) {
-                grid-column: 1 / span 2;
-                grid-row: 2 / span 2;
-            }
-
-            .card:nth-child(6) {
-                grid-column: 4;
-                grid-row: 3;
-            }
-        }
-
-        /* Border glow effect */
-        .card--border-glow::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            padding: 6px;
-            background: radial-gradient(var(--glow-radius) circle at var(--glow-x) var(--glow-y),
-                rgba(132, 0, 255, calc(var(--glow-intensity) * 0.8)) 0%,
-                rgba(132, 0, 255, calc(var(--glow-intensity) * 0.4)) 30%,
-                transparent 60%);
-            border-radius: inherit;
-            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            mask-composite: subtract;
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-            z-index: 1;
-        }
-
-        .card--border-glow:hover::after {
-            opacity: 1;
-        }
-
-        .card--border-glow:hover {
-            box-shadow: 0 4px 20px rgba(46, 24, 78, 0.4), 0 0 30px var(--purple-glow);
-        }
-
-        .particle-container {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            background: rgba(132, 0, 255, 1);
-            box-shadow: 0 0 6px rgba(132, 0, 255, 0.6);
-            pointer-events: none;
-            z-index: 100;
-        }
-
-        .particle::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: rgba(132, 0, 255, 0.2);
-            border-radius: 50%;
-            z-index: -1;
-        }
-
-        .particle-container:hover {
-            box-shadow: 0 4px 20px rgba(46, 24, 78, 0.2), 0 0 30px var(--purple-glow);
-        }
-
-        /* Global spotlight styles */
-        .global-spotlight {
-            position: fixed;
-            width: 800px;
-            height: 800px;
-            border-radius: 50%;
-            pointer-events: none;
-            background: radial-gradient(circle,
-                rgba(132, 0, 255, 0.15) 0%,
-                rgba(132, 0, 255, 0.08) 15%,
-                rgba(132, 0, 255, 0.04) 25%,
-                rgba(132, 0, 255, 0.02) 40%,
-                rgba(132, 0, 255, 0.01) 65%,
-                transparent 70%
-            );
-            z-index: 200;
-            opacity: 0;
-            transform: translate(-50%, -50%);
-            mix-blend-mode: screen;
-        }
-
-        .bento-section {
-            position: relative;
-            user-select: none;
-        }
+      .bento-section {
+        position: relative;
+        user-select: none;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="card-grid bento-section">
-        <div class="card card--text-autohide card--border-glow" style="--glow-color: 132, 0, 255;">
-            <div class="card__header">
-                <div class="card__label">Insights</div>
-            </div>
-            <div class="card__content">
-                <h2 class="card__title">Analytics</h2>
-                <p class="card__description">Track user behavior</p>
-            </div>
+      <div
+        class="card card--text-autohide card--border-glow"
+        style="--glow-color: 132, 0, 255"
+      >
+        <div class="card__header">
+          <div class="card__label">Insights</div>
         </div>
-        <div class="card card--text-autohide card--border-glow" style="--glow-color: 132, 0, 255;">
-            <div class="card__header">
-                <div class="card__label">Overview</div>
-            </div>
-            <div class="card__content">
-                <h2 class="card__title">Dashboard</h2>
-                <p class="card__description">Centralized data view</p>
-            </div>
+        <div class="card__content">
+          <h2 class="card__title">Analytics</h2>
+          <p class="card__description">Track user behavior</p>
         </div>
-        <div class="card card--text-autohide card--border-glow" style="--glow-color: 132, 0, 255;">
-            <div class="card__header">
-                <div class="card__label">Teamwork</div>
-            </div>
-            <div class="card__content">
-                <h2 class="card__title">Collaboration</h2>
-                <p class="card__description">Work together seamlessly</p>
-            </div>
+      </div>
+      <div
+        class="card card--text-autohide card--border-glow"
+        style="--glow-color: 132, 0, 255"
+      >
+        <div class="card__header">
+          <div class="card__label">Overview</div>
         </div>
-        <div class="card card--text-autohide card--border-glow" style="--glow-color: 132, 0, 255;">
-            <div class="card__header">
-                <div class="card__label">Efficiency</div>
-            </div>
-            <div class="card__content">
-                <h2 class="card__title">Automation</h2>
-                <p class="card__description">Streamline workflows</p>
-            </div>
+        <div class="card__content">
+          <h2 class="card__title">Dashboard</h2>
+          <p class="card__description">Centralized data view</p>
         </div>
-        <div class="card card--text-autohide card--border-glow" style="--glow-color: 132, 0, 255;">
-            <div class="card__header">
-                <div class="card__label">Connectivity</div>
-            </div>
-            <div class="card__content">
-                <h2 class="card__title">Integration</h2>
-                <p class="card__description">Connect favorite tools</p>
-            </div>
+      </div>
+      <div
+        class="card card--text-autohide card--border-glow"
+        style="--glow-color: 132, 0, 255"
+      >
+        <div class="card__header">
+          <div class="card__label">Teamwork</div>
         </div>
-        <div class="card card--text-autohide card--border-glow" style="--glow-color: 132, 0, 255;">
-            <div class="card__header">
-                <div class="card__label">Protection</div>
-            </div>
-            <div class="card__content">
-                <h2 class="card__title">Security</h2>
-                <p class="card__description">Enterprise-grade protection</p>
-            </div>
+        <div class="card__content">
+          <h2 class="card__title">Collaboration</h2>
+          <p class="card__description">Work together seamlessly</p>
         </div>
+      </div>
+      <div
+        class="card card--text-autohide card--border-glow"
+        style="--glow-color: 132, 0, 255"
+      >
+        <div class="card__header">
+          <div class="card__label">Efficiency</div>
+        </div>
+        <div class="card__content">
+          <h2 class="card__title">Automation</h2>
+          <p class="card__description">Streamline workflows</p>
+        </div>
+      </div>
+      <div
+        class="card card--text-autohide card--border-glow"
+        style="--glow-color: 132, 0, 255"
+      >
+        <div class="card__header">
+          <div class="card__label">Connectivity</div>
+        </div>
+        <div class="card__content">
+          <h2 class="card__title">Integration</h2>
+          <p class="card__description">Connect favorite tools</p>
+        </div>
+      </div>
+      <div
+        class="card card--text-autohide card--border-glow"
+        style="--glow-color: 132, 0, 255"
+      >
+        <div class="card__header">
+          <div class="card__label">Protection</div>
+        </div>
+        <div class="card__content">
+          <h2 class="card__title">Security</h2>
+          <p class="card__description">Enterprise-grade protection</p>
+        </div>
+      </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const DEFAULT_PARTICLE_COUNT = 12;
-            const DEFAULT_SPOTLIGHT_RADIUS = 300;
-            const DEFAULT_GLOW_COLOR = "132, 0, 255";
-            const MOBILE_BREAKPOINT = 768;
+      document.addEventListener("DOMContentLoaded", function () {
+        const DEFAULT_PARTICLE_COUNT = 12;
+        const DEFAULT_SPOTLIGHT_RADIUS = 300;
+        const DEFAULT_GLOW_COLOR = "132, 0, 255";
+        const MOBILE_BREAKPOINT = 768;
 
-            const cardData = [
-                {
-                    color: "#060010",
-                    title: "Analytics",
-                    description: "Track user behavior",
-                    label: "Insights",
-                },
-                {
-                    color: "#060010",
-                    title: "Dashboard",
-                    description: "Centralized data view",
-                    label: "Overview",
-                },
-                {
-                    color: "#060010",
-                    title: "Collaboration",
-                    description: "Work together seamlessly",
-                    label: "Teamwork",
-                },
-                {
-                    color: "#060010",
-                    title: "Automation",
-                    description: "Streamline workflows",
-                    label: "Efficiency",
-                },
-                {
-                    color: "#060010",
-                    title: "Integration",
-                    description: "Connect favorite tools",
-                    label: "Connectivity",
-                },
-                {
-                    color: "#060010",
-                    title: "Security",
-                    description: "Enterprise-grade protection",
-                    label: "Protection",
-                },
-            ];
+        const cardData = [
+          {
+            color: "#060010",
+            title: "Analytics",
+            description: "Track user behavior",
+            label: "Insights",
+          },
+          {
+            color: "#060010",
+            title: "Dashboard",
+            description: "Centralized data view",
+            label: "Overview",
+          },
+          {
+            color: "#060010",
+            title: "Collaboration",
+            description: "Work together seamlessly",
+            label: "Teamwork",
+          },
+          {
+            color: "#060010",
+            title: "Automation",
+            description: "Streamline workflows",
+            label: "Efficiency",
+          },
+          {
+            color: "#060010",
+            title: "Integration",
+            description: "Connect favorite tools",
+            label: "Connectivity",
+          },
+          {
+            color: "#060010",
+            title: "Security",
+            description: "Enterprise-grade protection",
+            label: "Protection",
+          },
+        ];
 
-            // Configuration options
-            const config = {
-                textAutoHide: true,
-                enableStars: true,
-                enableSpotlight: true,
-                enableBorderGlow: true,
-                enableTilt: true,
-                enableMagnetism: true,
-                clickEffect: true,
-                spotlightRadius: DEFAULT_SPOTLIGHT_RADIUS,
-                particleCount: DEFAULT_PARTICLE_COUNT,
-                glowColor: DEFAULT_GLOW_COLOR
-            };
+        // Configuration options
+        const config = {
+          textAutoHide: true,
+          enableStars: true,
+          enableSpotlight: true,
+          enableBorderGlow: true,
+          enableTilt: true,
+          enableMagnetism: true,
+          clickEffect: true,
+          spotlightRadius: DEFAULT_SPOTLIGHT_RADIUS,
+          particleCount: DEFAULT_PARTICLE_COUNT,
+          glowColor: DEFAULT_GLOW_COLOR,
+        };
 
-            // Initialize the Magic Bento grid
-            initMagicBento(config);
+        // Initialize the Magic Bento grid
+        initMagicBento(config);
 
-            function initMagicBento(config) {
-                const grid = document.querySelector('.card-grid');
-                const cards = document.querySelectorAll('.card');
-                let spotlight = null;
-                let isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
+        function initMagicBento(config) {
+          const grid = document.querySelector(".card-grid");
+          const cards = document.querySelectorAll(".card");
+          let spotlight = null;
+          let isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
 
-                // Initialize spotlight if enabled
-                if (config.enableSpotlight && !isMobile) {
-                    spotlight = createGlobalSpotlight(grid, config);
-                }
+          // Initialize spotlight if enabled
+          if (config.enableSpotlight && !isMobile) {
+            spotlight = createGlobalSpotlight(grid, config);
+          }
 
-                // Initialize each card
-                cards.forEach((card, index) => {
-                    // Add particle container if stars are enabled
-                    if (config.enableStars && !isMobile) {
-                        const particleContainer = document.createElement('div');
-                        particleContainer.className = 'particle-container';
-                        
-                        // Move all existing card content into the particle container
-                        while (card.firstChild) {
-                            particleContainer.appendChild(card.firstChild);
-                        }
-                        
-                        card.appendChild(particleContainer);
-                        
-                        // Initialize particle effects
-                        initParticleCard(particleContainer, card, config);
-                    } else {
-                        // Initialize regular card effects
-                        initCardEffects(card, config);
-                    }
+          // Initialize each card
+          cards.forEach((card, index) => {
+            // Add particle container if stars are enabled
+            if (config.enableStars && !isMobile) {
+              const particleContainer = document.createElement("div");
+              particleContainer.className = "particle-container";
+
+              // Move all existing card content into the particle container
+              while (card.firstChild) {
+                particleContainer.appendChild(card.firstChild);
+              }
+
+              card.appendChild(particleContainer);
+
+              // Initialize particle effects
+              initParticleCard(particleContainer, card, config);
+            } else {
+              // Initialize regular card effects
+              initCardEffects(card, config);
+            }
+          });
+
+          // Handle window resize
+          window.addEventListener("resize", function () {
+            isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
+          });
+        }
+
+        function createGlobalSpotlight(grid, config) {
+          const spotlight = document.createElement("div");
+          spotlight.className = "global-spotlight";
+          document.body.appendChild(spotlight);
+
+          let isInsideSection = false;
+
+          function handleMouseMove(e) {
+            const section = grid.closest(".bento-section");
+            const rect = section?.getBoundingClientRect();
+            const mouseInside =
+              rect &&
+              e.clientX >= rect.left &&
+              e.clientX <= rect.right &&
+              e.clientY >= rect.top &&
+              e.clientY <= rect.bottom;
+
+            isInsideSection = mouseInside || false;
+            const cards = grid.querySelectorAll(".card");
+
+            if (!mouseInside) {
+              gsap.to(spotlight, {
+                opacity: 0,
+                duration: 0.3,
+                ease: "power2.out",
+              });
+              cards.forEach((card) => {
+                card.style.setProperty("--glow-intensity", "0");
+              });
+              return;
+            }
+
+            const { proximity, fadeDistance } = calculateSpotlightValues(
+              config.spotlightRadius
+            );
+            let minDistance = Infinity;
+
+            cards.forEach((card) => {
+              const cardRect = card.getBoundingClientRect();
+              const centerX = cardRect.left + cardRect.width / 2;
+              const centerY = cardRect.top + cardRect.height / 2;
+              const distance =
+                Math.hypot(e.clientX - centerX, e.clientY - centerY) -
+                Math.max(cardRect.width, cardRect.height) / 2;
+              const effectiveDistance = Math.max(0, distance);
+
+              minDistance = Math.min(minDistance, effectiveDistance);
+
+              let glowIntensity = 0;
+              if (effectiveDistance <= proximity) {
+                glowIntensity = 1;
+              } else if (effectiveDistance <= fadeDistance) {
+                glowIntensity =
+                  (fadeDistance - effectiveDistance) /
+                  (fadeDistance - proximity);
+              }
+
+              updateCardGlowProperties(
+                card,
+                e.clientX,
+                e.clientY,
+                glowIntensity,
+                config.spotlightRadius
+              );
+            });
+
+            gsap.to(spotlight, {
+              left: e.clientX,
+              top: e.clientY,
+              duration: 0.1,
+              ease: "power2.out",
+            });
+
+            const targetOpacity =
+              minDistance <= proximity
+                ? 0.8
+                : minDistance <= fadeDistance
+                ? ((fadeDistance - minDistance) / (fadeDistance - proximity)) *
+                  0.8
+                : 0;
+
+            gsap.to(spotlight, {
+              opacity: targetOpacity,
+              duration: targetOpacity > 0 ? 0.2 : 0.5,
+              ease: "power2.out",
+            });
+          }
+
+          function handleMouseLeave() {
+            isInsideSection = false;
+            grid.querySelectorAll(".card").forEach((card) => {
+              card.style.setProperty("--glow-intensity", "0");
+            });
+            if (spotlight) {
+              gsap.to(spotlight, {
+                opacity: 0,
+                duration: 0.3,
+                ease: "power2.out",
+              });
+            }
+          }
+
+          document.addEventListener("mousemove", handleMouseMove);
+          document.addEventListener("mouseleave", handleMouseLeave);
+
+          return {
+            element: spotlight,
+            destroy: function () {
+              document.removeEventListener("mousemove", handleMouseMove);
+              document.removeEventListener("mouseleave", handleMouseLeave);
+              spotlight?.parentNode?.removeChild(spotlight);
+            },
+          };
+        }
+
+        function calculateSpotlightValues(radius) {
+          return {
+            proximity: radius * 0.5,
+            fadeDistance: radius * 0.75,
+          };
+        }
+
+        function updateCardGlowProperties(card, mouseX, mouseY, glow, radius) {
+          const rect = card.getBoundingClientRect();
+          const relativeX = ((mouseX - rect.left) / rect.width) * 100;
+          const relativeY = ((mouseY - rect.top) / rect.height) * 100;
+
+          card.style.setProperty("--glow-x", `${relativeX}%`);
+          card.style.setProperty("--glow-y", `${relativeY}%`);
+          card.style.setProperty("--glow-intensity", glow.toString());
+          card.style.setProperty("--glow-radius", `${radius}px`);
+        }
+
+        function initParticleCard(container, card, config) {
+          const particles = [];
+          const timeouts = [];
+          let isHovered = false;
+          let memoizedParticles = [];
+          let particlesInitialized = false;
+          let magnetismAnimation = null;
+
+          function initializeParticles() {
+            if (particlesInitialized || !container) return;
+
+            const { width, height } = container.getBoundingClientRect();
+            memoizedParticles = Array.from(
+              { length: config.particleCount },
+              () =>
+                createParticleElement(
+                  Math.random() * width,
+                  Math.random() * height,
+                  config.glowColor
+                )
+            );
+            particlesInitialized = true;
+          }
+
+          function clearAllParticles() {
+            timeouts.forEach(clearTimeout);
+            timeouts.length = 0;
+            magnetismAnimation?.kill();
+
+            particles.forEach((particle) => {
+              gsap.to(particle, {
+                scale: 0,
+                opacity: 0,
+                duration: 0.3,
+                ease: "back.in(1.7)",
+                onComplete: () => {
+                  particle.parentNode?.removeChild(particle);
+                },
+              });
+            });
+            particles.length = 0;
+          }
+
+          function animateParticles() {
+            if (!container || !isHovered) return;
+
+            if (!particlesInitialized) {
+              initializeParticles();
+            }
+
+            memoizedParticles.forEach((particle, index) => {
+              const timeoutId = setTimeout(() => {
+                if (!isHovered || !container) return;
+
+                const clone = particle.cloneNode(true);
+                container.appendChild(clone);
+                particles.push(clone);
+
+                gsap.fromTo(
+                  clone,
+                  { scale: 0, opacity: 0 },
+                  { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(1.7)" }
+                );
+
+                gsap.to(clone, {
+                  x: (Math.random() - 0.5) * 100,
+                  y: (Math.random() - 0.5) * 100,
+                  rotation: Math.random() * 360,
+                  duration: 2 + Math.random() * 2,
+                  ease: "none",
+                  repeat: -1,
+                  yoyo: true,
                 });
 
-                // Handle window resize
-                window.addEventListener('resize', function() {
-                    isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
+                gsap.to(clone, {
+                  opacity: 0.3,
+                  duration: 1.5,
+                  ease: "power2.inOut",
+                  repeat: -1,
+                  yoyo: true,
                 });
+              }, index * 100);
+
+              timeouts.push(timeoutId);
+            });
+          }
+
+          function handleMouseEnter() {
+            isHovered = true;
+            animateParticles();
+
+            if (config.enableTilt) {
+              gsap.to(container, {
+                rotateX: 5,
+                rotateY: 5,
+                duration: 0.3,
+                ease: "power2.out",
+                transformPerspective: 1000,
+              });
+            }
+          }
+
+          function handleMouseLeave() {
+            isHovered = false;
+            clearAllParticles();
+
+            if (config.enableTilt) {
+              gsap.to(container, {
+                rotateX: 0,
+                rotateY: 0,
+                duration: 0.3,
+                ease: "power2.out",
+              });
             }
 
-            function createGlobalSpotlight(grid, config) {
-                const spotlight = document.createElement('div');
-                spotlight.className = 'global-spotlight';
-                document.body.appendChild(spotlight);
+            if (config.enableMagnetism) {
+              gsap.to(container, {
+                x: 0,
+                y: 0,
+                duration: 0.3,
+                ease: "power2.out",
+              });
+            }
+          }
 
-                let isInsideSection = false;
+          function handleMouseMove(e) {
+            if (!config.enableTilt && !config.enableMagnetism) return;
 
-                function handleMouseMove(e) {
-                    const section = grid.closest('.bento-section');
-                    const rect = section?.getBoundingClientRect();
-                    const mouseInside = rect &&
-                        e.clientX >= rect.left &&
-                        e.clientX <= rect.right &&
-                        e.clientY >= rect.top &&
-                        e.clientY <= rect.bottom;
+            const rect = container.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
 
-                    isInsideSection = mouseInside || false;
-                    const cards = grid.querySelectorAll('.card');
+            if (config.enableTilt) {
+              const rotateX = ((y - centerY) / centerY) * -10;
+              const rotateY = ((x - centerX) / centerX) * 10;
 
-                    if (!mouseInside) {
-                        gsap.to(spotlight, {
-                            opacity: 0,
-                            duration: 0.3,
-                            ease: "power2.out",
-                        });
-                        cards.forEach((card) => {
-                            card.style.setProperty('--glow-intensity', '0');
-                        });
-                        return;
-                    }
-
-                    const { proximity, fadeDistance } = calculateSpotlightValues(config.spotlightRadius);
-                    let minDistance = Infinity;
-
-                    cards.forEach((card) => {
-                        const cardRect = card.getBoundingClientRect();
-                        const centerX = cardRect.left + cardRect.width / 2;
-                        const centerY = cardRect.top + cardRect.height / 2;
-                        const distance = Math.hypot(e.clientX - centerX, e.clientY - centerY) -
-                            Math.max(cardRect.width, cardRect.height) / 2;
-                        const effectiveDistance = Math.max(0, distance);
-
-                        minDistance = Math.min(minDistance, effectiveDistance);
-
-                        let glowIntensity = 0;
-                        if (effectiveDistance <= proximity) {
-                            glowIntensity = 1;
-                        } else if (effectiveDistance <= fadeDistance) {
-                            glowIntensity = (fadeDistance - effectiveDistance) / (fadeDistance - proximity);
-                        }
-
-                        updateCardGlowProperties(
-                            card,
-                            e.clientX,
-                            e.clientY,
-                            glowIntensity,
-                            config.spotlightRadius
-                        );
-                    });
-
-                    gsap.to(spotlight, {
-                        left: e.clientX,
-                        top: e.clientY,
-                        duration: 0.1,
-                        ease: "power2.out",
-                    });
-
-                    const targetOpacity = minDistance <= proximity ? 0.8 :
-                        minDistance <= fadeDistance ? ((fadeDistance - minDistance) / (fadeDistance - proximity)) * 0.8 : 0;
-
-                    gsap.to(spotlight, {
-                        opacity: targetOpacity,
-                        duration: targetOpacity > 0 ? 0.2 : 0.5,
-                        ease: "power2.out",
-                    });
-                }
-
-                function handleMouseLeave() {
-                    isInsideSection = false;
-                    grid.querySelectorAll('.card').forEach((card) => {
-                        card.style.setProperty('--glow-intensity', '0');
-                    });
-                    if (spotlight) {
-                        gsap.to(spotlight, {
-                            opacity: 0,
-                            duration: 0.3,
-                            ease: "power2.out",
-                        });
-                    }
-                }
-
-                document.addEventListener('mousemove', handleMouseMove);
-                document.addEventListener('mouseleave', handleMouseLeave);
-
-                return {
-                    element: spotlight,
-                    destroy: function() {
-                        document.removeEventListener('mousemove', handleMouseMove);
-                        document.removeEventListener('mouseleave', handleMouseLeave);
-                        spotlight?.parentNode?.removeChild(spotlight);
-                    }
-                };
+              gsap.to(container, {
+                rotateX,
+                rotateY,
+                duration: 0.1,
+                ease: "power2.out",
+                transformPerspective: 1000,
+              });
             }
 
-            function calculateSpotlightValues(radius) {
-                return {
-                    proximity: radius * 0.5,
-                    fadeDistance: radius * 0.75,
-                };
+            if (config.enableMagnetism) {
+              const magnetX = (x - centerX) * 0.05;
+              const magnetY = (y - centerY) * 0.05;
+
+              magnetismAnimation = gsap.to(container, {
+                x: magnetX,
+                y: magnetY,
+                duration: 0.3,
+                ease: "power2.out",
+              });
             }
+          }
 
-            function updateCardGlowProperties(card, mouseX, mouseY, glow, radius) {
-                const rect = card.getBoundingClientRect();
-                const relativeX = ((mouseX - rect.left) / rect.width) * 100;
-                const relativeY = ((mouseY - rect.top) / rect.height) * 100;
+          function handleClick(e) {
+            if (!config.clickEffect) return;
 
-                card.style.setProperty('--glow-x', `${relativeX}%`);
-                card.style.setProperty('--glow-y', `${relativeY}%`);
-                card.style.setProperty('--glow-intensity', glow.toString());
-                card.style.setProperty('--glow-radius', `${radius}px`);
-            }
+            const rect = container.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
 
-            function initParticleCard(container, card, config) {
-                const particles = [];
-                const timeouts = [];
-                let isHovered = false;
-                let memoizedParticles = [];
-                let particlesInitialized = false;
-                let magnetismAnimation = null;
+            const maxDistance = Math.max(
+              Math.hypot(x, y),
+              Math.hypot(x - rect.width, y),
+              Math.hypot(x, y - rect.height),
+              Math.hypot(x - rect.width, y - rect.height)
+            );
 
-                function initializeParticles() {
-                    if (particlesInitialized || !container) return;
-
-                    const { width, height } = container.getBoundingClientRect();
-                    memoizedParticles = Array.from({ length: config.particleCount }, () =>
-                        createParticleElement(
-                            Math.random() * width,
-                            Math.random() * height,
-                            config.glowColor
-                        )
-                    );
-                    particlesInitialized = true;
-                }
-
-                function clearAllParticles() {
-                    timeouts.forEach(clearTimeout);
-                    timeouts.length = 0;
-                    magnetismAnimation?.kill();
-
-                    particles.forEach((particle) => {
-                        gsap.to(particle, {
-                            scale: 0,
-                            opacity: 0,
-                            duration: 0.3,
-                            ease: "back.in(1.7)",
-                            onComplete: () => {
-                                particle.parentNode?.removeChild(particle);
-                            },
-                        });
-                    });
-                    particles.length = 0;
-                }
-
-                function animateParticles() {
-                    if (!container || !isHovered) return;
-
-                    if (!particlesInitialized) {
-                        initializeParticles();
-                    }
-
-                    memoizedParticles.forEach((particle, index) => {
-                        const timeoutId = setTimeout(() => {
-                            if (!isHovered || !container) return;
-
-                            const clone = particle.cloneNode(true);
-                            container.appendChild(clone);
-                            particles.push(clone);
-
-                            gsap.fromTo(
-                                clone,
-                                { scale: 0, opacity: 0 },
-                                { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(1.7)" }
-                            );
-
-                            gsap.to(clone, {
-                                x: (Math.random() - 0.5) * 100,
-                                y: (Math.random() - 0.5) * 100,
-                                rotation: Math.random() * 360,
-                                duration: 2 + Math.random() * 2,
-                                ease: "none",
-                                repeat: -1,
-                                yoyo: true,
-                            });
-
-                            gsap.to(clone, {
-                                opacity: 0.3,
-                                duration: 1.5,
-                                ease: "power2.inOut",
-                                repeat: -1,
-                                yoyo: true,
-                            });
-                        }, index * 100);
-
-                        timeouts.push(timeoutId);
-                    });
-                }
-
-                function handleMouseEnter() {
-                    isHovered = true;
-                    animateParticles();
-
-                    if (config.enableTilt) {
-                        gsap.to(container, {
-                            rotateX: 5,
-                            rotateY: 5,
-                            duration: 0.3,
-                            ease: "power2.out",
-                            transformPerspective: 1000,
-                        });
-                    }
-                }
-
-                function handleMouseLeave() {
-                    isHovered = false;
-                    clearAllParticles();
-
-                    if (config.enableTilt) {
-                        gsap.to(container, {
-                            rotateX: 0,
-                            rotateY: 0,
-                            duration: 0.3,
-                            ease: "power2.out",
-                        });
-                    }
-
-                    if (config.enableMagnetism) {
-                        gsap.to(container, {
-                            x: 0,
-                            y: 0,
-                            duration: 0.3,
-                            ease: "power2.out",
-                        });
-                    }
-                }
-
-                function handleMouseMove(e) {
-                    if (!config.enableTilt && !config.enableMagnetism) return;
-
-                    const rect = container.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-                    const centerX = rect.width / 2;
-                    const centerY = rect.height / 2;
-
-                    if (config.enableTilt) {
-                        const rotateX = ((y - centerY) / centerY) * -10;
-                        const rotateY = ((x - centerX) / centerX) * 10;
-
-                        gsap.to(container, {
-                            rotateX,
-                            rotateY,
-                            duration: 0.1,
-                            ease: "power2.out",
-                            transformPerspective: 1000,
-                        });
-                    }
-
-                    if (config.enableMagnetism) {
-                        const magnetX = (x - centerX) * 0.05;
-                        const magnetY = (y - centerY) * 0.05;
-
-                        magnetismAnimation = gsap.to(container, {
-                            x: magnetX,
-                            y: magnetY,
-                            duration: 0.3,
-                            ease: "power2.out",
-                        });
-                    }
-                }
-
-                function handleClick(e) {
-                    if (!config.clickEffect) return;
-
-                    const rect = container.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-
-                    const maxDistance = Math.max(
-                        Math.hypot(x, y),
-                        Math.hypot(x - rect.width, y),
-                        Math.hypot(x, y - rect.height),
-                        Math.hypot(x - rect.width, y - rect.height)
-                    );
-
-                    const ripple = document.createElement('div');
-                    ripple.style.cssText = `
+            const ripple = document.createElement("div");
+            ripple.style.cssText = `
                         position: absolute;
                         width: ${maxDistance * 2}px;
                         height: ${maxDistance * 2}px;
                         border-radius: 50%;
-                        background: radial-gradient(circle, rgba(${config.glowColor}, 0.4) 0%, rgba(${config.glowColor}, 0.2) 30%, transparent 70%);
+                        background: radial-gradient(circle, rgba(${
+                          config.glowColor
+                        }, 0.4) 0%, rgba(${
+              config.glowColor
+            }, 0.2) 30%, transparent 70%);
                         left: ${x - maxDistance}px;
                         top: ${y - maxDistance}px;
                         pointer-events: none;
                         z-index: 1000;
                     `;
 
-                    container.appendChild(ripple);
+            container.appendChild(ripple);
 
-                    gsap.fromTo(
-                        ripple,
-                        {
-                            scale: 0,
-                            opacity: 1,
-                        },
-                        {
-                            scale: 1,
-                            opacity: 0,
-                            duration: 0.8,
-                            ease: "power2.out",
-                            onComplete: () => ripple.remove(),
-                        }
-                    );
-                }
+            gsap.fromTo(
+              ripple,
+              {
+                scale: 0,
+                opacity: 1,
+              },
+              {
+                scale: 1,
+                opacity: 0,
+                duration: 0.8,
+                ease: "power2.out",
+                onComplete: () => ripple.remove(),
+              }
+            );
+          }
 
-                container.addEventListener('mouseenter', handleMouseEnter);
-                container.addEventListener('mouseleave', handleMouseLeave);
-                container.addEventListener('mousemove', handleMouseMove);
-                container.addEventListener('click', handleClick);
+          container.addEventListener("mouseenter", handleMouseEnter);
+          container.addEventListener("mouseleave", handleMouseLeave);
+          container.addEventListener("mousemove", handleMouseMove);
+          container.addEventListener("click", handleClick);
 
-                return {
-                    destroy: function() {
-                        isHovered = false;
-                        container.removeEventListener('mouseenter', handleMouseEnter);
-                        container.removeEventListener('mouseleave', handleMouseLeave);
-                        container.removeEventListener('mousemove', handleMouseMove);
-                        container.removeEventListener('click', handleClick);
-                        clearAllParticles();
-                    }
-                };
+          return {
+            destroy: function () {
+              isHovered = false;
+              container.removeEventListener("mouseenter", handleMouseEnter);
+              container.removeEventListener("mouseleave", handleMouseLeave);
+              container.removeEventListener("mousemove", handleMouseMove);
+              container.removeEventListener("click", handleClick);
+              clearAllParticles();
+            },
+          };
+        }
+
+        function initCardEffects(card, config) {
+          function handleMouseMove(e) {
+            if (!config.enableTilt && !config.enableMagnetism) return;
+
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+
+            if (config.enableTilt) {
+              const rotateX = ((y - centerY) / centerY) * -10;
+              const rotateY = ((x - centerX) / centerX) * 10;
+
+              gsap.to(card, {
+                rotateX,
+                rotateY,
+                duration: 0.1,
+                ease: "power2.out",
+                transformPerspective: 1000,
+              });
             }
 
-            function initCardEffects(card, config) {
-                function handleMouseMove(e) {
-                    if (!config.enableTilt && !config.enableMagnetism) return;
+            if (config.enableMagnetism) {
+              const magnetX = (x - centerX) * 0.05;
+              const magnetY = (y - centerY) * 0.05;
 
-                    const rect = card.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-                    const centerX = rect.width / 2;
-                    const centerY = rect.height / 2;
+              gsap.to(card, {
+                x: magnetX,
+                y: magnetY,
+                duration: 0.3,
+                ease: "power2.out",
+              });
+            }
+          }
 
-                    if (config.enableTilt) {
-                        const rotateX = ((y - centerY) / centerY) * -10;
-                        const rotateY = ((x - centerX) / centerX) * 10;
+          function handleMouseLeave() {
+            if (config.enableTilt) {
+              gsap.to(card, {
+                rotateX: 0,
+                rotateY: 0,
+                duration: 0.3,
+                ease: "power2.out",
+              });
+            }
 
-                        gsap.to(card, {
-                            rotateX,
-                            rotateY,
-                            duration: 0.1,
-                            ease: "power2.out",
-                            transformPerspective: 1000,
-                        });
-                    }
+            if (config.enableMagnetism) {
+              gsap.to(card, {
+                x: 0,
+                y: 0,
+                duration: 0.3,
+                ease: "power2.out",
+              });
+            }
+          }
 
-                    if (config.enableMagnetism) {
-                        const magnetX = (x - centerX) * 0.05;
-                        const magnetY = (y - centerY) * 0.05;
+          function handleClick(e) {
+            if (!config.clickEffect) return;
 
-                        gsap.to(card, {
-                            x: magnetX,
-                            y: magnetY,
-                            duration: 0.3,
-                            ease: "power2.out",
-                        });
-                    }
-                }
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
 
-                function handleMouseLeave() {
-                    if (config.enableTilt) {
-                        gsap.to(card, {
-                            rotateX: 0,
-                            rotateY: 0,
-                            duration: 0.3,
-                            ease: "power2.out",
-                        });
-                    }
+            const maxDistance = Math.max(
+              Math.hypot(x, y),
+              Math.hypot(x - rect.width, y),
+              Math.hypot(x, y - rect.height),
+              Math.hypot(x - rect.width, y - rect.height)
+            );
 
-                    if (config.enableMagnetism) {
-                        gsap.to(card, {
-                            x: 0,
-                            y: 0,
-                            duration: 0.3,
-                            ease: "power2.out",
-                        });
-                    }
-                }
-
-                function handleClick(e) {
-                    if (!config.clickEffect) return;
-
-                    const rect = card.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-
-                    const maxDistance = Math.max(
-                        Math.hypot(x, y),
-                        Math.hypot(x - rect.width, y),
-                        Math.hypot(x, y - rect.height),
-                        Math.hypot(x - rect.width, y - rect.height)
-                    );
-
-                    const ripple = document.createElement('div');
-                    ripple.style.cssText = `
+            const ripple = document.createElement("div");
+            ripple.style.cssText = `
                         position: absolute;
                         width: ${maxDistance * 2}px;
                         height: ${maxDistance * 2}px;
                         border-radius: 50%;
-                        background: radial-gradient(circle, rgba(${config.glowColor}, 0.4) 0%, rgba(${config.glowColor}, 0.2) 30%, transparent 70%);
+                        background: radial-gradient(circle, rgba(${
+                          config.glowColor
+                        }, 0.4) 0%, rgba(${
+              config.glowColor
+            }, 0.2) 30%, transparent 70%);
                         left: ${x - maxDistance}px;
                         top: ${y - maxDistance}px;
                         pointer-events: none;
                         z-index: 1000;
                     `;
 
-                    card.appendChild(ripple);
+            card.appendChild(ripple);
 
-                    gsap.fromTo(
-                        ripple,
-                        {
-                            scale: 0,
-                            opacity: 1,
-                        },
-                        {
-                            scale: 1,
-                            opacity: 0,
-                            duration: 0.8,
-                            ease: "power2.out",
-                            onComplete: () => ripple.remove(),
-                        }
-                    );
-                }
+            gsap.fromTo(
+              ripple,
+              {
+                scale: 0,
+                opacity: 1,
+              },
+              {
+                scale: 1,
+                opacity: 0,
+                duration: 0.8,
+                ease: "power2.out",
+                onComplete: () => ripple.remove(),
+              }
+            );
+          }
 
-                card.addEventListener('mousemove', handleMouseMove);
-                card.addEventListener('mouseleave', handleMouseLeave);
-                card.addEventListener('click', handleClick);
+          card.addEventListener("mousemove", handleMouseMove);
+          card.addEventListener("mouseleave", handleMouseLeave);
+          card.addEventListener("click", handleClick);
 
-                return {
-                    destroy: function() {
-                        card.removeEventListener('mousemove', handleMouseMove);
-                        card.removeEventListener('mouseleave', handleMouseLeave);
-                        card.removeEventListener('click', handleClick);
-                    }
-                };
-            }
+          return {
+            destroy: function () {
+              card.removeEventListener("mousemove", handleMouseMove);
+              card.removeEventListener("mouseleave", handleMouseLeave);
+              card.removeEventListener("click", handleClick);
+            },
+          };
+        }
 
-            function createParticleElement(x, y, color = DEFAULT_GLOW_COLOR) {
-                const el = document.createElement('div');
-                el.className = 'particle';
-                el.style.cssText = `
+        function createParticleElement(x, y, color = DEFAULT_GLOW_COLOR) {
+          const el = document.createElement("div");
+          el.className = "particle";
+          el.style.cssText = `
                     position: absolute;
                     width: 4px;
                     height: 4px;
@@ -880,9 +926,9 @@
                     left: ${x}px;
                     top: ${y}px;
                 `;
-                return el;
-            }
-        });
+          return el;
+        }
+      });
     </script>
-</body>
+  </body>
 </html>

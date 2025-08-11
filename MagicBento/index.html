@@ -1,18 +1,401 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Magic Bento HTML/CSS/JS</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="magicbento.css" />
-  </head>
-  <body>
-    <div id="pane-container"></div>
-    <div class="bento-section">
-      <div class="card-grid" id="cardGrid"></div>
-      <div class="global-spotlight" id="globalSpotlight"></div>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MagicBento — Vanilla JS + GSAP + Tweakpane</title>
+  <style>
+    :root {
+      --hue: 27;
+      --sat: 69%;
+      --white: hsl(0, 0%, 100%);
+      --purple-primary: rgba(132, 0, 255, 1);
+      --purple-glow: rgba(132, 0, 255, 0.2);
+      --purple-border: rgba(132, 0, 255, 0.8);
+      --border-color: #392e4e;
+      --background-dark: #060010;
+      --glow-color: 132, 0, 255;
+    }
+
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#05000b 0%, #0b0212 100%);font-family:Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;}
+
+    .app-wrap{min-height:100%;display:flex;align-items:flex-start;justify-content:center;padding:48px 24px;box-sizing:border-box}
+
+    .card-grid{display:grid;gap:0.5em;padding:0.75em;max-width:1200px;font-size:clamp(14px, 0.9rem + 0.5vw, 18px);grid-auto-rows:1fr}
+
+    .card{display:flex;flex-direction:column;justify-content:space-between;position:relative;aspect-ratio:4/3;min-height:200px;width:100%;padding:1.25em;border-radius:20px;border:1px solid var(--border-color);background:var(--background-dark);font-weight:300;overflow:hidden;transition:all 0.3s ease;--glow-x:50%;--glow-y:50%;--glow-intensity:0;--glow-radius:200px}
+    .card:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,0,0,0.15)}
+    .card__header,.card__content{display:flex;position:relative;color:var(--white)}
+    .card__header{gap:0.75em;justify-content:space-between}
+    .card__content{flex-direction:column}
+    .card__label{font-size:16px}
+    .card__title{font-weight:400;font-size:16px;margin:0 0 0.25em}
+    .card__description{font-size:12px;line-height:1.2;opacity:0.9}
+
+    .card--text-autohide .card__title,.card--text-autohide .card__description{display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis}
+    .card--text-autohide .card__title{-webkit-line-clamp:1}
+    .card--text-autohide .card__description{-webkit-line-clamp:2}
+
+    @media (max-width:599px){.card-grid{grid-template-columns:1fr;width:90%;margin:0 auto;padding:0.5em}.card{width:100%;min-height:180px}}
+    @media (min-width:600px){.card-grid{grid-template-columns:repeat(2,1fr)}}
+    @media (min-width:1024px){.card-grid{grid-template-columns:repeat(4,1fr)}
+      .card:nth-child(3){grid-column:span 2;grid-row:span 2}
+      .card:nth-child(4){grid-column:1/span 2;grid-row:2/span 2}
+      .card:nth-child(6){grid-column:4;grid-row:3}
+    }
+
+    /* Border glow effect */
+    .card--border-glow::after{content:'';position:absolute;inset:0;padding:6px;background:radial-gradient(var(--glow-radius) circle at var(--glow-x) var(--glow-y),rgba(var(--glow-color),calc(var(--glow-intensity) * 0.8)) 0%,rgba(var(--glow-color),calc(var(--glow-intensity) * 0.4)) 30%,transparent 60%);border-radius:inherit;pointer-events:none;transition:opacity 0.3s ease;z-index:1;mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);-webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);-webkit-mask-composite:xor}
+    .card--border-glow:hover::after{opacity:1}
+    .card--border-glow:hover{box-shadow:0 4px 20px rgba(46,24,78,0.4),0 0 30px var(--purple-glow)}
+
+    .particle-container{position:relative;overflow:hidden}
+    .particle{position:absolute;width:6px;height:6px;border-radius:50%;pointer-events:none;z-index:100}
+    .particle::before{content:'';position:absolute;top:-2px;left:-2px;right:-2px;bottom:-2px;background:rgba(132,0,255,0.12);border-radius:50%;z-index:-1}
+    .particle-container:hover{box-shadow:0 4px 20px rgba(46,24,78,0.2),0 0 30px var(--purple-glow)}
+
+    /* Global spotlight styles */
+    .global-spotlight{mix-blend-mode:screen;will-change:transform,opacity;z-index:200 !important;pointer-events:none;position:fixed;width:800px;height:800px;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle, rgba(132,0,255,0.15) 0%, rgba(132,0,255,0.08) 15%, rgba(132,0,255,0.04) 25%, rgba(132,0,255,0.02) 40%, rgba(132,0,255,0.01) 65%, transparent 70%);opacity:0}
+
+    .controls-wrap{position:fixed;left:14px;top:14px;z-index:9999}
+    .credits{position:fixed;right:14px;bottom:14px;color:rgba(255,255,255,0.6);font-size:12px}
+
+    /* simple reset for tweakpane container so it doesn't overlap cards */
+    .tp-dv { box-shadow: 0 6px 30px rgba(0,0,0,0.5) !important; border-radius:10px !important; }
+  </style>
+</head>
+<body>
+  <div class="app-wrap">
+    <div class="card-grid" id="cardGrid">
+      <!-- cards will be injected by JS -->
     </div>
-    <script src="https://cdn.skypack.dev/tweakpane@4.0.4"></script>
-    <script src="magicbento.js"></script>
-  </body>
+  </div>
+
+  <div class="controls-wrap" id="controls"></div>
+  <div class="credits">MagicBento • Vanilla • GSAP • Tweakpane</div>
+
+  <!-- Dependencies via skypack (ES module) -->
+  <script type="module">
+    import { gsap } from 'https://cdn.skypack.dev/gsap@3.12.2';
+    import { Pane } from 'https://cdn.skypack.dev/tweakpane@4.0.4';
+
+    // ----- Configuration & UI Defaults -----
+    const DEFAULTS = {
+      textAutoHide: true,
+      enableStars: true,
+      enableSpotlight: true,
+      enableBorderGlow: true,
+      disableAnimations: false,
+      spotlightRadius: 300,
+      particleCount: 12,
+      enableTilt: false,
+      glowColor: '132, 0, 255',
+      clickEffect: true,
+      enableMagnetism: true,
+    };
+
+    // Card data (kept same as your React version)
+    const cardData = [
+      { color: '#060010', title: 'Analytics', description: 'Track user behavior', label: 'Insights' },
+      { color: '#060010', title: 'Dashboard', description: 'Centralized data view', label: 'Overview' },
+      { color: '#060010', title: 'Collaboration', description: 'Work together seamlessly', label: 'Teamwork' },
+      { color: '#060010', title: 'Automation', description: 'Streamline workflows', label: 'Efficiency' },
+      { color: '#060010', title: 'Integration', description: 'Connect favorite tools', label: 'Connectivity' },
+      { color: '#060010', title: 'Security', description: 'Enterprise-grade protection', label: 'Protection' },
+    ];
+
+    // State that Tweakpane will read/write
+    const state = { ...DEFAULTS };
+
+    const cardGrid = document.getElementById('cardGrid');
+
+    // Create cards
+    function buildCards() {
+      cardGrid.innerHTML = '';
+      cardData.forEach((card, idx) => {
+        const el = document.createElement('div');
+        el.className = `card ${state.textAutoHide ? 'card--text-autohide' : ''} ${state.enableBorderGlow ? 'card--border-glow' : ''} particle-container`;
+        el.style.backgroundColor = card.color;
+        el.style.setProperty('--glow-color', state.glowColor);
+        el.innerHTML = `
+          <div class="card__header"><div class="card__label">${card.label}</div></div>
+          <div class="card__content"><h2 class="card__title">${card.title}</h2><p class="card__description">${card.description}</p></div>
+        `;
+        setupCardInteractions(el);
+        cardGrid.appendChild(el);
+      });
+    }
+
+    // Utility: create a particle DOM element
+    function createParticleElement(x, y, color = state.glowColor) {
+      const el = document.createElement('div');
+      el.className = 'particle';
+      el.style.left = `${x}px`;
+      el.style.top = `${y}px`;
+      el.style.background = `rgba(${color}, 1)`;
+      el.style.boxShadow = `0 0 10px rgba(${color}, 0.6)`;
+      return el;
+    }
+
+    // Global spotlight element
+    const spotlight = document.createElement('div');
+    spotlight.className = 'global-spotlight';
+    document.body.appendChild(spotlight);
+
+    // Keep track of particles for cleanup
+    const liveParticles = new Set();
+
+    // Per-card interaction setup
+    function setupCardInteractions(cardEl) {
+      let hover = false;
+      let particleTimeouts = [];
+      let magnetTween = null;
+
+      // Initialize particle positions when needed
+      function spawnParticles() {
+        if (!state.enableStars || state.disableAnimations) return;
+        const rect = cardEl.getBoundingClientRect();
+        for (let i = 0; i < state.particleCount; i++) {
+          const p = createParticleElement(Math.random() * rect.width, Math.random() * rect.height);
+          cardEl.appendChild(p);
+          liveParticles.add(p);
+
+          // animate in
+          gsap.fromTo(p, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: 'back.out(1.7)' });
+
+          // float
+          gsap.to(p, {
+            x: (Math.random() - 0.5) * 100,
+            y: (Math.random() - 0.5) * 100,
+            rotation: Math.random() * 360,
+            duration: 2 + Math.random() * 2,
+            ease: 'none',
+            repeat: -1,
+            yoyo: true,
+          });
+
+          // subtle opacity pulse
+          gsap.to(p, { opacity: 0.3, duration: 1.5, ease: 'power2.inOut', repeat: -1, yoyo: true });
+        }
+      }
+
+      function clearParticles() {
+        particleTimeouts.forEach(clearTimeout);
+        particleTimeouts = [];
+        liveParticles.forEach((p) => {
+          if (!p.parentNode) return;
+          gsap.to(p, { scale: 0, opacity: 0, duration: 0.3, ease: 'back.in(1.7)', onComplete: () => p.remove() });
+          liveParticles.delete(p);
+        });
+      }
+
+      function handleMouseEnter() {
+        if (state.disableAnimations) return;
+        hover = true;
+        if (state.enableTilt) gsap.to(cardEl, { rotateX: 5, rotateY: 5, duration: 0.3, ease: 'power2.out', transformPerspective: 1000 });
+
+        if (state.enableStars) {
+          // stagger spawn for nicer effect
+          for (let i = 0; i < state.particleCount; i++) {
+            const t = setTimeout(() => spawnParticles(), i * 40);
+            particleTimeouts.push(t);
+          }
+        }
+      }
+
+      function handleMouseLeave() {
+        hover = false;
+        clearParticles();
+        if (state.enableTilt) gsap.to(cardEl, { rotateX: 0, rotateY: 0, duration: 0.3, ease: 'power2.out' });
+        if (state.enableMagnetism) gsap.to(cardEl, { x: 0, y: 0, duration: 0.3, ease: 'power2.out' });
+      }
+
+      function handleMouseMove(e) {
+        if (state.disableAnimations) return;
+        if (!state.enableTilt && !state.enableMagnetism && !state.enableBorderGlow) return;
+
+        const rect = cardEl.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+
+        if (state.enableTilt) {
+          const rotateX = ((y - centerY) / centerY) * -10;
+          const rotateY = ((x - centerX) / centerX) * 10;
+          gsap.to(cardEl, { rotateX, rotateY, duration: 0.12, ease: 'power2.out', transformPerspective: 1000 });
+        }
+
+        if (state.enableMagnetism) {
+          const magnetX = (x - centerX) * 0.05;
+          const magnetY = (y - centerY) * 0.05;
+          magnetTween && magnetTween.kill();
+          magnetTween = gsap.to(cardEl, { x: magnetX, y: magnetY, duration: 0.25, ease: 'power2.out' });
+        }
+
+        if (state.enableBorderGlow) {
+          // compute glow intensity and set css vars
+          const relativeX = ((e.clientX - rect.left) / rect.width) * 100;
+          const relativeY = ((e.clientY - rect.top) / rect.height) * 100;
+          const distX = Math.abs(e.clientX - (rect.left + rect.width / 2));
+          const distY = Math.abs(e.clientY - (rect.top + rect.height / 2));
+          const distance = Math.hypot(distX, distY);
+          const max = Math.hypot(rect.width / 2, rect.height / 2);
+          const intensity = Math.max(0, 1 - distance / max);
+          cardEl.style.setProperty('--glow-x', `${relativeX}%`);
+          cardEl.style.setProperty('--glow-y', `${relativeY}%`);
+          cardEl.style.setProperty('--glow-intensity', intensity.toFixed(2));
+          cardEl.style.setProperty('--glow-radius', `${state.spotlightRadius}px`);
+        }
+      }
+
+      function handleClick(e) {
+        if (!state.clickEffect || state.disableAnimations) return;
+        const rect = cardEl.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const maxDistance = Math.max(
+          Math.hypot(x, y),
+          Math.hypot(x - rect.width, y),
+          Math.hypot(x, y - rect.height),
+          Math.hypot(x - rect.width, y - rect.height)
+        );
+
+        const ripple = document.createElement('div');
+        ripple.style.cssText = `position:absolute;width:${maxDistance * 2}px;height:${maxDistance * 2}px;border-radius:50%;background:radial-gradient(circle, rgba(${state.glowColor},0.4) 0%, rgba(${state.glowColor},0.2) 30%, transparent 70%);left:${x - maxDistance}px;top:${y - maxDistance}px;pointer-events:none;z-index:1000`;
+        cardEl.appendChild(ripple);
+        gsap.fromTo(ripple, { scale: 0, opacity: 1 }, { scale: 1, opacity: 0, duration: 0.8, ease: 'power2.out', onComplete: () => ripple.remove() });
+      }
+
+      cardEl.addEventListener('mouseenter', handleMouseEnter);
+      cardEl.addEventListener('mouseleave', handleMouseLeave);
+      cardEl.addEventListener('mousemove', handleMouseMove);
+      cardEl.addEventListener('click', handleClick);
+
+      // cleanup (in case we rebuild)
+      cardEl._dispose = () => {
+        cardEl.removeEventListener('mouseenter', handleMouseEnter);
+        cardEl.removeEventListener('mouseleave', handleMouseLeave);
+        cardEl.removeEventListener('mousemove', handleMouseMove);
+        cardEl.removeEventListener('click', handleClick);
+        clearParticles();
+      };
+    }
+
+    // Global spotlight tracking and card glow updates
+    function handleGlobalMouseMove(e) {
+      const rect = cardGrid.getBoundingClientRect();
+      const inside = e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
+      const cards = Array.from(cardGrid.querySelectorAll('.card'));
+
+      if (!state.enableSpotlight || state.disableAnimations || !inside) {
+        gsap.to(spotlight, { opacity: 0, duration: 0.3, ease: 'power2.out' });
+        cards.forEach(c => c.style.setProperty('--glow-intensity', '0'));
+        return;
+      }
+
+      const { proximity, fadeDistance } = calculateSpotlightValues(state.spotlightRadius);
+      let minDistance = Infinity;
+
+      cards.forEach((card) => {
+        const cardRect = card.getBoundingClientRect();
+        const centerX = cardRect.left + cardRect.width / 2;
+        const centerY = cardRect.top + cardRect.height / 2;
+        const distance = Math.hypot(e.clientX - centerX, e.clientY - centerY) - Math.max(cardRect.width, cardRect.height) / 2;
+        const effectiveDistance = Math.max(0, distance);
+        minDistance = Math.min(minDistance, effectiveDistance);
+
+        let glowIntensity = 0;
+        if (effectiveDistance <= proximity) glowIntensity = 1;
+        else if (effectiveDistance <= fadeDistance) glowIntensity = (fadeDistance - effectiveDistance) / (fadeDistance - proximity);
+
+        updateCardGlowProperties(card, e.clientX, e.clientY, glowIntensity, state.spotlightRadius);
+      });
+
+      gsap.to(spotlight, { left: e.clientX, top: e.clientY, duration: 0.08, ease: 'power2.out' });
+
+      const targetOpacity = minDistance <= proximity ? 0.8 : (minDistance <= fadeDistance ? ((fadeDistance - minDistance) / (fadeDistance - proximity)) * 0.8 : 0);
+      gsap.to(spotlight, { opacity: targetOpacity, duration: targetOpacity > 0 ? 0.12 : 0.4, ease: 'power2.out' });
+    }
+
+    function calculateSpotlightValues(radius) {
+      return { proximity: radius * 0.5, fadeDistance: radius * 0.75 };
+    }
+
+    function updateCardGlowProperties(card, mouseX, mouseY, glow, radius) {
+      const rect = card.getBoundingClientRect();
+      const relativeX = ((mouseX - rect.left) / rect.width) * 100;
+      const relativeY = ((mouseY - rect.top) / rect.height) * 100;
+      card.style.setProperty('--glow-x', `${relativeX}%`);
+      card.style.setProperty('--glow-y', `${relativeY}%`);
+      card.style.setProperty('--glow-intensity', glow.toString());
+      card.style.setProperty('--glow-radius', `${radius}px`);
+    }
+
+    // Rebuild UI when any control changes
+    function refreshUI() {
+      // update existing cards' classes and css vars
+      const cards = Array.from(cardGrid.querySelectorAll('.card'));
+      cards.forEach(c => { c._dispose && c._dispose(); });
+      buildCards();
+    }
+
+    // Setup Tweakpane
+    function setupPane() {
+      const pane = new Pane({ container: document.getElementById('controls') });
+
+      // Main folder
+      pane.addInput(state, 'spotlightRadius', { label: 'Spotlight Radius', min: 100, max: 1200, step: 10 }).on('change', () => {});
+
+      pane.addSeparator();
+
+      pane.addInput(state, 'enableStars', { label: 'Stars Effect' }).on('change', refreshUI);
+      pane.addInput(state, 'enableSpotlight', { label: 'Spotlight Effect' }).on('change', () => { if (!state.enableSpotlight) gsap.to(spotlight, { opacity: 0, duration: 0.25 }); });
+      pane.addInput(state, 'enableTilt', { label: 'Tilt Effect' }).on('change', refreshUI);
+      pane.addInput(state, 'clickEffect', { label: 'Click Effect' }).on('change', refreshUI);
+      pane.addInput(state, 'enableMagnetism', { label: 'Magnetism' }).on('change', refreshUI);
+
+      pane.addSeparator();
+
+      pane.addButton({ title: 'Disable All Animations' }).on('click', () => {
+        state.disableAnimations = true;
+        refreshUI();
+      });
+
+      pane.addButton({ title: 'Enable Animations' }).on('click', () => {
+        state.disableAnimations = false;
+        refreshUI();
+      });
+
+      // live updates for some controls (no full rebuild required)
+      pane.on('change', (ev) => {
+        // If glow color or spotlight radius changed, update CSS vars directly
+        if (ev.input && ev.input.key === 'spotlightRadius') {
+          // nothing else needed here; glow radius used at runtime
+        }
+      });
+    }
+
+    // Initial boot
+    buildCards();
+    setupPane();
+
+    // Global listeners
+    document.addEventListener('mousemove', handleGlobalMouseMove);
+    document.addEventListener('mouseleave', () => gsap.to(spotlight, { opacity: 0, duration: 0.3 }));
+
+    // Mobile auto-disable
+    function checkMobile() {
+      if (window.innerWidth <= 768) {
+        state.disableAnimations = true;
+        // If controls exist in pane, they remain but effects off
+      }
+    }
+    checkMobile();
+    window.addEventListener('resize', () => { checkMobile(); refreshUI(); });
+
+    // expose for debugging
+    window.MagicBento = { state, refreshUI };
+  </script>
+</body>
 </html>

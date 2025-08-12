@@ -1,294 +1,431 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>MagicBento — Vanilla JS + GSAP + Tweakpane</title>
-<style>
-  :root{
-    --bg:#07030a;
-    --card-bg:#0b0210;
-    --border:rgba(132,116,170,0.08);
-    --glow-color:132,0,255; /* default rgb */
-  }
-  html,body{height:100%;margin:0;background:linear-gradient(180deg,#060010 0%, #0b0212 100%);font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial;color:#eee}
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>MagicBento — Vanilla JS + GSAP + Tweakpane</title>
+    <style>
+      :root {
+        --bg: #07030a;
+        --card-bg: #0b0210;
+        --border: rgba(132, 116, 170, 0.08);
+        --glow-color: 132, 0, 255; /* default rgb */
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        background: linear-gradient(180deg, #060010 0%, #0b0212 100%);
+        font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+        color: #eee;
+      }
 
-  /* Grid layout matching user's spec */
-  .wrap{padding:28px;height:100%;box-sizing:border-box}
-  .grid{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(5,1fr);gap:12px;width:calc(100% - 56px);height:calc(100% - 56px);margin:0 auto}
+      /* Grid layout matching user's spec */
+      .wrap {
+        padding: 28px;
+        height: 100%;
+        box-sizing: border-box;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        grid-template-rows: repeat(5, 1fr);
+        gap: 12px;
+        width: calc(100% - 56px);
+        height: calc(100% - 56px);
+        margin: 0 auto;
+      }
 
-  .card{
-    position:relative;
-    background:var(--card-bg);
-    border-radius:18px;
-    border:1px solid var(--border);
-    overflow:hidden;
-    padding:28px;
-    box-sizing:border-box;
-    transform-style:preserve-3d;
-    will-change:transform;
-  }
+      .card {
+        position: relative;
+        background: var(--card-bg);
+        border-radius: 18px;
+        border: 1px solid var(--border);
+        overflow: hidden;
+        padding: 28px;
+        box-sizing: border-box;
+        transform-style: preserve-3d;
+        will-change: transform;
+      }
 
-  /* layout areas */
-  .c1{grid-area:1/1/3/3}
-  .c2{grid-area:1/3/3/5}
-  .c3{grid-area:3/1/6/5}
-  .c4{grid-area:1/5/4/9}
-  .c5{grid-area:4/5/6/7}
-  .c6{grid-area:4/7/6/9}
+      /* layout areas */
+      .c1 {
+        grid-area: 1/1/3/3;
+      }
+      .c2 {
+        grid-area: 1/3/3/5;
+      }
+      .c3 {
+        grid-area: 3/1/6/5;
+      }
+      .c4 {
+        grid-area: 1/5/4/9;
+      }
+      .c5 {
+        grid-area: 4/5/6/7;
+      }
+      .c6 {
+        grid-area: 4/7/6/9;
+      }
 
-  /* header/content styles */
-  .label{font-size:14px;opacity:0.8;margin-bottom:36px}
-  .title{font-size:18px;margin:0 0 12px;font-weight:600}
-  .desc{font-size:12px;opacity:0.75}
+      /* header/content styles */
+      .label {
+        font-size: 14px;
+        opacity: 0.8;
+        margin-bottom: 36px;
+      }
+      .title {
+        font-size: 18px;
+        margin: 0 0 12px;
+        font-weight: 600;
+      }
+      .desc {
+        font-size: 12px;
+        opacity: 0.75;
+      }
 
-  /* subtle border glow using css vars */
-  .card::after{
-    content:'';position:absolute;inset:0;padding:6px;border-radius:inherit;pointer-events:none;z-index:1;
-    background:radial-gradient(var(--glow-radius,200px) circle at var(--glow-x,50%) var(--glow-y,50%),rgba(var(--glow-color), calc(var(--glow-intensity,0) * 0.8)) 0%, rgba(var(--glow-color), calc(var(--glow-intensity,0) * 0.35)) 30%, transparent 60%);
-    transition:opacity 0.18s linear;
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor; mask-composite: exclude;
-  }
+      /* subtle border glow using css vars */
+      .card::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        padding: 6px;
+        border-radius: inherit;
+        pointer-events: none;
+        z-index: 1;
+        background: radial-gradient(
+          var(--glow-radius, 200px) circle at var(--glow-x, 50%)
+            var(--glow-y, 50%),
+          rgba(var(--glow-color), calc(var(--glow-intensity, 0) * 0.8)) 0%,
+          rgba(var(--glow-color), calc(var(--glow-intensity, 0) * 0.35)) 30%,
+          transparent 60%
+        );
+        transition: opacity 0.18s linear;
+        mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask: linear-gradient(#fff 0 0) content-box,
+          linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+      }
 
-  /* canvas for global stars is full-screen behind everything */
-  .global-canvas{position:fixed;inset:0;pointer-events:none;z-index:0}
+      /* canvas for global stars is full-screen behind everything */
+      .global-canvas {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+      }
 
-  /* per-card particle container (absolute) */
-  .particles-layer{position:absolute;inset:0;pointer-events:none;z-index:5}
+      /* per-card particle container (absolute) */
+      .particles-layer {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 5;
+      }
 
-  /* control panel container */
-  .controls{position:fixed;top:16px;right:16px;z-index:9999}
-  .panel-toggle{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.04);border-radius:10px;padding:6px 8px;border:1px solid rgba(255,255,255,0.04);cursor:pointer;color:#ddd}
+      /* control panel container */
+      .controls {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        z-index: 9999;
+      }
+      .panel-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 10px;
+        padding: 6px 8px;
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        cursor: pointer;
+        color: #ddd;
+      }
 
-  /* small helper for particle element */
-  .particle{position:absolute;width:6px;height:6px;border-radius:50%;pointer-events:none;will-change:transform,opacity}
+      /* small helper for particle element */
+      .particle {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        pointer-events: none;
+        will-change: transform, opacity;
+      }
 
-  /* responsive */
-  @media (max-width:900px){.grid{width:96vw;height:94vh;gap:10px;padding:8px}.card{padding:18px}}
-</style>
-</head>
-<body>
-  <div class="controls">
-    <div id="panelToggle" class="panel-toggle">☰ Controls</div>
-    <div id="paneContainer" style="display:block;margin-top:8px"></div>
-  </div>
+      /* responsive */
+      @media (max-width: 900px) {
+        .grid {
+          width: 96vw;
+          height: 94vh;
+          gap: 10px;
+          padding: 8px;
+        }
+        .card {
+          padding: 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="controls">
+      <div id="panelToggle" class="panel-toggle">☰ Controls</div>
+      <div id="paneContainer" style="display: block; margin-top: 8px"></div>
+    </div>
 
-  <canvas id="globalCanvas" class="global-canvas"></canvas>
+    <canvas id="globalCanvas" class="global-canvas"></canvas>
 
-  <div class="wrap">
-    <div class="grid" id="grid">
-      <div class="card c1" data-glow="132,0,255">
-        <div class="label">Insights</div>
-        <h3 class="title">Analytics</h3>
-        <div class="desc">Track user behavior</div>
-        <div class="particles-layer"></div>
-      </div>
-      <div class="card c2" data-glow="132,0,255">
-        <div class="label">Overview</div>
-        <h3 class="title">Dashboard</h3>
-        <div class="desc">Centralized data view</div>
-        <div class="particles-layer"></div>
-      </div>
-      <div class="card c3" data-glow="132,0,255">
-        <div class="label">Efficiency</div>
-        <h3 class="title">Automation</h3>
-        <div class="desc">Streamline workflows</div>
-        <div class="particles-layer"></div>
-      </div>
-      <div class="card c4" data-glow="132,0,255">
-        <div class="label">Teamwork</div>
-        <h3 class="title">Collaboration</h3>
-        <div class="desc">Work together seamlessly</div>
-        <div class="particles-layer"></div>
-      </div>
-      <div class="card c5" data-glow="132,0,255">
-        <div class="label">Connectivity</div>
-        <h3 class="title">Integration</h3>
-        <div class="desc">Connect favorite tools</div>
-        <div class="particles-layer"></div>
-      </div>
-      <div class="card c6" data-glow="132,0,255">
-        <div class="label">Protection</div>
-        <h3 class="title">Security</h3>
-        <div class="desc">Enterprise-grade protection</div>
-        <div class="particles-layer"></div>
+    <div class="wrap">
+      <div class="grid" id="grid">
+        <div class="card c1" data-glow="132,0,255">
+          <div class="label">Insights</div>
+          <h3 class="title">Analytics</h3>
+          <div class="desc">Track user behavior</div>
+          <div class="particles-layer"></div>
+        </div>
+        <div class="card c2" data-glow="132,0,255">
+          <div class="label">Overview</div>
+          <h3 class="title">Dashboard</h3>
+          <div class="desc">Centralized data view</div>
+          <div class="particles-layer"></div>
+        </div>
+        <div class="card c3" data-glow="132,0,255">
+          <div class="label">Efficiency</div>
+          <h3 class="title">Automation</h3>
+          <div class="desc">Streamline workflows</div>
+          <div class="particles-layer"></div>
+        </div>
+        <div class="card c4" data-glow="132,0,255">
+          <div class="label">Teamwork</div>
+          <h3 class="title">Collaboration</h3>
+          <div class="desc">Work together seamlessly</div>
+          <div class="particles-layer"></div>
+        </div>
+        <div class="card c5" data-glow="132,0,255">
+          <div class="label">Connectivity</div>
+          <h3 class="title">Integration</h3>
+          <div class="desc">Connect favorite tools</div>
+          <div class="particles-layer"></div>
+        </div>
+        <div class="card c6" data-glow="132,0,255">
+          <div class="label">Protection</div>
+          <h3 class="title">Security</h3>
+          <div class="desc">Enterprise-grade protection</div>
+          <div class="particles-layer"></div>
+        </div>
       </div>
     </div>
-  </div>
 
-<script type="module">
-  import { gsap } from 'https://cdn.skypack.dev/gsap@3.12.2';
-  import { Pane } from 'https://cdn.jsdelivr.net/npm/tweakpane@4.0.5/dist/tweakpane.min.js';
+    <script type="module">
+      import { gsap } from "https://cdn.skypack.dev/gsap@3.12.2";
+      import { Pane } from "https://cdn.jsdelivr.net/npm/tweakpane@4.0.5/dist/tweakpane.min.js";
 
-  // Config state
-  const state = {
-    stars: true,
-    spotlight: true,
-    tilt: true,
-    magnetism: true,
-    particleCount: 12,
-    particleLife: 0.9,
-    spotlightRadius: 300,
-  };
+      // Config state
+      const state = {
+        stars: true,
+        spotlight: true,
+        tilt: true,
+        magnetism: true,
+        particleCount: 12,
+        particleLife: 0.9,
+        spotlightRadius: 300,
+      };
 
-  // Pane UI
-  const paneContainer = document.getElementById('paneContainer');
-  const pane = new Pane({ container: paneContainer });
-  pane.addBinding(state, 'stars', { label: 'Stars (hover)' }).on('change', () => {});
-  pane.addBinding(state, 'spotlight', { label: 'Spotlight' });
-  pane.addBinding(state, 'tilt', { label: 'Tilt' });
-  pane.addBinding(state, 'magnetism', { label: 'Magnetism' });
-  pane.addBinding(state, 'spotlightRadius', { min: 100, max: 1200, step: 10 });
-  pane.addButton({ title: 'Disable All Animations' }).on('click', () => { state.stars = state.spotlight = state.tilt = state.magnetism = false; pane.refresh(); });
+      // Pane UI
+      const paneContainer = document.getElementById("paneContainer");
+      const pane = new Pane({ container: paneContainer });
+      pane
+        .addBinding(state, "stars", { label: "Stars (hover)" })
+        .on("change", () => {});
+      pane.addBinding(state, "spotlight", { label: "Spotlight" });
+      pane.addBinding(state, "tilt", { label: "Tilt" });
+      pane.addBinding(state, "magnetism", { label: "Magnetism" });
+      pane.addBinding(state, "spotlightRadius", {
+        min: 100,
+        max: 1200,
+        step: 10,
+      });
+      pane.addButton({ title: "Disable All Animations" }).on("click", () => {
+        state.stars = state.spotlight = state.tilt = state.magnetism = false;
+        pane.refresh();
+      });
 
-  // Toggle panel fold/unfold
-  const toggle = document.getElementById('panelToggle');
-  toggle.addEventListener('click', () => {
-    paneContainer.style.display = paneContainer.style.display === 'none' ? 'block' : 'none';
-  });
+      // Toggle panel fold/unfold
+      const toggle = document.getElementById("panelToggle");
+      toggle.addEventListener("click", () => {
+        paneContainer.style.display =
+          paneContainer.style.display === "none" ? "block" : "none";
+      });
 
-  // Global spotlight canvas (subtle background)
-  const globalCanvas = document.getElementById('globalCanvas');
-  const gctx = globalCanvas.getContext('2d');
-  function resizeCanvas() { globalCanvas.width = innerWidth; globalCanvas.height = innerHeight; }
-  window.addEventListener('resize', resizeCanvas); resizeCanvas();
-
-  // draw subtle vignette (static)
-  function drawVignette(){
-    gctx.clearRect(0,0,globalCanvas.width,globalCanvas.height);
-    const grad = gctx.createLinearGradient(0,0,0,globalCanvas.height);
-    grad.addColorStop(0,'rgba(4,2,7,1)');
-    grad.addColorStop(1,'rgba(10,3,18,1)');
-    gctx.fillStyle = grad; gctx.fillRect(0,0,globalCanvas.width,globalCanvas.height);
-  }
-  drawVignette();
-
-  // Global spotlight element handled via CSS vars on body or just inner overlay
-  const grid = document.getElementById('grid');
-  let lastMouse = {x:0,y:0};
-  document.addEventListener('mousemove', (e)=>{
-    lastMouse.x = e.clientX; lastMouse.y = e.clientY;
-    if(!state.spotlight) return;
-    // create small spotlight with CSS on body background via radial gradient
-    document.body.style.background = `radial-gradient(circle ${state.spotlightRadius}px at ${e.clientX}px ${e.clientY}px, rgba(132,0,255,0.06), rgba(4,2,7,1) 30%)`;
-  });
-
-  // Particle system per-card
-  const cards = Array.from(document.querySelectorAll('.card'));
-
-  cards.forEach(card => {
-    const layer = card.querySelector('.particles-layer');
-    // ensure css var for glow radius/color
-    card.style.setProperty('--glow-radius', '220px');
-    const glow = card.getAttribute('data-glow') || getComputedStyle(document.documentElement).getPropertyValue('--glow-color') || '132,0,255';
-    card.style.setProperty('--glow-color', glow);
-
-    // state for transform composition
-    let current = {tx:0, ty:0, rx:0, ry:0};
-    function applyTransform(){
-      card.style.transform = `translate3d(${current.tx}px, ${current.ty}px, 0) rotateX(${current.rx}deg) rotateY(${current.ry}deg)`;
-    }
-
-    let spawnInterval = null;
-
-    function spawnBurst(x,y){
-      if(!state.stars) return;
-      // create N particles
-      for(let i=0;i<state.particleCount;i++){
-        const p = document.createElement('div');
-        p.className = 'particle';
-        const size = 3 + Math.random()*5;
-        p.style.width = p.style.height = `${size}px`;
-        p.style.left = `${x - size/2}px`;
-        p.style.top = `${y - size/2}px`;
-        const alpha = 0.9 + Math.random()*0.2;
-        p.style.background = `rgba(${glow}, ${alpha})`;
-        p.style.boxShadow = `0 0 ${6 + Math.random()*8}px rgba(${glow}, ${alpha})`;
-        layer.appendChild(p);
-
-        // compute random velocity
-        const angle = Math.random()*Math.PI*2;
-        const dist = 30 + Math.random()*70;
-        const tx = Math.cos(angle)*dist;
-        const ty = Math.sin(angle)*dist;
-
-        gsap.fromTo(p, {opacity:1, scale:0.2, x:0, y:0}, {opacity:0, scale:0.8, x:tx, y:ty, duration: state.particleLife + Math.random()*0.6, ease: 'power2.out', onComplete: ()=> p.remove()});
+      // Global spotlight canvas (subtle background)
+      const globalCanvas = document.getElementById("globalCanvas");
+      const gctx = globalCanvas.getContext("2d");
+      function resizeCanvas() {
+        globalCanvas.width = innerWidth;
+        globalCanvas.height = innerHeight;
       }
-    }
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
 
-    // on hover start continuous bursts at mouse point
-    function onMouseEnter(e){
-      if(!state.stars) return;
-      const rect = card.getBoundingClientRect();
-      let lastPos = {x: e.clientX - rect.left, y: e.clientY - rect.top};
+      // draw subtle vignette (static)
+      function drawVignette() {
+        gctx.clearRect(0, 0, globalCanvas.width, globalCanvas.height);
+        const grad = gctx.createLinearGradient(0, 0, 0, globalCanvas.height);
+        grad.addColorStop(0, "rgba(4,2,7,1)");
+        grad.addColorStop(1, "rgba(10,3,18,1)");
+        gctx.fillStyle = grad;
+        gctx.fillRect(0, 0, globalCanvas.width, globalCanvas.height);
+      }
+      drawVignette();
 
-      // spawn on mousemove and also interval to create continuous burst
-      function onMove(ev){
-        const x = ev.clientX - rect.left;
-        const y = ev.clientY - rect.top;
-        lastPos = {x,y};
+      // Global spotlight element handled via CSS vars on body or just inner overlay
+      const grid = document.getElementById("grid");
+      let lastMouse = { x: 0, y: 0 };
+      document.addEventListener("mousemove", (e) => {
+        lastMouse.x = e.clientX;
+        lastMouse.y = e.clientY;
+        if (!state.spotlight) return;
+        // create small spotlight with CSS on body background via radial gradient
+        document.body.style.background = `radial-gradient(circle ${state.spotlightRadius}px at ${e.clientX}px ${e.clientY}px, rgba(132,0,255,0.06), rgba(4,2,7,1) 30%)`;
+      });
 
-        // glow intensity and position
-        const relX = ((ev.clientX - rect.left)/rect.width)*100;
-        const relY = ((ev.clientY - rect.top)/rect.height)*100;
-        const dx = ev.clientX - (rect.left + rect.width/2);
-        const dy = ev.clientY - (rect.top + rect.height/2);
-        const dist = Math.hypot(dx,dy);
-        const max = Math.hypot(rect.width/2, rect.height/2);
-        const intensity = Math.max(0, 1 - dist/max);
-        card.style.setProperty('--glow-x', `${relX}%`);
-        card.style.setProperty('--glow-y', `${relY}%`);
-        card.style.setProperty('--glow-intensity', intensity.toFixed(2));
+      // Particle system per-card
+      const cards = Array.from(document.querySelectorAll(".card"));
 
-        // tilt
-        if(state.tilt){
-          const rotateX = ((y - rect.height/2)/ (rect.height/2)) * -8;
-          const rotateY = ((x - rect.width/2)/ (rect.width/2)) * 8;
-          current.rx = rotateX; current.ry = rotateY;
-        }
-        // magnetism
-        if(state.magnetism){
-          const moveX = (x - rect.width/2)*0.04; const moveY = (y - rect.height/2)*0.04;
-          current.tx = moveX; current.ty = moveY;
+      cards.forEach((card) => {
+        const layer = card.querySelector(".particles-layer");
+        // ensure css var for glow radius/color
+        card.style.setProperty("--glow-radius", "220px");
+        const glow =
+          card.getAttribute("data-glow") ||
+          getComputedStyle(document.documentElement).getPropertyValue(
+            "--glow-color"
+          ) ||
+          "132,0,255";
+        card.style.setProperty("--glow-color", glow);
+
+        // state for transform composition
+        let current = { tx: 0, ty: 0, rx: 0, ry: 0 };
+        function applyTransform() {
+          card.style.transform = `translate3d(${current.tx}px, ${current.ty}px, 0) rotateX(${current.rx}deg) rotateY(${current.ry}deg)`;
         }
 
-        applyTransform();
+        let spawnInterval = null;
 
-        // immediate small burst on move
-        spawnBurst(x, y);
+        function spawnBurst(x, y) {
+          if (!state.stars) return;
+          // create N particles
+          for (let i = 0; i < state.particleCount; i++) {
+            const p = document.createElement("div");
+            p.className = "particle";
+            const size = 3 + Math.random() * 5;
+            p.style.width = p.style.height = `${size}px`;
+            p.style.left = `${x - size / 2}px`;
+            p.style.top = `${y - size / 2}px`;
+            const alpha = 0.9 + Math.random() * 0.2;
+            p.style.background = `rgba(${glow}, ${alpha})`;
+            p.style.boxShadow = `0 0 ${
+              6 + Math.random() * 8
+            }px rgba(${glow}, ${alpha})`;
+            layer.appendChild(p);
+
+            // compute random velocity
+            const angle = Math.random() * Math.PI * 2;
+            const dist = 30 + Math.random() * 70;
+            const tx = Math.cos(angle) * dist;
+            const ty = Math.sin(angle) * dist;
+
+            gsap.fromTo(
+              p,
+              { opacity: 1, scale: 0.2, x: 0, y: 0 },
+              {
+                opacity: 0,
+                scale: 0.8,
+                x: tx,
+                y: ty,
+                duration: state.particleLife + Math.random() * 0.6,
+                ease: "power2.out",
+                onComplete: () => p.remove(),
+              }
+            );
+          }
+        }
+
+        // on hover start continuous bursts at mouse point
+        function onMouseEnter(e) {
+          if (!state.stars) return;
+          const rect = card.getBoundingClientRect();
+          let lastPos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+
+          // spawn on mousemove and also interval to create continuous burst
+          function onMove(ev) {
+            const x = ev.clientX - rect.left;
+            const y = ev.clientY - rect.top;
+            lastPos = { x, y };
+
+            // glow intensity and position
+            const relX = ((ev.clientX - rect.left) / rect.width) * 100;
+            const relY = ((ev.clientY - rect.top) / rect.height) * 100;
+            const dx = ev.clientX - (rect.left + rect.width / 2);
+            const dy = ev.clientY - (rect.top + rect.height / 2);
+            const dist = Math.hypot(dx, dy);
+            const max = Math.hypot(rect.width / 2, rect.height / 2);
+            const intensity = Math.max(0, 1 - dist / max);
+            card.style.setProperty("--glow-x", `${relX}%`);
+            card.style.setProperty("--glow-y", `${relY}%`);
+            card.style.setProperty("--glow-intensity", intensity.toFixed(2));
+
+            // tilt
+            if (state.tilt) {
+              const rotateX = ((y - rect.height / 2) / (rect.height / 2)) * -8;
+              const rotateY = ((x - rect.width / 2) / (rect.width / 2)) * 8;
+              current.rx = rotateX;
+              current.ry = rotateY;
+            }
+            // magnetism
+            if (state.magnetism) {
+              const moveX = (x - rect.width / 2) * 0.04;
+              const moveY = (y - rect.height / 2) * 0.04;
+              current.tx = moveX;
+              current.ty = moveY;
+            }
+
+            applyTransform();
+
+            // immediate small burst on move
+            spawnBurst(x, y);
+          }
+
+          card.addEventListener("mousemove", onMove);
+
+          // spawn an additional small burst every 160ms at last mouse pos for continuous feel
+          spawnInterval = setInterval(() => {
+            spawnBurst(lastPos.x, lastPos.y);
+          }, 160);
+
+          // store remover
+          card._onMove = onMove;
+        }
+
+        function onMouseLeave() {
+          // reset transforms and glow
+          current = { tx: 0, ty: 0, rx: 0, ry: 0 };
+          applyTransform();
+          card.style.setProperty("--glow-intensity", "0");
+          if (card._onMove) card.removeEventListener("mousemove", card._onMove);
+          clearInterval(spawnInterval);
+          spawnInterval = null;
+        }
+
+        card.addEventListener("mouseenter", onMouseEnter);
+        card.addEventListener("mouseleave", onMouseLeave);
+      });
+
+      // small animation loop just in case
+      function tick() {
+        requestAnimationFrame(tick);
       }
-
-      card.addEventListener('mousemove', onMove);
-
-      // spawn an additional small burst every 160ms at last mouse pos for continuous feel
-      spawnInterval = setInterval(()=>{
-        spawnBurst(lastPos.x, lastPos.y);
-      }, 160);
-
-      // store remover
-      card._onMove = onMove;
-    }
-
-    function onMouseLeave(){
-      // reset transforms and glow
-      current = {tx:0,ty:0,rx:0,ry:0}; applyTransform();
-      card.style.setProperty('--glow-intensity','0');
-      if(card._onMove) card.removeEventListener('mousemove', card._onMove);
-      clearInterval(spawnInterval); spawnInterval = null;
-    }
-
-    card.addEventListener('mouseenter', onMouseEnter);
-    card.addEventListener('mouseleave', onMouseLeave);
-  });
-
-  // small animation loop just in case
-  function tick(){
-    requestAnimationFrame(tick);
-  }
-  tick();
-
-</script>
-</body>
+      tick();
+    </script>
+  </body>
 </html>

@@ -33,8 +33,14 @@
     .card__description{font-size:12px;line-height:1.2;opacity:0.9}
 
     .card--text-autohide .card__title,.card--text-autohide .card__description{display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis}
-    .card--text-autohide .card__title{-webkit-line-clamp:1}
-    .card--text-autohide .card__description{-webkit-line-clamp:2}
+    .card--text-autohide .card__title{
+      -webkit-line-clamp:1;
+      line-clamp:1;
+    }
+    .card--text-autohide .card__description{
+      -webkit-line-clamp:2;
+      line-clamp:2;
+    }
 
     @media (max-width:599px){.card-grid{grid-template-columns:1fr;width:90%;margin:0 auto;padding:0.5em}.card{width:100%;min-height:180px}}
     @media (min-width:600px){.card-grid{grid-template-columns:repeat(2,1fr)}}

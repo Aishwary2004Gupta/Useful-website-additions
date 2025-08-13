@@ -9,7 +9,7 @@
         --bg: #07030a;
         --card-bg: #0b0210;
         --border: rgba(132, 116, 170, 0.08);
-        --glow-color: 132, 0, 255; 
+        --glow-color: 132, 0, 255;
       }
       html,
       body {
@@ -361,7 +361,6 @@
 
         // on hover start continuous bursts at mouse point
         function onMouseEnter(e) {
-          if (!state.stars) return;
           const rect = card.getBoundingClientRect();
           let lastPos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
 
@@ -371,7 +370,7 @@
             const y = ev.clientY - rect.top;
             lastPos = { x, y };
 
-            // glow intensity and position
+            // glow intensity and position - always active for hover effect
             const relX = ((ev.clientX - rect.left) / rect.width) * 100;
             const relY = ((ev.clientY - rect.top) / rect.height) * 100;
             const dx = ev.clientX - (rect.left + rect.width / 2);
@@ -383,14 +382,15 @@
             card.style.setProperty("--glow-y", `${relY}%`);
             card.style.setProperty("--glow-intensity", intensity.toFixed(2));
 
-            // tilt
+            // tilt - independent check
             if (state.tilt) {
               const rotateX = ((y - rect.height / 2) / (rect.height / 2)) * -8;
               const rotateY = ((x - rect.width / 2) / (rect.width / 2)) * 8;
               current.rx = rotateX;
               current.ry = rotateY;
             }
-            // magnetism
+            
+            // magnetism - independent check
             if (state.magnetism) {
               const moveX = (x - rect.width / 2) * 0.04;
               const moveY = (y - rect.height / 2) * 0.04;
@@ -400,16 +400,20 @@
 
             applyTransform();
 
-            // immediate small burst on move
-            spawnBurst(x, y);
+            // stars effect - separate check
+            if (state.stars) {
+              spawnBurst(x, y);
+            }
           }
 
           card.addEventListener("mousemove", onMove);
 
-          // spawn an additional small burst every 160ms at last mouse pos for continuous feel
-          spawnInterval = setInterval(() => {
-            spawnBurst(lastPos.x, lastPos.y);
-          }, 160);
+          // spawn particles only if stars are enabled
+          if (state.stars) {
+            spawnInterval = setInterval(() => {
+              spawnBurst(lastPos.x, lastPos.y);
+            }, 160);
+          }
 
           // store remover
           card._onMove = onMove;

@@ -160,6 +160,15 @@
         will-change: transform, opacity;
       }
 
+      /* Add this after your existing styles */
+      .spotlight-overlay {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 2;
+        mix-blend-mode: screen;
+      }
+
       /* responsive */
       @media (max-width: 900px) {
         .grid {
@@ -175,6 +184,9 @@
     </style>
   </head>
   <body>
+    <!-- Add this right after body opening tag -->
+    <div id="spotlightOverlay" class="spotlight-overlay"></div>
+
     <div class="controls">
       <!-- <div class="double-click-hint">Double click</div> -->
       <div id="panelToggle" class="panel-toggle">☰ Controls</div>
@@ -289,12 +301,29 @@
       // Global spotlight element handled via CSS vars on body or just inner overlay
       const grid = document.getElementById("grid");
       let lastMouse = { x: 0, y: 0 };
+      const spotlightOverlay = document.getElementById('spotlightOverlay');
+      
       document.addEventListener("mousemove", (e) => {
-        lastMouse.x = e.clientX;
-        lastMouse.y = e.clientY;
-        if (!state.spotlight) return;
-        // create small spotlight with CSS on body background via radial gradient
-        document.body.style.background = `radial-gradient(circle ${state.spotlightRadius}px at ${e.clientX}px ${e.clientY}px, rgba(132,0,255,0.06), rgba(4,2,7,1) 30%)`;
+        if (state.spotlight) {
+          const radius = state.spotlightRadius;
+          spotlightOverlay.style.background = `
+            radial-gradient(
+              circle ${radius}px at ${e.clientX}px ${e.clientY}px,
+              rgba(132, 0, 255, 0.15),
+              rgba(132, 0, 255, 0.05) 40%,
+              transparent 70%
+            )
+          `;
+        } else {
+          spotlightOverlay.style.background = 'none';
+        }
+      });
+
+      // Add this event handler for spotlight toggle
+      pane.addBinding(state, "spotlight").on("change", (ev) => {
+        if (!ev.value) {
+          spotlightOverlay.style.background = 'none';
+        }
       });
 
       // Particle system per-card

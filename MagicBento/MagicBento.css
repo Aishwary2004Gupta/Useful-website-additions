@@ -161,13 +161,15 @@
 
       /* Move attribution styles */
       .attribution {
-        position: fixed;
-        bottom: 1px;
-        left: 700px;
-        font-size: 12px;
-        color: rgba(255, 255, 255, 0.5);
-        z-index: 9999;
-      }
+    position: fixed;
+    bottom: 1px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    z-index: 9999;
+}
+
 
       /* responsive */
       @media (max-width: 900px) {

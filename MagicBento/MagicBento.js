@@ -1,168 +1,212 @@
-// ----- Card Data -----
-const cardData = [
-  { color: "#060010", title: "Analytics", description: "Track user behavior", label: "Insights" },
-  { color: "#060010", title: "Dashboard", description: "Centralized data view", label: "Overview" },
-  { color: "#060010", title: "Collaboration", description: "Work together seamlessly", label: "Teamwork" },
-  { color: "#060010", title: "Automation", description: "Streamline workflows", label: "Efficiency" },
-  { color: "#060010", title: "Integration", description: "Connect favorite tools", label: "Connectivity" },
-  { color: "#060010", title: "Security", description: "Enterprise-grade protection", label: "Protection" }
-];
 
-const config = {
-  textAutoHide: true,
-  enableStars: true,
-  enableSpotlight: true,
-  enableBorderGlow: true,
-  enableTilt: true,
-  enableMagnetism: true,
-  clickEffect: true,
-  spotlightRadius: 300,
-  particleCount: 12,
-  glowColor: '132, 0, 255' // as string
-};
+      import { gsap } from "https://cdn.skypack.dev/gsap@3.12.2";
+      import { Pane } from "https://cdn.jsdelivr.net/npm/tweakpane@4.0.5/dist/tweakpane.min.js";
 
-const grid = document.getElementById("cardGrid");
+      // Config state
+      const state = {
+        stars: true,
+        spotlight: true,
+        tilt: true,
+        magnetism: true,
+        particleCount: 12,
+        particleLife: 0.9,
+        spotlightRadius: 200,
+      };
 
-// ----- Render Cards -----
-function renderCards() {
-  grid.innerHTML = '';
-  cardData.forEach((card, i) => {
-    const el = document.createElement("div");
-    el.className = "card" +
-      (config.textAutoHide ? " card--text-autohide" : "") +
-      (config.enableBorderGlow ? " card--border-glow" : "");
-    el.style.backgroundColor = card.color;
-    el.style.setProperty("--glow-color", config.glowColor);
-    el.innerHTML = `
-      <div class="card__header">${card.label}</div>
-      <div class="card__content">
-        <div class="card__title">${card.title}</div>
-        <div class="card__desc">${card.description}</div>
-      </div>
-    `;
-    attachCardEffects(el);
-    grid.appendChild(el);
-  });
-}
-renderCards();
-
-// ----- Particle, Tilt, Magnetism, Ripple -----
-function attachCardEffects(cardEl) {
-  let particles = [];
-
-  // Mouse events for glow
-  cardEl.addEventListener('mousemove', e => {
-    // Border glow (follows mouse)
-    if (config.enableBorderGlow) {
-      const rect = cardEl.getBoundingClientRect();
-      const relX = ((e.clientX - rect.left) / rect.width) * 100;
-      const relY = ((e.clientY - rect.top) / rect.height) * 100;
-      cardEl.style.setProperty('--glow-x', relX + "%");
-      cardEl.style.setProperty('--glow-y', relY + "%");
-      cardEl.style.setProperty('--glow-intensity', 1);
-    }
-    // Particle stars orbit
-    if (config.enableStars) {
-      if (!particles.length) {
-        for (let i = 0; i < config.particleCount; i++) {
-          let p = document.createElement('div');
-          p.className = 'particle';
-          p.style.setProperty('--glow-color', config.glowColor);
-          cardEl.appendChild(p);
-          particles.push(p);
-        }
-      }
-      // Animate particles in a circle
-      const rect = cardEl.getBoundingClientRect();
-      const centerX = rect.width / 2, centerY = rect.height / 2;
-      particles.forEach((p, i) => {
-        let angle = (Date.now() / 100 + i * 360 / config.particleCount) * Math.PI / 180;
-        let r = 30 + 12 * Math.sin(Date.now() / (400 + i * 60));
-        p.style.left = (centerX + r * Math.cos(angle)) + 'px';
-        p.style.top = (centerY + r * Math.sin(angle)) + 'px';
+      // Pane UI
+      const paneContainer = document.getElementById("paneContainer");
+      const pane = new Pane({ container: paneContainer });
+      pane
+        .addBinding(state, "stars", { label: "Stars (hover)" })
+        .on("change", () => {});
+      pane.addBinding(state, "spotlight", { label: "Spotlight" });
+      pane.addBinding(state, "tilt", { label: "Tilt" });
+      pane.addBinding(state, "magnetism", { label: "Magnetism" });
+      pane.addBinding(state, "spotlightRadius", {
+        min: 100,
+        max: 1200,
+        step: 10,
       });
-    }
-    // Tilt
-    if (config.enableTilt || config.enableMagnetism) {
-      const rect = cardEl.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const centerX = rect.width / 2, centerY = rect.height / 2;
-      if (config.enableTilt) {
-        cardEl.style.transform = `perspective(900px) rotateX(${((y - centerY) / centerY) * -10}deg) rotateY(${((x - centerX) / centerX) * 10}deg)`;
+      pane.addButton({ title: "Disable All Animations" }).on("click", () => {
+        state.stars = state.spotlight = state.tilt = state.magnetism = false;
+        pane.refresh();
+      });
+
+      // Toggle panel fold/unfold
+      const toggle = document.getElementById("panelToggle");
+      toggle.addEventListener("click", () => {
+        paneContainer.style.display =
+          paneContainer.style.display === "none" ? "block" : "none";
+      });
+
+      // Global spotlight canvas (subtle background)
+      const globalCanvas = document.getElementById("globalCanvas");
+      const gctx = globalCanvas.getContext("2d");
+      function resizeCanvas() {
+        globalCanvas.width = innerWidth;
+        globalCanvas.height = innerHeight;
       }
-      if (config.enableMagnetism) {
-        cardEl.style.left = ((x - centerX) * 0.05) + "px";
-        cardEl.style.top = ((y - centerY) * 0.05) + "px";
-        cardEl.style.position = "relative";
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+
+      // draw subtle vignette (static)
+      function drawVignette() {
+        gctx.clearRect(0, 0, globalCanvas.width, globalCanvas.height);
+        const grad = gctx.createLinearGradient(0, 0, 0, globalCanvas.height);
+        grad.addColorStop(0, "rgba(4,2,7,1)");
+        grad.addColorStop(1, "rgba(10,3,18,1)");
+        gctx.fillStyle = grad;
+        gctx.fillRect(0, 0, globalCanvas.width, globalCanvas.height);
       }
-    }
-  });
-  cardEl.addEventListener('mouseleave', () => {
-    cardEl.style.setProperty('--glow-intensity', 0);
-    if (config.enableTilt) cardEl.style.transform = "";
-    if (config.enableMagnetism) {
-      cardEl.style.left = ""; cardEl.style.top = ""; cardEl.style.position = "";
-    }
-    particles.forEach(p => p.remove());
-    particles = [];
-  });
-  // Click ripple effect
-  cardEl.addEventListener('click', e => {
-    if (!config.clickEffect) return;
-    const rect = cardEl.getBoundingClientRect();
-    const x = e.clientX - rect.left, y = e.clientY - rect.top;
-    const maxD = Math.max(rect.width, rect.height);
-    const ripple = document.createElement('div');
-    ripple.style.cssText = `position:absolute;pointer-events:none;z-index:30;width:${2 * maxD}px;height:${2 * maxD}px;border-radius:50%;background:radial-gradient(circle,rgba(${config.glowColor},.4) 0%, rgba(${config.glowColor},.2) 30%,transparent 70%);left:${x - maxD}px;top:${y - maxD}px;opacity:1;transform:scale(0);transition:transform 0.8s cubic-bezier(.2,.68,.6,.99),opacity 0.8s;`;
-    cardEl.appendChild(ripple);
-    setTimeout(() => { ripple.style.transform = "scale(1)"; ripple.style.opacity = 0; }, 0);
-    setTimeout(() => { ripple.remove(); }, 900);
-  });
-}
+      drawVignette();
 
-// ----- Global Spotlight effect -----
-const spotlight = document.getElementById("globalSpotlight");
-document.addEventListener('mousemove', e => {
-  if (!config.enableSpotlight) {
-    spotlight.style.opacity = 0; return;
-  }
-  const gridRect = grid.getBoundingClientRect();
-  if (
-    e.clientX >= gridRect.left && e.clientX <= gridRect.right &&
-    e.clientY >= gridRect.top && e.clientY <= gridRect.bottom
-  ) {
-    spotlight.style.opacity = 0.8;
-    spotlight.style.left = e.clientX + 'px';
-    spotlight.style.top = e.clientY + 'px';
-    spotlight.style.background = `radial-gradient(circle,rgba(${config.glowColor},.15) 0%,rgba(${config.glowColor},.08) 30%,transparent 80%)`;
-  } else {
-    spotlight.style.opacity = 0;
-    grid.querySelectorAll('.card').forEach(card => card.style.setProperty('--glow-intensity', 0));
-  }
-});
-spotlight.style.width = spotlight.style.height = config.spotlightRadius * 2 + "px";
+      // Global spotlight element handled via CSS vars on body or just inner overlay
+      const grid = document.getElementById("grid");
+      let lastMouse = { x: 0, y: 0 };
+      
+      // Particle system per-card
+      const cards = Array.from(document.querySelectorAll(".card"));
 
-// ----- Responsive update -----
-window.addEventListener('resize', () => spotlight.style.display = config.enableSpotlight ? 'block' : 'none');
+      cards.forEach((card) => {
+        const layer = card.querySelector(".particles-layer");
+        // ensure css var for glow radius/color
+        card.style.setProperty("--glow-radius", "220px");
+        const glow =
+          card.getAttribute("data-glow") ||
+          getComputedStyle(document.documentElement).getPropertyValue(
+            "--glow-color"
+          ) ||
+          "132,0,255";
+        card.style.setProperty("--glow-color", glow);
 
-// ----- TweakPane Controls -----
-const pane = new Pane({ container: document.getElementById('pane-container'), title: "MagicBento Config" });
-pane.addInput(config, "textAutoHide", { label: "Text Auto Hide" }).on('change', renderCards);
-pane.addInput(config, "enableStars", { label: "Particles/Stars" }).on('change', renderCards);
-pane.addInput(config, "enableSpotlight", { label: "Spotlight" });
-pane.addInput(config, "enableBorderGlow", { label: "Border Glow" }).on('change', renderCards);
-pane.addInput(config, "enableTilt", { label: "Tilt 3D" });
-pane.addInput(config, "enableMagnetism", { label: "Magnetism" });
-pane.addInput(config, "clickEffect", { label: "Ripple on Click" });
-pane.addInput(config, "spotlightRadius", { min: 100, max: 500, step: 10 }).on('change', v => {
-  spotlight.style.width = spotlight.style.height = v.value * 2 + "px";
-});
-pane.addInput(config, "particleCount", { min: 0, max: 32, step: 1 }).on('change', renderCards);
-pane.addInput(config, "glowColor", { label: "Glow Color (r,g,b)" }).on('change', v => {
-  document.documentElement.style.setProperty('--glow-color', config.glowColor);
-  renderCards();
-});
+        // state for transform composition
+        let current = { tx: 0, ty: 0, rx: 0, ry: 0 };
+        function applyTransform() {
+          card.style.transform = `translate3d(${current.tx}px, ${current.ty}px, 0) rotateX(${current.rx}deg) rotateY(${current.ry}deg)`;
+        }
 
-// Update cards live on most changes
-pane.on('change', () => renderCards());
+        let spawnInterval = null;
+
+        function spawnBurst(x, y) {
+          if (!state.stars) return;
+          // create N particles
+          for (let i = 0; i < state.particleCount; i++) {
+            const p = document.createElement("div");
+            p.className = "particle";
+            const size = 3 + Math.random() * 5;
+            p.style.width = p.style.height = `${size}px`;
+            p.style.left = `${x - size / 2}px`;
+            p.style.top = `${y - size / 2}px`;
+            const alpha = 0.9 + Math.random() * 0.2;
+            p.style.background = `rgba(${glow}, ${alpha})`;
+            p.style.boxShadow = `0 0 ${
+              6 + Math.random() * 8
+            }px rgba(${glow}, ${alpha})`;
+            layer.appendChild(p);
+
+            // compute random velocity
+            const angle = Math.random() * Math.PI * 2;
+            const dist = 30 + Math.random() * 70;
+            const tx = Math.cos(angle) * dist;
+            const ty = Math.sin(angle) * dist;
+
+            gsap.fromTo(
+              p,
+              { opacity: 1, scale: 0.2, x: 0, y: 0 },
+              {
+                opacity: 0,
+                scale: 0.8,
+                x: tx,
+                y: ty,
+                duration: state.particleLife + Math.random() * 0.6,
+                ease: "power2.out",
+                onComplete: () => p.remove(),
+              }
+            );
+          }
+        }
+
+        // on hover start continuous bursts at mouse point
+        function onMouseEnter(e) {
+          const rect = card.getBoundingClientRect();
+          let lastPos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+
+          // spawn on mousemove and also interval to create continuous burst
+          function onMove(ev) {
+            const x = ev.clientX - rect.left;
+            const y = ev.clientY - rect.top;
+            lastPos = { x, y };
+
+            // glow intensity and position - only when spotlight is enabled
+            if (state.spotlight) {
+              const relX = ((ev.clientX - rect.left) / rect.width) * 100;
+              const relY = ((ev.clientY - rect.top) / rect.height) * 100;
+              const dx = ev.clientX - (rect.left + rect.width / 2);
+              const dy = ev.clientY - (rect.top + rect.height / 2);
+              const dist = Math.hypot(dx, dy);
+              const max = Math.hypot(rect.width / 2, rect.height / 2);
+              const intensity = Math.max(0, 1 - dist / max);
+              card.style.setProperty("--glow-x", `${relX}%`);
+              card.style.setProperty("--glow-y", `${relY}%`);
+              card.style.setProperty("--glow-intensity", intensity.toFixed(2));
+              card.style.setProperty("--glow-radius", `${state.spotlightRadius}px`);
+            } else {
+              card.style.setProperty("--glow-intensity", "0");
+            }
+
+            // tilt - independent check
+            if (state.tilt) {
+              const rotateX = ((y - rect.height / 2) / (rect.height / 2)) * -8;
+              const rotateY = ((x - rect.width / 2) / (rect.width / 2)) * 8;
+              current.rx = rotateX;
+              current.ry = rotateY;
+            }
+
+            // magnetism - independent check
+            if (state.magnetism) {
+              const moveX = (x - rect.width / 2) * 0.04;
+              const moveY = (y - rect.height / 2) * 0.04;
+              current.tx = moveX;
+              current.ty = moveY;
+            }
+
+            applyTransform();
+
+            // stars effect - separate check
+            if (state.stars) {
+              spawnBurst(x, y);
+            }
+          }
+
+          card.addEventListener("mousemove", onMove);
+
+          // spawn particles only if stars are enabled
+          if (state.stars) {
+            spawnInterval = setInterval(() => {
+              spawnBurst(lastPos.x, lastPos.y);
+            }, 160);
+          }
+
+          // store remover
+          card._onMove = onMove;
+        }
+
+        function onMouseLeave() {
+          // reset transforms and glow
+          current = { tx: 0, ty: 0, rx: 0, ry: 0 };
+          applyTransform();
+          card.style.setProperty("--glow-intensity", "0");
+          if (card._onMove) card.removeEventListener("mousemove", card._onMove);
+          clearInterval(spawnInterval);
+          spawnInterval = null;
+        }
+
+        card.addEventListener("mouseenter", onMouseEnter);
+        card.addEventListener("mouseleave", onMouseLeave);
+      });
+
+      // small animation loop just in case
+      function tick() {
+        requestAnimationFrame(tick);
+      }
+      tick();

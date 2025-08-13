@@ -1,130 +1,183 @@
-:root {
-  --glow-color: 132, 0, 255;
-  --background-dark: #060010;
-  --border-color: #392e4e;
-  --white: #fff;
-}
 
-body {
-  background: var(--background-dark);
-  color: var(--white);
-  margin: 0;
-  font-family: 'Inter', sans-serif;
-}
+      :root {
+        --bg: #07030a;
+        --card-bg: #0b0210;
+        --border: rgba(132, 116, 170, 0.08);
+        --glow-color: 132, 0, 255;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        background: linear-gradient(180deg, #060010 0%, #0b0212 100%);
+        font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+        color: #eee;
+      }
 
-#pane-container {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 999;
-}
+      /* Grid layout matching user's spec */
+      .wrap {
+        padding: 16px;
+        height: 100vh;
+        box-sizing: border-box;
+        overflow: hidden;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        grid-template-rows: repeat(5, 1fr);
+        gap: 8px;
+        width: 100%;
+        height: 100%;
+        margin: 0 auto;
+      }
 
-.bento-section {
-  padding: 2em 0 0 0;
-  max-width: 1150px;
-  margin: 0 auto;
-}
+      .card {
+        position: relative;
+        background: var(--card-bg);
+        border-radius: 18px;
+        border: 1px solid var(--border);
+        overflow: hidden;
+        padding: 28px;
+        box-sizing: border-box;
+        transform-style: preserve-3d;
+        will-change: transform;
+      }
 
-.card-grid {
-  display: grid;
-  gap: 0.75em;
-  padding: 1em;
-  width: 90%;
-  margin: 0 auto;
-  grid-template-columns: 1fr;
-}
+      /* layout areas */
+      .c1 {
+        grid-area: 1/1/3/3;
+      }
+      .c2 {
+        grid-area: 1/3/3/5;
+      }
+      .c3 {
+        grid-area: 3/1/6/5;
+      }
+      .c4 {
+        grid-area: 1/5/4/9;
+      }
+      .c5 {
+        grid-area: 4/5/6/7;
+      }
+      .c6 {
+        grid-area: 4/7/6/9;
+      }
 
-@media (min-width: 600px) {
-  .card-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
+      /* header/content styles */
+      .label {
+        font-size: 14px;
+        opacity: 0.8;
+        margin-bottom: 36px;
+      }
+      .title {
+        font-size: 18px;
+        margin: 0 0 12px;
+        font-weight: 600;
+      }
+      .desc {
+        font-size: 12px;
+        opacity: 0.75;
+      }
 
-@media (min-width: 1024px) {
-  .card-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
+      /* subtle border glow using css vars */
+      .card::after {
+        content: "";
+        position: absolute;
+        inset: -20px; /* Extend beyond card borders */
+        padding: 6px;
+        border-radius: inherit;
+        pointer-events: none;
+        z-index: 1;
+        background: radial-gradient(
+          var(--glow-radius, 200px) circle at var(--glow-x, 50%)
+            var(--glow-y, 50%),
+          rgba(var(--glow-color), calc(var(--glow-intensity, 0) * 0.8)) 0%,
+          rgba(var(--glow-color), calc(var(--glow-intensity, 0) * 0.35)) 30%,
+          transparent 60%
+        );
+        transition: opacity 0.18s linear;
+      }
 
-  .card-grid .card:nth-child(3) {
-    grid-column: span 2;
-    grid-row: span 2;
-  }
+      /* canvas for global stars is full-screen behind everything */
+      .global-canvas {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+      }
 
-  .card-grid .card:nth-child(4) {
-    grid-column: 1 / span 2;
-    grid-row: 2 / span 2;
-  }
+      /* per-card particle container (absolute) */
+      .particles-layer {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 5;
+      }
 
-  .card-grid .card:nth-child(6) {
-    grid-column: 4;
-    grid-row: 3;
-  }
-}
+      /* control panel container */
+      .controls {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        z-index: 9999;
+        text-align: right;
+      }
+      .panel-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 10px;
+        padding: 6px 8px;
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        cursor: pointer;
+        color: #ddd;
+        margin-left: auto;
+      }
+      .double-click-hint {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.5);
+        margin-bottom: 4px;
+      }
 
-.card {
-  position: relative;
-  background: var(--background-dark);
-  border-radius: 20px;
-  border: 1px solid var(--border-color);
-  min-height: 180px;
-  overflow: hidden;
-  box-shadow: 0 2px 6px rgba(46, 24, 78, 0.15);
-  transition: box-shadow 0.2s, transform 0.2s;
-}
+      /* small helper for particle element */
+      .particle {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        pointer-events: none;
+        will-change: transform, opacity;
+      }
 
-.card__header {
-  font-size: 16px;
-  margin: 1em 0 0.2em 0;
-}
+      /* Add this after your existing styles */
+      .spotlight-overlay {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 2;
+        mix-blend-mode: screen;
+      }
 
-.card__title {
-  font-size: 1.2em;
-  margin: 0.1em 0;
-  font-weight: 400;
-}
+      /* Move attribution styles */
+      .attribution {
+        position: fixed;
+        bottom: 1px;
+        left: 700px;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.5);
+        z-index: 9999;
+      }
 
-.card__desc {
-  font-size: 0.95em;
-  opacity: .84;
-}
-
-.card--border-glow::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 2;
-  background: radial-gradient(circle at var(--glow-x, 50%) var(--glow-y, 50%),
-      rgba(var(--glow-color), .7) 0%,
-      rgba(var(--glow-color), .4) 35%,
-      transparent 70%);
-  opacity: var(--glow-intensity, 0);
-  transition: opacity 0.3s;
-}
-
-.particle {
-  position: absolute;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: rgba(var(--glow-color), 0.9);
-  pointer-events: none;
-  z-index: 10;
-  box-shadow: 0 0 8px rgba(var(--glow-color), 0.6);
-}
-
-.global-spotlight {
-  position: fixed;
-  width: 800px;
-  height: 800px;
-  border-radius: 50%;
-  pointer-events: none;
-  background: radial-gradient(circle, rgba(var(--glow-color), 0.15) 0%, rgba(var(--glow-color), 0.08) 30%, transparent 80%);
-  z-index: 50;
-  opacity: 0;
-  transform: translate(-50%, -50%);
-  will-change: opacity, left, top;
-  mix-blend-mode: screen;
-  transition: opacity 0.3s;
-}
+      /* responsive */
+      @media (max-width: 900px) {
+        .grid {
+          width: 96vw;
+          height: 94vh;
+          gap: 10px;
+          padding: 8px;
+        }
+        .card {
+          padding: 18px;
+        }
+      }

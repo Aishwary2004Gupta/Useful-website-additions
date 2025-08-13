@@ -88,7 +88,7 @@
       .card::after {
         content: "";
         position: absolute;
-        inset: 0;
+        inset: -20px; /* Extend beyond card borders */
         padding: 6px;
         border-radius: inherit;
         pointer-events: none;
@@ -101,11 +101,6 @@
           transparent 60%
         );
         transition: opacity 0.18s linear;
-        mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-        -webkit-mask: linear-gradient(#fff 0 0) content-box,
-          linear-gradient(#fff 0 0);
-        -webkit-mask-composite: xor;
-        mask-composite: exclude;
       }
 
       /* canvas for global stars is full-screen behind everything */
@@ -185,7 +180,7 @@
   </head>
   <body>
     <!-- Add this right after body opening tag -->
-    <div id="spotlightOverlay" class="spotlight-overlay"></div>
+    <!-- <div id="spotlightOverlay" class="spotlight-overlay"></div> -->
 
     <div class="controls">
       <!-- <div class="double-click-hint">Double click</div> -->
@@ -301,31 +296,7 @@
       // Global spotlight element handled via CSS vars on body or just inner overlay
       const grid = document.getElementById("grid");
       let lastMouse = { x: 0, y: 0 };
-      const spotlightOverlay = document.getElementById('spotlightOverlay');
       
-      document.addEventListener("mousemove", (e) => {
-        if (state.spotlight) {
-          const radius = state.spotlightRadius;
-          spotlightOverlay.style.background = `
-            radial-gradient(
-              circle ${radius}px at ${e.clientX}px ${e.clientY}px,
-              rgba(132, 0, 255, 0.15),
-              rgba(132, 0, 255, 0.05) 40%,
-              transparent 70%
-            )
-          `;
-        } else {
-          spotlightOverlay.style.background = 'none';
-        }
-      });
-
-      // Add this event handler for spotlight toggle
-      pane.addBinding(state, "spotlight").on("change", (ev) => {
-        if (!ev.value) {
-          spotlightOverlay.style.background = 'none';
-        }
-      });
-
       // Particle system per-card
       const cards = Array.from(document.querySelectorAll(".card"));
 
@@ -399,17 +370,22 @@
             const y = ev.clientY - rect.top;
             lastPos = { x, y };
 
-            // glow intensity and position - always active for hover effect
-            const relX = ((ev.clientX - rect.left) / rect.width) * 100;
-            const relY = ((ev.clientY - rect.top) / rect.height) * 100;
-            const dx = ev.clientX - (rect.left + rect.width / 2);
-            const dy = ev.clientY - (rect.top + rect.height / 2);
-            const dist = Math.hypot(dx, dy);
-            const max = Math.hypot(rect.width / 2, rect.height / 2);
-            const intensity = Math.max(0, 1 - dist / max);
-            card.style.setProperty("--glow-x", `${relX}%`);
-            card.style.setProperty("--glow-y", `${relY}%`);
-            card.style.setProperty("--glow-intensity", intensity.toFixed(2));
+            // glow intensity and position - only when spotlight is enabled
+            if (state.spotlight) {
+              const relX = ((ev.clientX - rect.left) / rect.width) * 100;
+              const relY = ((ev.clientY - rect.top) / rect.height) * 100;
+              const dx = ev.clientX - (rect.left + rect.width / 2);
+              const dy = ev.clientY - (rect.top + rect.height / 2);
+              const dist = Math.hypot(dx, dy);
+              const max = Math.hypot(rect.width / 2, rect.height / 2);
+              const intensity = Math.max(0, 1 - dist / max);
+              card.style.setProperty("--glow-x", `${relX}%`);
+              card.style.setProperty("--glow-y", `${relY}%`);
+              card.style.setProperty("--glow-intensity", intensity.toFixed(2));
+              card.style.setProperty("--glow-radius", `${state.spotlightRadius}px`);
+            } else {
+              card.style.setProperty("--glow-intensity", "0");
+            }
 
             // tilt - independent check
             if (state.tilt) {
@@ -446,6 +422,30 @@
 
           // store remover
           card._onMove = onMove;
+        }
+
+        function onMouseLeave() {
+          // reset transforms and glow
+          current = { tx: 0, ty: 0, rx: 0, ry: 0 };
+          applyTransform();
+          card.style.setProperty("--glow-intensity", "0");
+          if (card._onMove) card.removeEventListener("mousemove", card._onMove);
+          clearInterval(spawnInterval);
+          spawnInterval = null;
+        }
+
+        card.addEventListener("mouseenter", onMouseEnter);
+        card.addEventListener("mouseleave", onMouseLeave);
+      });
+
+      // small animation loop just in case
+      function tick() {
+        requestAnimationFrame(tick);
+      }
+      tick();
+    </script>
+  </body>
+</html>
         }
 
         function onMouseLeave() {

@@ -130,6 +130,7 @@
         top: 16px;
         right: 16px;
         z-index: 9999;
+        text-align: right;
       }
       .panel-toggle {
         display: inline-flex;
@@ -141,6 +142,12 @@
         border: 1px solid rgba(255, 255, 255, 0.04);
         cursor: pointer;
         color: #ddd;
+        margin-left: auto;
+      }
+      .double-click-hint {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.5);
+        margin-bottom: 4px;
       }
 
       /* small helper for particle element */
@@ -169,6 +176,7 @@
   </head>
   <body>
     <div class="controls">
+      <div class="double-click-hint">Double click</div>
       <div id="panelToggle" class="panel-toggle">☰ Controls</div>
       <div id="paneContainer" style="display: block; margin-top: 8px"></div>
     </div>

@@ -12,7 +12,7 @@ window.addEventListener('load', () => {
         setTimeout(() => {
             loaderWrapper.style.opacity = '0'
             loaderWrapper.style.visibility = 'hidden'
-            
+
             // Animate header elements after loader is hidden
             gsap.from('.main-title', {
                 y: -50,
@@ -21,7 +21,7 @@ window.addEventListener('load', () => {
                 ease: 'power3.out',
                 delay: 0.2
             })
-            
+
             gsap.from('.subtitle', {
                 y: -30,
                 opacity: 0,
@@ -29,7 +29,7 @@ window.addEventListener('load', () => {
                 ease: 'power3.out',
                 delay: 0.4
             })
-            
+
             gsap.from('.effect', {
                 scale: 0.8,
                 opacity: 0,
@@ -448,7 +448,7 @@ imageContainers.forEach(container => {
         const img = container.querySelector('img')
         const overlay = container.querySelector('.image-overlay')
         const title = overlay.textContent
-        
+
         // Create modal
         const modal = document.createElement('div')
         modal.classList.add('image-modal')
@@ -460,7 +460,7 @@ imageContainers.forEach(container => {
             </div>
         `
         document.body.appendChild(modal)
-        
+
         // Add modal styles dynamically
         const style = document.createElement('style')
         style.textContent = `
@@ -513,12 +513,12 @@ imageContainers.forEach(container => {
             }
         `
         document.head.appendChild(style)
-        
+
         // Animation
         setTimeout(() => {
             modal.style.opacity = '1'
         }, 10)
-        
+
         // Close modal functionality
         const closeBtn = modal.querySelector('.close-modal')
         closeBtn.addEventListener('click', () => {
@@ -528,7 +528,7 @@ imageContainers.forEach(container => {
                 document.head.removeChild(style)
             }, 300)
         })
-        
+
         // Close on click outside
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {

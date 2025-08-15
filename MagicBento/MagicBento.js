@@ -191,7 +191,6 @@ cards.forEach((card) => {
   }
 
   function onMouseLeave() {
-    // reset transforms and glow
     current = { tx: 0, ty: 0, rx: 0, ry: 0 };
     applyTransform();
     card.style.setProperty("--glow-intensity", "0");

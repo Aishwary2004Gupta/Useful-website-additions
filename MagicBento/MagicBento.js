@@ -204,7 +204,6 @@ cards.forEach((card) => {
   card.addEventListener("mouseleave", onMouseLeave);
 });
 
-// small animation loop just in case
 function tick() {
   requestAnimationFrame(tick);
 }

@@ -21,7 +21,7 @@
     justify-content: center;
     margin: 2rem 0;
   }
-  
+
   /* CTA Section Styling */
   .cta-section {
     text-align: center;
@@ -30,9 +30,9 @@
     border-radius: 20px;
     margin-top: 4rem;
   }
-  
 
-  
+
+
   /* Features Grid */
   .features-grid {
     display: grid;
@@ -40,7 +40,7 @@
     gap: 2rem;
     margin-top: 3rem;
   }
-  
+
   .feature {
     background-color: color-mix(in oklch, var(--bg-color), transparent 50%);
     padding: 1.5rem;
@@ -48,23 +48,23 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
-  
+
   .feature:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
   }
-  
+
   .feature-icon {
     font-size: 2.5rem;
     margin-bottom: 1rem;
   }
-  
+
   .feature h3 {
     font-family: "Montserrat", sans-serif;
     margin-bottom: 0.5rem;
     color: var(--primary-color);
   }
-  
+
   .feature p {
     font-size: 0.9rem;
     opacity: 0.9;
@@ -128,7 +128,7 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
-  
+
   section:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
@@ -149,7 +149,7 @@
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
       filter: grayscale(20%);
     }
-    
+
     img:hover {
       transform: scale(1.05) translateY(-10px);
       box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
@@ -157,7 +157,7 @@
       z-index: 1;
     }
   }
-  
+
   /* Add image overlay effect */
   .image-container {
     position: relative;
@@ -165,13 +165,13 @@
     border-radius: 12px;
     cursor: pointer;
   }
-  
+
   .image-overlay {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%);
     overflow: hidden;
     width: 100%;
     height: 0;
@@ -183,7 +183,7 @@
     color: white;
     font-weight: bold;
   }
-  
+
   .image-container:hover .image-overlay {
     height: 30%;
   }
@@ -197,9 +197,9 @@
     position: relative;
     border-top: 1px solid color-mix(in oklch, var(--text-color), transparent 85%);
   }
-  
+
   /* Theme toggle button styles removed */
-  
+
   /* Scroll to top button styles removed */
 
   header {
@@ -234,15 +234,27 @@
       box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
     }
   }
-  
+
   @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
   }
-  
+
   @keyframes slideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
 
   .apps {
@@ -283,15 +295,15 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-    
+
     &:hover {
       transform: translateY(-5px);
-      
+
       img {
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
         transform: scale(1.05);
       }
-      
+
       span {
         color: var(--primary-color);
       }
@@ -341,23 +353,13 @@
     border-radius: calc(var(--radius) * 1px);
     position: fixed;
     z-index: 999999;
-    background: light-dark(
-      hsl(0 0% 100% / var(--frost, 0)),
-      hsl(0 0% 0% / var(--frost, 0))
-    );
+    background: light-dark(hsl(0 0% 100% / var(--frost, 0)),
+        hsl(0 0% 0% / var(--frost, 0)));
     backdrop-filter: url(#filter);
-    box-shadow: 0 0 2px 1px
-        light-dark(
-          color-mix(in oklch, canvasText, #0000 85%),
-          color-mix(in oklch, canvasText, #0000 65%)
-        )
-        inset,
-      0 0 10px 4px
-        light-dark(
-          color-mix(in oklch, canvasText, #0000 90%),
-          color-mix(in oklch, canvasText, #0000 85%)
-        )
-        inset,
+    box-shadow: 0 0 2px 1px light-dark(color-mix(in oklch, canvasText, #0000 85%),
+        color-mix(in oklch, canvasText, #0000 65%)) inset,
+      0 0 10px 4px light-dark(color-mix(in oklch, canvasText, #0000 90%),
+        color-mix(in oklch, canvasText, #0000 85%)) inset,
       0px 4px 16px rgba(17, 17, 26, 0.05), 0px 8px 24px rgba(17, 17, 26, 0.05),
       0px 16px 56px rgba(17, 17, 26, 0.05),
       0px 4px 16px rgba(17, 17, 26, 0.05) inset,
@@ -492,23 +494,12 @@
   }
 
   :where(.fluid) {
-    --fluid-min: calc(
-      var(--font-size-min) * pow(var(--font-ratio-min), var(--font-level, 0))
-    );
-    --fluid-max: calc(
-      var(--font-size-max) * pow(var(--font-ratio-max), var(--font-level, 0))
-    );
-    --fluid-preferred: calc(
-      (var(--fluid-max) - var(--fluid-min)) /
-        (var(--font-width-max) - var(--font-width-min))
-    );
-    --fluid-type: clamp(
-      (var(--fluid-min) / 16) * 1rem,
-      ((var(--fluid-min) / 16) * 1rem) -
-        (((var(--fluid-preferred) * var(--font-width-min)) / 16) * 1rem) +
-        (var(--fluid-preferred) * var(--variable-unit, 100vi)),
-      (var(--fluid-max) / 16) * 1rem
-    );
+    --fluid-min: calc(var(--font-size-min) * pow(var(--font-ratio-min), var(--font-level, 0)));
+    --fluid-max: calc(var(--font-size-max) * pow(var(--font-ratio-max), var(--font-level, 0)));
+    --fluid-preferred: calc((var(--fluid-max) - var(--fluid-min)) / (var(--font-width-max) - var(--font-width-min)));
+    --fluid-type: clamp((var(--fluid-min) / 16) * 1rem,
+        ((var(--fluid-min) / 16) * 1rem) - (((var(--fluid-preferred) * var(--font-width-min)) / 16) * 1rem) + (var(--fluid-preferred) * var(--variable-unit, 100vi)),
+        (var(--fluid-max) / 16) * 1rem);
     font-size: var(--fluid-type);
   }
 
@@ -529,7 +520,7 @@
     position: relative;
     padding-bottom: 2rem;
   }
-  
+
   /* Loading animation */
   .loader-wrapper {
     position: fixed;
@@ -577,6 +568,7 @@
     0% {
       transform: rotate(0deg);
     }
+
     100% {
       transform: rotate(360deg);
     }
@@ -822,13 +814,13 @@
     white-space: nowrap;
     border-width: 0;
   }
-  
+
   /* Tooltip system */
   [data-tooltip] {
     position: relative;
     cursor: help;
   }
-  
+
   [data-tooltip]::after {
     content: attr(data-tooltip);
     position: absolute;
@@ -849,13 +841,13 @@
     pointer-events: none;
     transform: translateX(-50%) translateY(10px);
   }
-  
+
   [data-tooltip]:hover::after {
     opacity: 1;
     visibility: visible;
     transform: translateX(-50%) translateY(0);
   }
-  
+
   /* For larger tooltips */
   [data-tooltip-large]::after {
     content: attr(data-tooltip-large);

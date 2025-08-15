@@ -186,7 +186,6 @@ cards.forEach((card) => {
       }, 160);
     }
 
-    // store remover
     card._onMove = onMove;
   }
 

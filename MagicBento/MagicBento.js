@@ -171,7 +171,6 @@ cards.forEach((card) => {
 
       applyTransform();
 
-      // stars effect - separate check
       if (state.stars) {
         spawnBurst(x, y);
       }

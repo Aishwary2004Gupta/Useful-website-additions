@@ -171,7 +171,6 @@ cards.forEach((card) => {
 
       applyTransform();
 
-      // stars effect - separate check
       if (state.stars) {
         spawnBurst(x, y);
       }
@@ -179,14 +178,12 @@ cards.forEach((card) => {
 
     card.addEventListener("mousemove", onMove);
 
-    // spawn particles only if stars are enabled
     if (state.stars) {
       spawnInterval = setInterval(() => {
         spawnBurst(lastPos.x, lastPos.y);
       }, 160);
     }
 
-    // store remover
     card._onMove = onMove;
   }
 

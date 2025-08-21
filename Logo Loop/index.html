@@ -310,13 +310,6 @@
       }
       requestAnimationFrame(animate);
 
-      // Theme toggle
-      // toggleBtn.addEventListener("click", () => {
-      //   document.body.classList.toggle("light");
-      //   toggleBtn.textContent = document.body.classList.contains("light") ? "☀️ Light" : "🌙 Dark";
-      // });
-
-      // JS Toggle
       const toggleInput = document.getElementById("themeToggle");
       toggleInput.addEventListener("change", () => {
         document.body.classList.toggle("light", toggleInput.checked);

@@ -1,223 +1,326 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Logo Loop with Dark/Light Mode</title>
-  <label class="switch">
-  <input type="checkbox" id="themeToggle">
-  <span class="slider"></span>
-</label>
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #000;
-      transition: background 0.3s ease;
-      overflow: hidden;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <title>Logo Loop with Dark/Light Mode</title>
+    <label class="switch">
+      <input type="checkbox" id="themeToggle" />
+      <span class="slider"></span>
+    </label>
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #000;
+        transition: background 0.3s ease;
+        overflow: hidden;
+      }
 
-    body.light {
-      background: #fff;
-    }
+      body.light {
+        background: #fff;
+      }
 
-    .theme-toggle {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      padding: 8px 14px;
-      border: none;
-      border-radius: 8px;
-      background: #444;
-      color: #fff;
-      cursor: pointer;
-      font-size: 14px;
-      transition: background 0.3s, color 0.3s;
-      z-index: 10;
-    }
+      .theme-toggle {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        padding: 8px 14px;
+        border: none;
+        border-radius: 8px;
+        background: #444;
+        color: #fff;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.3s, color 0.3s;
+        z-index: 10;
+      }
 
-    body.light .theme-toggle {
-      background: #ddd;
-      color: #000;
-    }
+      body.light .theme-toggle {
+        background: #ddd;
+        color: #000;
+      }
 
-    .logoloop {
-      position: relative;
-      width: 100%;
-      max-width: 100%;
-      height: 120px;
-      overflow: hidden;
-    }
+      .logoloop {
+        position: relative;
+        width: 100%;
+        max-width: 100%;
+        height: 120px;
+        overflow: hidden;
+      }
 
-    .logoloop__track {
-      display: flex;
-      width: max-content;
-      will-change: transform;
-    }
+      .logoloop__track {
+        display: flex;
+        width: max-content;
+        will-change: transform;
+      }
 
-    .logoloop__list {
-      display: flex;
-      align-items: center;
-      justify-content: space-evenly;
-      list-style: none;   
-      padding: 0;
-      margin: 0; 
-    }
+      .logoloop__list {
+        display: flex;
+        align-items: center;
+        justify-content: space-evenly;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
 
-    .logoloop__item {
-      flex: 0 0 auto;
-      margin: 0 40px;
-      font-size: 48px;
-      line-height: 1;
-    }
+      .logoloop__item {
+        flex: 0 0 auto;
+        margin: 0 40px;
+        font-size: 48px;
+        line-height: 1;
+      }
 
-    .logoloop__item img {
-      height: 60px;
-      width: auto;
-      display: block;
-      filter: brightness(0) invert(1); /* white logos on dark */
-      transition: transform 0.3s ease, filter 0.3s ease;
-    }
+      .logoloop__item img {
+        height: 60px;
+        width: auto;
+        display: block;
+        filter: brightness(0) invert(1); /* white logos on dark */
+        transition: transform 0.3s ease, filter 0.3s ease;
+      }
 
-    body.light .logoloop__item img {
-      filter: brightness(0); /* black logos on light */
-    }
+      body.light .logoloop__item img {
+        filter: brightness(0); /* black logos on light */
+      }
 
-    .logoloop__item img:hover {
-      transform: scale(1.2);
-    }
+      .logoloop__item img:hover {
+        transform: scale(1.2);
+      }
 
-    /* Slider Toggle Styles */
-.switch {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  display: inline-block;
-  width: 60px;
-  height: 34px;
-  z-index: 10;
-}
+      /* Slider Toggle Styles */
+      .switch {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+        z-index: 10;
+      }
 
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
 
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #444;
-  transition: 0.4s;
-  border-radius: 34px;
-}
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #444;
+        transition: 0.4s;
+        border-radius: 34px;
+      }
 
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 26px;
-  width: 26px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  transition: 0.4s;
-  border-radius: 50%;
-}
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
 
-/* Checked (Light Mode) */
-input:checked + .slider {
-  background-color: #ddd;
-}
+      /* Checked (Light Mode) */
+      input:checked + .slider {
+        background-color: #ddd;
+      }
 
-input:checked + .slider:before {
-  transform: translateX(26px);
-  background-color: #000;
-}
+      input:checked + .slider:before {
+        transform: translateX(26px);
+        background-color: #000;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- <button class="theme-toggle" id="themeToggle">🌙 Dark</button> -->
 
-  </style>
-</head>
-<body>
-  <!-- <button class="theme-toggle" id="themeToggle">🌙 Dark</button> -->
-
-  <div class="logoloop" id="logoLoop">
-    <div class="logoloop__track" id="logoTrack">
-      <ul class="logoloop__list" id="logoList">
-        <li class="logoloop__item"><img src="https://cdn.worldvectorlogo.com/logos/react-2.svg" alt="React"></li>
-        <li class="logoloop__item"><img src="https://cdn.worldvectorlogo.com/logos/next-js.svg" alt="Next.js"></li>
-        <li class="logoloop__item"><img src="https://cdn.worldvectorlogo.com/logos/tailwind-css-2.svg" alt="Tailwind CSS"></li>
-        <li class="logoloop__item"><img src="https://cdn.worldvectorlogo.com/logos/java-4.svg" alt="Java"></li>
-        <li class="logoloop__item"><img src="https://cdn.worldvectorlogo.com/logos/tesla-pure.svg" alt="Tesla"></li>
-        <li class="logoloop__item"><img src="https://cdn.worldvectorlogo.com/logos/chatgpt-6.svg" alt="chatgpt"></li>
-        <li class="logoloop__item"><img src="https://cdn.worldvectorlogo.com/logos/adidas-13.svg" alt="adidas"></li>
-        <li class="logoloop__item"><img src="https://cdn.worldvectorlogo.com/logos/nodejs-icon.svg" alt="Node.js"></li>
-        <li class="logoloop__item"><img src="https://cdn.worldvectorlogo.com/logos/mongodb-icon-1.svg" alt="MongoDB"></li>
-        <li class="logoloop__item"><img src="https://cdn.worldvectorlogo.com/logos/threejs-1.svg" alt="MongoDB"></li>
-        <li class="logoloop__item"><img src="https://cdn.worldvectorlogo.com/logos/perplexity-3.svg" alt="perplexity"></li>
-        <li class="logoloop__item"><img src="https://cdn.worldvectorlogo.com/logos/python-5.svg" alt="Python"></li>
-        <li class="logoloop__item"><img src="https://cdn.worldvectorlogo.com/logos/apple-13.svg" alt="Python"></li>
-        <li class="logoloop__item"><img src="https://cdn.worldvectorlogo.com/logos/prisma-4.svg" alt="prisma"></li>
-        <li class="logoloop__item"><img src="https://cdn.worldvectorlogo.com/logos/git-icon.svg" alt="Git"></li>
-        <li class="logoloop__item"><img src="https://cdn.worldvectorlogo.com/logos/github-icon-1.svg" alt="GitHub"></li>
-        <li class="logoloop__item"><img src="https://cdn.worldvectorlogo.com/logos/rust.svg" alt="Rust"></li>
-        <li class="logoloop__item"><img src="https://cdn.worldvectorlogo.com/logos/laravel-2.svg" alt="laravel"></li>
-        <li class="logoloop__item"><img src="https://cdn.worldvectorlogo.com/logos/docker-4.svg" alt="docker"></li>
-        <li class="logoloop__item"><img src="https://cdn.worldvectorlogo.com/logos/x-2.svg" alt="docker"></li>
-        <li class="logoloop__item"><img src="https://cdn.worldvectorlogo.com/logos/logo-bmw-2020.svg" alt="docker"></li>
-      </ul>
+    <div class="logoloop" id="logoLoop">
+      <div class="logoloop__track" id="logoTrack">
+        <ul class="logoloop__list" id="logoList">
+          <li class="logoloop__item">
+            <img
+              src="https://cdn.worldvectorlogo.com/logos/react-2.svg"
+              alt="React"
+            />
+          </li>
+          <li class="logoloop__item">
+            <img
+              src="https://cdn.worldvectorlogo.com/logos/next-js.svg"
+              alt="Next.js"
+            />
+          </li>
+          <li class="logoloop__item">
+            <img
+              src="https://cdn.worldvectorlogo.com/logos/tailwind-css-2.svg"
+              alt="Tailwind CSS"
+            />
+          </li>
+          <li class="logoloop__item">
+            <img
+              src="https://cdn.worldvectorlogo.com/logos/java-4.svg"
+              alt="Java"
+            />
+          </li>
+          <li class="logoloop__item">
+            <img
+              src="https://cdn.worldvectorlogo.com/logos/tesla-pure.svg"
+              alt="Tesla"
+            />
+          </li>
+          <li class="logoloop__item">
+            <img
+              src="https://cdn.worldvectorlogo.com/logos/chatgpt-6.svg"
+              alt="chatgpt"
+            />
+          </li>
+          <li class="logoloop__item">
+            <img
+              src="https://cdn.worldvectorlogo.com/logos/adidas-13.svg"
+              alt="adidas"
+            />
+          </li>
+          <li class="logoloop__item">
+            <img
+              src="https://cdn.worldvectorlogo.com/logos/nodejs-icon.svg"
+              alt="Node.js"
+            />
+          </li>
+          <li class="logoloop__item">
+            <img
+              src="https://cdn.worldvectorlogo.com/logos/mongodb-icon-1.svg"
+              alt="MongoDB"
+            />
+          </li>
+          <li class="logoloop__item">
+            <img
+              src="https://cdn.worldvectorlogo.com/logos/threejs-1.svg"
+              alt="MongoDB"
+            />
+          </li>
+          <li class="logoloop__item">
+            <img
+              src="https://cdn.worldvectorlogo.com/logos/perplexity-3.svg"
+              alt="perplexity"
+            />
+          </li>
+          <li class="logoloop__item">
+            <img
+              src="https://cdn.worldvectorlogo.com/logos/python-5.svg"
+              alt="Python"
+            />
+          </li>
+          <li class="logoloop__item">
+            <img
+              src="https://cdn.worldvectorlogo.com/logos/apple-13.svg"
+              alt="Python"
+            />
+          </li>
+          <li class="logoloop__item">
+            <img
+              src="https://cdn.worldvectorlogo.com/logos/prisma-4.svg"
+              alt="prisma"
+            />
+          </li>
+          <li class="logoloop__item">
+            <img
+              src="https://cdn.worldvectorlogo.com/logos/git-icon.svg"
+              alt="Git"
+            />
+          </li>
+          <li class="logoloop__item">
+            <img
+              src="https://cdn.worldvectorlogo.com/logos/github-icon-1.svg"
+              alt="GitHub"
+            />
+          </li>
+          <li class="logoloop__item">
+            <img
+              src="https://cdn.worldvectorlogo.com/logos/rust.svg"
+              alt="Rust"
+            />
+          </li>
+          <li class="logoloop__item">
+            <img
+              src="https://cdn.worldvectorlogo.com/logos/laravel-2.svg"
+              alt="laravel"
+            />
+          </li>
+          <li class="logoloop__item">
+            <img
+              src="https://cdn.worldvectorlogo.com/logos/docker-4.svg"
+              alt="docker"
+            />
+          </li>
+          <li class="logoloop__item">
+            <img
+              src="https://cdn.worldvectorlogo.com/logos/x-2.svg"
+              alt="docker"
+            />
+          </li>
+          <li class="logoloop__item">
+            <img
+              src="https://cdn.worldvectorlogo.com/logos/logo-bmw-2020.svg"
+              alt="docker"
+            />
+          </li>
+        </ul>
+      </div>
     </div>
-  </div>
 
-  <script>
-    const track = document.getElementById("logoTrack");
-    const list = document.getElementById("logoList");
-    const container = document.getElementById("logoLoop");
-    const toggleBtn = document.getElementById("themeToggle");
+    <script>
+      const track = document.getElementById("logoTrack");
+      const list = document.getElementById("logoList");
+      const container = document.getElementById("logoLoop");
+      const toggleBtn = document.getElementById("themeToggle");
 
-    // Duplicate logos for seamless infinite scroll
-    track.appendChild(list.cloneNode(true));
+      // Duplicate logos for seamless infinite scroll
+      track.appendChild(list.cloneNode(true));
 
-    let offset = 0;
-    let speed = 100; // px per second
-    let isHovered = false;
+      let offset = 0;
+      let speed = 100; // px per second
+      let isHovered = false;
 
-    container.addEventListener("mouseenter", () => isHovered = true);
-    container.addEventListener("mouseleave", () => isHovered = false);
+      container.addEventListener("mouseenter", () => (isHovered = true));
+      container.addEventListener("mouseleave", () => (isHovered = false));
 
-    function animate(timestamp) {
-      if (!animate.lastTime) animate.lastTime = timestamp;
-      const delta = (timestamp - animate.lastTime) / 1000; // seconds
-      animate.lastTime = timestamp;
+      function animate(timestamp) {
+        if (!animate.lastTime) animate.lastTime = timestamp;
+        const delta = (timestamp - animate.lastTime) / 1000; // seconds
+        animate.lastTime = timestamp;
 
-      if (!isHovered) {
-        offset -= speed * delta;
-        const listWidth = list.offsetWidth;
-        if (Math.abs(offset) >= listWidth) {
-          offset = 0;
+        if (!isHovered) {
+          offset -= speed * delta;
+          const listWidth = list.offsetWidth;
+          if (Math.abs(offset) >= listWidth) {
+            offset = 0;
+          }
+          track.style.transform = `translate3d(${offset}px, 0, 0)`;
         }
-        track.style.transform = `translate3d(${offset}px, 0, 0)`;
+        requestAnimationFrame(animate);
       }
       requestAnimationFrame(animate);
-    }
-    requestAnimationFrame(animate);
 
-    // Theme toggle
-    // toggleBtn.addEventListener("click", () => {
-    //   document.body.classList.toggle("light");
-    //   toggleBtn.textContent = document.body.classList.contains("light") ? "☀️ Light" : "🌙 Dark";
-    // });
+      // Theme toggle
+      // toggleBtn.addEventListener("click", () => {
+      //   document.body.classList.toggle("light");
+      //   toggleBtn.textContent = document.body.classList.contains("light") ? "☀️ Light" : "🌙 Dark";
+      // });
 
-    // JS Toggle
-const toggleInput = document.getElementById("themeToggle");
-toggleInput.addEventListener("change", () => {
-  document.body.classList.toggle("light", toggleInput.checked);
-});
-
-  </script>
-</body>
+      // JS Toggle
+      const toggleInput = document.getElementById("themeToggle");
+      toggleInput.addEventListener("change", () => {
+        document.body.classList.toggle("light", toggleInput.checked);
+      });
+    </script>
+  </body>
 </html>

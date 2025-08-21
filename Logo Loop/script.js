@@ -1,4 +1,3 @@
-<script>
   const track = document.getElementById("logoTrack");
   const list = document.getElementById("logoList");
   const container = document.getElementById("logoLoop");
@@ -44,4 +43,3 @@
   toggleInput.addEventListener("change", () => {
     document.body.classList.toggle("light", toggleInput.checked);
   });
-</script>

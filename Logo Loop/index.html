@@ -88,6 +88,58 @@
     .logoloop__item img:hover {
       transform: scale(1.2);
     }
+
+    /* Slider Toggle Styles */
+.switch {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+  z-index: 10;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #444;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+/* Checked (Light Mode) */
+input:checked + .slider {
+  background-color: #ddd;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+  background-color: #000;
+}
+
   </style>
 </head>
 <body>
@@ -155,10 +207,17 @@
     requestAnimationFrame(animate);
 
     // Theme toggle
-    toggleBtn.addEventListener("click", () => {
-      document.body.classList.toggle("light");
-      toggleBtn.textContent = document.body.classList.contains("light") ? "☀️ Light" : "🌙 Dark";
-    });
+    // toggleBtn.addEventListener("click", () => {
+    //   document.body.classList.toggle("light");
+    //   toggleBtn.textContent = document.body.classList.contains("light") ? "☀️ Light" : "🌙 Dark";
+    // });
+
+    // JS Toggle
+const toggleInput = document.getElementById("themeToggle");
+toggleInput.addEventListener("change", () => {
+  document.body.classList.toggle("light", toggleInput.checked);
+});
+
   </script>
 </body>
 </html>

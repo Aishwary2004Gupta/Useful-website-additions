@@ -72,10 +72,10 @@ const projects = [
     },
     {
         id: 11,
-        title: "Surrender",
+        title: "Hello",
         year: "2025",
         image:
-            "https://cdn.cosmos.so/e5e399f2-4050-463b-a781-4f5a1615f28e?format=jpeg"
+            "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRDq4i3-yAd4hokCgNEqw4bb46w1AF8ETT94o0kR68YcrH7dgPh"
     }
 ];
 

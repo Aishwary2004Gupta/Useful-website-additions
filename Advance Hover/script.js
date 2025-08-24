@@ -71,7 +71,7 @@ const projects = [
             "https://cdn.cosmos.so/e5e399f2-4050-463b-a781-4f5a1615f28e?format=jpeg"
     },
     {
-        id: 10,
+        id: 11,
         title: "Surrender",
         year: "2025",
         image:

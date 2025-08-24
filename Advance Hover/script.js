@@ -75,7 +75,7 @@ const projects = [
         title: "Hello",
         year: "2025",
         image:
-            "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRDq4i3-yAd4hokCgNEqw4bb46w1AF8ETT94o0kR68YcrH7dgPh"
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQVdPYNMQxFsLv9iuUtIKjfv_TT6Wfo5DMc16Ti104JgDJPhhZx"
     }
 ];
 

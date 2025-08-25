@@ -78,7 +78,7 @@ const projects = [
             "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQVdPYNMQxFsLv9iuUtIKjfv_TT6Wfo5DMc16Ti104JgDJPhhZx"
     },
     {
-        id: 11,
+        id: 12,
         title: "Hello",
         year: "2025",
         image:

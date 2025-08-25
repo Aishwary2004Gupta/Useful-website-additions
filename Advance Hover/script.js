@@ -77,6 +77,13 @@ const projects = [
         image:
             "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQVdPYNMQxFsLv9iuUtIKjfv_TT6Wfo5DMc16Ti104JgDJPhhZx"
     }
+    {
+        id: 11,
+        title: "Hello",
+        year: "2025",
+        image:
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQVdPYNMQxFsLv9iuUtIKjfv_TT6Wfo5DMc16Ti104JgDJPhhZx"
+    }
 ];
 
 document.addEventListener("DOMContentLoaded", function () {

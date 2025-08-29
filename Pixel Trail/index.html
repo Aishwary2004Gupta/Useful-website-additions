@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <title>PixelTrail – Plain Three.js</title>
+  <!-- Move Three.js script here -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.min.js"></script>
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; background:#000; }
@@ -33,10 +35,7 @@
     </svg>
   </div>
 
-  <!-- ✅ Load Three.js FIRST -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.min.js"></script>
-
-  <!-- ✅ Shaders -->
+  <!-- Shaders -->
   <script id="vs" type="x-shader/x-vertex">
     varying vec2 vUv;
     void main() {
@@ -66,113 +65,115 @@
     }
   </script>
 
-  <!-- ✅ Main Script -->
+  <!-- Main Script -->
   <script>
-    const PARAMS = {
-      gridSize:     50,
-      trailSize:    0.10,
-      maxAge:       250,
-      interpolate:  5,
-      color:        "#ffffff",
-      gooFilterId:  "custom-goo-filter"
-    };
+    window.addEventListener('load', () => {
+      const PARAMS = {
+        gridSize:     50,
+        trailSize:    0.10,
+        maxAge:       250,
+        interpolate:  5,
+        color:        "#ffffff",
+        gooFilterId:  "custom-goo-filter"
+      };
 
-    const wrap = document.getElementById('app');
-    const renderer = new THREE.WebGLRenderer({ antialias:false, alpha:true, powerPreference:'high-performance' });
-    wrap.appendChild(renderer.domElement);
-    renderer.domElement.style.filter = `url(#${PARAMS.gooFilterId})`;
+      const wrap = document.getElementById('app');
+      const renderer = new THREE.WebGLRenderer({ antialias:false, alpha:true, powerPreference:'high-performance' });
+      wrap.appendChild(renderer.domElement);
+      renderer.domElement.style.filter = `url(#${PARAMS.gooFilterId})`;
 
-    const scene  = new THREE.Scene();
-    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+      const scene  = new THREE.Scene();
+      const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
-    const geo = new THREE.PlaneGeometry(2, 2);
-    const mat = new THREE.ShaderMaterial({
-      uniforms: {
-        resolution: { value: new THREE.Vector2(1,1) },
-        mouseTrail: { value: null },
-        gridSize:   { value: PARAMS.gridSize },
-        pixelColor: { value: new THREE.Color(PARAMS.color) }
-      },
-      vertexShader:   document.getElementById('vs').textContent,
-      fragmentShader: document.getElementById('fs').textContent,
-      transparent: true, depthTest:false, depthWrite:false
+      const geo = new THREE.PlaneGeometry(2, 2);
+      const mat = new THREE.ShaderMaterial({
+        uniforms: {
+          resolution: { value: new THREE.Vector2(1,1) },
+          mouseTrail: { value: null },
+          gridSize:   { value: PARAMS.gridSize },
+          pixelColor: { value: new THREE.Color(PARAMS.color) }
+        },
+        vertexShader:   document.getElementById('vs').textContent,
+        fragmentShader: document.getElementById('fs').textContent,
+        transparent: true, depthTest:false, depthWrite:false
+      });
+      scene.add(new THREE.Mesh(geo, mat));
+
+      // -------- Trail texture
+      const TRAIL_RES = 512;
+      const trailCanvas = document.createElement('canvas');
+      trailCanvas.width = trailCanvas.height = TRAIL_RES;
+      const ctx = trailCanvas.getContext('2d');
+      ctx.fillStyle = 'black'; ctx.fillRect(0,0,TRAIL_RES,TRAIL_RES);
+
+      const trailTex = new THREE.CanvasTexture(trailCanvas);
+      trailTex.minFilter = THREE.NearestFilter;
+      trailTex.magFilter = THREE.NearestFilter;
+      trailTex.wrapS = THREE.ClampToEdgeWrapping;
+      trailTex.wrapT = THREE.ClampToEdgeWrapping;
+      mat.uniforms.mouseTrail.value = trailTex;
+
+      // -------- Pointer handling
+      const state = {
+        target: { x: 0.5, y: 0.5 },
+        pos:    { x: 0.5, y: 0.5 }
+      };
+
+      function normFromEvent(e) {
+        const r = wrap.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width;
+        const y = (e.clientY - r.top) / r.height;
+        return { x: THREE.MathUtils.clamp(x,0,1), y: THREE.MathUtils.clamp(1 - y,0,1) };
+      }
+
+      function handlePointer(e) {
+        const n = normFromEvent(e);
+        state.target.x = n.x;
+        state.target.y = n.y;
+      }
+
+      wrap.addEventListener('pointermove', handlePointer);
+      wrap.addEventListener('pointerdown', handlePointer);
+      wrap.addEventListener('pointerenter', handlePointer);
+
+      // -------- Draw trail each frame
+      const brushRadius = PARAMS.trailSize * TRAIL_RES;
+      const fadeAlpha   = 1 / Math.max(1, PARAMS.maxAge);
+      const lerpFactor  = 1 / Math.max(1, PARAMS.interpolate);
+
+      function drawTrail() {
+        ctx.fillStyle = `rgba(0,0,0,${fadeAlpha})`;
+        ctx.fillRect(0,0,TRAIL_RES,TRAIL_RES);
+
+        state.pos.x += (state.target.x - state.pos.x) * lerpFactor;
+        state.pos.y += (state.target.y - state.pos.y) * lerpFactor;
+
+        ctx.beginPath();
+        ctx.arc(state.pos.x * TRAIL_RES, state.pos.y * TRAIL_RES, brushRadius, 0, Math.PI*2);
+        ctx.fillStyle = 'rgba(255,255,255,1)';
+        ctx.fill();
+
+        trailTex.needsUpdate = true;
+      }
+
+      // -------- Resize
+      function resize() {
+        const w = wrap.clientWidth;
+        const h = wrap.clientHeight;
+        renderer.setSize(w, h, false);
+        mat.uniforms.resolution.value.set(w, h);
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      // -------- Animate
+      function tick() {
+        drawTrail();
+        renderer.render(scene, camera);
+        requestAnimationFrame(tick);
+      }
+      tick();
     });
-    scene.add(new THREE.Mesh(geo, mat));
-
-    // -------- Trail texture
-    const TRAIL_RES = 512;
-    const trailCanvas = document.createElement('canvas');
-    trailCanvas.width = trailCanvas.height = TRAIL_RES;
-    const ctx = trailCanvas.getContext('2d');
-    ctx.fillStyle = 'black'; ctx.fillRect(0,0,TRAIL_RES,TRAIL_RES);
-
-    const trailTex = new THREE.CanvasTexture(trailCanvas);
-    trailTex.minFilter = THREE.NearestFilter;
-    trailTex.magFilter = THREE.NearestFilter;
-    trailTex.wrapS = THREE.ClampToEdgeWrapping;
-    trailTex.wrapT = THREE.ClampToEdgeWrapping;
-    mat.uniforms.mouseTrail.value = trailTex;
-
-    // -------- Pointer handling
-    const state = {
-      target: { x: 0.5, y: 0.5 },
-      pos:    { x: 0.5, y: 0.5 }
-    };
-
-    function normFromEvent(e) {
-      const r = wrap.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width;
-      const y = (e.clientY - r.top) / r.height;
-      return { x: THREE.MathUtils.clamp(x,0,1), y: THREE.MathUtils.clamp(1 - y,0,1) };
-    }
-
-    function handlePointer(e) {
-      const n = normFromEvent(e);
-      state.target.x = n.x;
-      state.target.y = n.y;
-    }
-
-    wrap.addEventListener('pointermove', handlePointer);
-    wrap.addEventListener('pointerdown', handlePointer);
-    wrap.addEventListener('pointerenter', handlePointer);
-
-    // -------- Draw trail each frame
-    const brushRadius = PARAMS.trailSize * TRAIL_RES;
-    const fadeAlpha   = 1 / Math.max(1, PARAMS.maxAge);
-    const lerpFactor  = 1 / Math.max(1, PARAMS.interpolate);
-
-    function drawTrail() {
-      ctx.fillStyle = `rgba(0,0,0,${fadeAlpha})`;
-      ctx.fillRect(0,0,TRAIL_RES,TRAIL_RES);
-
-      state.pos.x += (state.target.x - state.pos.x) * lerpFactor;
-      state.pos.y += (state.target.y - state.pos.y) * lerpFactor;
-
-      ctx.beginPath();
-      ctx.arc(state.pos.x * TRAIL_RES, state.pos.y * TRAIL_RES, brushRadius, 0, Math.PI*2);
-      ctx.fillStyle = 'rgba(255,255,255,1)';
-      ctx.fill();
-
-      trailTex.needsUpdate = true;
-    }
-
-    // -------- Resize
-    function resize() {
-      const w = wrap.clientWidth;
-      const h = wrap.clientHeight;
-      renderer.setSize(w, h, false);
-      mat.uniforms.resolution.value.set(w, h);
-    }
-    resize();
-    window.addEventListener('resize', resize);
-
-    // -------- Animate
-    function tick() {
-      drawTrail();
-      renderer.render(scene, camera);
-      requestAnimationFrame(tick);
-    }
-    tick();
   </script>
 </body>
 </html>

@@ -1,145 +1,184 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Pixel Trail (Three.js)</title>
+  <meta charset="UTF-8" />
+  <title>PixelTrail – HTML/CSS/JS</title>
   <style>
-    body {
-      margin: 0;
-      background: black;
+    * { box-sizing: border-box; }
+    body { margin: 0; background:#000; }
+    .wrap {
+      position: relative;
+      height: 500px;           /* same as your container */
       overflow: hidden;
     }
-    canvas {
-      display: block;
-      position: absolute;
-      width: 100%;
-      height: 100%;
-    }
-    svg {
-      position: absolute;
-      width: 0;
-      height: 0;
-    }
+    .wrap canvas { position:absolute; inset:0; width:100%; height:100%; display:block; }
+    /* keep SVG off-layout but available for CSS filter url() */
+    .goo-defs { position:absolute; width:0; height:0; overflow:hidden; }
   </style>
 </head>
 <body>
-  <!-- Gooey filter -->
-  <svg>
-    <defs>
-      <filter id="goo-filter">
-        <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
-        <feColorMatrix in="blur" type="matrix"
-          values="1 0 0 0 0  
-                  0 1 0 0 0  
-                  0 0 1 0 0  
-                  0 0 0 18 -7" result="goo"/>
-        <feComposite in="SourceGraphic" in2="goo" operator="atop"/>
-      </filter>
-    </defs>
-  </svg>
+  <div class="wrap" id="app">
+    <!-- Gooey filter (custom-goo-filter, strength≈2) -->
+    <svg class="goo-defs" aria-hidden="true" focusable="false">
+      <defs>
+        <filter id="custom-goo-filter">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
+          <feColorMatrix in="blur" type="matrix"
+            values="1 0 0 0 0
+                    0 1 0 0 0
+                    0 0 1 0 0
+                    0 0 0 19 -9" result="goo"/>
+          <feComposite in="SourceGraphic" in2="goo" operator="atop"/>
+        </filter>
+      </defs>
+    </svg>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.min.js"></script>
-  <script id="vertexShader" type="x-shader/x-vertex">
+
+  <!-- Fullscreen quad shaders (pixel grid + trail sampling) -->
+  <script id="vs" type="x-shader/x-vertex">
     varying vec2 vUv;
     void main() {
       vUv = uv;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      gl_Position = vec4(position, 1.0);
     }
   </script>
-  <script id="fragmentShader" type="x-shader/x-fragment">
-    uniform vec2 resolution;
+  <script id="fs" type="x-shader/x-fragment">
+    precision highp float;
+    uniform vec2  resolution;
     uniform sampler2D mouseTrail;
     uniform float gridSize;
-    uniform vec3 pixelColor;
-    varying vec2 vUv;
+    uniform vec3  pixelColor;
+    varying vec2  vUv;
 
     vec2 coverUv(vec2 uv) {
       vec2 s = resolution.xy / max(resolution.x, resolution.y);
-      return (uv - 0.5) * s + 0.5;
+      return clamp((uv - 0.5) * s + 0.5, 0.0, 1.0);
     }
 
     void main() {
       vec2 uv = coverUv(vUv);
-      vec2 gridUvCenter = (floor(uv * gridSize) + 0.5) / gridSize;
-      float trail = texture2D(mouseTrail, gridUvCenter).r;
+      // snap to pixel centers of the grid
+      vec2 cell = (floor(uv * gridSize) + 0.5) / gridSize;
+      float trail = texture2D(mouseTrail, cell).r;  // red channel of trail
       gl_FragColor = vec4(pixelColor, trail);
     }
   </script>
 
   <script>
-    const gridSize = 50;
-    const trailSize = 0.05;
-    const maxAge = 200;
-    const color = new THREE.Color("#ffffff");
+    // -------- Parameters (match your React props) --------
+    const PARAMS = {
+      gridSize:     50,      // number of pixels across the shortest side
+      trailSize:    0.10,    // brush radius relative to 512 (0..1)
+      maxAge:       250,     // higher = slower decay
+      interpolate:  5,       // higher = smoother mouse path
+      color:        "#ffffff",
+      gooFilterId:  "custom-goo-filter"
+    };
 
-    const renderer = new THREE.WebGLRenderer({ antialias: false });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.domElement.style.filter = "url(#goo-filter)";
-    document.body.appendChild(renderer.domElement);
+    // -------- Setup renderer inside the 500px wrapper --------
+    const wrap = document.getElementById('app');
+    const renderer = new THREE.WebGLRenderer({ antialias:false, alpha:true, powerPreference:'high-performance' });
+    wrap.appendChild(renderer.domElement);
+    // Apply gooey filter
+    renderer.domElement.style.filter = `url(#${PARAMS.gooFilterId})`;
 
-    const scene = new THREE.Scene();
+    const scene  = new THREE.Scene();
     const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
-    // Create render target for mouse trail
-    const trailSizePx = 512;
-    let trailTarget = new THREE.WebGLRenderTarget(trailSizePx, trailSizePx);
-
-    // Material with shaders
-    const material = new THREE.ShaderMaterial({
+    // Fullscreen plane (NDC)
+    const geo = new THREE.PlaneGeometry(2, 2);
+    const mat = new THREE.ShaderMaterial({
       uniforms: {
-        resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
-        mouseTrail: { value: trailTarget.texture },
-        gridSize: { value: gridSize },
-        pixelColor: { value: color }
+        resolution: { value: new THREE.Vector2(1,1) },
+        mouseTrail: { value: null },
+        gridSize:   { value: PARAMS.gridSize },
+        pixelColor: { value: new THREE.Color(PARAMS.color) }
       },
-      vertexShader: document.getElementById("vertexShader").textContent,
-      fragmentShader: document.getElementById("fragmentShader").textContent,
-      transparent: true
+      vertexShader:   document.getElementById('vs').textContent,
+      fragmentShader: document.getElementById('fs').textContent,
+      transparent: true, depthTest:false, depthWrite:false
     });
+    scene.add(new THREE.Mesh(geo, mat));
 
-    const plane = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
-    scene.add(plane);
+    // -------- Trail texture via 2D canvas --------
+    const TRAIL_RES = 512;
+    const trailCanvas = document.createElement('canvas');
+    trailCanvas.width = trailCanvas.height = TRAIL_RES;
+    const ctx = trailCanvas.getContext('2d');
+    ctx.fillStyle = 'black'; ctx.fillRect(0,0,TRAIL_RES,TRAIL_RES);
 
-    // Mouse trail canvas
-    const trailCanvas = document.createElement("canvas");
-    trailCanvas.width = trailCanvas.height = trailSizePx;
-    const ctx = trailCanvas.getContext("2d");
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, trailSizePx, trailSizePx);
+    const trailTex = new THREE.CanvasTexture(trailCanvas);
+    trailTex.minFilter = THREE.NearestFilter;
+    trailTex.magFilter = THREE.NearestFilter;
+    trailTex.wrapS = THREE.ClampToEdgeWrapping;
+    trailTex.wrapT = THREE.ClampToEdgeWrapping;
+    mat.uniforms.mouseTrail.value = trailTex;
 
-    const trailTexture = new THREE.CanvasTexture(trailCanvas);
-    material.uniforms.mouseTrail.value = trailTexture;
+    // -------- Pointer handling with interpolation --------
+    const state = {
+      target: { x: 0.5, y: 0.5 }, // normalized (0..1)
+      pos:    { x: 0.5, y: 0.5 }  // smoothed
+    };
 
-    const mouse = { x: 0, y: 0 };
-    document.addEventListener("mousemove", (e) => {
-      mouse.x = e.clientX / window.innerWidth;
-      mouse.y = 1.0 - e.clientY / window.innerHeight;
-    });
+    function normFromEvent(e) {
+      const r = wrap.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width;
+      const y = (e.clientY - r.top) / r.height;
+      return { x: THREE.MathUtils.clamp(x, 0, 1), y: THREE.MathUtils.clamp(1 - y, 0, 1) };
+    }
+
+    function handlePointer(e) {
+      const n = normFromEvent(e);
+      state.target.x = n.x;
+      state.target.y = n.y;
+    }
+
+    wrap.addEventListener('pointermove', handlePointer);
+    wrap.addEventListener('pointerdown', handlePointer);
+    wrap.addEventListener('pointerenter', handlePointer);
+
+    // -------- Draw trail each frame --------
+    const brushRadius = PARAMS.trailSize * TRAIL_RES;         // pixels
+    const fadeAlpha   = 1 / Math.max(1, PARAMS.maxAge);       // decay
+    const lerpFactor  = 1 / Math.max(1, PARAMS.interpolate);  // smoothing
 
     function drawTrail() {
-      ctx.fillStyle = "rgba(0,0,0,0.05)";
-      ctx.fillRect(0, 0, trailSizePx, trailSizePx);
+      // fade
+      ctx.fillStyle = `rgba(0,0,0,${fadeAlpha})`;
+      ctx.fillRect(0,0,TRAIL_RES,TRAIL_RES);
 
+      // smooth approach to target
+      state.pos.x += (state.target.x - state.pos.x) * lerpFactor;
+      state.pos.y += (state.target.y - state.pos.y) * lerpFactor;
+
+      // draw brush
       ctx.beginPath();
-      ctx.arc(mouse.x * trailSizePx, mouse.y * trailSizePx, trailSizePx * trailSize, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(255,255,255,1)";
+      ctx.arc(state.pos.x * TRAIL_RES, state.pos.y * TRAIL_RES, brushRadius, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,1)';
       ctx.fill();
 
-      trailTexture.needsUpdate = true;
+      trailTex.needsUpdate = true;
     }
 
-    function animate() {
-      requestAnimationFrame(animate);
+    // -------- Size handling (fit canvas to wrapper) --------
+    function resize() {
+      const w = wrap.clientWidth;
+      const h = wrap.clientHeight;
+      renderer.setSize(w, h, false);
+      mat.uniforms.resolution.value.set(w, h);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // -------- Render loop --------
+    function tick() {
       drawTrail();
       renderer.render(scene, camera);
+      requestAnimationFrame(tick);
     }
-
-    animate();
-
-    window.addEventListener("resize", () => {
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      material.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
-    });
+    tick();
   </script>
 </body>
 </html>

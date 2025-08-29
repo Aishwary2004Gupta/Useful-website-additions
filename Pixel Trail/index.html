@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>PixelTrail – Plain Three.js</title>
-  <!-- Move Three.js script here -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.min.js"></script>
+  <script async defer src="https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.min.js"></script>
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; background:#000; }
@@ -67,7 +66,22 @@
 
   <!-- Main Script -->
   <script>
-    window.addEventListener('load', () => {
+    function waitForThree() {
+      return new Promise(resolve => {
+        if (window.THREE) resolve();
+        else window.addEventListener('load', () => {
+          const check = () => {
+            if (window.THREE) resolve();
+            else setTimeout(check, 100);
+          };
+          check();
+        });
+      });
+    }
+
+    (async () => {
+      await waitForThree();
+      
       const PARAMS = {
         gridSize:     50,
         trailSize:    0.10,
@@ -173,7 +187,7 @@
         requestAnimationFrame(tick);
       }
       tick();
-    });
+    })();
   </script>
 </body>
 </html>

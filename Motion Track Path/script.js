@@ -1,4 +1,4 @@
-import { animate, svg } from 'animejs';
+import { animate, svg } from "https://esm.sh/animejs";
 
 // Animate the transforms properties of .car the motion path values
 const carAnimation = animate('.car', {

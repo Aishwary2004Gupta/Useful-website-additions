@@ -1,18 +1,21 @@
-import { animate, svg } from "https://esm.sh/animejs";
+import anime from 'https://esm.sh/animejs';
 
-// Animate the transforms properties of .car the motion path values
-const carAnimation = animate('.car', {
-  ease: 'linear',
+// Animate the transforms properties of .car along the motion path
+const motionPath = anime({
+  targets: '.car',
+  translateX: anime.path('path'),
+  translateY: anime.path('path'),
+  rotate: anime.path('path'),
+  easing: 'linear',
   duration: 5000,
-  loop: true,
-  ...svg.createMotionPath('path')
+  loop: true
 });
 
-// Line drawing animation following the motion path values
-// For demo aesthetic only
-animate(svg.createDrawable('path'), {
-  draw: '0 1',
-  ease: 'linear',
+// Line drawing animation
+anime({
+  targets: 'path',
+  strokeDashoffset: [anime.setDashoffset, 0],
+  easing: 'linear',
   duration: 5000,
   loop: true
 });

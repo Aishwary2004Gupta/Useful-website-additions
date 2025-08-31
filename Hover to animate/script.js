@@ -1,5 +1,4 @@
 import { animate, utils, stagger, text } from "https://esm.sh/animejs";
-// import { animate, utils, stagger, text } from 'animejs';
 
 // Dark mode functionality
 const darkModeToggle = document.querySelector('.dark-mode-toggle');

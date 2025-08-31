@@ -64,7 +64,9 @@
           tempCanvas.height
         );
         const data = imageData.data;
-        particles = [];        for (let y = 0; y < tempCanvas.height; y += 2) { // Reduced spacing for more density
+        particles = [];
+        for (let y = 0; y < tempCanvas.height; y += 2) {
+          // Reduced spacing for more density
           for (let x = 0; x < tempCanvas.width; x += 2) {
             const index = (y * tempCanvas.width + x) * 4;
             if (data[index + 3] > 128) {
@@ -84,7 +86,7 @@
         }
       }
 
-      function animate() {        
+      function animate() {
         ctx.fillStyle = "rgba(0, 0, 0, 0.8)"; // Darker background for better contrast
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 

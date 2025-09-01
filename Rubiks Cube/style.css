@@ -341,18 +341,24 @@ body {
     top: 0.8em;
     left: 0.8em;
     z-index: 10;
+    opacity: 1; /* Make button visible */
+    pointer-events: all; /* Enable interaction */
+    font-size: 1.2em;
+    color: rgba(0, 0, 0, 0.5); /* Match other buttons' color */
 }
 
 .btn--tl a {
     text-decoration: none;
     color: inherit;
-    pointer-events: all; /* Enables clicking on the link */
+    display: block; /* Ensure link fills button */
+    width: 100%;
+    height: 100%;
 }
 
-.btn--tl:hover {
-    color: rgba(0, 0, 0, 0.5); /* Darker color on hover */
-    cursor: pointer;
-}
+/* .btn--tl:hover {
+    color: rgba(0, 0, 0, 0.9); /* Darker color on hover */
+    /* cursor: pointer; */
+/* } */ 
 
 .btn svg {
 	display: block;

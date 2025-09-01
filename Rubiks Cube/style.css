@@ -337,6 +337,23 @@ body {
 	left: calc(50% - 0.5em);
 }
 
+.btn--tl {
+    top: 0.8em;
+    left: 0.8em;
+    z-index: 10;
+}
+
+.btn--tl a {
+    text-decoration: none;
+    color: inherit;
+    pointer-events: all; /* Enables clicking on the link */
+}
+
+.btn--tl:hover {
+    color: rgba(0, 0, 0, 0.5); /* Darker color on hover */
+    cursor: pointer;
+}
+
 .btn svg {
 	display: block;
 }

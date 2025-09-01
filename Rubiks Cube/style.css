@@ -297,17 +297,17 @@ body {
 }
 
 .btn {
-	-webkit-appearance: none;
-	-moz-appearance: none;
-	appearance: none;
-	background-color: transparent;
-	border-radius: 0;
-	border-width: 0;
-	position: absolute;
-	pointer-events: none;
-	font-size: 1.2em;
-	color: rgba(0, 0, 0, 0.25);
-	opacity: 0;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: transparent;
+    border-radius: 0;
+    border-width: 0;
+    position: absolute;
+    pointer-events: all; /* Changed from none to all */
+    font-size: 1.2em;
+    color: rgba(0, 0, 0, 0.25);
+    opacity: 1; /* Changed from 0 to 1 */
 }
 
 .btn:after {
@@ -335,6 +335,22 @@ body {
 .btn--bc {
 	bottom: 0.8em;
 	left: calc(50% - 0.5em);
+}
+
+.btn--tl {
+    top: 0.8em;
+    left: 0.8em;
+    z-index: 10;
+}
+
+.btn--tl a {
+    text-decoration: none;
+    color: inherit;
+    pointer-events: all;
+}
+
+.btn--tl:hover {
+    color: rgba(0, 0, 0, 0.5);
 }
 
 .btn svg {

@@ -337,6 +337,23 @@ body {
 	left: calc(50% - 0.5em);
 }
 
+.btn--tl {
+  top: 0.8em;
+  left: 0.8em;
+  pointer-events: auto;
+  opacity: 1;
+}
+
+.btn--twitter a {
+  color: rgba(0, 0, 0, 0.25);
+  text-decoration: none;
+  font-size: 0.8em;
+}
+
+.btn--twitter:hover a {
+  color: rgba(0, 0, 0, 0.5);
+}
+
 .btn svg {
 	display: block;
 }

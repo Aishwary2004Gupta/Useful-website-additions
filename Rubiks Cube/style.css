@@ -345,14 +345,22 @@ body {
     font-size: 1.2em;
     cursor: pointer;
     opacity: 1;
-    transition: opacity 200ms ease, color 200ms ease;
+    transition: opacity 200ms ease, color 200ms ease, transform 300ms ease; /* Added transform for animation */
     color: #3590aa;
     padding: 0.5em 1em;
     border-radius: 4px;
 }
 
+.btn--tl:hover,
+.btn--tl a:hover {
+    color: #1f5f6e; /* Even darker color on hover */
+    transform: scale(1.1); /* Added hover animation */
+    cursor: pointer;
+}
+
 .btn--tl.is-active {
     color: #2b7a8e; /* Slightly darker color when active */
+    transform: scale(1.2); /* Added active animation */
 }
 
 .btn--tl a {
@@ -366,12 +374,6 @@ body {
     z-index: 11;
     cursor: pointer;
 }
-
-.btn--tl:hover,
-.btn--tl a:hover {
-    color: #1f5f6e; /* Even darker color on hover */
-    cursor: pointer;
-} 
 
 .btn svg {
 	display: block;

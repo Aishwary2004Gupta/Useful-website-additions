@@ -338,15 +338,15 @@ body {
 }
 
 .btn--tl {
-    top: 0.8em;
-    left: 0.8em;
+    top: 0.01em; /* Adjusted to align with the trophy icon */
+    left: 0.01em; /* Adjusted to align with the trophy icon */
     z-index: 10;
     pointer-events: all;
     font-size: 1.2em;
     cursor: pointer;
-    opacity: 1; /* Ensure the button is visible */
+    opacity: 1;
     transition: opacity 200ms ease, color 200ms ease;
-    color: #3590aa; /* Set text color to #3590aa */
+    color: #3590aa;
     padding: 0.5em 1em;
     border-radius: 4px;
 }

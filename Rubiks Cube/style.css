@@ -345,15 +345,14 @@ body {
     font-size: 1.2em;
     cursor: pointer;
     opacity: 1; /* Ensure the button is visible */
-    transition: opacity 200ms ease, background-color 200ms ease;
-    background-color: #41aac8; /* Blue background */
-    color: white; /* White text for contrast */
+    transition: opacity 200ms ease, color 200ms ease;
+    color: #3590aa; /* Set text color to #3590aa */
     padding: 0.5em 1em;
     border-radius: 4px;
 }
 
 .btn--tl.is-active {
-    background-color: #3590aa; /* Slightly darker blue when active */
+    color: #2b7a8e; /* Slightly darker color when active */
 }
 
 .btn--tl a {
@@ -370,8 +369,7 @@ body {
 
 .btn--tl:hover,
 .btn--tl a:hover {
-    background-color: #2b7a8e; /* Even darker blue on hover */
-    color: white;
+    color: #1f5f6e; /* Even darker color on hover */
     cursor: pointer;
 } 
 

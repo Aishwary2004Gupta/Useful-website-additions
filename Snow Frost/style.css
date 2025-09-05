@@ -59,6 +59,7 @@ img {
   z-index: 999;
   display: grid;
   grid-template-columns: repeat(var(--max-a), 1fr);
+  grid-template-rows: repeat(var(--max-a), 1fr);
   background: black;  
   filter: blur(19px) brightness(5) contrast(80);
   mix-blend-mode: plus-lighter; 

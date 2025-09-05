@@ -66,21 +66,20 @@ img {
   filter: blur(19px) brightness(5) contrast(80) invert(1) blur(5px) url("#gray-pack-2b") url("#pack-lower");
   
   cursor:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'  width='100' height='120' viewport='0 0 100 100' style='fill:white;font-size:80px; opacity: .8;'><text y='50%'>❄</text></svg>") 45 35,auto; 
-  transition: opacity 0.3s ease; /* Add transition for smooth effect */
+  transition: opacity 0.3s ease; /* Smooth transition */
 }
 
 .hover-area:hover {
-  opacity: 0; /* Make the frost disappear on hover */
+  opacity: 0; /* Frost disappears on hover */
 }
 
 i {
   background: white;
-  opacity: 0;
-  transition: opacity 5s;
+  opacity: 0.5; /* Adjust initial opacity for visibility */
+  transition: opacity 0.3s ease;
   border-radius: 50%;
   scale: 2;
-  &:is(:hover, :active) {
-    opacity: 0; /* Ensure the frost effect disappears instantly */
-    transition-duration: 0s;
+  &:hover {
+    opacity: 0; /* Clear frost on hover */
   }
 }

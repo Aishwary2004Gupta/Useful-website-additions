@@ -62,15 +62,19 @@ function print(config) {
   let original = new Image();
   original.crossOrigin = 'Anonymous';
   original.onload = function () {
-    const targetWidth = 600;
-    const targetHeight = 600;
+    const targetWidth = 720;
+    const targetHeight = 720;
+
+    // Use the original dimensions if they are smaller than the target dimensions
+    const canvasWidth = Math.min(this.width, targetWidth);
+    const canvasHeight = Math.min(this.height, targetHeight);
 
     let dataCtx = document.createElement('canvas').getContext('2d');
-    config.canvas.width = dataCtx.canvas.width = targetWidth;
-    config.canvas.height = dataCtx.canvas.height = targetHeight;
+    config.canvas.width = dataCtx.canvas.width = canvasWidth;
+    config.canvas.height = dataCtx.canvas.height = canvasHeight;
 
-    dataCtx.drawImage(this, 0, 0, targetWidth / config.spaceing, targetHeight / config.spaceing);
-    let data = dataCtx.getImageData(0, 0, targetWidth, targetHeight).data;
+    dataCtx.drawImage(this, 0, 0, canvasWidth / config.spaceing, canvasHeight / config.spaceing);
+    let data = dataCtx.getImageData(0, 0, canvasWidth, canvasHeight).data;
 
     let ctx = config.canvas.getContext('2d');
     ctx.fillStyle = '#fff';
@@ -78,8 +82,8 @@ function print(config) {
     let represenation = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^'. ";
 
     for (let i = 0, ii = 0; i < data.length; i += 4, ii++) {
-      let x = ii % targetWidth;
-      let y = ii / targetWidth | 0;
+      let x = ii % canvasWidth;
+      let y = ii / canvasWidth | 0;
       let grayscale = (data[i] + data[i + 1] + data[i + 2]) / 3 | 0;
       let char = represenation[map(grayscale, 255, 0, 0, represenation.length - 1) | 0];
 

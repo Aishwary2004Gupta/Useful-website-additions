@@ -1,36 +1,59 @@
+import { Pane } from 'https://cdn.skypack.dev/tweakpane@4.0.4';
+
+const pane = new Pane({
+  title: 'Controls',
+  expanded: true,
+});
+
+const config = {
+  uploadFile: null,
+  imageUrl: '',
+};
+
+// Add a button for file upload
+pane.addButton({ title: 'Choose File' }).on('click', () => {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        print({
+          canvas: document.getElementById('ascii'),
+          image: e.target.result,
+          fontSize: 10,
+          spaceing: 8,
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  input.click();
+});
+
+// Add a text input for image URL
+pane.addBinding(config, 'imageUrl', { label: 'Image URL' });
+
+// Add a button to convert the URL
+pane.addButton({ title: 'Convert URL' }).on('click', () => {
+  if (config.imageUrl) {
+    print({
+      canvas: document.getElementById('ascii'),
+      image: config.imageUrl,
+      fontSize: 10,
+      spaceing: 8,
+    });
+  }
+});
+
+// Display the default ASCII image
 print({
   canvas: document.getElementById('ascii'),
   image: 'https://images.unsplash.com/photo-1755380749576-c2372cc487a7?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   fontSize: 10,
-  spaceing: 8
-})
-
-document.getElementById('upload').addEventListener('change', function(event) {
-  const file = event.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      print({
-        canvas: document.getElementById('ascii'),
-        image: e.target.result,
-        fontSize: 10,
-        spaceing: 8
-      });
-    };
-    reader.readAsDataURL(file);
-  }
-});
-
-document.getElementById('convert-url').addEventListener('click', function() {
-  const imageUrl = document.getElementById('image-url').value;
-  if (imageUrl) {
-    print({
-      canvas: document.getElementById('ascii'),
-      image: imageUrl,
-      fontSize: 10,
-      spaceing: 8
-    });
-  }
+  spaceing: 8,
 });
 
 const map = (s, a1, a2, b1, b2) => b1 + (s - a1) * (b2 - b1) / (a2 - a1);
@@ -38,7 +61,7 @@ const map = (s, a1, a2, b1, b2) => b1 + (s - a1) * (b2 - b1) / (a2 - a1);
 function print(config) {
   let original = new Image();
   original.crossOrigin = 'Anonymous';
-  original.onload = function() {
+  original.onload = function () {
     let dataCtx = document.createElement('canvas').getContext('2d');
     config.canvas.width = dataCtx.canvas.width = this.width;
     config.canvas.height = dataCtx.canvas.height = this.height;

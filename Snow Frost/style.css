@@ -61,17 +61,11 @@ img {
   grid-template-columns: repeat(var(--max-a), 1fr);
   grid-template-rows: repeat(var(--max-a), 1fr);
 
-  /* Remove problematic background and blending */
-  background: transparent;
-
-  /* Adjust filter to avoid black screen */
-  filter: blur(10px) brightness(1.2) contrast(1.5);
-
-  /* Remove mix-blend-mode to prevent black overlay */
-  mix-blend-mode: normal;
+  background: transparent; /* Ensure no black background */
+  filter: blur(10px) brightness(1.2) contrast(1.5); /* Adjusted for subtle frost effect */
+  mix-blend-mode: normal; /* Prevent blending issues causing black screen */
 
   cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='120' viewport='0 0 100 100' style='fill:white;font-size:80px; opacity: .8;'><text y='50%'>❄</text></svg>") 45 35, auto;
-  transition: opacity 0.3s ease; /* Smooth transition */
 }
 
 .hover-area:hover {
@@ -79,12 +73,13 @@ img {
 }
 
 i {
-  background: white;
-  opacity: 0.5; /* Adjust initial opacity for visibility */
+  background: rgba(255, 255, 255, 0.5); /* Semi-transparent white for frost */
+  opacity: 1; /* Ensure frost is fully visible initially */
   transition: opacity 0.3s ease;
   border-radius: 50%;
   scale: 2;
-  &:hover {
-    opacity: 0; /* Clear frost on hover */
-  }
+}
+
+i:hover {
+  opacity: 0; /* Clear frost on hover */
 }

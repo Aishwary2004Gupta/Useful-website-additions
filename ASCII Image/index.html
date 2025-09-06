@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ASCII Donut — HTML/CSS/JS</title>
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      margin: 0; min-height: 100svh;
+      display: grid; place-items: center;
+      background: radial-gradient(1200px 800px at 50% -10%, #202733, #0f1218 65%);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    }
+    .wrap {
+      width: min(96vw, 960px);
+      padding: 16px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.03);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    header {
+      display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-bottom: 10px;
+    }
+    header h1 {
+      font-size: 16px; font-weight: 600; letter-spacing: .2px; margin: 0; opacity: .9;
+    }
+    .controls { display: flex; gap: 8px; align-items: center; }
+    button, input[type="range"] {
+      -webkit-tap-highlight-color: transparent;
+    }
+    button {
+      padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,.15);
+      background: rgba(255,255,255,.06); color: #e8eefc; font: 600 12px/1 ui-sans-serif, system-ui;
+      letter-spacing: .3px; cursor: pointer;
+    }
+    button:hover { background: rgba(255,255,255,.1); }
+    label { font-size: 12px; color: #c8d2ea; opacity: .85; display: inline-flex; align-items: center; gap: 6px; }
+    #screen {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      aspect-ratio: 80/22;           /* maintains rows:cols feel on resize */
+      resize: none;
+      background: #0b0e14; color: #d8e1ff;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 14px;
+      padding: 10px 12px;
+      font: 700 12px/1.05 "Fira Mono", ui-monospace, Menlo, Consolas, monospace;
+      letter-spacing: .8px;
+      white-space: pre;
+      overflow: hidden;
+      user-select: none;
+    }
+    footer {
+      margin-top: 10px; font-size: 11px; color: #9fb0d9; opacity: .7; text-align: right;
+    }
+    a { color: #b9c9ff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>ASCII Donut (JS port of the classic)</h1>
+      <div class="controls">
+        <button id="toggle">Pause</button>
+        <label>Speed
+          <input id="speed" type="range" min="10" max="120" value="50" />
+        </label>
+      </div>
+    </header>
+    <pre id="screen" aria-label="ASCII donut display"></pre>
+    <footer>
+      Based on the well-known ASCII torus demo (see <a href="https://www.a1k0n.net/2021/01/13/optimizing-donut.html" target="_blank" rel="noreferrer">a1k0n’s write-up</a>)
+    </footer>
+  </div>
+
+  <script>
+    // === Config ===
+    const cols = 80, rows = 22;
+    const chars = ".,-~:;=!*#$@"; // luminance ramp
+
+    const pre = document.getElementById('screen');
+    const toggleBtn = document.getElementById('toggle');
+    const speedCtl = document.getElementById('speed');
+
+    let A = 0, B = 0;               // rotation angles
+    let running = true;
+    let timer = null;
+
+    function frame() {
+      // Buffers
+      const buf = new Array(cols * rows).fill(' ');
+      const zbuf = new Float32Array(cols * rows).fill(0);
+
+      // Torus params
+      const R1 = 1;         // small radius
+      const R2 = 2;         // big radius
+      const K2 = 5;         // distance from viewer
+
+      const sinA = Math.sin(A), cosA = Math.cos(A);
+      const sinB = Math.sin(B), cosB = Math.cos(B);
+
+      for (let j = 0; j < 6.28; j += 0.07) {       // theta
+        const cosj = Math.cos(j), sinj = Math.sin(j);
+        const circlex = R2 + R1 * cosj;
+        const circley = R1 * sinj;
+
+        for (let i = 0; i < 6.28; i += 0.02) {     // phi
+          const cosi = Math.cos(i), sini = Math.sin(i);
+
+          // 3D rotation + projection (optimized form from the classic donut)
+          const t = circlex * (cosi * cosB + sini * sinA * sinB) - circley * cosA * sinB;
+          const u = circlex * (cosi * sinB - sini * sinA * cosB) + circley * cosA * cosB;
+          const z = K2 + circlex * (sini * cosA) + circley * sinA;
+          const D = 1 / z;
+
+          const x = (cols / 2) + 30 * D * t;
+          const y = (rows / 2) + 15 * D * u;
+
+          const xi = x | 0;
+          const yi = y | 0;
+          const o = xi + cols * yi;
+
+          // Surface normal · light vector (simple fixed light)
+          const L = (
+            (sinj * sinA - sini * cosj * cosA) * cosB
+            - sini * cosj * sinA
+            - sinj * cosA
+            - cosi * cosj * sinB
+          );
+
+          if (yi > 0 && yi < rows && xi > 0 && xi < cols && D > zbuf[o]) {
+            zbuf[o] = D;
+            const idx = L > 0 ? (L * 8) | 0 : 0;
+            buf[o] = chars[idx];
+          }
+        }
+      }
+
+      // Render buffer to the <pre>
+      // Faster join by writing line-by-line
+      let out = "";
+      for (let r = 0; r < rows; r++) {
+        const start = r * cols;
+        out += buf.slice(start, start + cols).join('') + (r === rows - 1 ? "" : "\n");
+      }
+      pre.textContent = out;
+
+      // Spin
+      A += 0.04;
+      B += 0.02;
+    }
+
+    function start() {
+      if (timer) clearInterval(timer);
+      timer = setInterval(frame, Number(speedCtl.value)); // ms per frame
+      running = true;
+      toggleBtn.textContent = "Pause";
+    }
+    function stop() {
+      clearInterval(timer);
+      timer = null;
+      running = false;
+      toggleBtn.textContent = "Play";
+    }
+
+    // Controls
+    toggleBtn.addEventListener('click', () => (running ? stop() : start()));
+    speedCtl.addEventListener('input', () => { if (running) start(); });
+
+    // Kick off
+    start();
+  </script>
+</body>
+</html>

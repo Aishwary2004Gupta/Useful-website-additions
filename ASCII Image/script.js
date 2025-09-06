@@ -51,7 +51,7 @@ pane.addButton({ title: 'Convert URL' }).on('click', () => {
 // Display the default ASCII image
 print({
   canvas: document.getElementById('ascii'),
-  image: 'https://images.unsplash.com/photo-1755380749576-c2372cc487a7?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  image: 'https://plus.unsplash.com/premium_photo-1664300362291-16264cacd847?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   fontSize: 10,
   spaceing: 8,
 });
@@ -62,7 +62,7 @@ function print(config) {
   let original = new Image();
   original.crossOrigin = 'Anonymous';
   original.onload = function () {
-    const targetWidth = 720;
+    const targetWidth = 820;
     const targetHeight = 720;
 
     // Use the original dimensions if they are smaller than the target dimensions

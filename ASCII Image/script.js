@@ -8,8 +8,6 @@ const pane = new Pane({
 const config = {
   uploadFile: null,
   imageUrl: '',
-  width: 820, // Default width
-  height: 720, // Default height
 };
 
 // Add a button for file upload
@@ -38,10 +36,6 @@ pane.addButton({ title: 'Choose File' }).on('click', () => {
 // Add a text input for image URL
 pane.addBinding(config, 'imageUrl', { label: 'Image URL' });
 
-// Add inputs for width and height
-pane.addBinding(config, 'width', { label: 'Width', min: 100, max: 2000, step: 10 });
-pane.addBinding(config, 'height', { label: 'Height', min: 100, max: 2000, step: 10 });
-
 // Add a button to convert the URL
 pane.addButton({ title: 'Convert URL' }).on('click', () => {
   if (config.imageUrl) {
@@ -68,15 +62,18 @@ function print(config) {
   let original = new Image();
   original.crossOrigin = 'Anonymous';
   original.onload = function () {
-    // Use the user-defined dimensions or the image's original dimensions if smaller
-    const canvasWidth = Math.min(this.width, Math.max(100, Math.floor(config.width)));
-    const canvasHeight = Math.min(this.height, Math.max(100, Math.floor(config.height)));
+    const targetWidth = 820;
+    const targetHeight = 720;
+
+    // Use the original dimensions if they are smaller than the target dimensions
+    const canvasWidth = Math.min(this.width, targetWidth);
+    const canvasHeight = Math.min(this.height, targetHeight);
 
     let dataCtx = document.createElement('canvas').getContext('2d');
     config.canvas.width = dataCtx.canvas.width = canvasWidth;
     config.canvas.height = dataCtx.canvas.height = canvasHeight;
 
-    dataCtx.drawImage(this, 0, 0, canvasWidth, canvasHeight);
+    dataCtx.drawImage(this, 0, 0, canvasWidth / config.spaceing, canvasHeight / config.spaceing);
     let data = dataCtx.getImageData(0, 0, canvasWidth, canvasHeight).data;
 
     let ctx = config.canvas.getContext('2d');

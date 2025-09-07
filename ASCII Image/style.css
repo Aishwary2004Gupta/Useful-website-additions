@@ -1,20 +1,32 @@
-body {background: #000}
-canvas {position: absolute;top:50%;left: 50%;transform: translate(-50%, -50%)}
+body {
+    background: #000
+}
+
+canvas {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%)
+}
+
 .controls {
-  position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 10px;
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
 }
-.controls input, .controls button {
-  padding: 5px;
-  font-size: 14px;
+
+.controls input,
+.controls button {
+    padding: 5px;
+    font-size: 14px;
 }
+
 .tweakpane {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  z-index: 1000;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1000;
 }

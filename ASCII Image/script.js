@@ -62,8 +62,8 @@ function print(config) {
   let original = new Image();
   original.crossOrigin = 'Anonymous';
   original.onload = function () {
-    const targetWidth = 820;
-    const targetHeight = 720;
+    const targetWidth = 1200;
+    const targetHeight = 700;
 
     // Use the original dimensions if they are smaller than the target dimensions
     const canvasWidth = Math.min(this.width, targetWidth);

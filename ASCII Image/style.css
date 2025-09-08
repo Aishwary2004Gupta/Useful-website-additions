@@ -30,3 +30,51 @@ canvas {
     left: 10px;
     z-index: 1000;
 }
+
+/* My logo */
+
+.btn--tl {
+	top: 0.01em;
+	/* Adjusted to align with the trophy icon */
+	left: 0.01em;
+	/* Adjusted to align with the trophy icon */
+	z-index: 10;
+	pointer-events: all;
+	font-size: 1.2em;
+	cursor: pointer;
+	opacity: 1;
+	transition: opacity 200ms ease, color 200ms ease, transform 300ms ease;
+	/* Added transform for animation */
+	color: #3590aa;
+	padding: 0.5em 1em;
+	border-radius: 4px;
+}
+
+.btn--tl:hover,
+.btn--tl a:hover {
+	color: #1f5f6e;
+	/* Even darker color on hover */
+	transform: scale(1.1);
+	/* Added hover animation */
+	cursor: pointer;
+}
+
+.btn--tl.is-active {
+	color: #2b7a8e;
+	/* Slightly darker color when active */
+	transform: scale(1.2);
+	/* Added active animation */
+}
+
+.btn--tl a {
+	text-decoration: none;
+	color: inherit;
+	/* Inherit text color from parent */
+	display: block;
+	width: 100%;
+	height: 100%;
+	pointer-events: all;
+	position: relative;
+	z-index: 11;
+	cursor: pointer;
+}

@@ -32,3 +32,74 @@ canvas {
 }
 
 /* My logo */
+.btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    z-index: 1000;
+}
+
+.btn--tl {
+    top: 20px;
+    left: 20px;
+    right: auto;
+    bottom: auto;
+}
+
+.btn a {
+    text-decoration: none;
+    color: #0f0;
+    display: block;
+}
+
+icon[logo] {
+    font-family: 'Courier New', monospace;
+    font-size: 24px;
+    font-weight: bold;
+    color: #0f0;
+    text-shadow: 0 0 5px #0f0, 0 0 10px #0f0;
+    display: inline-block;
+    opacity: 0;
+    animation: fadeIn 1s ease-in-out forwards, glitch 5s infinite alternate;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes glitch {
+    0% {
+        text-shadow: 0 0 5px #0f0, 0 0 10px #0f0;
+        transform: translateX(0);
+    }
+    5% {
+        text-shadow: 0 0 5px #0ff, 0 0 10px #0ff;
+        transform: translateX(2px);
+    }
+    10% {
+        text-shadow: 0 0 5px #0f0, 0 0 10px #0f0;
+        transform: translateX(0);
+    }
+    15% {
+        text-shadow: 0 0 5px #f00, 0 0 10px #f00;
+        transform: translateX(-2px);
+    }
+    20% {
+        text-shadow: 0 0 5px #0f0, 0 0 10px #0f0;
+        transform: translateX(0);
+    }
+    100% {
+        text-shadow: 0 0 5px #0f0, 0 0 10px #0f0;
+        transform: translateX(0);
+    }
+}

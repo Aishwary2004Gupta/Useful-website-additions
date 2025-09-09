@@ -24,7 +24,7 @@ pane.addButton({ title: 'Choose File' }).on('click', () => {
         const imageData = e.target.result;
         // Store the image data directly
         window.currentConfig.image = imageData;
-        
+
         print({
           canvas: document.getElementById('ascii'),
           image: imageData,
@@ -47,7 +47,7 @@ pane.addButton({ title: 'Convert URL' }).on('click', () => {
   if (config.imageUrl) {
     // Store the image URL
     window.currentConfig.image = config.imageUrl;
-    
+
     print({
       canvas: document.getElementById('ascii'),
       image: config.imageUrl,
@@ -59,7 +59,7 @@ pane.addButton({ title: 'Convert URL' }).on('click', () => {
 });
 
 // Add a switch button for colored ASCII at the end
-pane.addBinding(config, 'useColor', { 
+pane.addBinding(config, 'useColor', {
   label: 'Colored ASCII'
 }).on('change', (ev) => {
   // Refresh the current image with the new color setting
@@ -95,7 +95,7 @@ function print(config) {
     window.currentConfig = window.currentConfig || {};
     window.currentConfig.image = config.image;
   }
-  
+
   let original = new Image();
   original.crossOrigin = 'Anonymous';
   original.onload = function () {
@@ -132,7 +132,7 @@ function print(config) {
       } else {
         ctx.fillStyle = `rgb(${grayscale},${grayscale},${grayscale})`;
       }
-      
+
       ctx.font = `${config.fontSize}px Courier New`;
       ctx.fillText(char, x * config.spaceing, y * config.spaceing);
     }

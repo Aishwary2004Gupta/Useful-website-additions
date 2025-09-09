@@ -60,10 +60,9 @@ icon[logo] {
     font-size: 24px;
     font-weight: bold;
     color: #0f0;
-    text-shadow: 0 0 5px #0f0, 0 0 10px #0f0;
     display: inline-block;
     opacity: 0;
-    animation: fadeIn 1s ease-in-out forwards, glitch 5s infinite alternate;
+    animation: fadeIn 1s ease-in-out forwards, glitch 3s infinite;
 }
 
 @keyframes fadeIn {
@@ -79,27 +78,36 @@ icon[logo] {
 
 @keyframes glitch {
     0% {
-        text-shadow: 0 0 5px #0f0, 0 0 10px #0f0;
         transform: translateX(0);
+        clip-path: inset(0 0 0 0);
     }
-    5% {
-        text-shadow: 0 0 5px #0ff, 0 0 10px #0ff;
+    2% {
+        transform: translateX(-3px);
+        clip-path: inset(20% 0 0 0);
+    }
+    4% {
+        transform: translateX(3px);
+        clip-path: inset(0 0 20% 0);
+    }
+    6% {
+        transform: translateX(0);
+        clip-path: inset(0 0 0 0);
+        color: #0f0;
+    }
+    8% {
         transform: translateX(2px);
+        color: #f00;
     }
     10% {
-        text-shadow: 0 0 5px #0f0, 0 0 10px #0f0;
-        transform: translateX(0);
-    }
-    15% {
-        text-shadow: 0 0 5px #f00, 0 0 10px #f00;
         transform: translateX(-2px);
+        color: #0ff;
     }
-    20% {
-        text-shadow: 0 0 5px #0f0, 0 0 10px #0f0;
+    12% {
         transform: translateX(0);
+        color: #0f0;
     }
     100% {
-        text-shadow: 0 0 5px #0f0, 0 0 10px #0f0;
         transform: translateX(0);
+        clip-path: inset(0 0 0 0);
     }
 }

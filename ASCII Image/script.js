@@ -8,7 +8,11 @@ const pane = new Pane({
 const config = {
   uploadFile: null,
   imageUrl: '',
+  useColor: true,
 };
+
+// Add a toggle for colored ASCII
+pane.addBinding(config, 'useColor', { label: 'Colored ASCII' });
 
 // Add a button for file upload
 pane.addButton({ title: 'Choose File' }).on('click', () => {
@@ -25,6 +29,7 @@ pane.addButton({ title: 'Choose File' }).on('click', () => {
           image: e.target.result,
           fontSize: 10,
           spaceing: 8,
+          useColor: config.useColor,
         });
       };
       reader.readAsDataURL(file);
@@ -44,6 +49,7 @@ pane.addButton({ title: 'Convert URL' }).on('click', () => {
       image: config.imageUrl,
       fontSize: 10,
       spaceing: 8,
+      useColor: config.useColor,
     });
   }
 });
@@ -54,6 +60,7 @@ print({
   image: 'https://plus.unsplash.com/premium_photo-1664300362291-16264cacd847?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   fontSize: 10,
   spaceing: 8,
+  useColor: config.useColor,
 });
 
 const map = (s, a1, a2, b1, b2) => b1 + (s - a1) * (b2 - b1) / (a2 - a1);
@@ -84,10 +91,18 @@ function print(config) {
     for (let i = 0, ii = 0; i < data.length; i += 4, ii++) {
       let x = ii % canvasWidth;
       let y = ii / canvasWidth | 0;
-      let grayscale = (data[i] + data[i + 1] + data[i + 2]) / 3 | 0;
+      let r = data[i];
+      let g = data[i + 1];
+      let b = data[i + 2];
+      let grayscale = (r + g + b) / 3 | 0;
       let char = represenation[map(grayscale, 255, 0, 0, represenation.length - 1) | 0];
 
-      ctx.fillStyle = `rgb(${grayscale},${grayscale},${grayscale})`;
+      if (config.useColor) {
+        ctx.fillStyle = `rgb(${r},${g},${b})`;
+      } else {
+        ctx.fillStyle = `rgb(${grayscale},${grayscale},${grayscale})`;
+      }
+      
       ctx.font = `${config.fontSize}px Courier New`;
       ctx.fillText(char, x * config.spaceing, y * config.spaceing);
     }

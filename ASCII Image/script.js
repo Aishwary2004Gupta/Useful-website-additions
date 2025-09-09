@@ -73,7 +73,7 @@ pane.addBinding(config, 'useColor', {
 });
 
 // Set default image URL
-const defaultImageUrl = 'https://plus.unsplash.com/premium_photo-1664300362291-16264cacd847?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+const defaultImageUrl = 'https://images.unsplash.com/photo-1756877468830-9fbf44ee34a8?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
 
 // Initialize the current config
 window.currentConfig = { image: defaultImageUrl };

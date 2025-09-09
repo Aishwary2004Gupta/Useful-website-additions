@@ -11,9 +11,6 @@ const config = {
   useColor: true,
 };
 
-// Add a toggle for colored ASCII
-pane.addBinding(config, 'useColor', { label: 'Colored ASCII' });
-
 // Add a button for file upload
 pane.addButton({ title: 'Choose File' }).on('click', () => {
   const input = document.createElement('input');
@@ -24,9 +21,13 @@ pane.addButton({ title: 'Choose File' }).on('click', () => {
     if (file) {
       const reader = new FileReader();
       reader.onload = function (e) {
+        const imageData = e.target.result;
+        // Store the image data directly
+        window.currentConfig.image = imageData;
+        
         print({
           canvas: document.getElementById('ascii'),
-          image: e.target.result,
+          image: imageData,
           fontSize: 10,
           spaceing: 8,
           useColor: config.useColor,
@@ -44,6 +45,9 @@ pane.addBinding(config, 'imageUrl', { label: 'Image URL' });
 // Add a button to convert the URL
 pane.addButton({ title: 'Convert URL' }).on('click', () => {
   if (config.imageUrl) {
+    // Store the image URL
+    window.currentConfig.image = config.imageUrl;
+    
     print({
       canvas: document.getElementById('ascii'),
       image: config.imageUrl,
@@ -54,10 +58,35 @@ pane.addButton({ title: 'Convert URL' }).on('click', () => {
   }
 });
 
+// Add an on/off button for colored ASCII at the end
+pane.addBinding(config, 'useColor', { 
+  label: 'Colored ASCII',
+  view: 'button',
+  size: [100, 30],
+  props: {
+    text: (value) => value ? 'ON' : 'OFF'
+  }
+}).on('change', (ev) => {
+  // Refresh the current image with the new color setting
+  print({
+    canvas: document.getElementById('ascii'),
+    image: window.currentConfig?.image || defaultImageUrl,
+    fontSize: 10,
+    spaceing: 8,
+    useColor: config.useColor,
+  });
+});
+
+// Set default image URL
+const defaultImageUrl = 'https://plus.unsplash.com/premium_photo-1664300362291-16264cacd847?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+
+// Initialize the current config
+window.currentConfig = { image: defaultImageUrl };
+
 // Display the default ASCII image
 print({
   canvas: document.getElementById('ascii'),
-  image: 'https://plus.unsplash.com/premium_photo-1664300362291-16264cacd847?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  image: defaultImageUrl,
   fontSize: 10,
   spaceing: 8,
   useColor: config.useColor,
@@ -66,6 +95,12 @@ print({
 const map = (s, a1, a2, b1, b2) => b1 + (s - a1) * (b2 - b1) / (a2 - a1);
 
 function print(config) {
+  // Store the current image URL in the config object for later use
+  if (config.image) {
+    window.currentConfig = window.currentConfig || {};
+    window.currentConfig.image = config.image;
+  }
+  
   let original = new Image();
   original.crossOrigin = 'Anonymous';
   original.onload = function () {

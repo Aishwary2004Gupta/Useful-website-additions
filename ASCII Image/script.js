@@ -60,7 +60,7 @@ pane.addButton({ title: 'Convert URL' }).on('click', () => {
 
 // Add a switch button for colored ASCII at the end
 pane.addBinding(config, 'useColor', {
-  label: 'Colored'
+  label: 'Coloured'
 }).on('change', (ev) => {
   // Refresh the current image with the new color setting
   print({

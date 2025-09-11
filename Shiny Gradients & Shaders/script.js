@@ -28,7 +28,8 @@ let audioLevels = {
 let bassMonitor, midMonitor, trebleMonitor, overallMonitor;
 
 const audio = new Audio();
-audio.src = "https://assets.codepen.io/7558/switch.mp3";
+// Using a working audio file
+audio.src = "https://assets.codepen.io/4295/sample.mp3";
 audio.preload = "auto";
 audio.volume = 1.0;
 audio.crossOrigin = "anonymous";
@@ -1073,11 +1074,11 @@ waterFolder
 
 waterFolder
   .addBinding(settings, "clickIntensity", {
-    min: 0.5,
-    max: 6.0,
-    step: 0.1
-  })
-  .on("change", (ev) => (waterSettings.clickIntensity = ev.value));
+  min: 0.5,
+  max: 6.0,
+  step: 0.1
+})
+.on("change", (ev) => (waterSettings.clickIntensity = ev.value));
 
 const logoFolder = pane.addFolder({
   title: "Logo & Text Display"

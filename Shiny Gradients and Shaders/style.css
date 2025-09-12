@@ -16,7 +16,8 @@
 
 @font-face {
   font-family: "GT Standard";
-  src: url("https://assets.codepen.io/7558/GT-Standard-VF-Trial.woff2") format("woff2-variations");
+  src: url("https://assets.codepen.io/7558/GT-Standard-VF-Trial.woff2")
+    format("woff2-variations");
   font-weight: 300 900;
   font-stretch: 0% 150%;
   font-style: normal;
@@ -25,7 +26,8 @@
 
 @font-face {
   font-family: "PPSupplyMono";
-  src: url("https://assets.codepen.io/7558/PPSupplyMono-Regular.ttf") format("truetype");
+  src: url("https://assets.codepen.io/7558/PPSupplyMono-Regular.ttf")
+    format("truetype");
   font-weight: normal;
   font-style: normal;
   font-display: swap;

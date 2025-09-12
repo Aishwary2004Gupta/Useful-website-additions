@@ -864,7 +864,7 @@ function updateWaterSimulation() {
 
       const velMagnitude = Math.sqrt(
         velocity[velIndex] * velocity[velIndex] +
-          velocity[velIndex + 1] * velocity[velIndex + 1]
+        velocity[velIndex + 1] * velocity[velIndex + 1]
       );
       const safeVelInfluence = Math.min(
         velMagnitude * settings.waveHeight,
@@ -1092,11 +1092,11 @@ waterFolder
 
 waterFolder
   .addBinding(settings, "clickIntensity", {
-  min: 0.5,
-  max: 6.0,
-  step: 0.1
-})
-.on("change", (ev) => (waterSettings.clickIntensity = ev.value));
+    min: 0.5,
+    max: 6.0,
+    step: 0.1
+  })
+  .on("change", (ev) => (waterSettings.clickIntensity = ev.value));
 
 const logoFolder = pane.addFolder({
   title: "Logo & Text Display"
@@ -1241,18 +1241,18 @@ function animate() {
 const audioBtn = document.getElementById("audioBtn");
 audioBtn.addEventListener("click", () => {
   console.log("Audio button clicked, current state:", isPlaying);
-  
+
   if (!isPlaying) {
     try {
       initAudioAnalysis();
-      
+
       // Check if audio context needs to be resumed (Chrome autoplay policy)
       if (audioContext && audioContext.state === 'suspended') {
         audioContext.resume().then(() => {
           console.log('Audio context resumed');
         });
       }
-      
+
       audio
         .play()
         .then(() => {

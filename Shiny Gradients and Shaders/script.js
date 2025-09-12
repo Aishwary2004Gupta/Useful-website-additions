@@ -1,26 +1,11 @@
 import * as THREE from "https://esm.sh/three@0.178.0";
 import { Pane } from "https://cdn.skypack.dev/tweakpane@4.0.4";
 
-console.log("🎨 Shiny Gradients & Shaders - Initializing...");
-console.log("THREE.js version:", THREE.REVISION);
-console.log("Pane loaded:", typeof Pane);
-
-// Check WebGL support
-if (!window.WebGLRenderingContext) {
-  console.error("WebGL is not supported in this browser");
-  alert("WebGL is not supported in this browser. Please use a modern browser.");
-}
-
 const scene = new THREE.Scene();
 const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
 const renderer = new THREE.WebGLRenderer({
   antialias: true
 });
-
-if (!renderer.getContext()) {
-  console.error("Failed to get WebGL context");
-  alert("Failed to initialize WebGL. Please check your browser settings.");
-}
 
 // Get the actual pixel ratio but clamp it
 const pixelRatio = Math.min(window.devicePixelRatio, 2);
@@ -43,8 +28,7 @@ let audioLevels = {
 let bassMonitor, midMonitor, trebleMonitor, overallMonitor;
 
 const audio = new Audio();
-// Using a working audio file
-audio.src = "https://assets.codepen.io/4295/sample.mp3";
+audio.src = "https://assets.codepen.io/7558/switch.mp3";
 audio.preload = "auto";
 audio.volume = 1.0;
 audio.crossOrigin = "anonymous";
@@ -69,14 +53,11 @@ function initAudioAnalysis() {
       source.connect(analyser);
       analyser.connect(audioContext.destination);
       console.log("Web Audio API initialized successfully");
-      console.log("Audio context state:", audioContext.state);
     }
   } catch (e) {
-    console.error("Web Audio API failed to initialize:", e);
+    console.warn("Web Audio API failed to initialize:", e);
     analyser = null;
     dataArray = null;
-    // Fallback: continue without audio analysis
-    console.warn("Continuing without audio analysis features");
   }
 }
 
@@ -864,7 +845,7 @@ function updateWaterSimulation() {
 
       const velMagnitude = Math.sqrt(
         velocity[velIndex] * velocity[velIndex] +
-        velocity[velIndex + 1] * velocity[velIndex + 1]
+          velocity[velIndex + 1] * velocity[velIndex + 1]
       );
       const safeVelInfluence = Math.min(
         velMagnitude * settings.waveHeight,
@@ -1240,40 +1221,19 @@ function animate() {
 
 const audioBtn = document.getElementById("audioBtn");
 audioBtn.addEventListener("click", () => {
-  console.log("Audio button clicked, current state:", isPlaying);
-
   if (!isPlaying) {
-    try {
-      initAudioAnalysis();
-
-      // Check if audio context needs to be resumed (Chrome autoplay policy)
-      if (audioContext && audioContext.state === 'suspended') {
-        audioContext.resume().then(() => {
-          console.log('Audio context resumed');
-        });
-      }
-
-      audio
-        .play()
-        .then(() => {
-          isPlaying = true;
-          audioBtn.textContent = "[ stop ]";
-          console.log("Audio started successfully, analyser available:", !!analyser);
-        })
-        .catch((e) => {
-          console.error("Audio play failed:", e);
-          audioBtn.textContent = "[ audio failed ]";
-          setTimeout(() => {
-            audioBtn.textContent = "[ play ]";
-          }, 2000);
-        });
-    } catch (error) {
-      console.error("Error in audio initialization:", error);
-      audioBtn.textContent = "[ error ]";
-      setTimeout(() => {
-        audioBtn.textContent = "[ play ]";
-      }, 2000);
-    }
+    initAudioAnalysis();
+    audio
+      .play()
+      .then(() => {
+        isPlaying = true;
+        audioBtn.textContent = "[ stop ]";
+        console.log("Audio started, analyser available:", !!analyser);
+      })
+      .catch((e) => {
+        console.log("Audio play failed:", e);
+        audioBtn.textContent = "[ audio failed ]";
+      });
   } else {
     audio.pause();
     audio.currentTime = 0;
@@ -1316,10 +1276,4 @@ material.uniforms.u_gradientTheme.value =
 
 setTimeout(() => {
   addRipple(window.innerWidth / 2, window.innerHeight / 2, 1.5);
-  console.log("✅ Shiny Gradients & Shaders - Initialization complete!");
-  console.log("🎵 Audio ready:", !!audio);
-  console.log("🌊 Water simulation ready:", !!waterBuffers);
-  console.log("🎨 Shader material ready:", !!material);
-  console.log("🎛️ Control panel ready:", !!pane);
-  console.log("Click the [play] button to start audio visualization!");
 }, 500);

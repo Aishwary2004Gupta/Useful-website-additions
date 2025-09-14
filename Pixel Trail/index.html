@@ -1,339 +1,457 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pixel Trail Animation</title>
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      body {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        background: linear-gradient(45deg, #1a1a2e, #16213e);
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        overflow: hidden;
-      }
-
-      .container {
-        width: 100%;
-        max-width: 800px;
-        text-align: center;
-        padding: 20px;
-      }
-
-      h1 {
-        color: #fff;
-        margin-bottom: 20px;
-        font-weight: 600;
-        text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-      }
-
-      .description {
-        color: #a0a0c0;
-        margin-bottom: 30px;
-        line-height: 1.6;
-      }
-
-      .canvas-container {
-        height: 500px;
-        position: relative;
-        overflow: hidden;
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        margin: 0 auto;
-        background: #0d0d1a;
-        border: 1px solid #2a2a4a;
-      }
-
-      #pixelCanvas {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-      }
-
-      .controls {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 15px;
-        justify-content: center;
-        margin-top: 25px;
-        padding: 20px;
-        background: rgba(13, 13, 26, 0.7);
-        border-radius: 10px;
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
-      }
-
-      .control-group {
-        display: flex;
-        flex-direction: column;
-        min-width: 120px;
-      }
-
-      label {
-        color: #a0a0c0;
-        margin-bottom: 5px;
-        font-size: 14px;
-      }
-
-      input[type="range"] {
-        width: 100%;
-        accent-color: #6e45e2;
-      }
-
-      .value-display {
-        color: #fff;
-        font-size: 14px;
-        margin-top: 5px;
-      }
-
-      .goo-filter-container {
-        position: absolute;
-        width: 0;
-        height: 0;
-      }
-
-      .instructions {
-        color: #6e45e2;
-        margin-top: 20px;
-        font-style: italic;
-      }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(45deg, #1a1a2e, #16213e);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #fff;
+            margin-bottom: 15px;
+            font-weight: 600;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .description {
+            color: #a0a0c0;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .canvas-container {
+            height: 450px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            margin: 0 auto;
+            background: #0d0d1a;
+            border: 1px solid #2a2a4a;
+        }
+        
+        #pixelCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .controls-panel {
+            background: rgba(13, 13, 26, 0.8);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid #2a2a4a;
+        }
+        
+        .panel-title {
+            color: #6e45e2;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .control-group {
+            background: rgba(20, 20, 35, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .control-group:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(110, 69, 226, 0.2);
+        }
+        
+        .control-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            color: #a0a0c0;
+        }
+        
+        .control-header i {
+            margin-right: 10px;
+            color: #6e45e2;
+            font-size: 1.2rem;
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        input[type="range"] {
+            flex: 1;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #2a2a4a;
+            border-radius: 3px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #6e45e2;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(110, 69, 226, 0.5);
+        }
+        
+        .value-display {
+            min-width: 40px;
+            text-align: center;
+            background: rgba(110, 69, 226, 0.2);
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        
+        .color-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        input[type="color"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: none;
+            cursor: pointer;
+        }
+        
+        input[type="color"]::-webkit-color-swatch {
+            border-radius: 50%;
+            border: 2px solid #2a2a4a;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        
+        .color-hex {
+            color: #fff;
+            font-family: monospace;
+            background: rgba(110, 69, 226, 0.2);
+            padding: 6px 10px;
+            border-radius: 4px;
+        }
+        
+        .instructions {
+            color: #6e45e2;
+            margin-top: 20px;
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+        
+        .goo-filter-container {
+            position: absolute;
+            width: 0;
+            height: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .canvas-container {
+                height: 350px;
+            }
+        }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <div class="container">
-      <h1>Pixel Trail Animation</h1>
-      <p class="description">
-        Move your cursor over the canvas to see the interactive pixel trail
-        effect with a gooey filter.
-      </p>
-
-      <div class="canvas-container">
-        <!-- SVG filter for the gooey effect -->
-        <svg class="goo-filter-container">
-          <defs>
-            <filter id="custom-goo-filter">
-              <feGaussianBlur
-                in="SourceGraphic"
-                stdDeviation="2"
-                result="blur"
-              />
-              <feColorMatrix
-                in="blur"
-                type="matrix"
-                values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9"
-                result="goo"
-              />
-              <feComposite in="SourceGraphic" in2="goo" operator="atop" />
-            </filter>
-          </defs>
-        </svg>
-
-        <!-- Canvas for the pixel trail -->
-        <canvas id="pixelCanvas"></canvas>
-      </div>
-
-      <div class="controls">
-        <div class="control-group">
-          <label for="gridSize">Grid Size</label>
-          <input type="range" id="gridSize" min="10" max="100" value="50" />
-          <span class="value-display" id="gridSizeValue">50</span>
+        <h1>Pixel Trail Animation</h1>
+        <p class="description">Move your cursor over the canvas to see the interactive pixel trail effect with a gooey filter. Adjust the controls to customize the effect.</p>
+        
+        <div class="canvas-container">
+            <!-- SVG filter for the gooey effect -->
+            <svg class="goo-filter-container">
+                <defs>
+                    <filter id="custom-goo-filter">
+                        <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur" />
+                        <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9" result="goo" />
+                        <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+                    </filter>
+                </defs>
+            </svg>
+            
+            <!-- Canvas for the pixel trail -->
+            <canvas id="pixelCanvas"></canvas>
         </div>
-
-        <div class="control-group">
-          <label for="trailSize">Trail Size</label>
-          <input type="range" id="trailSize" min="1" max="20" value="10" />
-          <span class="value-display" id="trailSizeValue">10</span>
+        
+        <div class="controls-panel">
+            <div class="panel-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+                </svg>
+                Effect Controls
+            </div>
+            
+            <div class="controls-grid">
+                <div class="control-group">
+                    <div class="control-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="3" y1="9" x2="21" y2="9"></line>
+                            <line x1="3" y1="15" x2="21" y2="15"></line>
+                            <line x1="9" y1="3" x2="9" y2="21"></line>
+                            <line x1="15" y1="3" x2="15" y2="21"></line>
+                        </svg>
+                        Grid Size
+                    </div>
+                    <div class="slider-container">
+                        <input type="range" id="gridSize" min="10" max="100" value="50">
+                        <span class="value-display" id="gridSizeValue">50</span>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17.5 5.5C19 5.5 20.5 6.5 20.5 9S17.5 13 17.5 15H6.5C6.5 13 3.5 11.5 3.5 9S5 5.5 6.5 5.5H17.5Z"></path>
+                            <path d="M6.5 15C4.5 15 2.5 16 2.5 18.5S5.5 22 6.5 22H17.5C19.5 22 21.5 21 21.5 18.5S19 15 17.5 15H6.5Z"></path>
+                        </svg>
+                        Trail Size
+                    </div>
+                    <div class="slider-container">
+                        <input type="range" id="trailSize" min="1" max="20" value="10">
+                        <span class="value-display" id="trailSizeValue">10</span>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        Trail Duration
+                    </div>
+                    <div class="slider-container">
+                        <input type="range" id="maxAge" min="100" max="1000" value="250">
+                        <span class="value-display" id="maxAgeValue">250</span>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+                        </svg>
+                        Color
+                    </div>
+                    <div class="color-container">
+                        <input type="color" id="color" value="#ffffff">
+                        <span class="color-hex" id="colorValue">#FFFFFF</span>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <div class="control-group">
-          <label for="maxAge">Trail Duration</label>
-          <input type="range" id="maxAge" min="100" max="1000" value="250" />
-          <span class="value-display" id="maxAgeValue">250</span>
-        </div>
-
-        <div class="control-group">
-          <label for="color">Color</label>
-          <input type="color" id="color" value="#ffffff" />
-        </div>
-      </div>
-
-      <p class="instructions">
-        Adjust the sliders to customize the effect. The gooey filter creates a
-        blob-like appearance.
-      </p>
+        
+        <p class="instructions">The gooey filter creates a blob-like appearance. Move your mouse over the canvas to see the effect.</p>
     </div>
 
     <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        // Get canvas and context
-        const canvas = document.getElementById("pixelCanvas");
-        const ctx = canvas.getContext("2d");
-
-        // Set canvas size to match container
-        const container = document.querySelector(".canvas-container");
-        canvas.width = container.offsetWidth;
-        canvas.height = container.offsetHeight;
-
-        // Configuration with default values
-        let config = {
-          gridSize: 50,
-          trailSize: 0.1,
-          maxAge: 250,
-          interpolate: 5,
-          color: "#ffffff",
-          gooeyFilter: true,
-        };
-
-        // Mouse position
-        let mouseX = -100;
-        let mouseY = -100;
-
-        // Trail history
-        const trail = [];
-        const maxTrailLength = 20;
-
-        // Initialize with current settings
-        updateFromControls();
-
-        // Handle mouse movement
-        container.addEventListener("mousemove", (e) => {
-          const rect = container.getBoundingClientRect();
-          mouseX = e.clientX - rect.left;
-          mouseY = e.clientY - rect.top;
-
-          // Add to trail
-          trail.push({ x: mouseX, y: mouseY, time: Date.now() });
-
-          // Limit trail length
-          if (trail.length > maxTrailLength) {
-            trail.shift();
-          }
-        });
-
-        // Handle mouse leave
-        container.addEventListener("mouseleave", () => {
-          mouseX = -100;
-          mouseY = -100;
-        });
-
-        // Update configuration from controls
-        function updateFromControls() {
-          config.gridSize = parseInt(document.getElementById("gridSize").value);
-          config.trailSize =
-            parseInt(document.getElementById("trailSize").value) / 100;
-          config.maxAge = parseInt(document.getElementById("maxAge").value);
-          config.color = document.getElementById("color").value;
-
-          // Update value displays
-          document.getElementById("gridSizeValue").textContent =
-            config.gridSize;
-          document.getElementById("trailSizeValue").textContent = Math.round(
-            config.trailSize * 100
-          );
-          document.getElementById("maxAgeValue").textContent = config.maxAge;
-        }
-
-        // Add event listeners to controls
-        document
-          .getElementById("gridSize")
-          .addEventListener("input", updateFromControls);
-        document
-          .getElementById("trailSize")
-          .addEventListener("input", updateFromControls);
-        document
-          .getElementById("maxAge")
-          .addEventListener("input", updateFromControls);
-        document
-          .getElementById("color")
-          .addEventListener("input", updateFromControls);
-
-        // Animation loop
-        function animate() {
-          // Clear canvas
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-          // Draw grid of dots
-          const cols = Math.floor(canvas.width / config.gridSize);
-          const rows = Math.floor(canvas.height / config.gridSize);
-
-          const now = Date.now();
-
-          for (let row = 0; row < rows; row++) {
-            for (let col = 0; col < cols; col++) {
-              const x = col * config.gridSize + config.gridSize / 2;
-              const y = row * config.gridSize + config.gridSize / 2;
-
-              // Find closest point in trail
-              let closestDistance = Infinity;
-              let closestAge = 0;
-
-              for (const point of trail) {
-                const dx = x - point.x;
-                const dy = y - point.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-
-                if (distance < closestDistance) {
-                  closestDistance = distance;
-                  closestAge = now - point.time;
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get canvas and context
+            const canvas = document.getElementById('pixelCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas size to match container
+            const container = document.querySelector('.canvas-container');
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+            
+            // Configuration with default values
+            let config = {
+                gridSize: 50,
+                trailSize: 0.1,
+                maxAge: 250,
+                interpolate: 5,
+                color: '#ffffff',
+                gooeyFilter: true
+            };
+            
+            // Mouse position
+            let mouseX = -100;
+            let mouseY = -100;
+            
+            // Trail history
+            const trail = [];
+            const maxTrailLength = 20;
+            
+            // Initialize with current settings
+            updateFromControls();
+            
+            // Handle mouse movement
+            container.addEventListener('mousemove', (e) => {
+                const rect = container.getBoundingClientRect();
+                mouseX = e.clientX - rect.left;
+                mouseY = e.clientY - rect.top;
+                
+                // Add to trail
+                trail.push({ x: mouseX, y: mouseY, time: Date.now() });
+                
+                // Limit trail length
+                if (trail.length > maxTrailLength) {
+                    trail.shift();
                 }
-              }
-
-              // Calculate opacity based on distance and age
-              let opacity = 0;
-
-              if (closestDistance < 150) {
-                // Distance factor (closer = more opacity)
-                const distanceFactor = 1 - closestDistance / 150;
-
-                // Age factor (newer = more opacity)
-                const ageFactor = 1 - Math.min(closestAge / config.maxAge, 1);
-
-                // Combined opacity
-                opacity = distanceFactor * ageFactor * config.trailSize * 10;
-
-                // Draw the dot
-                const radius = (config.gridSize / 3) * opacity;
-
-                ctx.beginPath();
-                ctx.globalAlpha = opacity;
-                ctx.fillStyle = config.color;
-                ctx.arc(x, y, radius, 0, Math.PI * 2);
-                ctx.fill();
-              }
+            });
+            
+            // Handle mouse leave
+            container.addEventListener('mouseleave', () => {
+                mouseX = -100;
+                mouseY = -100;
+            });
+            
+            // Update configuration from controls
+            function updateFromControls() {
+                config.gridSize = parseInt(document.getElementById('gridSize').value);
+                config.trailSize = parseInt(document.getElementById('trailSize').value) / 100;
+                config.maxAge = parseInt(document.getElementById('maxAge').value);
+                config.color = document.getElementById('color').value;
+                
+                // Update value displays
+                document.getElementById('gridSizeValue').textContent = config.gridSize;
+                document.getElementById('trailSizeValue').textContent = Math.round(config.trailSize * 100);
+                document.getElementById('maxAgeValue').textContent = config.maxAge;
+                document.getElementById('colorValue').textContent = config.color.toUpperCase();
             }
-          }
-
-          // Remove old trail points
-          for (let i = trail.length - 1; i >= 0; i--) {
-            if (now - trail[i].time > config.maxAge) {
-              trail.splice(i, 1);
+            
+            // Add event listeners to controls
+            document.getElementById('gridSize').addEventListener('input', updateFromControls);
+            document.getElementById('trailSize').addEventListener('input', updateFromControls);
+            document.getElementById('maxAge').addEventListener('input', updateFromControls);
+            document.getElementById('color').addEventListener('input', updateFromControls);
+            
+            // Animation loop
+            function animate() {
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw grid of dots
+                const cols = Math.floor(canvas.width / config.gridSize);
+                const rows = Math.floor(canvas.height / config.gridSize);
+                
+                const now = Date.now();
+                
+                for (let row = 0; row < rows; row++) {
+                    for (let col = 0; col < cols; col++) {
+                        const x = col * config.gridSize + config.gridSize / 2;
+                        const y = row * config.gridSize + config.gridSize / 2;
+                        
+                        // Find closest point in trail
+                        let closestDistance = Infinity;
+                        let closestAge = 0;
+                        
+                        for (const point of trail) {
+                            const dx = x - point.x;
+                            const dy = y - point.y;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            
+                            if (distance < closestDistance) {
+                                closestDistance = distance;
+                                closestAge = now - point.time;
+                            }
+                        }
+                        
+                        // Calculate opacity based on distance and age
+                        let opacity = 0;
+                        
+                        if (closestDistance < 150) {
+                            // Distance factor (closer = more opacity)
+                            const distanceFactor = 1 - (closestDistance / 150);
+                            
+                            // Age factor (newer = more opacity)
+                            const ageFactor = 1 - Math.min(closestAge / config.maxAge, 1);
+                            
+                            // Combined opacity
+                            opacity = distanceFactor * ageFactor * config.trailSize * 10;
+                            
+                            // Draw the dot
+                            const radius = config.gridSize / 3 * opacity;
+                            
+                            ctx.beginPath();
+                            ctx.globalAlpha = opacity;
+                            ctx.fillStyle = config.color;
+                            ctx.arc(x, y, radius, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+                }
+                
+                // Remove old trail points
+                for (let i = trail.length - 1; i >= 0; i--) {
+                    if (now - trail[i].time > config.maxAge) {
+                        trail.splice(i, 1);
+                    }
+                }
+                
+                // Continue animation
+                requestAnimationFrame(animate);
             }
-          }
-
-          // Continue animation
-          requestAnimationFrame(animate);
-        }
-
-        // Start animation
-        animate();
-
-        // Handle window resize
-        window.addEventListener("resize", () => {
-          canvas.width = container.offsetWidth;
-          canvas.height = container.offsetHeight;
+            
+            // Start animation
+            animate();
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                canvas.width = container.offsetWidth;
+                canvas.height = container.offsetHeight;
+            });
         });
-      });
     </script>
-  </body>
+</body>
 </html>

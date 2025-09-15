@@ -8,7 +8,7 @@ const pane = new Pane({
 const config = {
   uploadFile: null,
   imageUrl: '',
-  useColor: true,
+  useColor: false,
 };
 
 // Add a button for file upload

@@ -1,141 +1,146 @@
-import { Pane } from 'https://cdn.skypack.dev/tweakpane@4.0.4';
+import { Pane } from 'https://cdn.jsdelivr.net/npm/tweakpane@4.0.4/dist/tweakpane.min.js';
 
-const pane = new Pane({
-  title: 'Controls',
-  expanded: false,
-});
-
-const config = {
-  uploadFile: null,
-  imageUrl: '',
-  useColor: true,
-};
-
-// Add a button for file upload
-pane.addButton({ title: 'Choose File' }).on('click', () => {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = 'image/*';
-  input.onchange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        const imageData = e.target.result;
-        // Store the image data directly
-        window.currentConfig.image = imageData;
-
-        print({
-          canvas: document.getElementById('ascii'),
-          image: imageData,
-          fontSize: 10,
-          spaceing: 8,
-          useColor: config.useColor,
+        const pane = new Pane({
+            title: 'Controls',
+            expanded: false,
         });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-  input.click();
-});
 
-// Add a text input for image URL
-pane.addBinding(config, 'imageUrl', { label: 'Image URL' });
+        const config = {
+            uploadFile: null,
+            imageUrl: '',
+            useColor: false, // Set to false by default
+        };
 
-// Add a button to convert the URL
-pane.addButton({ title: 'Convert URL' }).on('click', () => {
-  if (config.imageUrl) {
-    // Store the image URL
-    window.currentConfig.image = config.imageUrl;
+        // Add a button for file upload
+        pane.addButton({ title: 'Choose File' }).on('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const imageData = e.target.result;
+                        // Store the image data directly
+                        window.currentConfig.image = imageData;
 
-    print({
-      canvas: document.getElementById('ascii'),
-      image: config.imageUrl,
-      fontSize: 10,
-      spaceing: 8,
-      useColor: config.useColor,
-    });
-  }
-});
+                        print({
+                            canvas: document.getElementById('ascii'),
+                            image: imageData,
+                            fontSize: 10,
+                            spaceing: 8,
+                            useColor: config.useColor,
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            input.click();
+        });
 
-pane.addBinding(config, 'useColor', {
-  label: 'Coloured'
-}).on('change', (ev) => {
-  // Refresh the current image with the new color setting
-  print({
-    canvas: document.getElementById('ascii'),
-    image: window.currentConfig?.image || defaultImageUrl,
-    fontSize: 10,
-    spaceing: 8,
-    useColor: config.useColor,
-  });
-});
+        // Add a text input for image URL
+        pane.addBinding(config, 'imageUrl', { label: 'Image URL' });
 
-// Set default image URL
-const defaultImageUrl = 'https://images.unsplash.com/photo-1756877468830-9fbf44ee34a8?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+        // Add a button to convert the URL
+        pane.addButton({ title: 'Convert URL' }).on('click', () => {
+            if (config.imageUrl) {
+                // Store the image URL
+                window.currentConfig.image = config.imageUrl;
 
-// Initialize the current config
-window.currentConfig = { image: defaultImageUrl };
+                print({
+                    canvas: document.getElementById('ascii'),
+                    image: config.imageUrl,
+                    fontSize: 10,
+                    spaceing: 8,
+                    useColor: config.useColor,
+                });
+            }
+        });
 
-// Display the default ASCII image
-print({
-  canvas: document.getElementById('ascii'),
-  image: defaultImageUrl,
-  fontSize: 10,
-  spaceing: 8,
-  useColor: config.useColor,
-});
+        // Replace the checkbox with a toggle button for color
+        const colorButton = pane.addButton({ 
+            title: 'Color: OFF' 
+        }).on('click', () => {
+            config.useColor = !config.useColor;
+            colorButton.title = config.useColor ? 'Color: ON' : 'Color: OFF';
+            
+            // Refresh the current image with the new color setting
+            print({
+                canvas: document.getElementById('ascii'),
+                image: window.currentConfig?.image || defaultImageUrl,
+                fontSize: 10,
+                spaceing: 8,
+                useColor: config.useColor,
+            });
+        });
 
-const map = (s, a1, a2, b1, b2) => b1 + (s - a1) * (b2 - b1) / (a2 - a1);
+        // Set default image URL
+        const defaultImageUrl = 'https://images.unsplash.com/photo-1756877468830-9fbf44ee34a8?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
 
-function print(config) {
-  // Store the current image URL in the config object for later use
-  if (config.image) {
-    window.currentConfig = window.currentConfig || {};
-    window.currentConfig.image = config.image;
-  }
+        // Initialize the current config
+        window.currentConfig = { image: defaultImageUrl };
 
-  let original = new Image();
-  original.crossOrigin = 'Anonymous';
-  original.onload = function () {
-    const targetWidth = 1200;
-    const targetHeight = 700;
+        const map = (s, a1, a2, b1, b2) => b1 + (s - a1) * (b2 - b1) / (a2 - a1);
 
-    // Use the original dimensions if they are smaller than the target dimensions
-    const canvasWidth = Math.min(this.width, targetWidth);
-    const canvasHeight = Math.min(this.height, targetHeight);
+        function print(config) {
+            // Store the current image URL in the config object for later use
+            if (config.image) {
+                window.currentConfig = window.currentConfig || {};
+                window.currentConfig.image = config.image;
+            }
 
-    let dataCtx = document.createElement('canvas').getContext('2d');
-    config.canvas.width = dataCtx.canvas.width = canvasWidth;
-    config.canvas.height = dataCtx.canvas.height = canvasHeight;
+            let original = new Image();
+            original.crossOrigin = 'Anonymous';
+            original.onload = function () {
+                const targetWidth = 1200;
+                const targetHeight = 700;
 
-    dataCtx.drawImage(this, 0, 0, canvasWidth / config.spaceing, canvasHeight / config.spaceing);
-    let data = dataCtx.getImageData(0, 0, canvasWidth, canvasHeight).data;
+                // Use the original dimensions if they are smaller than the target dimensions
+                const canvasWidth = Math.min(this.width, targetWidth);
+                const canvasHeight = Math.min(this.height, targetHeight);
 
-    let ctx = config.canvas.getContext('2d');
-    ctx.fillStyle = '#fff';
+                let dataCtx = document.createElement('canvas').getContext('2d');
+                config.canvas.width = dataCtx.canvas.width = canvasWidth;
+                config.canvas.height = dataCtx.canvas.height = canvasHeight;
 
-    let represenation = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^'. ";
+                dataCtx.drawImage(this, 0, 0, canvasWidth / config.spaceing, canvasHeight / config.spaceing);
+                let data = dataCtx.getImageData(0, 0, canvasWidth, canvasHeight).data;
 
-    for (let i = 0, ii = 0; i < data.length; i += 4, ii++) {
-      let x = ii % canvasWidth;
-      let y = ii / canvasWidth | 0;
-      let r = data[i];
-      let g = data[i + 1];
-      let b = data[i + 2];
-      let grayscale = (r + g + b) / 3 | 0;
-      let char = represenation[map(grayscale, 255, 0, 0, represenation.length - 1) | 0];
+                let ctx = config.canvas.getContext('2d');
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(0, 0, config.canvas.width, config.canvas.height);
 
-      if (config.useColor) {
-        ctx.fillStyle = `rgb(${r},${g},${b})`;
-      } else {
-        ctx.fillStyle = `rgb(${grayscale},${grayscale},${grayscale})`;
-      }
+                let represenation = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^'. ";
 
-      ctx.font = `${config.fontSize}px Courier New`;
-      ctx.fillText(char, x * config.spaceing, y * config.spaceing);
-    }
-  };
+                for (let i = 0, ii = 0; i < data.length; i += 4, ii++) {
+                    let x = ii % canvasWidth;
+                    let y = ii / canvasWidth | 0;
+                    let r = data[i];
+                    let g = data[i + 1];
+                    let b = data[i + 2];
+                    let grayscale = (r + g + b) / 3 | 0;
+                    let char = represenation[map(grayscale, 255, 0, 0, represenation.length - 1) | 0];
 
-  original.src = config.image;
-}
+                    if (config.useColor) {
+                        ctx.fillStyle = `rgb(${r},${g},${b})`;
+                    } else {
+                        ctx.fillStyle = `rgb(${grayscale},${grayscale},${grayscale})`;
+                    }
+
+                    ctx.font = `${config.fontSize}px Courier New`;
+                    ctx.fillText(char, x * config.spaceing, y * config.spaceing);
+                }
+            };
+
+            original.src = config.image;
+        }
+
+        // Display the default ASCII image
+        print({
+            canvas: document.getElementById('ascii'),
+            image: defaultImageUrl,
+            fontSize: 10,
+            spaceing: 8,
+            useColor: config.useColor,
+        });

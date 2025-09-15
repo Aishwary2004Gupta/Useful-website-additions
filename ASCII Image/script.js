@@ -58,18 +58,18 @@ pane.addButton({ title: 'Convert URL' }).on('click', () => {
   }
 });
 
-pane.addBinding(config, 'useColor', {
-  label: 'Coloured'
-}).on('change', (ev) => {
-  // Refresh the current image with the new color setting
-  print({
-    canvas: document.getElementById('ascii'),
-    image: window.currentConfig?.image || defaultImageUrl,
-    fontSize: 10,
-    spaceing: 8,
-    useColor: config.useColor,
-  });
-});
+// pane.addBinding(config, 'useColor', {
+//   label: 'Coloured'
+// }).on('change', (ev) => {
+//   // Refresh the current image with the new color setting
+//   print({
+//     canvas: document.getElementById('ascii'),
+//     image: window.currentConfig?.image || defaultImageUrl,
+//     fontSize: 10,
+//     spaceing: 8,
+//     useColor: config.useColor,
+//   });
+// });
 
 // Set default image URL
 const defaultImageUrl = 'https://images.unsplash.com/photo-1756877468830-9fbf44ee34a8?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';

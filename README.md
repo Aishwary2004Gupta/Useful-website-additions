@@ -1,5 +1,4 @@
 Unit 1: Deep Learning Foundations and Neural Network Implementation
-
 1. Which of the following is a fundamental component for introducing non-linearity into a neural network's output? a) Loss function b) Optimizer c) Activation function d) Batch size Correct Answer: c)
 2. What is the primary purpose of regularization methods in deep learning? a) To speed up the training process b) To increase the model's capacity c) To prevent overfitting d) To adjust the learning rate dynamically Correct Answer: c)
 3. When evaluating a neural network, which strategy is crucial for assessing its generalization performance on unseen data? a) Training on the entire dataset b) Using a very large learning rate c) Validation strategies d) Reducing the number of layers Correct Answer: c)
@@ -15,7 +14,7 @@ Unit 1: Deep Learning Foundations and Neural Network Implementation
 13. The process of "building and training neural networks" refers to: a) Creating the model structure and adjusting its parameters using data b) Only creating the model structure c) Only adjusting the parameters manually d) Deploying the model into production Correct Answer: a)
 14. What is the significance of "practical implementation of deep learning projects" in Unit 1? a) It is an optional step that can be skipped b) It primarily focuses on theoretical discussions c) It allows students to apply learned concepts to real-world scenarios d) It only involves reviewing existing code Correct Answer: c)
 15. Overfitting prevention is a critical aspect of neural network training because it: a) Ensures the model always achieves 100% accuracy b) Helps the model generalize better to new, unseen data c) Speeds up the model's inference time d) Reduces the computational cost of training Correct Answer: b)
-    Unit 2: Advanced Deep Learning with Keras and TensorFlow
+Unit 2: Advanced Deep Learning with Keras and TensorFlow
 16. Which advanced neural network architecture is primarily used for image processing tasks? a) Recurrent Neural Networks (RNNs) b) Long Short-Term Memory (LSTM) networks c) Convolutional Neural Networks (CNNs) d) Multilayer Perceptrons (MLPs) Correct Answer: c)
 17. Recurrent Neural Networks (RNNs) are specifically designed for: a) Image classification and object detection b) Sequence modeling tasks c) Tabular data analysis d) Unsupervised clustering Correct Answer: b)
 18. Long Short-Term Memory (LSTM) networks are a type of RNN primarily addressing the issue of: a) Overfitting in deep networks b) Vanishing/exploding gradients in long sequences c) Slow training times d) Lack of interpretability Correct Answer: b)
@@ -31,7 +30,7 @@ Unit 1: Deep Learning Foundations and Neural Network Implementation
 28. The use of "pre-trained models" in advanced deep learning is a core concept of: a) Custom layer creation b) Transfer learning c) Batch normalization d) Dropout techniques Correct Answer: b)
 29. Techniques like batch normalization and dropout are primarily used for: a) Increasing model complexity indefinitely b) Improving model generalization and stability c) Reducing the amount of training data needed d) Eliminating the need for activation functions Correct Answer: b)
 30. In the context of Unit 2, "model customization" often involves: a) Only changing the optimizer b) Creating custom layers or combining existing layers in unique ways c) Reducing the dataset size for training d) Setting a fixed learning rate for all models Correct Answer: b)
-    Unit 3: Generative AI Architecture and LLM Fundamentals
+Unit 3: Generative AI Architecture and LLM Fundamentals
 31. What is a core characteristic of the Transformer architecture? a) Recurrent connections for sequence processing b) Reliance on convolutional filters for feature extraction c) Extensive use of attention mechanisms d) Small memory footprint due to limited parameters Correct Answer: c)
 32. Which of the following is a crucial step in "data preparation techniques for LLM training"? a) Model compression b) Tokenization and vocabulary management c) Reinforcement learning from human feedback d) Distributed training Correct Answer: b)
 33. BERT and GPT are examples of what in Natural Language Processing? a) Traditional statistical models b) Rule-based expert systems c) Foundational models d) Simple feedforward networks Correct Answer: c)
@@ -47,7 +46,7 @@ Unit 1: Deep Learning Foundations and Neural Network Implementation
 43. "Vocabulary management" in LLM training is critical for: a) Choosing the best marketing terms b) Handling the set of unique tokens the model can process c) Managing physical storage for datasets d) Controlling the learning rate Correct Answer: b)
 44. The concept of "Generative AI Architecture" focuses on models capable of: a) Only classifying data b) Creating new, original content (e.g., text, images) c) Performing mathematical calculations d) Retrieving information without modification Correct Answer: b)
 45. Why are "ethical considerations" important in LLM development? a) To speed up model training b) To comply with hardware specifications c) To ensure responsible and safe deployment, mitigating potential harms d) To reduce the number of parameters in the model Correct Answer: c)
-    Unit 4: Language Modeling and Transformer Implementation
+Unit 4: Language Modeling and Transformer Implementation
 46. What is the role of "positional encoding" in the Transformer architecture? a) To replace the need for attention mechanisms b) To provide information about the relative or absolute position of tokens in a sequence c) To reduce the computational cost of self-attention d) To embed words into a vector space without order information Correct Answer: b)
 47. The "self-attention mechanism" in Transformers allows the model to: a) Only focus on the most recent token b) Weigh the importance of all other tokens in the input sequence relative to a given token c) Process tokens sequentially in a fixed order d) Perform convolutional operations on the input Correct Answer: b)
 48. "Multi-head attention mechanisms" enhance the Transformer's ability to: a) Reduce the number of layers b) Attend to different aspects of the input simultaneously and learn richer representations c) Process only short sequences efficiently d) Eliminate the need for positional encoding Correct Answer: b)
@@ -63,7 +62,7 @@ Unit 1: Deep Learning Foundations and Neural Network Implementation
 58. "Nucleus sampling" (top-p sampling) improves upon top-k sampling by: a) Always choosing the top-k tokens b) Sampling from the smallest set of most probable tokens whose cumulative probability exceeds a threshold 'p' c) Only considering tokens with 0 probability d) Eliminating all low-probability tokens Correct Answer: b)
 59. What is a key advantage of the Transformer architecture's "parallel processing" capability? a) It makes the model simpler. b) It allows for faster training times compared to sequential RNNs. c) It requires less memory. d) It removes the need for optimizers. Correct Answer: b)
 60. "Transformer architecture deep dive" implies understanding: a) Only the high-level concept of attention b) The intricate details of its components like self-attention, multi-head attention, and feed-forward networks c) The history of deep learning d) Only its application in image processing Correct Answer: b)
-    Unit 5: Advanced Fine-Tuning and LLM Engineering
+Unit 5: Advanced Fine-Tuning and LLM Engineering
 61. Which parameter-efficient fine-tuning method involves using low-rank matrices to adapt pre-trained models? a) Quantization strategies b) LoRA (Low-Rank Adaptation) techniques c) Instruction tuning d) Distributed training Correct Answer: b)
 62. "QLoRA" is an advanced fine-tuning technique that combines LoRA with: a) Domain adaptation b) Quantization strategies c) Reinforcement Learning from Human Feedback (RLHF) d) Multi-modal AI applications Correct Answer: b)
 63. What is the primary goal of "Reinforcement Learning from Human Feedback (RLHF)" in LLM engineering? a) To compress models for deployment b) To adapt models to new domains c) To align model behavior with human preferences and instructions d) To implement distributed training strategies Correct Answer: c)
@@ -79,7 +78,7 @@ Unit 1: Deep Learning Foundations and Neural Network Implementation
 73. The concept of "LLM Engineering" encompasses: a) Only the theoretical understanding of LLMs b) The practical aspects of building, optimizing, and deploying LLMs effectively c) Solely focusing on data collection d) Exclusively designing new foundational architectures Correct Answer: b)
 74. When implementing "distributed training strategies," what is a common challenge? a) Lack of available training data b) Managing communication and synchronization between multiple devices/nodes c) Finding appropriate activation functions d) Choosing the right programming language Correct Answer: b)
 75. What is the primary benefit of "model compression" for LLMs? a) It makes the model more accurate. b) It enables deployment on resource-constrained devices and reduces inference costs. c) It increases the model's training time. d) It makes the model less secure. Correct Answer: b)
-    Unit 6: AI Agents and RAG Applications with LangChain
+Unit 6: AI Agents and RAG Applications with LangChain
 76. What does RAG stand for in the context of AI agent systems? a) Random Access Generation b) Reinforcement Agent Grid c) Retrieval-Augmented Generation d) Resource Allocation Graph Correct Answer: c)
 77. The LangChain framework is designed for what primary purpose? a) Optimizing neural network performance b) Installing deep learning frameworks c) Building generative AI-powered applications, especially with RAG architecture d) Training foundational NLP models from scratch Correct Answer: c)
 78. In RAG architecture, "vector databases and semantic search" are used to: a) Store large language models b) Efficiently store and retrieve relevant information based on semantic similarity c) Manage agent workflows d) Generate new text without external data Correct Answer: b)
@@ -95,7 +94,7 @@ Unit 1: Deep Learning Foundations and Neural Network Implementation
 88. "LangChain framework" simplifies the development of AI applications by providing: a) Only a user interface for AI models b) Abstractions and tools to chain together LLMs, external data, and agents c) A new programming language for AI d) A proprietary operating system Correct Answer: b)
 89. A "vector database" is particularly suitable for RAG applications due to its ability to: a) Store data in tabular format b) Efficiently store and query high-dimensional vector embeddings c) Perform complex joins across multiple tables d) Only store numerical values without context Correct Answer: b)
 90. The concept of "semantic search" in RAG focuses on: a) Searching for exact keyword matches b) Understanding the meaning and context of a query to find relevant results c) Only searching within structured databases d) Ignoring the relationships between words Correct Answer: b)
-    General Course Outcomes & Cross-Unit Topics
+General Course Outcomes & Cross-Unit Topics
 91. According to CO1, students will be able to remember fundamental deep learning concepts and identify key components of neural network architectures using: a) PyTorch and Scikit-learn b) Keras and TensorFlow frameworks c) MATLAB and Octave d) C++ and Java Correct Answer: b)
 92. CO2 states that students will understand generative AI principles and explain the architecture and data preparation techniques for: a) Traditional expert systems b) Relational databases c) Large Language Models (LLMs) d) Image processing filters Correct Answer: c)
 93. CO3 emphasizes applying foundational NLP models and implementing transformer-based language modeling solutions for: a) Hypothetical scenarios only b) Real-world applications c) Benchmarking traditional algorithms d) Creating static web pages Correct Answer: b)

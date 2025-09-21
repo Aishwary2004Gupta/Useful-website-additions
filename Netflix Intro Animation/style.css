@@ -17,6 +17,53 @@ body {
   overflow: hidden;
 }
 
+.ta-dum {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+            opacity: 0;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+@keyframes show-ta-dum {
+            0% { 
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            20% { 
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+            30% { 
+                transform: translate(-50%, -50%) scale(1);
+            }
+            80% { 
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            100% { 
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+        }
+        
+        @keyframes reset-animation {
+            0% { 
+                opacity: 0;
+                transform: scale(1);
+            }
+            100% { 
+                opacity: 0;
+                transform: scale(1);
+            }
+        }
+
 #container netflixintro {
   display: block;
   position: relative;

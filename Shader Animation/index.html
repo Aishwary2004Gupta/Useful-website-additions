@@ -1,103 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Shader Animation</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Bangers&display=swap"
-      rel="stylesheet"
-      href="style.css"
-    />
-    <style>
-      body,
-      html {
-        margin: 0;
-        padding: 0;
-        background: #000;
-        overflow: hidden;
+<head>
+  <meta charset="UTF-8">
+  <title>Shader</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      overflow: hidden;
+    }
+    #shader-container {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+    #shader-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'Bangers', cursive;
+      font-size: 6rem;
+      font-weight: bold;
+      color: #ffffff;
+      text-align: center;
+      z-index: 10;
+      pointer-events: none;
+    }
+    /* Glow animation */
+    .glow {
+      animation: glow 2s infinite alternate ease-in-out;
+    }
+    @keyframes glow {
+      0% {
+        text-shadow: 0 0 5px #fff, 0 0 10px #0ff, 0 0 20px #0ff;
+        transform: translate(-50%, -50%) scale(1);
       }
-      #shader-container {
-        width: 100vw;
-        height: 100vh;
-        position: relative;
+      100% {
+        text-shadow: 0 0 10px #ff0, 0 0 20px #f0f, 0 0 40px #f0f;
+        transform: translate(-50%, -50%) scale(1.1);
       }
-      #shader-text {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-family: "Bangers", cursive;
-        font-size: 6rem;
-        font-weight: bold;
-        color: #ffffff;
-        text-align: center;
-        z-index: 10;
-        pointer-events: none;
+    }
+    /* Tweakpane positioning */
+    .tp-dfwv {
+      position: absolute !important;
+      top: 10px;
+      right: 10px;
+      z-index: 20;
+    }
+  </style>
+</head>
+<body>
+  <div id="shader-container">
+    <div id="shader-text" class="glow">Shader Animation</div>
+  </div>
 
-        animation: glow 2s infinite alternate ease-in-out;
-      }
-      @keyframes glow {
-        0% {
-          text-shadow: 0 0 5px #fff, 0 0 10px #0ff, 0 0 20px #0ff;
-          transform: translate(-50%, -50%) scale(1);
-        }
-        100% {
-          text-shadow: 0 0 10px #ff0, 0 0 20px #f0f, 0 0 40px #f0f;
-          transform: translate(-50%, -50%) scale(1.1);
-        }
-      }
-      /* Tweakpane positioning */
-      .tp-dfwv {
-        position: absolute !important;
-        top: 10px;
-        right: 10px;
-        z-index: 20;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="shader-container">
-      <div id="shader-text">Shader Animation</div>
-    </div>
+  <!-- Three.js -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <!-- Tweakpane -->
+  <script type="module">
+    import { Pane } from 'https://cdn.skypack.dev/tweakpane@4.0.4';
 
-    <!-- Three.js -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-    <!-- Tweakpane -->
-    <script type="module">
-      import { Pane } from "https://cdn.skypack.dev/tweakpane@4.0.4";
+    // Default parameters
+    const PARAMS = {
+      showText: true,
+      text: "Shader Animation",
+      glow: true,
+    };
 
-      // UI Controls
-      const PARAMS = {
-        showText: true,
-        text: "Shader Animation",
-      };
+    const shaderText = document.getElementById("shader-text");
 
-      const shaderText = document.getElementById("shader-text");
+    // Setup control panel
+    const pane = new Pane({ title: "Controls" });
 
-      const pane = new Pane({ title: "Controls" });
-      pane
-        .addBinding(PARAMS, "showText", { label: "Show Text" })
-        .on("change", (ev) => {
-          shaderText.style.display = ev.value ? "block" : "none";
-        });
+    pane.addBinding(PARAMS, "showText", { label: "Show Text" })
+      .on("change", (ev) => {
+        shaderText.style.display = ev.value ? "block" : "none";
+      });
 
-      pane.addBinding(PARAMS, "text", { label: "Text" }).on("change", (ev) => {
+    pane.addBinding(PARAMS, "text", { label: "Text" })
+      .on("change", (ev) => {
         shaderText.textContent = ev.value;
       });
 
-      // ---- THREE.js setup ----
-      const container = document.getElementById("shader-container");
-      const camera = new THREE.Camera();
-      camera.position.z = 1;
-      const scene = new THREE.Scene();
+    pane.addBinding(PARAMS, "glow", { label: "Glow Effect" })
+      .on("change", (ev) => {
+        if (ev.value) {
+          shaderText.classList.add("glow");
+        } else {
+          shaderText.classList.remove("glow");
+        }
+      });
 
-      const vertexShader = `
+    // ---- THREE.js setup ----
+    const container = document.getElementById("shader-container");
+    const camera = new THREE.Camera();
+    camera.position.z = 1;
+    const scene = new THREE.Scene();
+
+    const vertexShader = `
       void main() {
         gl_Position = vec4(position, 1.0);
       }
     `;
 
-      const fragmentShader = `
+    const fragmentShader = `
       #define TWO_PI 6.2831853072
       #define PI 3.14159265359
 
@@ -121,41 +130,41 @@
       }
     `;
 
-      const uniforms = {
-        time: { value: 1.0 },
-        resolution: { value: new THREE.Vector2() },
-      };
+    const uniforms = {
+      time: { value: 1.0 },
+      resolution: { value: new THREE.Vector2() }
+    };
 
-      const material = new THREE.ShaderMaterial({
-        uniforms,
-        vertexShader,
-        fragmentShader,
-      });
+    const material = new THREE.ShaderMaterial({
+      uniforms,
+      vertexShader,
+      fragmentShader,
+    });
 
-      const geometry = new THREE.PlaneGeometry(2, 2);
-      const mesh = new THREE.Mesh(geometry, material);
-      scene.add(mesh);
+    const geometry = new THREE.PlaneGeometry(2, 2);
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
 
-      const renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setPixelRatio(window.devicePixelRatio);
-      container.appendChild(renderer.domElement);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    container.appendChild(renderer.domElement);
 
-      function onWindowResize() {
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        uniforms.resolution.value.x = renderer.domElement.width;
-        uniforms.resolution.value.y = renderer.domElement.height;
-      }
+    function onWindowResize() {
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      uniforms.resolution.value.x = renderer.domElement.width;
+      uniforms.resolution.value.y = renderer.domElement.height;
+    }
 
-      window.addEventListener("resize", onWindowResize);
-      onWindowResize();
+    window.addEventListener("resize", onWindowResize);
+    onWindowResize();
 
-      function animate() {
-        requestAnimationFrame(animate);
-        uniforms.time.value += 0.05;
-        renderer.render(scene, camera);
-      }
+    function animate() {
+      requestAnimationFrame(animate);
+      uniforms.time.value += 0.05;
+      renderer.render(scene, camera);
+    }
 
-      animate();
-    </script>
-  </body>
+    animate();
+  </script>
+</body>
 </html>

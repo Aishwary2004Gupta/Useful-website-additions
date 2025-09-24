@@ -7,52 +7,6 @@
       href="https://fonts.googleapis.com/css2?family=Bangers&display=swap"
       rel="stylesheet" href="style.css"
     />
-    <style>
-      body,
-      html {
-        margin: 0;
-        padding: 0;
-        background: #000;
-        overflow: hidden;
-      }
-      #shader-container {
-        width: 100vw;
-        height: 100vh;
-        position: relative;
-      }
-      #shader-text {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-family: "Bangers", cursive;
-        font-size: 6rem;
-        font-weight: bold;
-        color: #ffffff;
-        text-align: center;
-        z-index: 10;
-        pointer-events: none;
-
-        animation: glow 2s infinite alternate ease-in-out;
-      }
-      @keyframes glow {
-        0% {
-          text-shadow: 0 0 5px #fff, 0 0 10px #0ff, 0 0 20px #0ff;
-          transform: translate(-50%, -50%) scale(1);
-        }
-        100% {
-          text-shadow: 0 0 10px #ff0, 0 0 20px #f0f, 0 0 40px #f0f;
-          transform: translate(-50%, -50%) scale(1.1);
-        }
-      }
-      /* Tweakpane positioning */
-      .tp-dfwv {
-        position: absolute !important;
-        top: 10px;
-        right: 10px;
-        z-index: 20;
-      }
-    </style>
   </head>
   <body>
     <div id="shader-container">

@@ -1,0 +1,213 @@
+/* -------------------- Global Reset -------------------- */
+/* Eric Meyer Reset + custom additions */
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+main, menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+article, aside, details, figcaption, figure,
+footer, header, hgroup, main, menu, nav, section {
+	display: block;
+}
+*[hidden] { display: none; }
+body { line-height: 1; }
+ol, ul { list-style: none; }
+blockquote, q { quotes: none; }
+blockquote::before, blockquote::after,
+q::before, q::after { content: ''; content: none; }
+table { border-collapse: collapse; border-spacing: 0; }
+
+*,
+*::after,
+*::before {
+  box-sizing: border-box;
+}
+
+/* -------------------- Base Styles -------------------- */
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-width: 100vw;
+  font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+  color: #333;
+  font-size: 0.85rem;
+  line-height: 0.85rem;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  background-color: #f1e9db;
+  overflow: hidden;
+  height: 100%;
+}
+
+canvas {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+h1 {
+  display: inline-block;
+  margin: 0;
+  font-family: 'Le murmure', sans-serif;
+  font-size: 7rem;
+  line-height: 7rem;
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+/* -------------------- Layout -------------------- */
+.app {
+  z-index: 2;
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.text {
+  margin-top: 0.2rem;
+  line-height: 1rem;
+}
+
+/* -------------------- Links -------------------- */
+.link {
+  cursor: pointer;
+  display: flex;
+  margin: 2.5rem 23px;
+  flex-direction: column;
+  align-items: center;
+  color: #333;
+  text-decoration: none;
+}
+.link img { display: none; }
+
+/* -------------------- Frame -------------------- */
+.frame {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  padding: 2rem 3rem;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.frame__demos { text-align: center; }
+.frame__init { margin-bottom: 5px; text-align: center; }
+.frame__demo {
+  display: inline-block;
+  margin: 0 7px;
+  color: #333;
+  text-decoration: none;
+}
+.frame__demo:hover { text-decoration: underline; }
+.frame__demo--current { text-decoration: underline; }
+
+.frame__wrap { display: flex; }
+.frame__credits { flex: 1; }
+.frame__title-wrap {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+}
+.frame__links {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex: 1;
+}
+.frame__role {
+  margin-bottom: 2px;
+  font-style: italic;
+  text-transform: capitalize;
+}
+.frame__title { text-align: center; }
+.frame__link {
+  color: #333;
+  font-size: inherit;
+}
+.frame__link.fl_1 {
+  margin-left: 25px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+.frame__link.fl_1:hover { text-decoration: underline; }
+.frame__inner { display: flex; }
+
+/* -------------------- Typography -------------------- */
+.italic { text-transform: none; color: #333; font-style: italic; }
+.h1 { padding-top: 0.9rem; line-height: 5.3rem; }
+.credit-wrap { margin: 12px 0; }
+
+/* -------------------- Media Queries -------------------- */
+@media (max-width: 991px) {
+  .app { position: absolute; inset: 0; height: 100%; }
+  .h1 { font-size: 6rem; }
+  .frame__demo { font-size: 0.75rem; }
+  .frame__credits, .frame__links { flex: 0 auto; }
+  .frame__role, .frame__title, .frame__init, .frame__link { font-size: 0.75rem; }
+  .frame__link.fl_1 { margin-top: 8px; }
+  .frame__inner { flex-direction: column; align-items: flex-end; }
+}
+
+@media (max-width: 767px) {
+  .link { margin: 1.4rem 0; }
+  .h1 { font-size: 5rem; line-height: 5rem; }
+  .grid-items { flex-direction: column; }
+  .divider { display: none; }
+  .frame__role, .italic, .frame__title, .frame__link { font-size: 0.55rem; line-height: 0.55rem; }
+  .div-block { display: none; }
+}
+
+@media (max-width: 479px) {
+  .text { font-size: 2vw; line-height: 2vw; }
+  .link { margin: 10vw 0; }
+  .h1 { padding-top: 1vw; font-size: 14vw; line-height: 11vw; }
+  .frame { padding: 0 2rem; }
+  .frame__demo { font-size: 0.55rem; line-height: 0.55rem; }
+  .frame__wrap { flex-direction: column; justify-content: center; align-items: center; }
+  .frame__credits {
+    margin-bottom: 1vw;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+  .frame__title-wrap { margin-bottom: 2vw; }
+  .frame__role, .frame__title, .frame__link { font-size: 2vw; line-height: 2vw; }
+  .frame__init { margin-bottom: 0.3vw; }
+  .frame__inner { justify-content: center; align-items: center; }
+}
+
+/* -------------------- Assets -------------------- */
+@font-face {
+  font-family: 'Le murmure';
+  src: url('../fonts/Le-Murmure.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}

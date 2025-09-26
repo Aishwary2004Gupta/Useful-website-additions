@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Image Comparison Slider</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background: #111;
+      font-family: sans-serif;
+    }
+    .comparison-container {
+      position: relative;
+      width: 80%;
+      max-width: 900px;
+      aspect-ratio: 16/9;
+      overflow: hidden;
+      border-radius: 12px;
+      cursor: ew-resize;
+    }
+    .comparison-container img {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+      user-select: none;
+    }
+    .comparison-img.left {
+      clip-path: inset(0 0 0 50%);
+      filter: grayscale(100%);
+      transition: clip-path 0.05s linear;
+    }
+    .comparison-img.right {
+      clip-path: inset(0 50% 0 0);
+      transition: clip-path 0.05s linear;
+    }
+    .slider {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 2px;
+      background: rgba(255,255,255,0.5);
+      backdrop-filter: blur(2px);
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+    .slider-handle {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: white;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="comparison-container" id="comparison">
+    <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
+         alt="Left" class="comparison-img left"/>
+    <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
+         alt="Right" class="comparison-img right"/>
+    <div class="slider" id="slider">
+      <div class="slider-handle"></div>
+    </div>
+  </div>
+
+  <script>
+    const container = document.getElementById("comparison");
+    const leftImg = container.querySelector(".comparison-img.left");
+    const rightImg = container.querySelector(".comparison-img.right");
+    const slider = document.getElementById("slider");
+
+    let isDragging = false;
+
+    function updateSlider(x) {
+      const rect = container.getBoundingClientRect();
+      const pos = Math.min(Math.max(x - rect.left, 0), rect.width);
+      const percent = (pos / rect.width) * 100;
+
+      leftImg.style.clipPath = `inset(0 0 0 ${percent}%)`;
+      rightImg.style.clipPath = `inset(0 ${100 - percent}% 0 0)`;
+      slider.style.left = `${percent}%`;
+    }
+
+    container.addEventListener("mousedown", () => { isDragging = true; });
+    container.addEventListener("mouseup", () => { isDragging = false; });
+    container.addEventListener("mouseleave", () => { isDragging = false; });
+    container.addEventListener("mousemove", (e) => {
+      if (isDragging) updateSlider(e.clientX);
+    });
+
+    container.addEventListener("touchstart", () => { isDragging = true; }, { passive: true });
+    container.addEventListener("touchend", () => { isDragging = false; }, { passive: true });
+    container.addEventListener("touchmove", (e) => {
+      if (isDragging) updateSlider(e.touches[0].clientX);
+    }, { passive: true });
+
+    // Initial slider position
+    updateSlider(container.getBoundingClientRect().width / 2 + container.getBoundingClientRect().left);
+  </script>
+
+</body>
+</html>

@@ -10,12 +10,36 @@
     }
     body {
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
       margin: 0;
       background: #111;
       font-family: sans-serif;
+      color: white;
+    }
+    .input-container {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+    }
+    input[type="text"] {
+      width: 350px;
+      padding: 8px;
+      border-radius: 6px;
+      border: none;
+      outline: none;
+      font-size: 14px;
+    }
+    button {
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: none;
+      background: #007bff;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
     }
     .comparison-container {
       position: relative;
@@ -25,6 +49,7 @@
       overflow: hidden;
       border-radius: 12px;
       cursor: ew-resize;
+      background: #000;
     }
     .comparison-container img {
       position: absolute;
@@ -65,11 +90,18 @@
 </head>
 <body>
 
+  <div class="input-container">
+    <input type="text" id="imgUrl" placeholder="Paste an image URL here"/>
+    <button id="loadBtn">Load Image</button>
+  </div>
+
   <div class="comparison-container" id="comparison">
-    <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
-         alt="Left" class="comparison-img left"/>
-    <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
-         alt="Right" class="comparison-img right"/>
+    <img id="leftImg"
+         src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
+         alt="Grayscale" class="comparison-img left"/>
+    <img id="rightImg"
+         src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
+         alt="Color" class="comparison-img right"/>
     <div class="slider" id="slider">
       <div class="slider-handle"></div>
     </div>
@@ -77,9 +109,11 @@
 
   <script>
     const container = document.getElementById("comparison");
-    const leftImg = container.querySelector(".comparison-img.left");
-    const rightImg = container.querySelector(".comparison-img.right");
+    const leftImg = document.getElementById("leftImg");
+    const rightImg = document.getElementById("rightImg");
     const slider = document.getElementById("slider");
+    const loadBtn = document.getElementById("loadBtn");
+    const imgUrlInput = document.getElementById("imgUrl");
 
     let isDragging = false;
 
@@ -93,6 +127,7 @@
       slider.style.left = `${percent}%`;
     }
 
+    // Slider dragging logic
     container.addEventListener("mousedown", () => { isDragging = true; });
     container.addEventListener("mouseup", () => { isDragging = false; });
     container.addEventListener("mouseleave", () => { isDragging = false; });
@@ -108,6 +143,14 @@
 
     // Initial slider position
     updateSlider(container.getBoundingClientRect().width / 2 + container.getBoundingClientRect().left);
+
+    // Load custom image
+    loadBtn.addEventListener("click", () => {
+      const url = imgUrlInput.value.trim();
+      if (!url) return;
+      leftImg.src = url;
+      rightImg.src = url;
+    });
   </script>
 
 </body>

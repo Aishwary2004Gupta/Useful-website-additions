@@ -1,157 +1,190 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Image Comparison Slider</title>
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-    body {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      background: #111;
-      font-family: sans-serif;
-      color: white;
-    }
-    .input-container {
-      margin-bottom: 20px;
-      display: flex;
-      gap: 10px;
-    }
-    input[type="text"] {
-      width: 350px;
-      padding: 8px;
-      border-radius: 6px;
-      border: none;
-      outline: none;
-      font-size: 14px;
-    }
-    button {
-      padding: 8px 14px;
-      border-radius: 6px;
-      border: none;
-      background: #007bff;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .comparison-container {
-      position: relative;
-      width: 80%;
-      max-width: 900px;
-      aspect-ratio: 16/9;
-      overflow: hidden;
-      border-radius: 12px;
-      cursor: ew-resize;
-      background: #000;
-    }
-    .comparison-container img {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      object-fit: cover;
-      pointer-events: none;
-      user-select: none;
-    }
-    .comparison-img.left {
-      clip-path: inset(0 0 0 50%);
-      filter: grayscale(100%);
-      transition: clip-path 0.05s linear;
-    }
-    .comparison-img.right {
-      clip-path: inset(0 50% 0 0);
-      transition: clip-path 0.05s linear;
-    }
-    .slider {
-      position: absolute;
-      top: 0; bottom: 0;
-      width: 2px;
-      background: rgba(255,255,255,0.5);
-      backdrop-filter: blur(2px);
-      transform: translateX(-50%);
-      pointer-events: none;
-    }
-    .slider-handle {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 16px; height: 16px;
-      border-radius: 50%;
-      background: white;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="input-container">
-    <input type="text" id="imgUrl" placeholder="Paste an image URL here"/>
-    <button id="loadBtn">Load Image</button>
-  </div>
-
-  <div class="comparison-container" id="comparison">
-    <img id="leftImg"
-         src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
-         alt="Grayscale" class="comparison-img left"/>
-    <img id="rightImg"
-         src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
-         alt="Color" class="comparison-img right"/>
-    <div class="slider" id="slider">
-      <div class="slider-handle"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Comparison Slider</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        background: #111;
+        font-family: sans-serif;
+        color: white;
+      }
+      .input-container {
+        margin-bottom: 20px;
+        display: flex;
+        gap: 10px;
+      }
+      input[type="text"] {
+        width: 350px;
+        padding: 8px;
+        border-radius: 6px;
+        border: none;
+        outline: none;
+        font-size: 14px;
+      }
+      button {
+        padding: 8px 14px;
+        border-radius: 6px;
+        border: none;
+        background: #007bff;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .comparison-container {
+        position: relative;
+        width: 80%;
+        max-width: 900px;
+        aspect-ratio: 16/9;
+        overflow: hidden;
+        border-radius: 12px;
+        cursor: ew-resize;
+        background: #000;
+      }
+      .comparison-container img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        pointer-events: none;
+        user-select: none;
+      }
+      .comparison-img.left {
+        clip-path: inset(0 0 0 50%);
+        filter: grayscale(100%);
+        transition: clip-path 0.05s linear;
+      }
+      .comparison-img.right {
+        clip-path: inset(0 50% 0 0);
+        transition: clip-path 0.05s linear;
+      }
+      .slider {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: rgba(255, 255, 255, 0.5);
+        backdrop-filter: blur(2px);
+        transform: translateX(-50%);
+        pointer-events: none;
+      }
+      .slider-handle {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="input-container">
+      <input type="text" id="imgUrl" placeholder="Paste an image URL here" />
+      <button id="loadBtn">Load Image</button>
     </div>
-  </div>
 
-  <script>
-    const container = document.getElementById("comparison");
-    const leftImg = document.getElementById("leftImg");
-    const rightImg = document.getElementById("rightImg");
-    const slider = document.getElementById("slider");
-    const loadBtn = document.getElementById("loadBtn");
-    const imgUrlInput = document.getElementById("imgUrl");
+    <div class="comparison-container" id="comparison">
+      <img
+        id="leftImg"
+        src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
+        alt="Grayscale"
+        class="comparison-img left"
+      />
+      <img
+        id="rightImg"
+        src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
+        alt="Color"
+        class="comparison-img right"
+      />
+      <div class="slider" id="slider">
+        <div class="slider-handle"></div>
+      </div>
+    </div>
 
-    let isDragging = false;
+    <script>
+      const container = document.getElementById("comparison");
+      const leftImg = document.getElementById("leftImg");
+      const rightImg = document.getElementById("rightImg");
+      const slider = document.getElementById("slider");
+      const loadBtn = document.getElementById("loadBtn");
+      const imgUrlInput = document.getElementById("imgUrl");
 
-    function updateSlider(x) {
-      const rect = container.getBoundingClientRect();
-      const pos = Math.min(Math.max(x - rect.left, 0), rect.width);
-      const percent = (pos / rect.width) * 100;
+      let isDragging = false;
 
-      leftImg.style.clipPath = `inset(0 0 0 ${percent}%)`;
-      rightImg.style.clipPath = `inset(0 ${100 - percent}% 0 0)`;
-      slider.style.left = `${percent}%`;
-    }
+      function updateSlider(x) {
+        const rect = container.getBoundingClientRect();
+        const pos = Math.min(Math.max(x - rect.left, 0), rect.width);
+        const percent = (pos / rect.width) * 100;
 
-    // Slider dragging logic
-    container.addEventListener("mousedown", () => { isDragging = true; });
-    container.addEventListener("mouseup", () => { isDragging = false; });
-    container.addEventListener("mouseleave", () => { isDragging = false; });
-    container.addEventListener("mousemove", (e) => {
-      if (isDragging) updateSlider(e.clientX);
-    });
+        leftImg.style.clipPath = `inset(0 0 0 ${percent}%)`;
+        rightImg.style.clipPath = `inset(0 ${100 - percent}% 0 0)`;
+        slider.style.left = `${percent}%`;
+      }
 
-    container.addEventListener("touchstart", () => { isDragging = true; }, { passive: true });
-    container.addEventListener("touchend", () => { isDragging = false; }, { passive: true });
-    container.addEventListener("touchmove", (e) => {
-      if (isDragging) updateSlider(e.touches[0].clientX);
-    }, { passive: true });
+      // Slider dragging logic
+      container.addEventListener("mousedown", () => {
+        isDragging = true;
+      });
+      container.addEventListener("mouseup", () => {
+        isDragging = false;
+      });
+      container.addEventListener("mouseleave", () => {
+        isDragging = false;
+      });
+      container.addEventListener("mousemove", (e) => {
+        if (isDragging) updateSlider(e.clientX);
+      });
 
-    // Initial slider position
-    updateSlider(container.getBoundingClientRect().width / 2 + container.getBoundingClientRect().left);
+      container.addEventListener(
+        "touchstart",
+        () => {
+          isDragging = true;
+        },
+        { passive: true }
+      );
+      container.addEventListener(
+        "touchend",
+        () => {
+          isDragging = false;
+        },
+        { passive: true }
+      );
+      container.addEventListener(
+        "touchmove",
+        (e) => {
+          if (isDragging) updateSlider(e.touches[0].clientX);
+        },
+        { passive: true }
+      );
 
-    // Load custom image
-    loadBtn.addEventListener("click", () => {
-      const url = imgUrlInput.value.trim();
-      if (!url) return;
-      leftImg.src = url;
-      rightImg.src = url;
-    });
-  </script>
+      // Initial slider position
+      updateSlider(
+        container.getBoundingClientRect().width / 2 +
+          container.getBoundingClientRect().left
+      );
 
-</body>
+      // Load custom image
+      loadBtn.addEventListener("click", () => {
+        const url = imgUrlInput.value.trim();
+        if (!url) return;
+        leftImg.src = url;
+        rightImg.src = url;
+      });
+    </script>
+  </body>
 </html>

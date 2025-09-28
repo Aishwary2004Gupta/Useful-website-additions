@@ -158,8 +158,10 @@ function print(config) {
 }
 
 // Resize wrapper to match canvas
+// Resize wrapper to match canvas
 const wrapper = document.querySelector(".ascii-wrapper");
 if (wrapper) {
   wrapper.style.width = config.canvas.width + "px";
   wrapper.style.height = config.canvas.height + "px";
 }
+

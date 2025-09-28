@@ -117,10 +117,12 @@ icon[logo] {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  border: 2px solid #0f0;   /* Neon green outline */
+  border: 2px solid #fff;   /* White outline */
   border-radius: 8px;
   padding: 10px;
   display: inline-block;
-  box-shadow: 0 0 12px #0f0; /* Glow */
+  box-shadow: 0 0 12px #fff; /* White glow */
+  background: black; /* optional: keeps text clean against dark bg */
 }
+
 

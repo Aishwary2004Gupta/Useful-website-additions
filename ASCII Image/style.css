@@ -1,34 +1,29 @@
 body {
   background: #000;
-}
-
-canvas {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.controls {
-  position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
   display: flex;
-  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
 
-.controls input,
-.controls button {
-  padding: 5px;
-  font-size: 14px;
+/* White border wrapper */
+.ascii-wrapper {
+  display: inline-block;
+  border: 2px solid #fff;        /* White outline */
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0 0 12px #fff;     /* White glow */
+  background: black;             /* Ensures clean contrast */
 }
 
-.tweakpane {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  z-index: 1000;
+/* Center canvas inside */
+canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
 }
 
 /* My logo */
@@ -111,18 +106,3 @@ icon[logo] {
     clip-path: inset(0 0 0 0);
   }
 }
-
-.ascii-wrapper {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  border: 2px solid #fff;   /* White outline */
-  border-radius: 8px;
-  padding: 10px;
-  display: inline-block;
-  box-shadow: 0 0 12px #fff; /* White glow */
-  background: black; /* optional: keeps text clean against dark bg */
-}
-
-

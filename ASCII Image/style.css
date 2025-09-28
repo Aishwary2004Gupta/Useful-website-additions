@@ -111,3 +111,16 @@ icon[logo] {
     clip-path: inset(0 0 0 0);
   }
 }
+
+.ascii-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 2px solid #0f0;   /* Neon green outline */
+  border-radius: 8px;
+  padding: 10px;
+  display: inline-block;
+  box-shadow: 0 0 12px #0f0; /* Glow */
+}
+

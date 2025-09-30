@@ -1,15 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Spline Scene Demo</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spline Scene Card</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       background: #0a0a0a;
       font-family: system-ui, sans-serif;
@@ -19,6 +15,8 @@
       min-height: 100vh;
       color: white;
     }
+
+    /* Card */
     .card {
       width: 90%;
       max-width: 1100px;
@@ -28,25 +26,24 @@
       border-radius: 12px;
       overflow: hidden;
       position: relative;
-      box-shadow: 0 0 40px rgba(0,0,0,0.8);
       display: flex;
+      box-shadow: 0 0 40px rgba(0,0,0,0.6);
     }
-    /* Spotlight effect */
+
+    /* Spotlight */
     .spotlight {
-      position: absolute;
-      top: -200px;
-      left: 0;
-      width: 100%;
-      height: 200%;
-      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2), transparent 70%);
-      opacity: 0;
-      transition: opacity 0.3s;
       pointer-events: none;
-      z-index: 1;
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle at center, rgba(255,255,255,0.3), transparent 80%);
+      width: 200px;
+      height: 200px;
+      filter: blur(40px);
+      opacity: 0;
+      transition: opacity 0.3s ease;
     }
-    .card:hover .spotlight {
-      opacity: 1;
-    }
+    .card:hover .spotlight { opacity: 1; }
+
     /* Left content */
     .card .left {
       flex: 1;
@@ -54,6 +51,7 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
+      position: relative;
       z-index: 2;
     }
     .card h1 {
@@ -68,37 +66,82 @@
       line-height: 1.6;
       max-width: 400px;
     }
+
     /* Right content */
     .card .right {
       flex: 1;
       position: relative;
+      overflow: hidden;
     }
     .card iframe {
-      position: absolute;
       width: 100%;
       height: 100%;
       border: none;
-      top: 0;
-      left: 0;
+    }
+
+    /* Loader (fallback like Suspense) */
+    .loader {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border: 4px solid rgba(255,255,255,0.2);
+      border-top: 4px solid #fff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      z-index: 5;
+    }
+    @keyframes spin {
+      to { transform: translate(-50%, -50%) rotate(360deg); }
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="spotlight"></div>
+  <div class="card" id="card">
+    <div class="spotlight" id="spotlight"></div>
+
+    <!-- Left content -->
     <div class="left">
       <h1>Interactive 3D</h1>
       <p>
-        Bring your UI to life with beautiful 3D scenes. 
-        Create immersive experiences that capture attention 
+        Bring your UI to life with beautiful 3D scenes.
+        Create immersive experiences that capture attention
         and enhance your design.
       </p>
     </div>
+
+    <!-- Right content -->
     <div class="right">
-      <!-- Embed Spline Scene -->
-      <iframe src="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
-              frameborder="0"></iframe>
+      <div class="loader" id="loader"></div>
+      <!-- Public spline embed link -->
+      <iframe
+        id="spline"
+        src="https://my.spline.design/robot-79c0ab42b2f93db2e4c66b5f3e6ff1ba/"
+      ></iframe>
     </div>
   </div>
+
+  <script>
+    // Spotlight follows mouse
+    const card = document.getElementById("card");
+    const spotlight = document.getElementById("spotlight");
+
+    card.addEventListener("mousemove", (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left - spotlight.offsetWidth / 2;
+      const y = e.clientY - rect.top - spotlight.offsetHeight / 2;
+      spotlight.style.left = `${x}px`;
+      spotlight.style.top = `${y}px`;
+    });
+
+    // Loader hides when iframe loads
+    const loader = document.getElementById("loader");
+    const iframe = document.getElementById("spline");
+    iframe.addEventListener("load", () => {
+      loader.style.display = "none";
+    });
+  </script>
 </body>
 </html>

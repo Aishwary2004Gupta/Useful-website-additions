@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Spline Scene Demo</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: #0a0a0a;
+      font-family: system-ui, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: white;
+    }
+    .card {
+      width: 90%;
+      max-width: 1100px;
+      height: 500px;
+      background: rgba(0,0,0,0.96);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 0 40px rgba(0,0,0,0.8);
+      display: flex;
+    }
+    /* Spotlight effect */
+    .spotlight {
+      position: absolute;
+      top: -200px;
+      left: 0;
+      width: 100%;
+      height: 200%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2), transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .card:hover .spotlight {
+      opacity: 1;
+    }
+    /* Left content */
+    .card .left {
+      flex: 1;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      z-index: 2;
+    }
+    .card h1 {
+      font-size: 2.5rem;
+      background: linear-gradient(to bottom, #fff, #aaa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .card p {
+      margin-top: 1rem;
+      color: #bbb;
+      line-height: 1.6;
+      max-width: 400px;
+    }
+    /* Right content */
+    .card .right {
+      flex: 1;
+      position: relative;
+    }
+    .card iframe {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border: none;
+      top: 0;
+      left: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="spotlight"></div>
+    <div class="left">
+      <h1>Interactive 3D</h1>
+      <p>
+        Bring your UI to life with beautiful 3D scenes. 
+        Create immersive experiences that capture attention 
+        and enhance your design.
+      </p>
+    </div>
+    <div class="right">
+      <!-- Embed Spline Scene -->
+      <iframe src="https://my.spline.design/3dheadcopy-365697ac6dcf42502bb3a8fa22f9a4fe/"
+              frameborder="0"></iframe>
+    </div>
+  </div>
+</body>
+</html>

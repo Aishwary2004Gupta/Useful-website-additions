@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Cursor Trail</title>
+    <title>Auto Image Cursor Trail</title>
     <style>
         * {
             margin: 0;
@@ -13,22 +13,25 @@
         }
 
         body {
-            background: #f5f5f5;
+            background: #0a0a0a;
+            color: white;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            cursor: none;
+            overflow: hidden;
         }
 
         .demo-section {
             width: 100%;
             max-width: 1200px;
             border-radius: 24px;
-            border: 1px solid rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 8px;
-            background: white;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.02);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
         @media (min-width: 768px) {
@@ -42,9 +45,8 @@
             position: relative;
             width: 100%;
             border-radius: 24px;
-            border: 1px solid rgba(0, 0, 0, 0.05);
-            background: rgba(248, 250, 252, 0.5);
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.05));
             overflow: hidden;
         }
 
@@ -75,11 +77,15 @@
             position: absolute;
             opacity: 0;
             transform: translate(-50%, -50%) scale(0);
-            border-radius: 24px;
+            border-radius: 16px;
             object-fit: cover;
             pointer-events: none;
-            z-index: 1;
-            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 2;
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            filter: brightness(1.1) saturate(1.1);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
         }
 
         .trail-image[data-status="active"] {
@@ -90,61 +96,100 @@
         .trail-image[data-status="inactive"] {
             opacity: 0;
             transform: translate(-50%, -50%) scale(0);
-            transition: all 0.3s ease-out;
+            transition: all 0.8s cubic-bezier(0.33, 1, 0.68, 1);
         }
 
         .image-small {
-            width: 112px;
-            height: 144px;
+            width: 140px;
+            height: 180px;
         }
 
         @media (min-width: 640px) {
             .image-small {
                 width: 160px;
-                height: 192px;
+                height: 200px;
             }
         }
 
         .content {
             position: relative;
-            z-index: 2;
+            z-index: 3;
             text-align: center;
             padding: 40px;
         }
 
         .title {
-            font-size: 2.5rem;
+            font-size: 3rem;
             font-weight: 700;
             margin-bottom: 16px;
-            color: #1f2937;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
 
         .subtitle {
-            font-size: 1.1rem;
-            color: #6b7280;
-            margin-bottom: 24px;
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 32px;
             max-width: 500px;
             margin-left: auto;
             margin-right: auto;
         }
 
-        .demo-info {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+        .instruction {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 16px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .status-indicator {
+            position: fixed;
+            top: 20px;
+            left: 20px;
             background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 8px 16px;
+            padding: 12px 16px;
             border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             font-size: 0.9rem;
-            z-index: 10;
+            z-index: 1000;
+        }
+
+        .status-auto {
+            color: #667eea;
+        }
+
+        .status-user {
+            color: #48bb78;
+        }
+
+        .reset-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .reset-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
         }
 
         .sparkle {
             animation: sparkle 2s ease-in-out infinite;
-            display: inline-block;
-            margin-right: 8px;
         }
 
         @keyframes sparkle {
@@ -152,68 +197,56 @@
             50% { opacity: 1; transform: scale(1.1); }
         }
 
-        /* Custom cursor */
-        .custom-cursor {
-            position: fixed;
-            width: 6px;
-            height: 6px;
-            background: #3b82f6;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 10000;
-            mix-blend-mode: difference;
-        }
-
-        .cursor-trail {
-            position: fixed;
-            width: 4px;
-            height: 4px;
-            background: #3b82f6;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9999;
-            opacity: 0.7;
+        /* Hide default cursor */
+        .cursor-trail-container {
+            cursor: none;
         }
     </style>
 </head>
 <body>
+    <div class="status-indicator">
+        Mode: <span id="status-mode" class="status-auto">Auto Movement</span>
+    </div>
+
+    <button class="reset-button" id="resetButton">Reset Auto Movement</button>
+
     <section class="demo-section">
         <div class="demo-container">
             <div class="cursor-trail-container" id="cursorTrailContainer">
                 <div class="content">
-                    <h1 class="title">Image Cursor Trail</h1>
+                    <h1 class="title">Auto Image Trail</h1>
                     <p class="subtitle">
-                        Move your cursor around to see beautiful images follow your movement
+                        Watch the cursor move automatically and create beautiful image trails. 
+                        Move your mouse to take control.
                     </p>
                     <div class="instruction">
                         <svg class="sparkle" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                         </svg>
-                        Move your cursor to see the magic
+                        Move cursor to take control
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <div class="custom-cursor" id="customCursor"></div>
-    <div class="demo-info">Move cursor to see image trail</div>
-
     <script>
-        class ImageCursorTrail {
+        class AutoImageCursorTrail {
             constructor() {
                 this.container = document.getElementById('cursorTrailContainer');
-                this.customCursor = document.getElementById('customCursor');
+                this.statusMode = document.getElementById('status-mode');
+                this.resetButton = document.getElementById('resetButton');
+                
                 this.images = [
-                    "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=400&auto=format",
-                    "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=400&auto=format",
-                    "https://images.unsplash.com/photo-1482192596544-9eb780fc7f66?q=80&w=400&auto=format",
-                    "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format",
-                    "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?q=80&w=400&auto=format",
-                    "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?q=80&w=400&auto=format",
-                    "https://images.unsplash.com/photo-1491553895911-0055eca6402d?q=80&w=400&auto=format",
-                    "https://images.unsplash.com/photo-1465101162946-4377e57745c3?q=80&w=400&auto=format",
-                    "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=400&auto=format",
+                    "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=300&auto=format",
+                    "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=300&auto=format",
+                    "https://images.unsplash.com/photo-1482192596544-9eb780fc7f66?q=80&w=300&auto=format",
+                    "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=300&auto=format",
+                    "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?q=80&w=300&auto=format",
+                    "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?q=80&w=300&auto=format",
+                    "https://images.unsplash.com/photo-1491553895911-0055eca6402d?q=80&w=300&auto=format",
+                    "https://images.unsplash.com/photo-1465101162946-4377e57745c3?q=80&w=300&auto=format",
+                    "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=300&auto=format",
                 ];
 
                 this.imageElements = [];
@@ -223,8 +256,33 @@
                 this.lastPosition = { x: 0, y: 0 };
                 this.maxNumberOfImages = 5;
                 this.distance = 25;
-                this.cursorTrails = [];
-                this.maxTrails = 8;
+
+                // Auto movement variables (from your code)
+                this.mouseMoved = false;
+                this.pointer = {
+                    x: 0.5 * window.innerWidth,
+                    y: 0.5 * window.innerHeight,
+                };
+                this.params = {
+                    pointsNumber: 40,
+                    widthFactor: 0.3,
+                    mouseThreshold: 0.6,
+                    spring: 0.4,
+                    friction: 0.5
+                };
+                this.trail = new Array(this.params.pointsNumber);
+                for (let i = 0; i < this.params.pointsNumber; i++) {
+                    this.trail[i] = {
+                        x: this.pointer.x,
+                        y: this.pointer.y,
+                        dx: 0,
+                        dy: 0,
+                    };
+                }
+
+                this.lastImageTime = 0;
+                this.imageInterval = 120; // ms between images
+                this.userInteracted = false;
 
                 this.init();
             }
@@ -232,7 +290,7 @@
             init() {
                 this.createImageElements();
                 this.setupEventListeners();
-                this.setupCustomCursor();
+                this.startAutoAnimation();
             }
 
             createImageElements() {
@@ -251,69 +309,107 @@
             }
 
             setupEventListeners() {
-                // Mouse movement with throttling
-                let rafId;
-                const handleMouseMove = (e) => {
-                    if (rafId) return;
-                    
-                    rafId = requestAnimationFrame(() => {
-                        this.handleOnMove(e.clientX, e.clientY);
-                        rafId = null;
-                    });
-                };
-
-                this.container.addEventListener('mousemove', handleMouseMove);
+                // Mouse movement
+                this.container.addEventListener('mousemove', (e) => {
+                    this.handleUserInteraction();
+                    this.updateMousePosition(e.clientX, e.clientY);
+                    this.handleOnMove(e.clientX, e.clientY);
+                });
 
                 // Touch movement
                 this.container.addEventListener('touchmove', (e) => {
                     e.preventDefault();
+                    this.handleUserInteraction();
                     if (e.touches[0]) {
+                        this.updateMousePosition(e.touches[0].clientX, e.touches[0].clientY);
                         this.handleOnMove(e.touches[0].clientX, e.touches[0].clientY);
                     }
                 });
 
-                // Update custom cursor position
-                document.addEventListener('mousemove', (e) => {
-                    this.customCursor.style.left = e.clientX + 'px';
-                    this.customCursor.style.top = e.clientY + 'px';
-                    this.createCursorTrail(e.clientX, e.clientY);
+                // Click also counts as interaction
+                this.container.addEventListener('click', (e) => {
+                    this.handleUserInteraction();
+                    this.updateMousePosition(e.clientX, e.clientY);
+                });
+
+                // Reset button
+                this.resetButton.addEventListener('click', () => {
+                    this.resetAutoMovement();
                 });
             }
 
-            setupCustomCursor() {
-                // Hide default cursor when over container
-                this.container.style.cursor = 'none';
+            handleUserInteraction() {
+                if (!this.userInteracted) {
+                    this.userInteracted = true;
+                    this.mouseMoved = true;
+                    this.statusMode.textContent = 'User Control';
+                    this.statusMode.className = 'status-user';
+                }
             }
 
-            createCursorTrail(x, y) {
-                const trail = document.createElement('div');
-                trail.className = 'cursor-trail';
-                trail.style.left = x + 'px';
-                trail.style.top = y + 'px';
-                document.body.appendChild(trail);
+            updateMousePosition(x, y) {
+                this.pointer.x = x;
+                this.pointer.y = y;
+                this.mouseMoved = true;
+            }
 
-                this.cursorTrails.push(trail);
-
-                // Remove trail after animation
-                setTimeout(() => {
-                    if (trail.parentNode) {
-                        trail.parentNode.removeChild(trail);
+            startAutoAnimation() {
+                const animate = (t) => {
+                    this.updateAutoPointer(t);
+                    this.updateTrailPhysics();
+                    
+                    // Spawn images at auto pointer position
+                    const currentTime = performance.now();
+                    if (!this.userInteracted && currentTime - this.lastImageTime > this.imageInterval) {
+                        this.spawnImageAtPosition(this.pointer.x, this.pointer.y);
+                        this.lastImageTime = currentTime;
                     }
-                    this.cursorTrails = this.cursorTrails.filter(t => t !== trail);
-                }, 600);
 
-                // Limit number of trails
-                if (this.cursorTrails.length > this.maxTrails) {
-                    const oldTrail = this.cursorTrails.shift();
-                    if (oldTrail && oldTrail.parentNode) {
-                        oldTrail.parentNode.removeChild(oldTrail);
-                    }
+                    requestAnimationFrame(animate);
+                };
+                animate(0);
+            }
+
+            updateAutoPointer(t) {
+                // Your automatic movement code
+                if (!this.mouseMoved && !this.userInteracted) {
+                    this.pointer.x = (0.5 + 0.2 * Math.cos(0.002 * t) * (Math.sin(0.005 * t))) * window.innerWidth;
+                    this.pointer.y = (0.5 + 0.3 * (Math.cos(0.005 * t)) + 0.1 * Math.cos(0.01 * t)) * window.innerHeight;
                 }
+            }
+
+            updateTrailPhysics() {
+                // Your trail physics code
+                this.trail.forEach((p, pIdx) => {
+                    const prev = pIdx === 0 ? this.pointer : this.trail[pIdx - 1];
+                    const spring = pIdx === 0 ? 0.4 * this.params.spring : this.params.spring;
+                    p.dx += (prev.x - p.x) * spring;
+                    p.dy += (prev.y - p.y) * spring;
+                    p.dx *= this.params.friction;
+                    p.dy *= this.params.friction;
+                    p.x += p.dx;
+                    p.y += p.dy;
+                });
             }
 
             handleOnMove(x, y) {
                 const distance = this.distanceFromLast(x, y);
                 
+                if (distance > (window.innerWidth / this.distance)) {
+                    const lead = this.refs[this.globalIndex % this.refs.length].current;
+                    const tailIndex = (this.globalIndex - this.maxNumberOfImages) % this.refs.length;
+                    const tail = tailIndex >= 0 ? this.refs[tailIndex].current : null;
+                    
+                    if (lead) this.activateImage(lead, x, y);
+                    if (tail) this.deactivateImage(tail);
+                    
+                    this.globalIndex++;
+                    this.lastPosition = { x, y };
+                }
+            }
+
+            spawnImageAtPosition(x, y) {
+                const distance = this.distanceFromLast(x, y);
                 if (distance > (window.innerWidth / this.distance)) {
                     const lead = this.refs[this.globalIndex % this.refs.length].current;
                     const tailIndex = (this.globalIndex - this.maxNumberOfImages) % this.refs.length;
@@ -339,7 +435,6 @@
                 image.style.left = `${relativeX}px`;
                 image.style.top = `${relativeY}px`;
 
-                // Cycle z-index
                 if (this.currentZIndex > 40) {
                     this.currentZIndex = 1;
                 }
@@ -348,7 +443,6 @@
 
                 image.dataset.status = 'active';
 
-                // Auto deactivate after 1.5 seconds
                 setTimeout(() => {
                     if (image.dataset.status === 'active') {
                         this.deactivateImage(image);
@@ -359,11 +453,37 @@
             deactivateImage(image) {
                 image.dataset.status = 'inactive';
             }
+
+            resetAutoMovement() {
+                this.userInteracted = false;
+                this.mouseMoved = false;
+                this.statusMode.textContent = 'Auto Movement';
+                this.statusMode.className = 'status-auto';
+                
+                // Reset pointer to center
+                this.pointer.x = 0.5 * window.innerWidth;
+                this.pointer.y = 0.5 * window.innerHeight;
+                
+                // Reset trail
+                for (let i = 0; i < this.params.pointsNumber; i++) {
+                    this.trail[i] = {
+                        x: this.pointer.x,
+                        y: this.pointer.y,
+                        dx: 0,
+                        dy: 0,
+                    };
+                }
+            }
         }
 
-        // Initialize when DOM is loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            new ImageCursorTrail();
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            new AutoImageCursorTrail();
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            // The auto movement will automatically adapt to new window size
         });
     </script>
 </body>

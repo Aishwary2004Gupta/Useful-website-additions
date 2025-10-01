@@ -228,6 +228,7 @@
             cursor: pointer;
             transition: all 0.3s ease;
             z-index: 1000;
+            font-size: 14px;
         }
 
         .reset-button:hover {
@@ -342,6 +343,7 @@
                 this.lastImageTime = 0;
                 this.imageInterval = 120;
                 this.userInteracted = false;
+                this.animationId = null;
 
                 this.init();
             }
@@ -401,8 +403,9 @@
                     this.updateMousePosition(e.clientX, e.clientY);
                 });
 
-                // Reset button
-                this.resetButton.addEventListener('click', () => {
+                // Reset button - FIXED: Proper event listener
+                this.resetButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
                     this.resetAutoMovement();
                 });
 
@@ -470,6 +473,7 @@
 
             startAutoAnimation() {
                 const animate = (t) => {
+                    this.animationId = requestAnimationFrame(animate);
                     this.updateAutoPointer(t);
                     this.updateTrailPhysics();
                     this.updateDotCursor();
@@ -480,10 +484,8 @@
                         this.spawnImageAtPosition(this.pointer.x, this.pointer.y);
                         this.lastImageTime = currentTime;
                     }
-
-                    requestAnimationFrame(animate);
                 };
-                animate(0);
+                this.animationId = requestAnimationFrame(animate);
             }
 
             updateAutoPointer(t) {
@@ -571,17 +573,17 @@
             }
 
             resetAutoMovement() {
+                console.log('Resetting auto movement...');
+                
+                // Reset all state variables
                 this.userInteracted = false;
                 this.mouseMoved = false;
-                this.statusMode.textContent = 'Auto Movement';
-                this.statusMode.className = 'status-auto';
-                this.dotCursor.classList.remove('pulsing');
                 
                 // Reset pointer to center
                 this.pointer.x = 0.5 * window.innerWidth;
                 this.pointer.y = 0.5 * window.innerHeight;
                 
-                // Reset trail
+                // Reset trail physics
                 for (let i = 0; i < this.params.pointsNumber; i++) {
                     this.trail[i] = {
                         x: this.pointer.x,
@@ -591,6 +593,16 @@
                     };
                 }
 
+                // Reset image tracking
+                this.globalIndex = 0;
+                this.lastPosition = { x: this.pointer.x, y: this.pointer.y };
+                this.lastImageTime = 0;
+
+                // Update UI
+                this.statusMode.textContent = 'Auto Movement';
+                this.statusMode.className = 'status-auto';
+                this.dotCursor.classList.remove('pulsing');
+                
                 // Clear all trail dots
                 this.cursorTrailDots.forEach(dot => {
                     if (dot.parentNode) {
@@ -598,17 +610,43 @@
                     }
                 });
                 this.cursorTrailDots = [];
+
+                // Deactivate all images
+                this.imageElements.forEach(img => {
+                    this.deactivateImage(img);
+                });
+
+                // Update dot cursor position immediately
+                this.updateDotCursorPosition(this.pointer.x, this.pointer.y);
+
+                console.log('Auto movement reset complete');
+            }
+
+            // Clean up animation loop if needed
+            stopAnimation() {
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                    this.animationId = null;
+                }
             }
         }
 
         // Initialize when page loads
+        let cursorTrailInstance = null;
         window.addEventListener('load', () => {
-            new AutoImageCursorTrail();
+            cursorTrailInstance = new AutoImageCursorTrail();
         });
 
         // Handle window resize
         window.addEventListener('resize', () => {
             // The auto movement will automatically adapt to new window size
+        });
+
+        // Clean up on page unload
+        window.addEventListener('beforeunload', () => {
+            if (cursorTrailInstance) {
+                cursorTrailInstance.stopAnimation();
+            }
         });
     </script>
 </body>

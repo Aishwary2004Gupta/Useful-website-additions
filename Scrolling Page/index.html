@@ -1,722 +1,817 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Scroll Expansion Hero - All Demos</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+      }
 
-        body {
-            background: #0a0a0a;
-            color: white;
-            overflow-x: hidden;
-        }
+      body {
+        background: #0a0a0a;
+        color: white;
+        overflow-x: hidden;
+      }
 
-        .demo-selector {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-            display: flex;
-            gap: 12px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 12px 20px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-        }
+      .demo-selector {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 100;
+        display: flex;
+        gap: 12px;
+        background: rgba(0, 0, 0, 0.8);
+        padding: 12px 20px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+      }
 
-        .demo-button {
-            padding: 10px 16px;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-            font-size: 0.9rem;
-            white-space: nowrap;
-        }
+      .demo-button {
+        padding: 10px 16px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        font-size: 0.9rem;
+        white-space: nowrap;
+      }
 
-        .demo-button.active {
-            background: white;
-            color: black;
-            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
-        }
+      .demo-button.active {
+        background: white;
+        color: black;
+        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+      }
 
-        .demo-button:hover:not(.active) {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
+      .demo-button:hover:not(.active) {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+      }
 
-        .scroll-expand-section {
-            position: relative;
-            min-height: 100vh;
-            width: 100%;
-            overflow: hidden;
-            display: none;
-        }
+      .scroll-expand-section {
+        position: relative;
+        min-height: 100vh;
+        width: 100%;
+        overflow: hidden;
+        display: none;
+      }
 
-        .scroll-expand-section.active {
-            display: block;
-        }
+      .scroll-expand-section.active {
+        display: block;
+      }
 
-        .background-image {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: 0;
-            transition: opacity 0.7s ease;
-        }
+      .background-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 0;
+        transition: opacity 0.7s ease;
+      }
 
-        .background-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.1);
-            z-index: 1;
-        }
+      .background-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.1);
+        z-index: 1;
+      }
 
-        .container {
-            position: relative;
-            z-index: 2;
-            width: 100%;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
+      .container {
+        position: relative;
+        z-index: 2;
+        width: 100%;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
 
-        .media-container {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
-            transition: all 0.1s ease-out;
-            z-index: 3;
-        }
+      .media-container {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
+        transition: all 0.1s ease-out;
+        z-index: 3;
+      }
 
-        .media-content {
-            width: 100%;
-            height: 100%;
-            border-radius: 16px;
-            object-fit: cover;
-        }
+      .media-content {
+        width: 100%;
+        height: 100%;
+        border-radius: 16px;
+        object-fit: cover;
+      }
 
-        .media-image {
-            width: 100%;
-            height: 100%;
-            border-radius: 16px;
-            object-fit: cover;
-        }
+      .media-image {
+        width: 100%;
+        height: 100%;
+        border-radius: 16px;
+        object-fit: cover;
+      }
 
-        .media-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 16px;
-            transition: opacity 0.2s ease;
-        }
+      .media-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 16px;
+        transition: opacity 0.2s ease;
+      }
 
-        .text-content {
-            position: relative;
-            z-index: 4;
-            text-align: center;
-            mix-blend-mode: normal;
-            transition: all 0.1s ease-out;
-        }
+      .text-content {
+        position: relative;
+        z-index: 4;
+        text-align: center;
+        mix-blend-mode: normal;
+        transition: all 0.1s ease-out;
+      }
 
-        .text-content.text-blend {
-            mix-blend-mode: difference;
-        }
+      .text-content.text-blend {
+        mix-blend-mode: difference;
+      }
 
-        .title-wrapper {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 16px;
-            margin-bottom: 8px;
-        }
+      .title-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 16px;
+        margin-bottom: 8px;
+      }
 
+      .title-part {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #bfdbfe;
+        transition: transform 0.1s ease-out;
+      }
+
+      @media (min-width: 768px) {
         .title-part {
-            font-size: 3rem;
-            font-weight: 700;
-            color: #bfdbfe;
-            transition: transform 0.1s ease-out;
+          font-size: 4rem;
         }
+      }
 
-        @media (min-width: 768px) {
-            .title-part {
-                font-size: 4rem;
-            }
+      @media (min-width: 1024px) {
+        .title-part {
+          font-size: 5rem;
         }
+      }
 
-        @media (min-width: 1024px) {
-            .title-part {
-                font-size: 5rem;
-            }
-        }
+      .date-text {
+        font-size: 1.5rem;
+        color: #bfdbfe;
+        margin-bottom: 16px;
+        transition: transform 0.1s ease-out;
+      }
 
-        .date-text {
-            font-size: 1.5rem;
-            color: #bfdbfe;
-            margin-bottom: 16px;
-            transition: transform 0.1s ease-out;
-        }
+      .scroll-hint {
+        color: #bfdbfe;
+        font-weight: 500;
+        text-align: center;
+        transition: transform 0.1s ease-out;
+      }
 
-        .scroll-hint {
-            color: #bfdbfe;
-            font-weight: 500;
-            text-align: center;
-            transition: transform 0.1s ease-out;
-        }
+      .expanded-content {
+        width: 100%;
+        padding: 40px 32px;
+        opacity: 0;
+        transition: opacity 0.7s ease;
+        background: white;
+        color: black;
+      }
 
+      @media (min-width: 768px) {
         .expanded-content {
-            width: 100%;
-            padding: 40px 32px;
-            opacity: 0;
-            transition: opacity 0.7s ease;
-            background: white;
-            color: black;
+          padding: 40px 64px;
         }
+      }
 
-        @media (min-width: 768px) {
-            .expanded-content {
-                padding: 40px 64px;
-            }
+      @media (min-width: 1024px) {
+        .expanded-content {
+          padding: 80px 128px;
         }
+      }
 
-        @media (min-width: 1024px) {
-            .expanded-content {
-                padding: 80px 128px;
-            }
-        }
+      .content-wrapper {
+        max-width: 896px;
+        margin: 0 auto;
+      }
 
-        .content-wrapper {
-            max-width: 896px;
-            margin: 0 auto;
-        }
+      .content-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 24px;
+        color: black;
+      }
 
-        .content-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 24px;
-            color: black;
-        }
+      .content-text {
+        font-size: 1.125rem;
+        line-height: 1.7;
+        margin-bottom: 24px;
+        color: black;
+      }
 
-        .content-text {
-            font-size: 1.125rem;
-            line-height: 1.7;
-            margin-bottom: 24px;
-            color: black;
-        }
+      .loading-spinner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(59, 130, 246, 0.3);
+        border-top: 4px solid #3b82f6;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        z-index: 5;
+      }
 
-        .loading-spinner {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(59, 130, 246, 0.3);
-            border-top: 4px solid #3b82f6;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            z-index: 5;
+      @keyframes spin {
+        0% {
+          transform: translate(-50%, -50%) rotate(0deg);
         }
+        100% {
+          transform: translate(-50%, -50%) rotate(360deg);
+        }
+      }
 
-        @keyframes spin {
-            0% { transform: translate(-50%, -50%) rotate(0deg); }
-            100% { transform: translate(-50%, -50%) rotate(360deg); }
-        }
+      .scroll-indicator {
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        opacity: 0.7;
+        z-index: 4;
+      }
 
-        .scroll-indicator {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            opacity: 0.7;
-            z-index: 4;
-        }
+      .scroll-arrow {
+        width: 20px;
+        height: 20px;
+        border-right: 2px solid #bfdbfe;
+        border-bottom: 2px solid #bfdbfe;
+        transform: rotate(45deg);
+        animation: bounce 2s infinite;
+      }
 
-        .scroll-arrow {
-            width: 20px;
-            height: 20px;
-            border-right: 2px solid #bfdbfe;
-            border-bottom: 2px solid #bfdbfe;
-            transform: rotate(45deg);
-            animation: bounce 2s infinite;
+      @keyframes bounce {
+        0%,
+        20%,
+        50%,
+        80%,
+        100% {
+          transform: rotate(45deg) translateY(0);
         }
+        40% {
+          transform: rotate(45deg) translateY(-10px);
+        }
+        60% {
+          transform: rotate(45deg) translateY(-5px);
+        }
+      }
 
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {
-                transform: rotate(45deg) translateY(0);
-            }
-            40% {
-                transform: rotate(45deg) translateY(-10px);
-            }
-            60% {
-                transform: rotate(45deg) translateY(-5px);
-            }
-        }
-
-        .demo-info {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 12px 16px;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            font-size: 0.9rem;
-            z-index: 100;
-        }
+      .demo-info {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        padding: 12px 16px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        font-size: 0.9rem;
+        z-index: 100;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="demo-selector">
-        <button class="demo-button active" data-demo="video-expansion">Video Expansion</button>
-        <button class="demo-button" data-demo="video-expansion-text-blend">Video Expansion Text Blend</button>
-        <button class="demo-button" data-demo="image-expansion-text-blend">Image Expansion Text Blend</button>
-        <button class="demo-button" data-demo="image-expansion">Image Expansion</button>
+      <button class="demo-button active" data-demo="video-expansion">
+        Video Expansion
+      </button>
+      <button class="demo-button" data-demo="video-expansion-text-blend">
+        Video Expansion Text Blend
+      </button>
+      <button class="demo-button" data-demo="image-expansion-text-blend">
+        Image Expansion Text Blend
+      </button>
+      <button class="demo-button" data-demo="image-expansion">
+        Image Expansion
+      </button>
     </div>
 
     <!-- Video Expansion Demo -->
     <div class="scroll-expand-section active" id="video-expansion">
-        <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1920&auto=format&fit=crop" alt="Background" class="background-image">
-        <div class="background-overlay"></div>
+      <img
+        src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1920&auto=format&fit=crop"
+        alt="Background"
+        class="background-image"
+      />
+      <div class="background-overlay"></div>
 
-        <div class="container">
-            <div class="media-container">
-                <div class="loading-spinner"></div>
-                <video class="media-content" muted loop playsinline preload="auto">
-                    <source src="https://me7aitdbxq.ufs.sh/f/2wsMIGDMQRdYuZ5R8ahEEZ4aQK56LizRdfBSqeDMsmUIrJN1" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
-                <div class="media-overlay"></div>
-            </div>
-
-            <div class="text-content">
-                <div class="title-wrapper">
-                    <div class="title-part">Immersive</div>
-                    <div class="title-part">Video Experience</div>
-                </div>
-                <div class="date-text">Cosmic Journey</div>
-                <div class="scroll-hint">Scroll to Expand Demo</div>
-            </div>
-
-            <div class="scroll-indicator">
-                <div class="scroll-arrow"></div>
-                <div style="color: #bfdbfe; font-size: 0.9rem;">Scroll</div>
-            </div>
+      <div class="container">
+        <div class="media-container">
+          <div class="loading-spinner"></div>
+          <video class="media-content" muted loop playsinline preload="auto">
+            <source
+              src="https://me7aitdbxq.ufs.sh/f/2wsMIGDMQRdYuZ5R8ahEEZ4aQK56LizRdfBSqeDMsmUIrJN1"
+              type="video/mp4"
+            />
+            Your browser does not support the video tag.
+          </video>
+          <div class="media-overlay"></div>
         </div>
 
-        <div class="expanded-content">
-            <div class="content-wrapper">
-                <h2 class="content-title">About This Component</h2>
-                <p class="content-text">
-                    This is a demonstration of the ScrollExpandMedia component with a video. As you scroll, the video expands to fill more of the screen, creating an immersive experience. This component is perfect for showcasing video content in a modern, interactive way.
-                </p>
-                <p class="content-text">
-                    The ScrollExpandMedia component provides a unique way to engage users with your content through interactive scrolling. Try switching between video and image modes to see different implementations.
-                </p>
-            </div>
+        <div class="text-content">
+          <div class="title-wrapper">
+            <div class="title-part">Immersive</div>
+            <div class="title-part">Video Experience</div>
+          </div>
+          <div class="date-text">Cosmic Journey</div>
+          <div class="scroll-hint">Scroll to Expand Demo</div>
         </div>
+
+        <div class="scroll-indicator">
+          <div class="scroll-arrow"></div>
+          <div style="color: #bfdbfe; font-size: 0.9rem">Scroll</div>
+        </div>
+      </div>
+
+      <div class="expanded-content">
+        <div class="content-wrapper">
+          <h2 class="content-title">About This Component</h2>
+          <p class="content-text">
+            This is a demonstration of the ScrollExpandMedia component with a
+            video. As you scroll, the video expands to fill more of the screen,
+            creating an immersive experience. This component is perfect for
+            showcasing video content in a modern, interactive way.
+          </p>
+          <p class="content-text">
+            The ScrollExpandMedia component provides a unique way to engage
+            users with your content through interactive scrolling. Try switching
+            between video and image modes to see different implementations.
+          </p>
+        </div>
+      </div>
     </div>
 
     <!-- Video Expansion Text Blend Demo -->
     <div class="scroll-expand-section" id="video-expansion-text-blend">
-        <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1920&auto=format&fit=crop" alt="Background" class="background-image">
-        <div class="background-overlay"></div>
+      <img
+        src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1920&auto=format&fit=crop"
+        alt="Background"
+        class="background-image"
+      />
+      <div class="background-overlay"></div>
 
-        <div class="container">
-            <div class="media-container">
-                <div class="loading-spinner"></div>
-                <video class="media-content" muted loop playsinline preload="auto">
-                    <source src="https://me7aitdbxq.ufs.sh/f/2wsMIGDMQRdYuZ5R8ahEEZ4aQK56LizRdfBSqeDMsmUIrJN1" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
-                <div class="media-overlay"></div>
-            </div>
-
-            <div class="text-content text-blend">
-                <div class="title-wrapper">
-                    <div class="title-part">Immersive</div>
-                    <div class="title-part">Video Experience</div>
-                </div>
-                <div class="date-text">Cosmic Journey</div>
-                <div class="scroll-hint">Scroll to Expand Demo</div>
-            </div>
-
-            <div class="scroll-indicator">
-                <div class="scroll-arrow"></div>
-                <div style="color: #bfdbfe; font-size: 0.9rem;">Scroll</div>
-            </div>
+      <div class="container">
+        <div class="media-container">
+          <div class="loading-spinner"></div>
+          <video class="media-content" muted loop playsinline preload="auto">
+            <source
+              src="https://me7aitdbxq.ufs.sh/f/2wsMIGDMQRdYuZ5R8ahEEZ4aQK56LizRdfBSqeDMsmUIrJN1"
+              type="video/mp4"
+            />
+            Your browser does not support the video tag.
+          </video>
+          <div class="media-overlay"></div>
         </div>
 
-        <div class="expanded-content">
-            <div class="content-wrapper">
-                <h2 class="content-title">About This Component</h2>
-                <p class="content-text">
-                    This is a demonstration of the ScrollExpandMedia component with a video. As you scroll, the video expands to fill more of the screen, creating an immersive experience. This component is perfect for showcasing video content in a modern, interactive way.
-                </p>
-                <p class="content-text">
-                    The ScrollExpandMedia component provides a unique way to engage users with your content through interactive scrolling. Try switching between video and image modes to see different implementations.
-                </p>
-            </div>
+        <div class="text-content text-blend">
+          <div class="title-wrapper">
+            <div class="title-part">Immersive</div>
+            <div class="title-part">Video Experience</div>
+          </div>
+          <div class="date-text">Cosmic Journey</div>
+          <div class="scroll-hint">Scroll to Expand Demo</div>
         </div>
+
+        <div class="scroll-indicator">
+          <div class="scroll-arrow"></div>
+          <div style="color: #bfdbfe; font-size: 0.9rem">Scroll</div>
+        </div>
+      </div>
+
+      <div class="expanded-content">
+        <div class="content-wrapper">
+          <h2 class="content-title">About This Component</h2>
+          <p class="content-text">
+            This is a demonstration of the ScrollExpandMedia component with a
+            video. As you scroll, the video expands to fill more of the screen,
+            creating an immersive experience. This component is perfect for
+            showcasing video content in a modern, interactive way.
+          </p>
+          <p class="content-text">
+            The ScrollExpandMedia component provides a unique way to engage
+            users with your content through interactive scrolling. Try switching
+            between video and image modes to see different implementations.
+          </p>
+        </div>
+      </div>
     </div>
 
     <!-- Image Expansion Text Blend Demo -->
     <div class="scroll-expand-section" id="image-expansion-text-blend">
-        <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1920&auto=format&fit=crop" alt="Background" class="background-image">
-        <div class="background-overlay"></div>
+      <img
+        src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1920&auto=format&fit=crop"
+        alt="Background"
+        class="background-image"
+      />
+      <div class="background-overlay"></div>
 
-        <div class="container">
-            <div class="media-container">
-                <div class="loading-spinner"></div>
-                <img src="https://images.unsplash.com/photo-1682687982501-1e58ab814714?q=80&w=1280&auto=format&fit=crop" alt="Underwater" class="media-image">
-                <div class="media-overlay"></div>
-            </div>
-
-            <div class="text-content text-blend">
-                <div class="title-wrapper">
-                    <div class="title-part">Dynamic</div>
-                    <div class="title-part">Image Showcase</div>
-                </div>
-                <div class="date-text">Underwater Adventure</div>
-                <div class="scroll-hint">Scroll to Expand Demo</div>
-            </div>
-
-            <div class="scroll-indicator">
-                <div class="scroll-arrow"></div>
-                <div style="color: #bfdbfe; font-size: 0.9rem;">Scroll</div>
-            </div>
+      <div class="container">
+        <div class="media-container">
+          <div class="loading-spinner"></div>
+          <img
+            src="https://images.unsplash.com/photo-1682687982501-1e58ab814714?q=80&w=1280&auto=format&fit=crop"
+            alt="Underwater"
+            class="media-image"
+          />
+          <div class="media-overlay"></div>
         </div>
 
-        <div class="expanded-content">
-            <div class="content-wrapper">
-                <h2 class="content-title">About This Component</h2>
-                <p class="content-text">
-                    This is a demonstration of the ScrollExpandMedia component with an image. The same smooth expansion effect works beautifully with static images, allowing you to create engaging visual experiences without video content.
-                </p>
-                <p class="content-text">
-                    The ScrollExpandMedia component works equally well with images and videos. This flexibility allows you to choose the media type that best suits your content while maintaining the same engaging user experience.
-                </p>
-            </div>
+        <div class="text-content text-blend">
+          <div class="title-wrapper">
+            <div class="title-part">Dynamic</div>
+            <div class="title-part">Image Showcase</div>
+          </div>
+          <div class="date-text">Underwater Adventure</div>
+          <div class="scroll-hint">Scroll to Expand Demo</div>
         </div>
+
+        <div class="scroll-indicator">
+          <div class="scroll-arrow"></div>
+          <div style="color: #bfdbfe; font-size: 0.9rem">Scroll</div>
+        </div>
+      </div>
+
+      <div class="expanded-content">
+        <div class="content-wrapper">
+          <h2 class="content-title">About This Component</h2>
+          <p class="content-text">
+            This is a demonstration of the ScrollExpandMedia component with an
+            image. The same smooth expansion effect works beautifully with
+            static images, allowing you to create engaging visual experiences
+            without video content.
+          </p>
+          <p class="content-text">
+            The ScrollExpandMedia component works equally well with images and
+            videos. This flexibility allows you to choose the media type that
+            best suits your content while maintaining the same engaging user
+            experience.
+          </p>
+        </div>
+      </div>
     </div>
 
     <!-- Image Expansion Demo -->
     <div class="scroll-expand-section" id="image-expansion">
-        <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1920&auto=format&fit=crop" alt="Background" class="background-image">
-        <div class="background-overlay"></div>
+      <img
+        src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1920&auto=format&fit=crop"
+        alt="Background"
+        class="background-image"
+      />
+      <div class="background-overlay"></div>
 
-        <div class="container">
-            <div class="media-container">
-                <div class="loading-spinner"></div>
-                <img src="https://images.unsplash.com/photo-1682687982501-1e58ab814714?q=80&w=1280&auto=format&fit=crop" alt="Underwater" class="media-image">
-                <div class="media-overlay"></div>
-            </div>
-
-            <div class="text-content">
-                <div class="title-wrapper">
-                    <div class="title-part">Dynamic</div>
-                    <div class="title-part">Image Showcase</div>
-                </div>
-                <div class="date-text">Underwater Adventure</div>
-                <div class="scroll-hint">Scroll to Expand Demo</div>
-            </div>
-
-            <div class="scroll-indicator">
-                <div class="scroll-arrow"></div>
-                <div style="color: #bfdbfe; font-size: 0.9rem;">Scroll</div>
-            </div>
+      <div class="container">
+        <div class="media-container">
+          <div class="loading-spinner"></div>
+          <img
+            src="https://images.unsplash.com/photo-1682687982501-1e58ab814714?q=80&w=1280&auto=format&fit=crop"
+            alt="Underwater"
+            class="media-image"
+          />
+          <div class="media-overlay"></div>
         </div>
 
-        <div class="expanded-content">
-            <div class="content-wrapper">
-                <h2 class="content-title">About This Component</h2>
-                <p class="content-text">
-                    This is a demonstration of the ScrollExpandMedia component with an image. The same smooth expansion effect works beautifully with static images, allowing you to create engaging visual experiences without video content.
-                </p>
-                <p class="content-text">
-                    The ScrollExpandMedia component works equally well with images and videos. This flexibility allows you to choose the media type that best suits your content while maintaining the same engaging user experience.
-                </p>
-            </div>
+        <div class="text-content">
+          <div class="title-wrapper">
+            <div class="title-part">Dynamic</div>
+            <div class="title-part">Image Showcase</div>
+          </div>
+          <div class="date-text">Underwater Adventure</div>
+          <div class="scroll-hint">Scroll to Expand Demo</div>
         </div>
+
+        <div class="scroll-indicator">
+          <div class="scroll-arrow"></div>
+          <div style="color: #bfdbfe; font-size: 0.9rem">Scroll</div>
+        </div>
+      </div>
+
+      <div class="expanded-content">
+        <div class="content-wrapper">
+          <h2 class="content-title">About This Component</h2>
+          <p class="content-text">
+            This is a demonstration of the ScrollExpandMedia component with an
+            image. The same smooth expansion effect works beautifully with
+            static images, allowing you to create engaging visual experiences
+            without video content.
+          </p>
+          <p class="content-text">
+            The ScrollExpandMedia component works equally well with images and
+            videos. This flexibility allows you to choose the media type that
+            best suits your content while maintaining the same engaging user
+            experience.
+          </p>
+        </div>
+      </div>
     </div>
 
     <div class="demo-info">
-        Current: <span id="current-demo">Video Expansion</span>
+      Current: <span id="current-demo">Video Expansion</span>
     </div>
 
     <script>
-        class ScrollExpandManager {
-            constructor() {
-                this.currentDemo = 'video-expansion';
-                this.demos = {};
-                this.init();
-            }
-
-            init() {
-                this.setupDemoSelector();
-                this.initializeAllDemos();
-                this.showDemo(this.currentDemo);
-            }
-
-            setupDemoSelector() {
-                const buttons = document.querySelectorAll('.demo-button');
-                buttons.forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        const demoId = e.target.getAttribute('data-demo');
-                        this.switchDemo(demoId);
-                        
-                        // Update active button
-                        buttons.forEach(btn => btn.classList.remove('active'));
-                        e.target.classList.add('active');
-                    });
-                });
-            }
-
-            initializeAllDemos() {
-                const demoIds = [
-                    'video-expansion',
-                    'video-expansion-text-blend', 
-                    'image-expansion-text-blend',
-                    'image-expansion'
-                ];
-
-                demoIds.forEach(demoId => {
-                    this.demos[demoId] = new ScrollExpandHero(demoId);
-                });
-            }
-
-            switchDemo(demoId) {
-                // Hide current demo
-                document.getElementById(this.currentDemo).classList.remove('active');
-                
-                // Show new demo
-                this.currentDemo = demoId;
-                document.getElementById(demoId).classList.add('active');
-                
-                // Update demo info
-                document.getElementById('current-demo').textContent = 
-                    this.getDemoDisplayName(demoId);
-                
-                // Reset the new demo
-                this.demos[demoId].resetState();
-            }
-
-            getDemoDisplayName(demoId) {
-                const names = {
-                    'video-expansion': 'Video Expansion',
-                    'video-expansion-text-blend': 'Video Expansion Text Blend',
-                    'image-expansion-text-blend': 'Image Expansion Text Blend',
-                    'image-expansion': 'Image Expansion'
-                };
-                return names[demoId];
-            }
-
-            showDemo(demoId) {
-                document.getElementById(demoId).classList.add('active');
-            }
+      class ScrollExpandManager {
+        constructor() {
+          this.currentDemo = "video-expansion";
+          this.demos = {};
+          this.init();
         }
 
-        class ScrollExpandHero {
-            constructor(sectionId) {
-                this.sectionId = sectionId;
-                this.scrollProgress = 0;
-                this.showContent = false;
-                this.mediaFullyExpanded = false;
-                this.touchStartY = 0;
-                this.isMobile = window.innerWidth < 768;
-                
-                // DOM Elements
-                this.section = document.getElementById(sectionId);
-                this.mediaContainer = this.section.querySelector('.media-container');
-                this.mediaContent = this.section.querySelector('.media-content, .media-image');
-                this.backgroundImage = this.section.querySelector('.background-image');
-                this.mediaOverlay = this.section.querySelector('.media-overlay');
-                this.textContent = this.section.querySelector('.text-content');
-                this.titleParts = this.section.querySelectorAll('.title-part');
-                this.dateText = this.section.querySelector('.date-text');
-                this.scrollHint = this.section.querySelector('.scroll-hint');
-                this.expandedContent = this.section.querySelector('.expanded-content');
-                this.loadingSpinner = this.section.querySelector('.loading-spinner');
-                
-                this.init();
-            }
-
-            init() {
-                this.setupEventListeners();
-                this.resetState();
-                this.preloadMedia();
-            }
-
-            setupEventListeners() {
-                // Only add event listeners to the active section
-                this.section.addEventListener('wheel', this.handleWheel.bind(this), { passive: false });
-                this.section.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
-                this.section.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
-                this.section.addEventListener('touchend', this.handleTouchEnd.bind(this));
-                
-                window.addEventListener('scroll', this.handleScroll.bind(this));
-                window.addEventListener('resize', this.handleResize.bind(this));
-            }
-
-            resetState() {
-                this.scrollProgress = 0;
-                this.showContent = false;
-                this.mediaFullyExpanded = false;
-                this.updateLayout();
-                window.scrollTo(0, 0);
-            }
-
-            handleWheel(e) {
-                if (!this.section.classList.contains('active')) return;
-
-                if (this.mediaFullyExpanded && e.deltaY < 0 && window.scrollY <= 5) {
-                    this.mediaFullyExpanded = false;
-                    e.preventDefault();
-                } else if (!this.mediaFullyExpanded) {
-                    e.preventDefault();
-                    const scrollDelta = e.deltaY * 0.0009;
-                    this.updateScrollProgress(scrollDelta);
-                }
-            }
-
-            handleTouchStart(e) {
-                if (!this.section.classList.contains('active')) return;
-                this.touchStartY = e.touches[0].clientY;
-            }
-
-            handleTouchMove(e) {
-                if (!this.section.classList.contains('active') || !this.touchStartY) return;
-
-                const touchY = e.touches[0].clientY;
-                const deltaY = this.touchStartY - touchY;
-
-                if (this.mediaFullyExpanded && deltaY < -20 && window.scrollY <= 5) {
-                    this.mediaFullyExpanded = false;
-                    e.preventDefault();
-                } else if (!this.mediaFullyExpanded) {
-                    e.preventDefault();
-                    const scrollFactor = deltaY < 0 ? 0.008 : 0.005;
-                    const scrollDelta = deltaY * scrollFactor;
-                    this.updateScrollProgress(scrollDelta);
-                    this.touchStartY = touchY;
-                }
-            }
-
-            handleTouchEnd() {
-                this.touchStartY = 0;
-            }
-
-            handleScroll() {
-                if (!this.mediaFullyExpanded && this.section.classList.contains('active')) {
-                    window.scrollTo(0, 0);
-                }
-            }
-
-            handleResize() {
-                this.isMobile = window.innerWidth < 768;
-                this.updateLayout();
-            }
-
-            updateScrollProgress(delta) {
-                this.scrollProgress = Math.min(Math.max(this.scrollProgress + delta, 0), 1);
-                
-                if (this.scrollProgress >= 1) {
-                    this.mediaFullyExpanded = true;
-                    this.showContent = true;
-                } else if (this.scrollProgress < 0.75) {
-                    this.showContent = false;
-                }
-                
-                this.updateLayout();
-            }
-
-            updateLayout() {
-                // Update media container size
-                const baseWidth = this.isMobile ? 300 : 300;
-                const baseHeight = this.isMobile ? 400 : 400;
-                const expandedWidth = this.isMobile ? 950 : 1550;
-                const expandedHeight = this.isMobile ? 600 : 800;
-                
-                const mediaWidth = baseWidth + this.scrollProgress * (expandedWidth - baseWidth);
-                const mediaHeight = baseHeight + this.scrollProgress * (expandedHeight - baseHeight);
-                
-                this.mediaContainer.style.width = `${mediaWidth}px`;
-                this.mediaContainer.style.height = `${mediaHeight}px`;
-                this.mediaContainer.style.maxWidth = '95vw';
-                this.mediaContainer.style.maxHeight = '85vh';
-
-                // Update text positions
-                const textTranslateX = this.scrollProgress * (this.isMobile ? 180 : 150);
-                this.titleParts[0].style.transform = `translateX(-${textTranslateX}vw)`;
-                this.titleParts[1].style.transform = `translateX(${textTranslateX}vw)`;
-                this.dateText.style.transform = `translateX(-${textTranslateX}vw)`;
-                this.scrollHint.style.transform = `translateX(${textTranslateX}vw)`;
-
-                // Update overlays and background
-                this.backgroundImage.style.opacity = 1 - this.scrollProgress;
-                this.mediaOverlay.style.opacity = 0.7 - this.scrollProgress * 0.3;
-
-                // Update expanded content
-                this.expandedContent.style.opacity = this.showContent ? '1' : '0';
-                
-                // Hide loading spinner when media is loaded
-                if (this.mediaContent.complete || this.mediaContent.readyState >= 3) {
-                    this.loadingSpinner.style.display = 'none';
-                }
-            }
-
-            preloadMedia() {
-                if (this.mediaContent.tagName === 'VIDEO') {
-                    this.mediaContent.addEventListener('loadeddata', () => {
-                        this.loadingSpinner.style.display = 'none';
-                    });
-                    
-                    this.mediaContent.addEventListener('loadstart', () => {
-                        this.loadingSpinner.style.display = 'block';
-                    });
-                } else {
-                    this.mediaContent.addEventListener('load', () => {
-                        this.loadingSpinner.style.display = 'none';
-                    });
-                }
-            }
+        init() {
+          this.setupDemoSelector();
+          this.initializeAllDemos();
+          this.showDemo(this.currentDemo);
         }
 
-        // Initialize the manager when DOM is loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            new ScrollExpandManager();
-        });
+        setupDemoSelector() {
+          const buttons = document.querySelectorAll(".demo-button");
+          buttons.forEach((button) => {
+            button.addEventListener("click", (e) => {
+              const demoId = e.target.getAttribute("data-demo");
+              this.switchDemo(demoId);
+
+              // Update active button
+              buttons.forEach((btn) => btn.classList.remove("active"));
+              e.target.classList.add("active");
+            });
+          });
+        }
+
+        initializeAllDemos() {
+          const demoIds = [
+            "video-expansion",
+            "video-expansion-text-blend",
+            "image-expansion-text-blend",
+            "image-expansion",
+          ];
+
+          demoIds.forEach((demoId) => {
+            this.demos[demoId] = new ScrollExpandHero(demoId);
+          });
+        }
+
+        switchDemo(demoId) {
+          // Hide current demo
+          document.getElementById(this.currentDemo).classList.remove("active");
+
+          // Show new demo
+          this.currentDemo = demoId;
+          document.getElementById(demoId).classList.add("active");
+
+          // Update demo info
+          document.getElementById("current-demo").textContent =
+            this.getDemoDisplayName(demoId);
+
+          // Reset the new demo
+          this.demos[demoId].resetState();
+        }
+
+        getDemoDisplayName(demoId) {
+          const names = {
+            "video-expansion": "Video Expansion",
+            "video-expansion-text-blend": "Video Expansion Text Blend",
+            "image-expansion-text-blend": "Image Expansion Text Blend",
+            "image-expansion": "Image Expansion",
+          };
+          return names[demoId];
+        }
+
+        showDemo(demoId) {
+          document.getElementById(demoId).classList.add("active");
+        }
+      }
+
+      class ScrollExpandHero {
+        constructor(sectionId) {
+          this.sectionId = sectionId;
+          this.scrollProgress = 0;
+          this.showContent = false;
+          this.mediaFullyExpanded = false;
+          this.touchStartY = 0;
+          this.isMobile = window.innerWidth < 768;
+
+          // DOM Elements
+          this.section = document.getElementById(sectionId);
+          this.mediaContainer = this.section.querySelector(".media-container");
+          this.mediaContent = this.section.querySelector(
+            ".media-content, .media-image"
+          );
+          this.backgroundImage =
+            this.section.querySelector(".background-image");
+          this.mediaOverlay = this.section.querySelector(".media-overlay");
+          this.textContent = this.section.querySelector(".text-content");
+          this.titleParts = this.section.querySelectorAll(".title-part");
+          this.dateText = this.section.querySelector(".date-text");
+          this.scrollHint = this.section.querySelector(".scroll-hint");
+          this.expandedContent =
+            this.section.querySelector(".expanded-content");
+          this.loadingSpinner = this.section.querySelector(".loading-spinner");
+
+          this.init();
+        }
+
+        init() {
+          this.setupEventListeners();
+          this.resetState();
+          this.preloadMedia();
+        }
+
+        setupEventListeners() {
+          // Only add event listeners to the active section
+          this.section.addEventListener("wheel", this.handleWheel.bind(this), {
+            passive: false,
+          });
+          this.section.addEventListener(
+            "touchstart",
+            this.handleTouchStart.bind(this),
+            { passive: false }
+          );
+          this.section.addEventListener(
+            "touchmove",
+            this.handleTouchMove.bind(this),
+            { passive: false }
+          );
+          this.section.addEventListener(
+            "touchend",
+            this.handleTouchEnd.bind(this)
+          );
+
+          window.addEventListener("scroll", this.handleScroll.bind(this));
+          window.addEventListener("resize", this.handleResize.bind(this));
+        }
+
+        resetState() {
+          this.scrollProgress = 0;
+          this.showContent = false;
+          this.mediaFullyExpanded = false;
+          this.updateLayout();
+          window.scrollTo(0, 0);
+        }
+
+        handleWheel(e) {
+          if (!this.section.classList.contains("active")) return;
+
+          if (this.mediaFullyExpanded && e.deltaY < 0 && window.scrollY <= 5) {
+            this.mediaFullyExpanded = false;
+            e.preventDefault();
+          } else if (!this.mediaFullyExpanded) {
+            e.preventDefault();
+            const scrollDelta = e.deltaY * 0.0009;
+            this.updateScrollProgress(scrollDelta);
+          }
+        }
+
+        handleTouchStart(e) {
+          if (!this.section.classList.contains("active")) return;
+          this.touchStartY = e.touches[0].clientY;
+        }
+
+        handleTouchMove(e) {
+          if (!this.section.classList.contains("active") || !this.touchStartY)
+            return;
+
+          const touchY = e.touches[0].clientY;
+          const deltaY = this.touchStartY - touchY;
+
+          if (this.mediaFullyExpanded && deltaY < -20 && window.scrollY <= 5) {
+            this.mediaFullyExpanded = false;
+            e.preventDefault();
+          } else if (!this.mediaFullyExpanded) {
+            e.preventDefault();
+            const scrollFactor = deltaY < 0 ? 0.008 : 0.005;
+            const scrollDelta = deltaY * scrollFactor;
+            this.updateScrollProgress(scrollDelta);
+            this.touchStartY = touchY;
+          }
+        }
+
+        handleTouchEnd() {
+          this.touchStartY = 0;
+        }
+
+        handleScroll() {
+          if (
+            !this.mediaFullyExpanded &&
+            this.section.classList.contains("active")
+          ) {
+            window.scrollTo(0, 0);
+          }
+        }
+
+        handleResize() {
+          this.isMobile = window.innerWidth < 768;
+          this.updateLayout();
+        }
+
+        updateScrollProgress(delta) {
+          this.scrollProgress = Math.min(
+            Math.max(this.scrollProgress + delta, 0),
+            1
+          );
+
+          if (this.scrollProgress >= 1) {
+            this.mediaFullyExpanded = true;
+            this.showContent = true;
+          } else if (this.scrollProgress < 0.75) {
+            this.showContent = false;
+          }
+
+          this.updateLayout();
+        }
+
+        updateLayout() {
+          // Update media container size
+          const baseWidth = this.isMobile ? 300 : 300;
+          const baseHeight = this.isMobile ? 400 : 400;
+          const expandedWidth = this.isMobile ? 950 : 1550;
+          const expandedHeight = this.isMobile ? 600 : 800;
+
+          const mediaWidth =
+            baseWidth + this.scrollProgress * (expandedWidth - baseWidth);
+          const mediaHeight =
+            baseHeight + this.scrollProgress * (expandedHeight - baseHeight);
+
+          this.mediaContainer.style.width = `${mediaWidth}px`;
+          this.mediaContainer.style.height = `${mediaHeight}px`;
+          this.mediaContainer.style.maxWidth = "95vw";
+          this.mediaContainer.style.maxHeight = "85vh";
+
+          // Update text positions
+          const textTranslateX =
+            this.scrollProgress * (this.isMobile ? 180 : 150);
+          this.titleParts[0].style.transform = `translateX(-${textTranslateX}vw)`;
+          this.titleParts[1].style.transform = `translateX(${textTranslateX}vw)`;
+          this.dateText.style.transform = `translateX(-${textTranslateX}vw)`;
+          this.scrollHint.style.transform = `translateX(${textTranslateX}vw)`;
+
+          // Update overlays and background
+          this.backgroundImage.style.opacity = 1 - this.scrollProgress;
+          this.mediaOverlay.style.opacity = 0.7 - this.scrollProgress * 0.3;
+
+          // Update expanded content
+          this.expandedContent.style.opacity = this.showContent ? "1" : "0";
+
+          // Hide loading spinner when media is loaded
+          if (this.mediaContent.complete || this.mediaContent.readyState >= 3) {
+            this.loadingSpinner.style.display = "none";
+          }
+        }
+
+        preloadMedia() {
+          if (this.mediaContent.tagName === "VIDEO") {
+            this.mediaContent.addEventListener("loadeddata", () => {
+              this.loadingSpinner.style.display = "none";
+            });
+
+            this.mediaContent.addEventListener("loadstart", () => {
+              this.loadingSpinner.style.display = "block";
+            });
+          } else {
+            this.mediaContent.addEventListener("load", () => {
+              this.loadingSpinner.style.display = "none";
+            });
+          }
+        }
+      }
+
+      // Initialize the manager when DOM is loaded
+      document.addEventListener("DOMContentLoaded", () => {
+        new ScrollExpandManager();
+      });
     </script>
-</body>
+  </body>
 </html>

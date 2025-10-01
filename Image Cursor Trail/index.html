@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Cursor Trail</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .demo-section {
+            width: 100%;
+            max-width: 1200px;
+            border-radius: 24px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 8px;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (min-width: 768px) {
+            .demo-section {
+                border-radius: 44px 44px 20px 20px;
+                padding: 16px;
+            }
+        }
+
+        .demo-container {
+            position: relative;
+            width: 100%;
+            border-radius: 24px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            background: rgba(248, 250, 252, 0.5);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        @media (min-width: 768px) {
+            .demo-container {
+                border-radius: 40px 40px 20px 20px;
+            }
+        }
+
+        .cursor-trail-container {
+            position: relative;
+            height: 600px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-radius: 24px;
+        }
+
+        @media (min-width: 768px) {
+            .cursor-trail-container {
+                border-radius: 40px 40px 20px 20px;
+            }
+        }
+
+        .trail-image {
+            position: absolute;
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0);
+            border-radius: 24px;
+            object-fit: cover;
+            pointer-events: none;
+            z-index: 1;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .trail-image[data-status="active"] {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .trail-image[data-status="inactive"] {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0);
+            transition: all 0.3s ease-out;
+        }
+
+        .image-small {
+            width: 112px;
+            height: 144px;
+        }
+
+        @media (min-width: 640px) {
+            .image-small {
+                width: 160px;
+                height: 192px;
+            }
+        }
+
+        .content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #1f2937;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #6b7280;
+            margin-bottom: 24px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .demo-info {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            z-index: 10;
+        }
+
+        .sparkle {
+            animation: sparkle 2s ease-in-out infinite;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 0.7; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        /* Custom cursor */
+        .custom-cursor {
+            position: fixed;
+            width: 6px;
+            height: 6px;
+            background: #3b82f6;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10000;
+            mix-blend-mode: difference;
+        }
+
+        .cursor-trail {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: #3b82f6;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <section class="demo-section">
+        <div class="demo-container">
+            <div class="cursor-trail-container" id="cursorTrailContainer">
+                <div class="content">
+                    <h1 class="title">Image Cursor Trail</h1>
+                    <p class="subtitle">
+                        Move your cursor around to see beautiful images follow your movement
+                    </p>
+                    <div class="instruction">
+                        <svg class="sparkle" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                        Move your cursor to see the magic
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="custom-cursor" id="customCursor"></div>
+    <div class="demo-info">Move cursor to see image trail</div>
+
+    <script>
+        class ImageCursorTrail {
+            constructor() {
+                this.container = document.getElementById('cursorTrailContainer');
+                this.customCursor = document.getElementById('customCursor');
+                this.images = [
+                    "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=400&auto=format",
+                    "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=400&auto=format",
+                    "https://images.unsplash.com/photo-1482192596544-9eb780fc7f66?q=80&w=400&auto=format",
+                    "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format",
+                    "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?q=80&w=400&auto=format",
+                    "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?q=80&w=400&auto=format",
+                    "https://images.unsplash.com/photo-1491553895911-0055eca6402d?q=80&w=400&auto=format",
+                    "https://images.unsplash.com/photo-1465101162946-4377e57745c3?q=80&w=400&auto=format",
+                    "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=400&auto=format",
+                ];
+
+                this.imageElements = [];
+                this.refs = [];
+                this.currentZIndex = 1;
+                this.globalIndex = 0;
+                this.lastPosition = { x: 0, y: 0 };
+                this.maxNumberOfImages = 5;
+                this.distance = 25;
+                this.cursorTrails = [];
+                this.maxTrails = 8;
+
+                this.init();
+            }
+
+            init() {
+                this.createImageElements();
+                this.setupEventListeners();
+                this.setupCustomCursor();
+            }
+
+            createImageElements() {
+                this.images.forEach((src, index) => {
+                    const img = document.createElement('img');
+                    img.className = 'trail-image image-small';
+                    img.src = src;
+                    img.alt = `Trail image ${index + 1}`;
+                    img.dataset.status = 'inactive';
+                    img.dataset.index = index;
+                    
+                    this.container.appendChild(img);
+                    this.imageElements.push(img);
+                    this.refs.push({ current: img });
+                });
+            }
+
+            setupEventListeners() {
+                // Mouse movement with throttling
+                let rafId;
+                const handleMouseMove = (e) => {
+                    if (rafId) return;
+                    
+                    rafId = requestAnimationFrame(() => {
+                        this.handleOnMove(e.clientX, e.clientY);
+                        rafId = null;
+                    });
+                };
+
+                this.container.addEventListener('mousemove', handleMouseMove);
+
+                // Touch movement
+                this.container.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    if (e.touches[0]) {
+                        this.handleOnMove(e.touches[0].clientX, e.touches[0].clientY);
+                    }
+                });
+
+                // Update custom cursor position
+                document.addEventListener('mousemove', (e) => {
+                    this.customCursor.style.left = e.clientX + 'px';
+                    this.customCursor.style.top = e.clientY + 'px';
+                    this.createCursorTrail(e.clientX, e.clientY);
+                });
+            }
+
+            setupCustomCursor() {
+                // Hide default cursor when over container
+                this.container.style.cursor = 'none';
+            }
+
+            createCursorTrail(x, y) {
+                const trail = document.createElement('div');
+                trail.className = 'cursor-trail';
+                trail.style.left = x + 'px';
+                trail.style.top = y + 'px';
+                document.body.appendChild(trail);
+
+                this.cursorTrails.push(trail);
+
+                // Remove trail after animation
+                setTimeout(() => {
+                    if (trail.parentNode) {
+                        trail.parentNode.removeChild(trail);
+                    }
+                    this.cursorTrails = this.cursorTrails.filter(t => t !== trail);
+                }, 600);
+
+                // Limit number of trails
+                if (this.cursorTrails.length > this.maxTrails) {
+                    const oldTrail = this.cursorTrails.shift();
+                    if (oldTrail && oldTrail.parentNode) {
+                        oldTrail.parentNode.removeChild(oldTrail);
+                    }
+                }
+            }
+
+            handleOnMove(x, y) {
+                const distance = this.distanceFromLast(x, y);
+                
+                if (distance > (window.innerWidth / this.distance)) {
+                    const lead = this.refs[this.globalIndex % this.refs.length].current;
+                    const tailIndex = (this.globalIndex - this.maxNumberOfImages) % this.refs.length;
+                    const tail = tailIndex >= 0 ? this.refs[tailIndex].current : null;
+                    
+                    if (lead) this.activateImage(lead, x, y);
+                    if (tail) this.deactivateImage(tail);
+                    
+                    this.globalIndex++;
+                    this.lastPosition = { x, y };
+                }
+            }
+
+            distanceFromLast(x, y) {
+                return Math.hypot(x - this.lastPosition.x, y - this.lastPosition.y);
+            }
+
+            activateImage(image, x, y) {
+                const containerRect = this.container.getBoundingClientRect();
+                const relativeX = x - containerRect.left;
+                const relativeY = y - containerRect.top;
+
+                image.style.left = `${relativeX}px`;
+                image.style.top = `${relativeY}px`;
+
+                // Cycle z-index
+                if (this.currentZIndex > 40) {
+                    this.currentZIndex = 1;
+                }
+                image.style.zIndex = this.currentZIndex;
+                this.currentZIndex++;
+
+                image.dataset.status = 'active';
+
+                // Auto deactivate after 1.5 seconds
+                setTimeout(() => {
+                    if (image.dataset.status === 'active') {
+                        this.deactivateImage(image);
+                    }
+                }, 1500);
+            }
+
+            deactivateImage(image) {
+                image.dataset.status = 'inactive';
+            }
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new ImageCursorTrail();
+        });
+    </script>
+</body>
+</html>

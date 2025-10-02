@@ -1,4 +1,4 @@
-<script>
+
         class AutoImageCursorTrail {
             constructor() {
                 this.container = document.getElementById('cursorTrailContainer');
@@ -342,4 +342,3 @@
                 cursorTrailInstance.stopAnimation();
             }
         });
-    </script>

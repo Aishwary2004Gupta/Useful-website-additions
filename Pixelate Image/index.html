@@ -1,591 +1,818 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pixel Art Generator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      }
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #f59e0b;
+            --dark: #1e293b;
+            --darker: #0f172a;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --success: #10b981;
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --card-border: rgba(255, 255, 255, 0.12);
+        }
 
-      body {
-        background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
-        color: white;
-        min-height: 100vh;
-        padding: 20px;
-      }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+        }
 
-      .container {
-        max-width: 1200px;
-        margin: 0 auto;
-      }
+        body {
+            background: linear-gradient(135deg, var(--darker), var(--dark));
+            color: var(--light);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
 
-      header {
-        text-align: center;
-        padding: 30px 0;
-      }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
 
-      h1 {
-        font-size: 3rem;
-        margin-bottom: 10px;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-      }
+        header {
+            text-align: center;
+            padding: 40px 0 30px;
+        }
 
-      .subtitle {
-        font-size: 1.2rem;
-        opacity: 0.9;
-        margin-bottom: 30px;
-      }
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
 
-      .app-container {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 30px;
-        background: rgba(0, 0, 0, 0.4);
-        border-radius: 15px;
-        padding: 30px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-      }
-
-      .upload-section {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-      }
-
-      .preview-section {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-      }
-
-      .section-title {
-        font-size: 1.5rem;
-        margin-bottom: 10px;
-        border-bottom: 2px solid #fdbb2d;
-        padding-bottom: 5px;
-      }
-
-      .upload-area {
-        border: 3px dashed #fdbb2d;
-        border-radius: 10px;
-        padding: 40px 20px;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.3s;
-        background: rgba(255, 255, 255, 0.1);
-      }
-
-      .upload-area:hover {
-        background: rgba(255, 255, 255, 0.15);
-        transform: translateY(-5px);
-      }
-
-      .upload-icon {
-        font-size: 3rem;
-        margin-bottom: 15px;
-        color: #fdbb2d;
-      }
-
-      .controls {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-        margin-top: 20px;
-      }
-
-      .control-group {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-
-      label {
-        font-weight: 600;
-      }
-
-      input[type="range"] {
-        width: 100%;
-        height: 8px;
-        border-radius: 5px;
-        background: #ddd;
-        outline: none;
-        -webkit-appearance: none;
-      }
-
-      input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: #fdbb2d;
-        cursor: pointer;
-      }
-
-      .value-display {
-        display: flex;
-        justify-content: space-between;
-        font-size: 0.9rem;
-      }
-
-      .preview-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 20px;
-      }
-
-      .canvas-container {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        background: rgba(0, 0, 0, 0.3);
-        border-radius: 10px;
-        padding: 20px;
-        min-height: 300px;
-        align-items: center;
-      }
-
-      canvas {
-        max-width: 100%;
-        border-radius: 5px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-      }
-
-      .button-group {
-        display: flex;
-        gap: 15px;
-        flex-wrap: wrap;
-        justify-content: center;
-        margin-top: 10px;
-      }
-
-      button {
-        padding: 12px 25px;
-        border: none;
-        border-radius: 50px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s;
-        font-size: 1rem;
-      }
-
-      .primary-btn {
-        background: #fdbb2d;
-        color: #333;
-      }
-
-      .primary-btn:hover {
-        background: #ffa500;
-        transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-      }
-
-      .secondary-btn {
-        background: transparent;
-        color: white;
-        border: 2px solid #fdbb2d;
-      }
-
-      .secondary-btn:hover {
-        background: rgba(253, 187, 45, 0.2);
-        transform: translateY(-3px);
-      }
-
-      footer {
-        text-align: center;
-        margin-top: 40px;
-        padding: 20px;
-        opacity: 0.8;
-      }
-
-      .instructions {
-        margin-top: 30px;
-        background: rgba(0, 0, 0, 0.3);
-        padding: 20px;
-        border-radius: 10px;
-      }
-
-      .instructions h3 {
-        margin-bottom: 15px;
-        color: #fdbb2d;
-      }
-
-      .instructions ol {
-        padding-left: 20px;
-      }
-
-      .instructions li {
-        margin-bottom: 10px;
-        line-height: 1.5;
-      }
-
-      .preview-label {
-        display: flex;
-        justify-content: space-between;
-        width: 100%;
-        margin-bottom: 5px;
-      }
-
-      .preview-label span {
-        font-weight: 600;
-        font-size: 0.9rem;
-      }
-
-      .loading {
-        display: none;
-        text-align: center;
-        padding: 10px;
-        color: #fdbb2d;
-      }
-
-      @media (max-width: 900px) {
-        .app-container {
-          grid-template-columns: 1fr;
+        .logo-icon {
+            background: var(--primary);
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
         }
 
         h1 {
-          font-size: 2.2rem;
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--light), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
         }
-      }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.85;
+            max-width: 600px;
+            margin: 0 auto 30px;
+            font-weight: 400;
+        }
+
+        .app-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--card-border);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: var(--secondary);
+        }
+
+        .upload-area {
+            border: 2px dashed var(--card-border);
+            border-radius: 16px;
+            padding: 50px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .upload-area:hover::before {
+            left: 100%;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+            opacity: 0.9;
+        }
+
+        .upload-area h3 {
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+        }
+
+        .upload-area p {
+            opacity: 0.7;
+            font-size: 0.95rem;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            margin-top: 25px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .control-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        label i {
+            color: var(--secondary);
+            font-size: 0.9rem;
+        }
+
+        .value {
+            background: var(--darker);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--secondary);
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 10px;
+            background: var(--darker);
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: var(--primary-dark);
+            transform: scale(1.1);
+        }
+
+        .range-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        .preview-container {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .canvas-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .canvas-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .canvas-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            opacity: 0.9;
+        }
+
+        .canvas-container {
+            background: var(--darker);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 250px;
+            border: 1px solid var(--card-border);
+        }
+
+        canvas {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .primary-btn {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .primary-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+        }
+
+        .secondary-btn {
+            background: transparent;
+            color: var(--light);
+            border: 1px solid var(--card-border);
+        }
+
+        .secondary-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-3px);
+            border-color: var(--gray);
+        }
+
+        .success-btn {
+            background: var(--success);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .success-btn:hover {
+            background: #0da271;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+
+        .instructions {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--card-border);
+        }
+
+        .instructions h3 {
+            margin-bottom: 18px;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.3rem;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .step {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        .step-number {
+            background: var(--primary);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            margin-bottom: 5px;
+            font-size: 1.05rem;
+        }
+
+        .step-content p {
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 15px;
+            color: var(--secondary);
+            font-weight: 600;
+            background: rgba(245, 158, 11, 0.1);
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .loading i {
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 900px) {
+            .app-container {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .canvas-comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Modern scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--darker);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <div class="container">
-      <header>
-        <h1>Pixel Art Generator</h1>
-        <p class="subtitle">
-          Transform your images into retro pixel art masterpieces
-        </p>
-      </header>
+        <header>
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-palette"></i>
+                </div>
+            </div>
+            <h1>Pixel Art Generator</h1>
+            <p class="subtitle">Transform your images into stunning retro pixel art with real-time preview and advanced controls</p>
+        </header>
 
-      <div class="app-container">
-        <div class="upload-section">
-          <h2 class="section-title">Upload & Controls</h2>
-          <div class="upload-area" id="uploadArea">
-            <div class="upload-icon">📁</div>
-            <h3>Click to Upload Image</h3>
-            <p>or drag and drop your image here</p>
-            <input
-              type="file"
-              id="fileInput"
-              accept="image/*"
-              style="display: none"
-            />
-          </div>
+        <div class="app-container">
+            <div class="card">
+                <h2 class="section-title"><i class="fas fa-sliders-h"></i> Upload & Controls</h2>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                    <h3>Upload Your Image</h3>
+                    <p>Drag & drop or click to browse files</p>
+                    <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                </div>
 
-          <div class="controls">
-            <div class="control-group">
-              <label for="pixelSize">Pixel Size</label>
-              <input type="range" id="pixelSize" min="2" max="50" value="10" />
-              <div class="value-display">
-                <span>Small Pixels</span>
-                <span id="pixelSizeValue">10</span>
-                <span>Large Pixels</span>
-              </div>
+                <div class="controls">
+                    <div class="control-group">
+                        <div class="control-header">
+                            <label for="pixelSize"><i class="fas fa-th-large"></i> Pixel Size</label>
+                            <span class="value" id="pixelSizeValue">10</span>
+                        </div>
+                        <input type="range" id="pixelSize" min="2" max="50" value="10">
+                        <div class="range-labels">
+                            <span>Small</span>
+                            <span>Medium</span>
+                            <span>Large</span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-header">
+                            <label for="colorPalette"><i class="fas fa-palette"></i> Color Palette</label>
+                            <span class="value" id="colorPaletteValue">64</span>
+                        </div>
+                        <input type="range" id="colorPalette" min="2" max="256" value="64">
+                        <div class="range-labels">
+                            <span>Limited</span>
+                            <span>Balanced</span>
+                            <span>Full</span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-header">
+                            <label for="brightness"><i class="fas fa-sun"></i> Brightness</label>
+                            <span class="value" id="brightnessValue">0</span>
+                        </div>
+                        <input type="range" id="brightness" min="-100" max="100" value="0">
+                        <div class="range-labels">
+                            <span>Darker</span>
+                            <span>Normal</span>
+                            <span>Brighter</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="primary-btn" id="generateBtn"><i class="fas fa-magic"></i> Generate Pixel Art</button>
+                    <button class="secondary-btn" id="resetBtn"><i class="fas fa-redo"></i> Reset</button>
+                </div>
             </div>
 
-            <div class="control-group">
-              <label for="colorPalette">Color Palette</label>
-              <input
-                type="range"
-                id="colorPalette"
-                min="2"
-                max="256"
-                value="64"
-              />
-              <div class="value-display">
-                <span>Limited Colors</span>
-                <span id="colorPaletteValue">64</span>
-                <span>Full Colors</span>
-              </div>
+            <div class="card">
+                <h2 class="section-title"><i class="fas fa-eye"></i> Preview</h2>
+                <div class="preview-container">
+                    <div class="canvas-comparison">
+                        <div class="canvas-wrapper">
+                            <div class="canvas-label"><i class="fas fa-image"></i> Original Image</div>
+                            <div class="canvas-container">
+                                <canvas id="originalCanvas"></canvas>
+                            </div>
+                        </div>
+                        <div class="canvas-wrapper">
+                            <div class="canvas-label"><i class="fas fa-gamepad"></i> Pixel Art</div>
+                            <div class="canvas-container">
+                                <canvas id="pixelCanvas"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="loading" id="loadingIndicator">
+                        <i class="fas fa-spinner"></i> Generating pixel art...
+                    </div>
+                    
+                    <div class="button-group">
+                        <button class="success-btn" id="downloadBtn"><i class="fas fa-download"></i> Download Pixel Art</button>
+                    </div>
+                </div>
             </div>
-
-            <div class="control-group">
-              <label for="brightness">Brightness</label>
-              <input
-                type="range"
-                id="brightness"
-                min="-100"
-                max="100"
-                value="0"
-              />
-              <div class="value-display">
-                <span>Darker</span>
-                <span id="brightnessValue">0</span>
-                <span>Brighter</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="button-group">
-            <button class="primary-btn" id="generateBtn">
-              Generate Pixel Art
-            </button>
-            <button class="secondary-btn" id="resetBtn">Reset</button>
-          </div>
         </div>
 
-        <div class="preview-section">
-          <h2 class="section-title">Preview</h2>
-          <div class="preview-container">
-            <div class="preview-label">
-              <span>Original Image</span>
-              <span>Pixel Art</span>
+        <div class="instructions">
+            <h3><i class="fas fa-info-circle"></i> How to Create Pixel Art</h3>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Upload Image</h4>
+                        <p>Click the upload area or drag & drop your image to get started.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Adjust Settings</h4>
+                        <p>Use the sliders to control pixel size, colors, and brightness.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Preview in Real-Time</h4>
+                        <p>See changes instantly as you adjust the controls.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Download</h4>
+                        <p>Save your pixel art as a PNG image when you're satisfied.</p>
+                    </div>
+                </div>
             </div>
-            <div class="canvas-container">
-              <canvas id="originalCanvas"></canvas>
-              <canvas id="pixelCanvas"></canvas>
-            </div>
-            <div class="loading" id="loadingIndicator">
-              Generating pixel art...
-            </div>
-            <div class="button-group">
-              <button class="primary-btn" id="downloadBtn">
-                Download Pixel Art
-              </button>
-            </div>
-          </div>
         </div>
-      </div>
 
-      <div class="instructions">
-        <h3>How to Use:</h3>
-        <ol>
-          <li>
-            Upload an image by clicking the upload area or dragging and dropping
-          </li>
-          <li>
-            Adjust the pixel size to control how pixelated your image becomes
-          </li>
-          <li>
-            Use the color palette slider to limit the number of colors (for
-            retro effect)
-          </li>
-          <li>Adjust brightness if needed</li>
-          <li>Changes are applied in real-time as you adjust the controls</li>
-          <li>Download your pixel art when you're happy with the result</li>
-        </ol>
-      </div>
-
-      <footer>
-        <p>
-          Pixel Art Generator &copy; 2023 | Create retro-style pixel art from
-          your images
-        </p>
-      </footer>
+        <footer>
+            <p>Pixel Art Generator &copy; 2023 | Create retro-style pixel art from your images</p>
+        </footer>
     </div>
 
     <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        // DOM Elements
-        const uploadArea = document.getElementById("uploadArea");
-        const fileInput = document.getElementById("fileInput");
-        const originalCanvas = document.getElementById("originalCanvas");
-        const pixelCanvas = document.getElementById("pixelCanvas");
-        const generateBtn = document.getElementById("generateBtn");
-        const resetBtn = document.getElementById("resetBtn");
-        const downloadBtn = document.getElementById("downloadBtn");
-        const pixelSize = document.getElementById("pixelSize");
-        const colorPalette = document.getElementById("colorPalette");
-        const brightness = document.getElementById("brightness");
-        const pixelSizeValue = document.getElementById("pixelSizeValue");
-        const colorPaletteValue = document.getElementById("colorPaletteValue");
-        const brightnessValue = document.getElementById("brightnessValue");
-        const loadingIndicator = document.getElementById("loadingIndicator");
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            const originalCanvas = document.getElementById('originalCanvas');
+            const pixelCanvas = document.getElementById('pixelCanvas');
+            const generateBtn = document.getElementById('generateBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const pixelSize = document.getElementById('pixelSize');
+            const colorPalette = document.getElementById('colorPalette');
+            const brightness = document.getElementById('brightness');
+            const pixelSizeValue = document.getElementById('pixelSizeValue');
+            const colorPaletteValue = document.getElementById('colorPaletteValue');
+            const brightnessValue = document.getElementById('brightnessValue');
+            const loadingIndicator = document.getElementById('loadingIndicator');
 
-        // Canvas contexts
-        const originalCtx = originalCanvas.getContext("2d");
-        const pixelCtx = pixelCanvas.getContext("2d");
+            // Canvas contexts
+            const originalCtx = originalCanvas.getContext('2d');
+            const pixelCtx = pixelCanvas.getContext('2d');
 
-        // Current image
-        let currentImage = null;
-        let updateTimeout = null;
+            // Current image
+            let currentImage = null;
+            let updateTimeout = null;
 
-        // Event Listeners
-        uploadArea.addEventListener("click", () => fileInput.click());
-        uploadArea.addEventListener("dragover", (e) => {
-          e.preventDefault();
-          uploadArea.style.background = "rgba(255, 255, 255, 0.2)";
-        });
-        uploadArea.addEventListener("dragleave", () => {
-          uploadArea.style.background = "rgba(255, 255, 255, 0.1)";
-        });
-        uploadArea.addEventListener("drop", (e) => {
-          e.preventDefault();
-          uploadArea.style.background = "rgba(255, 255, 255, 0.1)";
-          if (e.dataTransfer.files.length) {
-            fileInput.files = e.dataTransfer.files;
-            handleImageUpload();
-          }
-        });
-
-        fileInput.addEventListener("change", handleImageUpload);
-        generateBtn.addEventListener("click", generatePixelArt);
-        resetBtn.addEventListener("click", resetControls);
-        downloadBtn.addEventListener("click", downloadPixelArt);
-
-        // Update value displays and trigger real-time updates
-        pixelSize.addEventListener("input", () => {
-          pixelSizeValue.textContent = pixelSize.value;
-          schedulePixelArtUpdate();
-        });
-
-        colorPalette.addEventListener("input", () => {
-          colorPaletteValue.textContent = colorPalette.value;
-          schedulePixelArtUpdate();
-        });
-
-        brightness.addEventListener("input", () => {
-          brightnessValue.textContent = brightness.value;
-          schedulePixelArtUpdate();
-        });
-
-        // Handle image upload
-        function handleImageUpload() {
-          if (!fileInput.files.length) return;
-
-          const file = fileInput.files[0];
-          const reader = new FileReader();
-
-          reader.onload = function (e) {
-            const img = new Image();
-            img.onload = function () {
-              currentImage = img;
-              displayOriginalImage(img);
-              generatePixelArt();
-            };
-            img.src = e.target.result;
-          };
-
-          reader.readAsDataURL(file);
-        }
-
-        // Display original image
-        function displayOriginalImage(img) {
-          // Set canvas size to match image (with max constraints)
-          const maxWidth = 400;
-          const maxHeight = 300;
-
-          let width = img.width;
-          let height = img.height;
-
-          if (width > maxWidth) {
-            height = (maxWidth / width) * height;
-            width = maxWidth;
-          }
-
-          if (height > maxHeight) {
-            width = (maxHeight / height) * width;
-            height = maxHeight;
-          }
-
-          originalCanvas.width = width;
-          originalCanvas.height = height;
-          pixelCanvas.width = width;
-          pixelCanvas.height = height;
-
-          originalCtx.drawImage(img, 0, 0, width, height);
-        }
-
-        // Schedule pixel art update with debouncing
-        function schedulePixelArtUpdate() {
-          if (updateTimeout) {
-            clearTimeout(updateTimeout);
-          }
-
-          updateTimeout = setTimeout(() => {
-            generatePixelArt();
-          }, 300);
-        }
-
-        // Generate pixel art
-        function generatePixelArt() {
-          if (!currentImage) return;
-
-          loadingIndicator.style.display = "block";
-
-          // Use requestAnimationFrame to prevent UI blocking
-          requestAnimationFrame(() => {
-            const pixelSizeVal = parseInt(pixelSize.value);
-            const colorCount = parseInt(colorPalette.value);
-            const brightnessVal = parseInt(brightness.value);
-
-            // Clear pixel canvas
-            pixelCtx.clearRect(0, 0, pixelCanvas.width, pixelCanvas.height);
-
-            // Get image data from original canvas
-            const imageData = originalCtx.getImageData(
-              0,
-              0,
-              originalCanvas.width,
-              originalCanvas.height
-            );
-            const data = imageData.data;
-
-            // Process image data to create pixel art
-            for (let y = 0; y < originalCanvas.height; y += pixelSizeVal) {
-              for (let x = 0; x < originalCanvas.width; x += pixelSizeVal) {
-                // Get the color at this position
-                const pixelIndex = (y * originalCanvas.width + x) * 4;
-                let r = data[pixelIndex];
-                let g = data[pixelIndex + 1];
-                let b = data[pixelIndex + 2];
-
-                // Apply brightness adjustment
-                if (brightnessVal !== 0) {
-                  const factor = 1 + brightnessVal / 100;
-                  r = Math.min(255, Math.max(0, r * factor));
-                  g = Math.min(255, Math.max(0, g * factor));
-                  b = Math.min(255, Math.max(0, b * factor));
+            // Event Listeners
+            uploadArea.addEventListener('click', () => fileInput.click());
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--primary)';
+                uploadArea.style.background = 'rgba(99, 102, 241, 0.1)';
+            });
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.borderColor = 'var(--card-border)';
+                uploadArea.style.background = 'rgba(255, 255, 255, 0.05)';
+            });
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--card-border)';
+                uploadArea.style.background = 'rgba(255, 255, 255, 0.05)';
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    handleImageUpload();
                 }
+            });
 
-                // Reduce color palette if needed
-                if (colorCount < 256) {
-                  const factor = 255 / (colorCount - 1);
-                  r = Math.round(r / factor) * factor;
-                  g = Math.round(g / factor) * factor;
-                  b = Math.round(b / factor) * factor;
-                }
+            fileInput.addEventListener('change', handleImageUpload);
+            generateBtn.addEventListener('click', generatePixelArt);
+            resetBtn.addEventListener('click', resetControls);
+            downloadBtn.addEventListener('click', downloadPixelArt);
 
-                // Draw the pixel
-                pixelCtx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-                pixelCtx.fillRect(x, y, pixelSizeVal, pixelSizeVal);
-              }
+            // Update value displays and trigger real-time updates
+            pixelSize.addEventListener('input', () => {
+                pixelSizeValue.textContent = pixelSize.value;
+                schedulePixelArtUpdate();
+            });
+            
+            colorPalette.addEventListener('input', () => {
+                colorPaletteValue.textContent = colorPalette.value;
+                schedulePixelArtUpdate();
+            });
+            
+            brightness.addEventListener('input', () => {
+                brightnessValue.textContent = brightness.value;
+                schedulePixelArtUpdate();
+            });
+
+            // Handle image upload
+            function handleImageUpload() {
+                if (!fileInput.files.length) return;
+                
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                
+                // Update upload area text
+                uploadArea.innerHTML = `
+                    <div class="upload-icon"><i class="fas fa-spinner fa-spin"></i></div>
+                    <h3>Processing Image...</h3>
+                    <p>Please wait</p>
+                `;
+                
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        currentImage = img;
+                        displayOriginalImage(img);
+                        generatePixelArt();
+                        
+                        // Reset upload area text
+                        uploadArea.innerHTML = `
+                            <div class="upload-icon"><i class="fas fa-check-circle"></i></div>
+                            <h3>Image Uploaded</h3>
+                            <p>Drag & drop or click to change image</p>
+                            <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                        `;
+                    };
+                    img.src = e.target.result;
+                };
+                
+                reader.readAsDataURL(file);
             }
 
-            loadingIndicator.style.display = "none";
-          });
-        }
+            // Display original image
+            function displayOriginalImage(img) {
+                // Set canvas size to match image (with max constraints)
+                const maxWidth = 400;
+                const maxHeight = 300;
+                
+                let width = img.width;
+                let height = img.height;
+                
+                if (width > maxWidth) {
+                    height = (maxWidth / width) * height;
+                    width = maxWidth;
+                }
+                
+                if (height > maxHeight) {
+                    width = (maxHeight / height) * width;
+                    height = maxHeight;
+                }
+                
+                originalCanvas.width = width;
+                originalCanvas.height = height;
+                pixelCanvas.width = width;
+                pixelCanvas.height = height;
+                
+                originalCtx.drawImage(img, 0, 0, width, height);
+            }
 
-        // Reset controls
-        function resetControls() {
-          pixelSize.value = 10;
-          colorPalette.value = 64;
-          brightness.value = 0;
-          pixelSizeValue.textContent = "10";
-          colorPaletteValue.textContent = "64";
-          brightnessValue.textContent = "0";
+            // Schedule pixel art update with debouncing
+            function schedulePixelArtUpdate() {
+                if (updateTimeout) {
+                    clearTimeout(updateTimeout);
+                }
+                
+                updateTimeout = setTimeout(() => {
+                    generatePixelArt();
+                }, 300);
+            }
 
-          if (currentImage) {
-            generatePixelArt();
-          }
-        }
+            // Generate pixel art
+            function generatePixelArt() {
+                if (!currentImage) return;
+                
+                loadingIndicator.style.display = 'block';
+                
+                // Use requestAnimationFrame to prevent UI blocking
+                requestAnimationFrame(() => {
+                    const pixelSizeVal = parseInt(pixelSize.value);
+                    const colorCount = parseInt(colorPalette.value);
+                    const brightnessVal = parseInt(brightness.value);
+                    
+                    // Clear pixel canvas
+                    pixelCtx.clearRect(0, 0, pixelCanvas.width, pixelCanvas.height);
+                    
+                    // Get image data from original canvas
+                    const imageData = originalCtx.getImageData(0, 0, originalCanvas.width, originalCanvas.height);
+                    const data = imageData.data;
+                    
+                    // Process image data to create pixel art
+                    for (let y = 0; y < originalCanvas.height; y += pixelSizeVal) {
+                        for (let x = 0; x < originalCanvas.width; x += pixelSizeVal) {
+                            // Get the color at this position
+                            const pixelIndex = (y * originalCanvas.width + x) * 4;
+                            let r = data[pixelIndex];
+                            let g = data[pixelIndex + 1];
+                            let b = data[pixelIndex + 2];
+                            
+                            // Apply brightness adjustment
+                            if (brightnessVal !== 0) {
+                                const factor = 1 + (brightnessVal / 100);
+                                r = Math.min(255, Math.max(0, r * factor));
+                                g = Math.min(255, Math.max(0, g * factor));
+                                b = Math.min(255, Math.max(0, b * factor));
+                            }
+                            
+                            // Reduce color palette if needed
+                            if (colorCount < 256) {
+                                const factor = 255 / (colorCount - 1);
+                                r = Math.round(r / factor) * factor;
+                                g = Math.round(g / factor) * factor;
+                                b = Math.round(b / factor) * factor;
+                            }
+                            
+                            // Draw the pixel
+                            pixelCtx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                            pixelCtx.fillRect(x, y, pixelSizeVal, pixelSizeVal);
+                        }
+                    }
+                    
+                    loadingIndicator.style.display = 'none';
+                });
+            }
 
-        // Download pixel art
-        function downloadPixelArt() {
-          if (!currentImage) return;
+            // Reset controls
+            function resetControls() {
+                pixelSize.value = 10;
+                colorPalette.value = 64;
+                brightness.value = 0;
+                pixelSizeValue.textContent = '10';
+                colorPaletteValue.textContent = '64';
+                brightnessValue.textContent = '0';
+                
+                if (currentImage) {
+                    generatePixelArt();
+                }
+            }
 
-          const link = document.createElement("a");
-          link.download = "pixel-art.png";
-          link.href = pixelCanvas.toDataURL("image/png");
-          link.click();
-        }
-      });
+            // Download pixel art
+            function downloadPixelArt() {
+                if (!currentImage) return;
+                
+                const link = document.createElement('a');
+                link.download = 'pixel-art.png';
+                link.href = pixelCanvas.toDataURL('image/png');
+                link.click();
+            }
+        });
     </script>
-  </body>
+</body>
 </html>

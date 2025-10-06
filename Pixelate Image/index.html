@@ -764,6 +764,7 @@
                             let g = data[pixelIndex + 1];
                             let b = data[pixelIndex + 2];
                             
+                            // Apply brightness adjustment
                             if (brightnessVal !== 0) {
                                 const factor = 1 + (brightnessVal / 100);
                                 r = Math.min(255, Math.max(0, r * factor));

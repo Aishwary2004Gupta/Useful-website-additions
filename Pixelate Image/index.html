@@ -755,6 +755,7 @@
                     const imageData = originalCtx.getImageData(0, 0, originalCanvas.width, originalCanvas.height);
                     const data = imageData.data;
                     
+                    // Process image data to create pixel art
                     for (let y = 0; y < originalCanvas.height; y += pixelSizeVal) {
                         for (let x = 0; x < originalCanvas.width; x += pixelSizeVal) {
                             const pixelIndex = (y * originalCanvas.width + x) * 4;

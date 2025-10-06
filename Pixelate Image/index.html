@@ -758,6 +758,7 @@
                     // Process image data to create pixel art
                     for (let y = 0; y < originalCanvas.height; y += pixelSizeVal) {
                         for (let x = 0; x < originalCanvas.width; x += pixelSizeVal) {
+                            // Get the color at this position
                             const pixelIndex = (y * originalCanvas.width + x) * 4;
                             let r = data[pixelIndex];
                             let g = data[pixelIndex + 1];

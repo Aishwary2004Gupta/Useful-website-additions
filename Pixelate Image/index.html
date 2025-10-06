@@ -742,6 +742,7 @@
                 
                 loadingIndicator.style.display = 'block';
                 
+                // Use requestAnimationFrame to prevent UI blocking
                 requestAnimationFrame(() => {
                     const pixelSizeVal = parseInt(pixelSize.value);
                     const colorCount = parseInt(colorPalette.value);

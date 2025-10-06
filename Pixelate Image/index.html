@@ -772,7 +772,6 @@
                                 b = Math.min(255, Math.max(0, b * factor));
                             }
                             
-                            // Reduce color palette if needed
                             if (colorCount < 256) {
                                 const factor = 255 / (colorCount - 1);
                                 r = Math.round(r / factor) * factor;

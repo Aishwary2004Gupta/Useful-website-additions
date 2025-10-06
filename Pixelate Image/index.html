@@ -748,6 +748,7 @@
                     const colorCount = parseInt(colorPalette.value);
                     const brightnessVal = parseInt(brightness.value);
                     
+                    // Clear pixel canvas
                     pixelCtx.clearRect(0, 0, pixelCanvas.width, pixelCanvas.height);
                     
                     const imageData = originalCtx.getImageData(0, 0, originalCanvas.width, originalCanvas.height);

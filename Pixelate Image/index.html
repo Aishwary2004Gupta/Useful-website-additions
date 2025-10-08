@@ -35,13 +35,13 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
         header {
             text-align: center;
-            padding: 40px 0 30px;
+            padding: 20px 0 15px;
         }
 
         .logo {
@@ -49,55 +49,57 @@
             align-items: center;
             justify-content: center;
             gap: 12px;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
 
         .logo-icon {
             background: var(--primary);
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 20px;
             box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
         }
 
         h1 {
-            font-size: 2.8rem;
+            font-size: 2.2rem;
             font-weight: 800;
             background: linear-gradient(to right, var(--light), var(--secondary));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             letter-spacing: -0.5px;
         }
 
         .subtitle {
-            font-size: 1.2rem;
+            font-size: 1rem;
             opacity: 0.85;
             max-width: 600px;
-            margin: 0 auto 30px;
+            margin: 0 auto 20px;
             font-weight: 400;
         }
 
         .app-container {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 40px;
+            grid-template-columns: 1fr 2fr;
+            gap: 25px;
+            margin-bottom: 30px;
+            height: 70vh;
         }
 
         .card {
             background: var(--card-bg);
             backdrop-filter: blur(10px);
             border-radius: 20px;
-            padding: 30px;
+            padding: 25px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             border: 1px solid var(--card-border);
             transition: transform 0.3s, box-shadow 0.3s;
+            overflow: auto;
         }
 
         .card:hover {
@@ -106,7 +108,7 @@
         }
 
         .section-title {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: 700;
             margin-bottom: 20px;
             display: flex;
@@ -121,7 +123,7 @@
         .upload-area {
             border: 2px dashed var(--card-border);
             border-radius: 16px;
-            padding: 50px 20px;
+            padding: 30px 20px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
@@ -151,33 +153,33 @@
         }
 
         .upload-icon {
-            font-size: 3.5rem;
-            margin-bottom: 15px;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
             color: var(--primary);
             opacity: 0.9;
         }
 
         .upload-area h3 {
-            font-size: 1.3rem;
+            font-size: 1.1rem;
             margin-bottom: 8px;
         }
 
         .upload-area p {
             opacity: 0.7;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
         }
 
         .controls {
             display: flex;
             flex-direction: column;
-            gap: 22px;
-            margin-top: 25px;
+            gap: 18px;
+            margin-top: 20px;
         }
 
         .control-group {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
 
         .control-header {
@@ -188,7 +190,7 @@
 
         label {
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 0.9rem;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -196,21 +198,21 @@
 
         label i {
             color: var(--secondary);
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
 
         .value {
             background: var(--darker);
-            padding: 4px 12px;
+            padding: 4px 10px;
             border-radius: 20px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 600;
             color: var(--secondary);
         }
 
         input[type="range"] {
             width: 100%;
-            height: 8px;
+            height: 6px;
             border-radius: 10px;
             background: var(--darker);
             outline: none;
@@ -221,8 +223,8 @@
 
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 22px;
-            height: 22px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             background: var(--primary);
             cursor: pointer;
@@ -238,27 +240,51 @@
         .range-labels {
             display: flex;
             justify-content: space-between;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             opacity: 0.7;
-            margin-top: 5px;
+            margin-top: 3px;
         }
 
+        /* PREVIEW SECTION - CENTER OF ATTENTION */
         .preview-container {
             display: flex;
             flex-direction: column;
-            gap: 25px;
+            gap: 20px;
+            height: 100%;
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .preview-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .preview-controls button {
+            padding: 8px 12px;
+            font-size: 0.85rem;
         }
 
         .canvas-comparison {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
+            position: relative;
+            height: 100%;
         }
 
         .canvas-wrapper {
             display: flex;
             flex-direction: column;
             gap: 10px;
+            position: relative;
+            height: 100%;
         }
 
         .canvas-label {
@@ -277,34 +303,130 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 250px;
+            flex-grow: 1;
             border: 1px solid var(--card-border);
+            position: relative;
+            overflow: hidden;
         }
 
         canvas {
             max-width: 100%;
+            max-height: 100%;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s;
+        }
+
+        .canvas-container.zoomed canvas {
+            transform: scale(1.5);
+            cursor: grab;
+        }
+
+        .canvas-container.zoomed {
+            overflow: auto;
+            cursor: grab;
+        }
+
+        .canvas-container.zoomed:active {
+            cursor: grabbing;
+        }
+
+        .zoom-controls {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+            z-index: 10;
+        }
+
+        .zoom-controls button {
+            background: rgba(30, 41, 59, 0.8);
+            border: none;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.8rem;
+        }
+
+        .zoom-controls button:hover {
+            background: rgba(30, 41, 59, 0.9);
+        }
+
+        .comparison-slider {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 4px;
+            background: var(--secondary);
+            cursor: col-resize;
+            z-index: 10;
+            transform: translateX(-50%);
+            border-radius: 2px;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .comparison-slider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 24px;
+            height: 24px;
+            background: var(--secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 10px;
+        }
+
+        .comparison-slider::after {
+            content: '⇄';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+            font-size: 10px;
+        }
+
+        .image-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-top: 5px;
         }
 
         .button-group {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             flex-wrap: wrap;
             margin-top: 10px;
         }
 
         button {
-            padding: 14px 28px;
+            padding: 12px 20px;
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-            font-size: 1rem;
+            font-size: 0.9rem;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .primary-btn {
@@ -345,79 +467,80 @@
 
         footer {
             text-align: center;
-            margin-top: 40px;
-            padding: 20px;
+            margin-top: 30px;
+            padding: 15px;
             opacity: 0.7;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         .instructions {
             background: var(--card-bg);
             backdrop-filter: blur(10px);
             border-radius: 16px;
-            padding: 25px;
+            padding: 20px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             border: 1px solid var(--card-border);
         }
 
         .instructions h3 {
-            margin-bottom: 18px;
+            margin-bottom: 15px;
             color: var(--secondary);
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 1.3rem;
+            gap: 8px;
+            font-size: 1.1rem;
         }
 
         .steps {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
         }
 
         .step {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             align-items: flex-start;
         }
 
         .step-number {
             background: var(--primary);
-            width: 30px;
-            height: 30px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             flex-shrink: 0;
         }
 
         .step-content h4 {
             margin-bottom: 5px;
-            font-size: 1.05rem;
+            font-size: 0.95rem;
         }
 
         .step-content p {
             opacity: 0.8;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
 
         .loading {
             display: none;
             text-align: center;
-            padding: 15px;
+            padding: 12px;
             color: var(--secondary);
             font-weight: 600;
             background: rgba(245, 158, 11, 0.1);
-            border-radius: 10px;
-            margin-top: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.9rem;
         }
 
         .loading i {
             animation: spin 1s linear infinite;
-            margin-right: 8px;
+            margin-right: 6px;
         }
 
         @keyframes spin {
@@ -428,20 +551,26 @@
         @media (max-width: 900px) {
             .app-container {
                 grid-template-columns: 1fr;
+                height: auto;
             }
             
             h1 {
-                font-size: 2.2rem;
+                font-size: 1.8rem;
             }
             
             .canvas-comparison {
                 grid-template-columns: 1fr;
+                height: 400px;
+            }
+            
+            .comparison-slider {
+                display: none;
             }
         }
 
         /* Modern scrollbar */
         ::-webkit-scrollbar {
-            width: 8px;
+            width: 6px;
         }
 
         ::-webkit-scrollbar-track {
@@ -450,7 +579,7 @@
 
         ::-webkit-scrollbar-thumb {
             background: var(--primary);
-            border-radius: 4px;
+            border-radius: 3px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
@@ -467,12 +596,12 @@
                 </div>
             </div>
             <h1>Pixel Art Generator</h1>
-            <p class="subtitle">Transform your images into stunning retro pixel art with real-time preview and advanced controls</p>
+            <p class="subtitle">Transform your images into stunning retro pixel art with real-time preview</p>
         </header>
 
         <div class="app-container">
             <div class="card">
-                <h2 class="section-title"><i class="fas fa-sliders-h"></i> Upload & Controls</h2>
+                <h2 class="section-title"><i class="fas fa-sliders-h"></i> Controls</h2>
                 <div class="upload-area" id="uploadArea">
                     <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
                     <h3>Upload Your Image</h3>
@@ -522,27 +651,52 @@
                 </div>
 
                 <div class="button-group">
-                    <button class="primary-btn" id="generateBtn"><i class="fas fa-magic"></i> Generate Pixel Art</button>
+                    <button class="primary-btn" id="generateBtn"><i class="fas fa-magic"></i> Generate</button>
                     <button class="secondary-btn" id="resetBtn"><i class="fas fa-redo"></i> Reset</button>
                 </div>
             </div>
 
             <div class="card">
-                <h2 class="section-title"><i class="fas fa-eye"></i> Preview</h2>
+                <div class="preview-header">
+                    <h2 class="section-title"><i class="fas fa-eye"></i> Preview</h2>
+                    <div class="preview-controls">
+                        <button class="secondary-btn" id="zoomOutBtn"><i class="fas fa-search-minus"></i></button>
+                        <button class="secondary-btn" id="zoomInBtn"><i class="fas fa-search-plus"></i></button>
+                        <button class="secondary-btn" id="resetZoomBtn"><i class="fas fa-expand"></i></button>
+                    </div>
+                </div>
+                
                 <div class="preview-container">
-                    <div class="canvas-comparison">
+                    <div class="canvas-comparison" id="canvasComparison">
                         <div class="canvas-wrapper">
                             <div class="canvas-label"><i class="fas fa-image"></i> Original Image</div>
-                            <div class="canvas-container">
+                            <div class="canvas-container" id="originalContainer">
                                 <canvas id="originalCanvas"></canvas>
+                                <div class="zoom-controls">
+                                    <button id="originalZoomIn"><i class="fas fa-plus"></i></button>
+                                    <button id="originalZoomOut"><i class="fas fa-minus"></i></button>
+                                </div>
+                            </div>
+                            <div class="image-info">
+                                <span id="originalDimensions">-</span>
+                                <span id="originalSize">-</span>
                             </div>
                         </div>
                         <div class="canvas-wrapper">
                             <div class="canvas-label"><i class="fas fa-gamepad"></i> Pixel Art</div>
-                            <div class="canvas-container">
+                            <div class="canvas-container" id="pixelContainer">
                                 <canvas id="pixelCanvas"></canvas>
+                                <div class="zoom-controls">
+                                    <button id="pixelZoomIn"><i class="fas fa-plus"></i></button>
+                                    <button id="pixelZoomOut"><i class="fas fa-minus"></i></button>
+                                </div>
+                            </div>
+                            <div class="image-info">
+                                <span id="pixelDimensions">-</span>
+                                <span id="pixelSizeInfo">-</span>
                             </div>
                         </div>
+                        <div class="comparison-slider" id="comparisonSlider"></div>
                     </div>
                     
                     <div class="loading" id="loadingIndicator">
@@ -550,7 +704,8 @@
                     </div>
                     
                     <div class="button-group">
-                        <button class="success-btn" id="downloadBtn"><i class="fas fa-download"></i> Download Pixel Art</button>
+                        <button class="success-btn" id="downloadBtn"><i class="fas fa-download"></i> Download</button>
+                        <button class="secondary-btn" id="shareBtn"><i class="fas fa-share-alt"></i> Share</button>
                     </div>
                 </div>
             </div>
@@ -605,6 +760,7 @@
             const generateBtn = document.getElementById('generateBtn');
             const resetBtn = document.getElementById('resetBtn');
             const downloadBtn = document.getElementById('downloadBtn');
+            const shareBtn = document.getElementById('shareBtn');
             const pixelSize = document.getElementById('pixelSize');
             const colorPalette = document.getElementById('colorPalette');
             const brightness = document.getElementById('brightness');
@@ -612,6 +768,20 @@
             const colorPaletteValue = document.getElementById('colorPaletteValue');
             const brightnessValue = document.getElementById('brightnessValue');
             const loadingIndicator = document.getElementById('loadingIndicator');
+            const originalContainer = document.getElementById('originalContainer');
+            const pixelContainer = document.getElementById('pixelContainer');
+            const originalZoomIn = document.getElementById('originalZoomIn');
+            const originalZoomOut = document.getElementById('originalZoomOut');
+            const pixelZoomIn = document.getElementById('pixelZoomIn');
+            const pixelZoomOut = document.getElementById('pixelZoomOut');
+            const comparisonSlider = document.getElementById('comparisonSlider');
+            const originalDimensions = document.getElementById('originalDimensions');
+            const originalSize = document.getElementById('originalSize');
+            const pixelDimensions = document.getElementById('pixelDimensions');
+            const pixelSizeInfo = document.getElementById('pixelSizeInfo');
+            const zoomInBtn = document.getElementById('zoomInBtn');
+            const zoomOutBtn = document.getElementById('zoomOutBtn');
+            const resetZoomBtn = document.getElementById('resetZoomBtn');
 
             // Canvas contexts
             const originalCtx = originalCanvas.getContext('2d');
@@ -620,6 +790,9 @@
             // Current image
             let currentImage = null;
             let updateTimeout = null;
+            let originalZoomLevel = 1;
+            let pixelZoomLevel = 1;
+            let isDragging = false;
 
             // Event Listeners
             uploadArea.addEventListener('click', () => fileInput.click());
@@ -646,6 +819,31 @@
             generateBtn.addEventListener('click', generatePixelArt);
             resetBtn.addEventListener('click', resetControls);
             downloadBtn.addEventListener('click', downloadPixelArt);
+            shareBtn.addEventListener('click', sharePixelArt);
+
+            // Zoom controls
+            originalZoomIn.addEventListener('click', () => zoomCanvas('original', 'in'));
+            originalZoomOut.addEventListener('click', () => zoomCanvas('original', 'out'));
+            pixelZoomIn.addEventListener('click', () => zoomCanvas('pixel', 'in'));
+            pixelZoomOut.addEventListener('click', () => zoomCanvas('pixel', 'out'));
+            zoomInBtn.addEventListener('click', () => {
+                zoomCanvas('original', 'in');
+                zoomCanvas('pixel', 'in');
+            });
+            zoomOutBtn.addEventListener('click', () => {
+                zoomCanvas('original', 'out');
+                zoomCanvas('pixel', 'out');
+            });
+            resetZoomBtn.addEventListener('click', () => {
+                originalZoomLevel = 1;
+                pixelZoomLevel = 1;
+                updateCanvasZoom();
+            });
+
+            // Comparison slider
+            comparisonSlider.addEventListener('mousedown', startDragging);
+            document.addEventListener('mousemove', dragSlider);
+            document.addEventListener('mouseup', stopDragging);
 
             // Update value displays and trigger real-time updates
             pixelSize.addEventListener('input', () => {
@@ -701,8 +899,8 @@
             // Display original image
             function displayOriginalImage(img) {
                 // Set canvas size to match image (with max constraints)
-                const maxWidth = 400;
-                const maxHeight = 300;
+                const maxWidth = 500;
+                const maxHeight = 400;
                 
                 let width = img.width;
                 let height = img.height;
@@ -723,6 +921,15 @@
                 pixelCanvas.height = height;
                 
                 originalCtx.drawImage(img, 0, 0, width, height);
+                
+                // Update image info
+                originalDimensions.textContent = `${width} × ${height}`;
+                originalSize.textContent = `${(fileInput.files[0].size / 1024).toFixed(1)} KB`;
+                
+                // Reset zoom levels
+                originalZoomLevel = 1;
+                pixelZoomLevel = 1;
+                updateCanvasZoom();
             }
 
             // Schedule pixel art update with debouncing
@@ -786,6 +993,10 @@
                         }
                     }
                     
+                    // Update pixel art info
+                    pixelDimensions.textContent = `${pixelCanvas.width} × ${pixelCanvas.height}`;
+                    pixelSizeInfo.textContent = `Pixel Size: ${pixelSizeVal}`;
+                    
                     loadingIndicator.style.display = 'none';
                 });
             }
@@ -798,6 +1009,11 @@
                 pixelSizeValue.textContent = '10';
                 colorPaletteValue.textContent = '64';
                 brightnessValue.textContent = '0';
+                
+                // Reset zoom
+                originalZoomLevel = 1;
+                pixelZoomLevel = 1;
+                updateCanvasZoom();
                 
                 if (currentImage) {
                     generatePixelArt();
@@ -812,6 +1028,102 @@
                 link.download = 'pixel-art.png';
                 link.href = pixelCanvas.toDataURL('image/png');
                 link.click();
+            }
+
+            // Share pixel art
+            function sharePixelArt() {
+                if (!currentImage) return;
+                
+                if (navigator.share) {
+                    pixelCanvas.toBlob(blob => {
+                        const file = new File([blob], 'pixel-art.png', { type: 'image/png' });
+                        navigator.share({
+                            files: [file],
+                            title: 'My Pixel Art Creation',
+                            text: 'Check out this pixel art I created!'
+                        });
+                    });
+                } else {
+                    // Fallback: copy to clipboard
+                    pixelCanvas.toBlob(blob => {
+                        const item = new ClipboardItem({ 'image/png': blob });
+                        navigator.clipboard.write([item]).then(() => {
+                            alert('Pixel art copied to clipboard!');
+                        });
+                    });
+                }
+            }
+
+            // Zoom functionality
+            function zoomCanvas(type, direction) {
+                if (type === 'original') {
+                    if (direction === 'in') {
+                        originalZoomLevel = Math.min(originalZoomLevel + 0.5, 3);
+                    } else {
+                        originalZoomLevel = Math.max(originalZoomLevel - 0.5, 1);
+                    }
+                } else {
+                    if (direction === 'in') {
+                        pixelZoomLevel = Math.min(pixelZoomLevel + 0.5, 3);
+                    } else {
+                        pixelZoomLevel = Math.max(pixelZoomLevel - 0.5, 1);
+                    }
+                }
+                
+                updateCanvasZoom();
+            }
+
+            function updateCanvasZoom() {
+                // Update original canvas
+                if (originalZoomLevel > 1) {
+                    originalContainer.classList.add('zoomed');
+                    originalCanvas.style.transform = `scale(${originalZoomLevel})`;
+                } else {
+                    originalContainer.classList.remove('zoomed');
+                    originalCanvas.style.transform = 'scale(1)';
+                }
+                
+                // Update pixel canvas
+                if (pixelZoomLevel > 1) {
+                    pixelContainer.classList.add('zoomed');
+                    pixelCanvas.style.transform = `scale(${pixelZoomLevel})`;
+                } else {
+                    pixelContainer.classList.remove('zoomed');
+                    pixelCanvas.style.transform = 'scale(1)';
+                }
+            }
+
+            // Comparison slider functionality
+            function startDragging(e) {
+                isDragging = true;
+                document.body.style.cursor = 'col-resize';
+                e.preventDefault();
+            }
+
+            function dragSlider(e) {
+                if (!isDragging) return;
+                
+                const container = document.getElementById('canvasComparison');
+                const containerRect = container.getBoundingClientRect();
+                const x = e.clientX - containerRect.left;
+                const percentage = (x / containerRect.width) * 100;
+                
+                // Limit slider movement
+                if (percentage >= 10 && percentage <= 90) {
+                    comparisonSlider.style.left = `${percentage}%`;
+                    
+                    // Adjust canvas visibility based on slider position
+                    const originalCanvas = document.getElementById('originalCanvas');
+                    const pixelCanvas = document.getElementById('pixelCanvas');
+                    
+                    originalCanvas.style.clipPath = `inset(0 ${100 - percentage}% 0 0)`;
+                    pixelCanvas.style.clipPath = `inset(0 0 0 ${percentage}%)`;
+                }
+            }
+
+            function stopDragging() {
+                isDragging = false;
+                document.body.style.cursor = 'default';
             }
         });
     </script>

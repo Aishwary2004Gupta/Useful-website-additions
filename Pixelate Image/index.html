@@ -243,22 +243,43 @@
             margin-top: 5px;
         }
 
+        /* IMPROVED PREVIEW SECTION */
         .preview-container {
             display: flex;
             flex-direction: column;
             gap: 25px;
         }
 
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .preview-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .preview-controls button {
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+
         .canvas-comparison {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
+            position: relative;
         }
 
         .canvas-wrapper {
             display: flex;
             flex-direction: column;
             gap: 10px;
+            position: relative;
         }
 
         .canvas-label {
@@ -279,12 +300,106 @@
             align-items: center;
             min-height: 250px;
             border: 1px solid var(--card-border);
+            position: relative;
+            overflow: hidden;
         }
 
         canvas {
             max-width: 100%;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s;
+        }
+
+        .canvas-container.zoomed canvas {
+            transform: scale(1.5);
+            cursor: grab;
+        }
+
+        .canvas-container.zoomed {
+            overflow: auto;
+            cursor: grab;
+        }
+
+        .canvas-container.zoomed:active {
+            cursor: grabbing;
+        }
+
+        .zoom-controls {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+            z-index: 10;
+        }
+
+        .zoom-controls button {
+            background: rgba(30, 41, 59, 0.8);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .zoom-controls button:hover {
+            background: rgba(30, 41, 59, 0.9);
+        }
+
+        .comparison-slider {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 4px;
+            background: var(--secondary);
+            cursor: col-resize;
+            z-index: 10;
+            transform: translateX(-50%);
+            border-radius: 2px;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .comparison-slider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            background: var(--secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        .comparison-slider::after {
+            content: '⇄';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .image-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-top: 5px;
         }
 
         .button-group {
@@ -437,6 +552,10 @@
             .canvas-comparison {
                 grid-template-columns: 1fr;
             }
+            
+            .comparison-slider {
+                display: none;
+            }
         }
 
         /* Modern scrollbar */
@@ -528,21 +647,46 @@
             </div>
 
             <div class="card">
-                <h2 class="section-title"><i class="fas fa-eye"></i> Preview</h2>
+                <div class="preview-header">
+                    <h2 class="section-title"><i class="fas fa-eye"></i> Preview</h2>
+                    <div class="preview-controls">
+                        <button class="secondary-btn" id="zoomOutBtn"><i class="fas fa-search-minus"></i></button>
+                        <button class="secondary-btn" id="zoomInBtn"><i class="fas fa-search-plus"></i></button>
+                        <button class="secondary-btn" id="resetZoomBtn"><i class="fas fa-expand"></i></button>
+                    </div>
+                </div>
+                
                 <div class="preview-container">
-                    <div class="canvas-comparison">
+                    <div class="canvas-comparison" id="canvasComparison">
                         <div class="canvas-wrapper">
                             <div class="canvas-label"><i class="fas fa-image"></i> Original Image</div>
-                            <div class="canvas-container">
+                            <div class="canvas-container" id="originalContainer">
                                 <canvas id="originalCanvas"></canvas>
+                                <div class="zoom-controls">
+                                    <button id="originalZoomIn"><i class="fas fa-plus"></i></button>
+                                    <button id="originalZoomOut"><i class="fas fa-minus"></i></button>
+                                </div>
+                            </div>
+                            <div class="image-info">
+                                <span id="originalDimensions">-</span>
+                                <span id="originalSize">-</span>
                             </div>
                         </div>
                         <div class="canvas-wrapper">
                             <div class="canvas-label"><i class="fas fa-gamepad"></i> Pixel Art</div>
-                            <div class="canvas-container">
+                            <div class="canvas-container" id="pixelContainer">
                                 <canvas id="pixelCanvas"></canvas>
+                                <div class="zoom-controls">
+                                    <button id="pixelZoomIn"><i class="fas fa-plus"></i></button>
+                                    <button id="pixelZoomOut"><i class="fas fa-minus"></i></button>
+                                </div>
+                            </div>
+                            <div class="image-info">
+                                <span id="pixelDimensions">-</span>
+                                <span id="pixelSizeInfo">-</span>
                             </div>
                         </div>
+                        <div class="comparison-slider" id="comparisonSlider"></div>
                     </div>
                     
                     <div class="loading" id="loadingIndicator">
@@ -551,6 +695,7 @@
                     
                     <div class="button-group">
                         <button class="success-btn" id="downloadBtn"><i class="fas fa-download"></i> Download Pixel Art</button>
+                        <button class="secondary-btn" id="shareBtn"><i class="fas fa-share-alt"></i> Share</button>
                     </div>
                 </div>
             </div>
@@ -577,7 +722,7 @@
                     <div class="step-number">3</div>
                     <div class="step-content">
                         <h4>Preview in Real-Time</h4>
-                        <p>See changes instantly as you adjust the controls.</p>
+                        <p>See changes instantly as you adjust the controls. Use zoom and comparison slider for detailed view.</p>
                     </div>
                 </div>
                 <div class="step">
@@ -605,6 +750,7 @@
             const generateBtn = document.getElementById('generateBtn');
             const resetBtn = document.getElementById('resetBtn');
             const downloadBtn = document.getElementById('downloadBtn');
+            const shareBtn = document.getElementById('shareBtn');
             const pixelSize = document.getElementById('pixelSize');
             const colorPalette = document.getElementById('colorPalette');
             const brightness = document.getElementById('brightness');
@@ -612,6 +758,17 @@
             const colorPaletteValue = document.getElementById('colorPaletteValue');
             const brightnessValue = document.getElementById('brightnessValue');
             const loadingIndicator = document.getElementById('loadingIndicator');
+            const originalContainer = document.getElementById('originalContainer');
+            const pixelContainer = document.getElementById('pixelContainer');
+            const originalZoomIn = document.getElementById('originalZoomIn');
+            const originalZoomOut = document.getElementById('originalZoomOut');
+            const pixelZoomIn = document.getElementById('pixelZoomIn');
+            const pixelZoomOut = document.getElementById('pixelZoomOut');
+            const comparisonSlider = document.getElementById('comparisonSlider');
+            const originalDimensions = document.getElementById('originalDimensions');
+            const originalSize = document.getElementById('originalSize');
+            const pixelDimensions = document.getElementById('pixelDimensions');
+            const pixelSizeInfo = document.getElementById('pixelSizeInfo');
 
             // Canvas contexts
             const originalCtx = originalCanvas.getContext('2d');
@@ -620,6 +777,9 @@
             // Current image
             let currentImage = null;
             let updateTimeout = null;
+            let originalZoomLevel = 1;
+            let pixelZoomLevel = 1;
+            let isDragging = false;
 
             // Event Listeners
             uploadArea.addEventListener('click', () => fileInput.click());
@@ -646,6 +806,18 @@
             generateBtn.addEventListener('click', generatePixelArt);
             resetBtn.addEventListener('click', resetControls);
             downloadBtn.addEventListener('click', downloadPixelArt);
+            shareBtn.addEventListener('click', sharePixelArt);
+
+            // Zoom controls
+            originalZoomIn.addEventListener('click', () => zoomCanvas('original', 'in'));
+            originalZoomOut.addEventListener('click', () => zoomCanvas('original', 'out'));
+            pixelZoomIn.addEventListener('click', () => zoomCanvas('pixel', 'in'));
+            pixelZoomOut.addEventListener('click', () => zoomCanvas('pixel', 'out'));
+
+            // Comparison slider
+            comparisonSlider.addEventListener('mousedown', startDragging);
+            document.addEventListener('mousemove', dragSlider);
+            document.addEventListener('mouseup', stopDragging);
 
             // Update value displays and trigger real-time updates
             pixelSize.addEventListener('input', () => {
@@ -723,6 +895,15 @@
                 pixelCanvas.height = height;
                 
                 originalCtx.drawImage(img, 0, 0, width, height);
+                
+                // Update image info
+                originalDimensions.textContent = `${width} × ${height}`;
+                originalSize.textContent = `${(fileInput.files[0].size / 1024).toFixed(1)} KB`;
+                
+                // Reset zoom levels
+                originalZoomLevel = 1;
+                pixelZoomLevel = 1;
+                updateCanvasZoom();
             }
 
             // Schedule pixel art update with debouncing
@@ -786,6 +967,10 @@
                         }
                     }
                     
+                    // Update pixel art info
+                    pixelDimensions.textContent = `${pixelCanvas.width} × ${pixelCanvas.height}`;
+                    pixelSizeInfo.textContent = `Pixel Size: ${pixelSizeVal}`;
+                    
                     loadingIndicator.style.display = 'none';
                 });
             }
@@ -798,6 +983,11 @@
                 pixelSizeValue.textContent = '10';
                 colorPaletteValue.textContent = '64';
                 brightnessValue.textContent = '0';
+                
+                // Reset zoom
+                originalZoomLevel = 1;
+                pixelZoomLevel = 1;
+                updateCanvasZoom();
                 
                 if (currentImage) {
                     generatePixelArt();
@@ -812,6 +1002,102 @@
                 link.download = 'pixel-art.png';
                 link.href = pixelCanvas.toDataURL('image/png');
                 link.click();
+            }
+
+            // Share pixel art
+            function sharePixelArt() {
+                if (!currentImage) return;
+                
+                if (navigator.share) {
+                    pixelCanvas.toBlob(blob => {
+                        const file = new File([blob], 'pixel-art.png', { type: 'image/png' });
+                        navigator.share({
+                            files: [file],
+                            title: 'My Pixel Art Creation',
+                            text: 'Check out this pixel art I created!'
+                        });
+                    });
+                } else {
+                    // Fallback: copy to clipboard
+                    pixelCanvas.toBlob(blob => {
+                        const item = new ClipboardItem({ 'image/png': blob });
+                        navigator.clipboard.write([item]).then(() => {
+                            alert('Pixel art copied to clipboard!');
+                        });
+                    });
+                }
+            }
+
+            // Zoom functionality
+            function zoomCanvas(type, direction) {
+                if (type === 'original') {
+                    if (direction === 'in') {
+                        originalZoomLevel = Math.min(originalZoomLevel + 0.5, 3);
+                    } else {
+                        originalZoomLevel = Math.max(originalZoomLevel - 0.5, 1);
+                    }
+                } else {
+                    if (direction === 'in') {
+                        pixelZoomLevel = Math.min(pixelZoomLevel + 0.5, 3);
+                    } else {
+                        pixelZoomLevel = Math.max(pixelZoomLevel - 0.5, 1);
+                    }
+                }
+                
+                updateCanvasZoom();
+            }
+
+            function updateCanvasZoom() {
+                // Update original canvas
+                if (originalZoomLevel > 1) {
+                    originalContainer.classList.add('zoomed');
+                    originalCanvas.style.transform = `scale(${originalZoomLevel})`;
+                } else {
+                    originalContainer.classList.remove('zoomed');
+                    originalCanvas.style.transform = 'scale(1)';
+                }
+                
+                // Update pixel canvas
+                if (pixelZoomLevel > 1) {
+                    pixelContainer.classList.add('zoomed');
+                    pixelCanvas.style.transform = `scale(${pixelZoomLevel})`;
+                } else {
+                    pixelContainer.classList.remove('zoomed');
+                    pixelCanvas.style.transform = 'scale(1)';
+                }
+            }
+
+            // Comparison slider functionality
+            function startDragging(e) {
+                isDragging = true;
+                document.body.style.cursor = 'col-resize';
+                e.preventDefault();
+            }
+
+            function dragSlider(e) {
+                if (!isDragging) return;
+                
+                const container = document.getElementById('canvasComparison');
+                const containerRect = container.getBoundingClientRect();
+                const x = e.clientX - containerRect.left;
+                const percentage = (x / containerRect.width) * 100;
+                
+                // Limit slider movement
+                if (percentage >= 10 && percentage <= 90) {
+                    comparisonSlider.style.left = `${percentage}%`;
+                    
+                    // Adjust canvas visibility based on slider position
+                    const originalCanvas = document.getElementById('originalCanvas');
+                    const pixelCanvas = document.getElementById('pixelCanvas');
+                    
+                    originalCanvas.style.clipPath = `inset(0 ${100 - percentage}% 0 0)`;
+                    pixelCanvas.style.clipPath = `inset(0 0 0 ${percentage}%)`;
+                }
+            }
+
+            function stopDragging() {
+                isDragging = false;
+                document.body.style.cursor = 'default';
             }
         });
     </script>

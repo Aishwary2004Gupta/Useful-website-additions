@@ -259,7 +259,6 @@
         flex-direction: column;
         gap: 20px;
         height: 100%;
-        position: relative;
       }
 
       .preview-header {
@@ -269,13 +268,17 @@
         margin-bottom: 15px;
       }
 
+      .preview-buttons {
+        display: flex;
+        gap: 10px;
+      }
+
       .canvas-comparison {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 20px;
         position: relative;
-        height: calc(100% - 120px); /* Fixed height to prevent button movement */
-        min-height: 300px;
+        height: 100%;
       }
 
       .canvas-wrapper {
@@ -327,23 +330,18 @@
         display: flex;
         gap: 12px;
         flex-wrap: wrap;
-        margin-top: auto;
+        margin-top: 10px;
         justify-content: center;
-        padding-top: 20px;
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
       }
 
       button {
-        padding: 12px 20px;
+        padding: 10px 16px;
         border: none;
         border-radius: 10px;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         display: flex;
         align-items: center;
         gap: 6px;
@@ -487,9 +485,15 @@
           height: 400px;
         }
         
-        .button-group {
-          position: relative;
-          margin-top: 20px;
+        .preview-header {
+          flex-direction: column;
+          gap: 15px;
+          align-items: flex-start;
+        }
+        
+        .preview-buttons {
+          width: 100%;
+          justify-content: center;
         }
       }
 
@@ -618,6 +622,14 @@
         <div class="card">
           <div class="preview-header">
             <h2 class="section-title"><i class="fas fa-eye"></i> Preview</h2>
+            <div class="preview-buttons">
+              <button class="success-btn" id="downloadBtn">
+                <i class="fas fa-download"></i> Download
+              </button>
+              <button class="secondary-btn" id="shareBtn">
+                <i class="fas fa-share-alt"></i> Share
+              </button>
+            </div>
           </div>
 
           <div class="preview-container">
@@ -650,15 +662,6 @@
 
             <div class="loading" id="loadingIndicator">
               <i class="fas fa-spinner"></i> Generating pixel art...
-            </div>
-
-            <div class="button-group">
-              <button class="success-btn" id="downloadBtn">
-                <i class="fas fa-download"></i> Download
-              </button>
-              <button class="secondary-btn" id="shareBtn">
-                <i class="fas fa-share-alt"></i> Share
-              </button>
             </div>
           </div>
         </div>

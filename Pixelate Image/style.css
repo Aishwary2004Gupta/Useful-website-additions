@@ -258,15 +258,9 @@
         margin-bottom: 15px;
       }
 
-      .preview-controls {
+      .preview-buttons {
         display: flex;
-        gap: 8px;
-        align-items: center;
-      }
-
-      .preview-controls button {
-        padding: 8px 12px;
-        font-size: 0.85rem;
+        gap: 10px;
       }
 
       .canvas-comparison {
@@ -312,49 +306,6 @@
         max-height: 100%;
         border-radius: 8px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        transition: transform 0.3s;
-      }
-
-      .canvas-container.zoomed canvas {
-        transform: scale(1.5);
-        cursor: grab;
-      }
-
-      .canvas-container.zoomed {
-        overflow: auto;
-        cursor: grab;
-      }
-
-      .canvas-container.zoomed:active {
-        cursor: grabbing;
-      }
-
-      .zoom-controls {
-        position: absolute;
-        bottom: 10px;
-        right: 10px;
-        display: flex;
-        gap: 5px;
-        z-index: 10;
-      }
-
-      .zoom-controls button {
-        background: rgba(30, 41, 59, 0.8);
-        border: none;
-        color: white;
-        width: 28px;
-        height: 28px;
-        border-radius: 6px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: background 0.2s;
-        font-size: 0.8rem;
-      }
-
-      .zoom-controls button:hover {
-        background: rgba(30, 41, 59, 0.9);
       }
 
       .image-info {
@@ -370,16 +321,17 @@
         gap: 12px;
         flex-wrap: wrap;
         margin-top: 10px;
+        justify-content: center;
       }
 
       button {
-        padding: 12px 20px;
+        padding: 10px 16px;
         border: none;
         border-radius: 10px;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         display: flex;
         align-items: center;
         gap: 6px;
@@ -523,8 +475,15 @@
           height: 400px;
         }
 
-        .comparison-slider {
-          display: none;
+        .preview-header {
+          flex-direction: column;
+          gap: 15px;
+          align-items: flex-start;
+        }
+
+        .preview-buttons {
+          width: 100%;
+          justify-content: center;
         }
       }
 

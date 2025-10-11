@@ -1,5 +1,4 @@
-
-      document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
         // DOM Elements
         const uploadArea = document.getElementById("uploadArea");
         const fileInput = document.getElementById("fileInput");
@@ -16,20 +15,11 @@
         const colorPaletteValue = document.getElementById("colorPaletteValue");
         const brightnessValue = document.getElementById("brightnessValue");
         const loadingIndicator = document.getElementById("loadingIndicator");
-        const originalContainer = document.getElementById("originalContainer");
-        const pixelContainer = document.getElementById("pixelContainer");
-        const originalZoomIn = document.getElementById("originalZoomIn");
-        const originalZoomOut = document.getElementById("originalZoomOut");
-        const pixelZoomIn = document.getElementById("pixelZoomIn");
-        const pixelZoomOut = document.getElementById("pixelZoomOut");
         const originalDimensions =
           document.getElementById("originalDimensions");
         const originalSize = document.getElementById("originalSize");
         const pixelDimensions = document.getElementById("pixelDimensions");
         const pixelSizeInfo = document.getElementById("pixelSizeInfo");
-        const zoomInBtn = document.getElementById("zoomInBtn");
-        const zoomOutBtn = document.getElementById("zoomOutBtn");
-        const resetZoomBtn = document.getElementById("resetZoomBtn");
 
         // Canvas contexts
         const originalCtx = originalCanvas.getContext("2d");
@@ -38,9 +28,6 @@
         // Current image
         let currentImage = null;
         let updateTimeout = null;
-        let originalZoomLevel = 1;
-        let pixelZoomLevel = 1;
-        let isDragging = false;
 
         // Event Listeners
         uploadArea.addEventListener("click", () => fileInput.click());
@@ -68,36 +55,6 @@
         resetBtn.addEventListener("click", resetControls);
         downloadBtn.addEventListener("click", downloadPixelArt);
         shareBtn.addEventListener("click", sharePixelArt);
-
-        // Zoom controls
-        originalZoomIn.addEventListener("click", () =>
-          zoomCanvas("original", "in")
-        );
-        originalZoomOut.addEventListener("click", () =>
-          zoomCanvas("original", "out")
-        );
-        pixelZoomIn.addEventListener("click", () => zoomCanvas("pixel", "in"));
-        pixelZoomOut.addEventListener("click", () =>
-          zoomCanvas("pixel", "out")
-        );
-        zoomInBtn.addEventListener("click", () => {
-          zoomCanvas("original", "in");
-          zoomCanvas("pixel", "in");
-        });
-        zoomOutBtn.addEventListener("click", () => {
-          zoomCanvas("original", "out");
-          zoomCanvas("pixel", "out");
-        });
-        resetZoomBtn.addEventListener("click", () => {
-          originalZoomLevel = 1;
-          pixelZoomLevel = 1;
-          updateCanvasZoom();
-        });
-
-        // Comparison slider
-        // comparisonSlider.addEventListener('mousedown', startDragging);
-        document.addEventListener("mousemove", dragSlider);
-        document.addEventListener("mouseup", stopDragging);
 
         // Update value displays and trigger real-time updates
         pixelSize.addEventListener("input", () => {
@@ -181,11 +138,6 @@
           originalSize.textContent = `${(
             fileInput.files[0].size / 1024
           ).toFixed(1)} KB`;
-
-          // Reset zoom levels
-          originalZoomLevel = 1;
-          pixelZoomLevel = 1;
-          updateCanvasZoom();
         }
 
         // Schedule pixel art update with debouncing
@@ -271,11 +223,6 @@
           colorPaletteValue.textContent = "64";
           brightnessValue.textContent = "0";
 
-          // Reset zoom
-          originalZoomLevel = 1;
-          pixelZoomLevel = 1;
-          updateCanvasZoom();
-
           if (currentImage) {
             generatePixelArt();
           }
@@ -315,75 +262,5 @@
               });
             });
           }
-        }
-
-        // Zoom functionality
-        function zoomCanvas(type, direction) {
-          if (type === "original") {
-            if (direction === "in") {
-              originalZoomLevel = Math.min(originalZoomLevel + 0.5, 3);
-            } else {
-              originalZoomLevel = Math.max(originalZoomLevel - 0.5, 1);
-            }
-          } else {
-            if (direction === "in") {
-              pixelZoomLevel = Math.min(pixelZoomLevel + 0.5, 3);
-            } else {
-              pixelZoomLevel = Math.max(pixelZoomLevel - 0.5, 1);
-            }
-          }
-
-          updateCanvasZoom();
-        }
-
-        function updateCanvasZoom() {
-          // Update original canvas
-          if (originalZoomLevel > 1) {
-            originalContainer.classList.add("zoomed");
-            originalCanvas.style.transform = `scale(${originalZoomLevel})`;
-          } else {
-            originalContainer.classList.remove("zoomed");
-            originalCanvas.style.transform = "scale(1)";
-          }
-
-          // Update pixel canvas
-          if (pixelZoomLevel > 1) {
-            pixelContainer.classList.add("zoomed");
-            pixelCanvas.style.transform = `scale(${pixelZoomLevel})`;
-          } else {
-            pixelContainer.classList.remove("zoomed");
-            pixelCanvas.style.transform = "scale(1)";
-          }
-        }
-
-        // Comparison slider functionality
-        function startDragging(e) {
-          isDragging = true;
-          document.body.style.cursor = "col-resize";
-          e.preventDefault();
-        }
-
-        function dragSlider(e) {
-          if (!isDragging) return;
-
-          const container = document.getElementById("canvasComparison");
-          const containerRect = container.getBoundingClientRect();
-          const x = e.clientX - containerRect.left;
-          const percentage = (x / containerRect.width) * 100;
-
-          // Limit slider movement
-          if (percentage >= 10 && percentage <= 90) {
-            // Adjust canvas visibility based on slider position
-            const originalCanvas = document.getElementById("originalCanvas");
-            const pixelCanvas = document.getElementById("pixelCanvas");
-
-            originalCanvas.style.clipPath = `inset(0 ${100 - percentage}% 0 0)`;
-            pixelCanvas.style.clipPath = `inset(0 0 0 ${percentage}%)`;
-          }
-        }
-
-        function stopDragging() {
-          isDragging = false;
-          document.body.style.cursor = "default";
         }
       });

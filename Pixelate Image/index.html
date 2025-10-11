@@ -484,13 +484,13 @@
           grid-template-columns: 1fr;
           height: 400px;
         }
-        
+
         .preview-header {
           flex-direction: column;
           gap: 15px;
           align-items: flex-start;
         }
-        
+
         .preview-buttons {
           width: 100%;
           justify-content: center;
@@ -731,7 +731,8 @@
         const colorPaletteValue = document.getElementById("colorPaletteValue");
         const brightnessValue = document.getElementById("brightnessValue");
         const loadingIndicator = document.getElementById("loadingIndicator");
-        const originalDimensions = document.getElementById("originalDimensions");
+        const originalDimensions =
+          document.getElementById("originalDimensions");
         const originalSize = document.getElementById("originalSize");
         const pixelDimensions = document.getElementById("pixelDimensions");
         const pixelSizeInfo = document.getElementById("pixelSizeInfo");
@@ -850,7 +851,9 @@
 
           // Update image info
           originalDimensions.textContent = `${width} × ${height}`;
-          originalSize.textContent = `${(fileInput.files[0].size / 1024).toFixed(1)} KB`;
+          originalSize.textContent = `${(
+            fileInput.files[0].size / 1024
+          ).toFixed(1)} KB`;
         }
 
         // Schedule pixel art update with debouncing

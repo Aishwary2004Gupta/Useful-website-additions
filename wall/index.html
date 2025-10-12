@@ -1,174 +1,133 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Coding my way since 1987 — demo</title>
-<style>
-  :root{
-    --bg:#0b0b0f;
-    --wall:#0f1724;
-    --accent:#0ff6d6;
-    --text-size:clamp(40px,10vw,150px);
-  }
-
-  html,body{
-    height:100%;
-    margin:0;
-    background:linear-gradient(180deg,var(--bg),#071021 60%);
-    font-family: "Segoe UI", Roboto, system-ui, -apple-system, "Helvetica Neue", Arial;
-    color: #fff;
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
-  }
-
-  /* page layout */
-  .stage{
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:4vh 5vw;
-    box-sizing:border-box;
-  }
-
-  /* container that holds both layers */
-  .hero{
-    position:relative;
-    max-width:900px;
-    width:100%;
-    line-height:0.92;
-    display:block;
-  }
-
-  /* "wall" background layer - heavy, slightly textured */
-  .wall{
-    position:relative;
-    z-index:1;
-    font-weight:800;
-    font-size:var(--text-size);
-    color:var(--wall);
-    letter-spacing:0.02em;
-    transform:skewY(-2deg) rotate(-0.4deg);
-    text-shadow:
-      0 2px 0 rgba(0,0,0,0.4),
-      0 8px 20px rgba(0,0,0,0.6);
-    /* soft brick-like texture made with repeating-linear-gradient */
-    background-image:
-      repeating-linear-gradient(0deg, rgba(255,255,255,0.01) 0 1px, transparent 1px 6px),
-      linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
-    -webkit-background-clip:text;
-    background-clip:text;
-    -webkit-text-fill-color:transparent;
-    display:block;
-    white-space:pre-line;
-  }
-
-  /* front animated layer (the wave reveal) */
-  .reveal{
-    position:absolute;
-    top:0; left:0; right:0;
-    z-index:2;
-    font-weight:900;
-    font-size:var(--text-size);
-    color:var(--accent);
-    letter-spacing:0.02em;
-    mix-blend-mode:screen;
-    /* give it a slight glow */
-    filter:drop-shadow(0 8px 30px rgba(0,255,210,0.08)) blur(0.01px);
-    white-space:pre-line;
-    pointer-events:none;
-  }
-
-  /* We will mask the reveal with an SVG <clipPath> that contains a moving wave path */
-  /* fallback: if clipPath unsupported, make reveal slightly transparent */
-  @supports(clip-path: url(#)) {
-    .reveal{
-      -webkit-clip-path: url(#waveClip);
-      clip-path: url(#waveClip);
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Coding My Way Since 1987</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: #0a0a0a;
+      color: white;
+      font-family: system-ui, -apple-system, sans-serif;
+      overflow-x: hidden;
     }
-  }
-
-  /* small responsive tweaks */
-  @media (max-width:600px){
-    :root{ --text-size: clamp(28px,14vw,86px); }
-    .hero{ max-width: 95vw; }
-  }
-
-  /* add a subtle infinite vertical parallax to wall to feel like a "wall" */
-  @keyframes wallShift {
-    0%{ transform:skewY(-2deg) rotate(-0.4deg) translateY(0px); }
-    50%{ transform:skewY(-1.6deg) rotate(-0.3deg) translateY(-4px); }
-    100%{ transform:skewY(-2deg) rotate(-0.4deg) translateY(0px); }
-  }
-  .wall { animation: wallShift 6s ease-in-out infinite; }
-
-</style>
+    .hero {
+      text-align: center;
+      padding: 4rem 1rem;
+    }
+    h1 {
+      font-size: clamp(2.5rem, 8vw, 5rem);
+      margin-bottom: 2rem;
+      background: linear-gradient(45deg, #00d4ff, #0099cc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 30px rgba(0,212,255,0.5);
+    }
+    .wall {
+      margin: 0 auto;
+      width: 100%;
+      max-width: 1400px;
+      height: 220px;
+      position: relative;
+      perspective: 800px;
+      overflow: hidden;
+    }
+    .row {
+      display: flex;
+      height: calc(220px / 12);
+    }
+    .row:nth-child(even) {
+      margin-left: calc(100% / 300 / 2);
+    }
+    .brick {
+      flex: 1 0 calc(100% / 300);
+      background: hsl(25, 60%, calc(40% + var(--rand, 0)));
+      border-top: 1px solid #5c4033;
+      border-right: 1px solid #5c4033;
+      transform-style: preserve-3d;
+    }
+    .row:nth-child(even) .brick {
+      border-left: 1px solid #5c4033;
+      border-bottom: 1px solid #5c4033;
+    }
+    .row:nth-child(odd) .brick:last-child {
+      border-right: 1px solid #5c4033;
+    }
+    /* Glow Wave Overlay */
+    .wave-glow {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 200%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent 0%, rgba(0,212,255,0.8) 50%, transparent 100%);
+      border-radius: 50%;
+      filter: blur(20px);
+      opacity: 0.6;
+      will-change: transform;
+      pointer-events: none;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .brick { transition: none !important; transform: none !important; }
+      .wave-glow { display: none; }
+    }
+  </style>
 </head>
 <body>
-  <div class="stage">
-    <div class="hero" aria-hidden="false">
-      <!-- background "wall" text (keeps semantic text for accessibility) -->
-      <div class="wall" role="heading" aria-level="1">
-Coding
-my way
-since
-1987
-      </div>
-
-      <!-- front text that will be clipped by animated wave -->
-      <div class="reveal">
-Coding
-my way
-since
-1987
-      </div>
+  <section class="hero">
+    <h1>Coding My Way Since 1987</h1>
+    <div class="wall">
+      <div class="wave-glow" id="glow"></div>
+      <div id="wall"></div>
     </div>
-  </div>
+  </section>
 
-  <!-- Inline SVG used as clipPath mask. The <path> is animated via SMIL (supported in modern browsers) -->
-  <!-- If SMIL isn't available you can animate via JS (sample below). -->
-  <svg width="0" height="0" style="position:absolute">
-    <defs>
-      <clipPath id="waveClip" clipPathUnits="objectBoundingBox">
-        <!-- We use a very wide rectangle with a wave-shaped top that moves horizontally.
-             The path below is expressed in objectBoundingBox coordinates (0..1). -->
-        <path id="wavePath" d="M0,0.9 C0.15,0.8 0.25,0.95 0.45,0.85 C0.65,0.75 0.75,0.9 0.9,0.85 L1,0.85 L1,1 L0,1 Z">
-          <animate attributeName="d"
-                   dur="6s"
-                   repeatCount="indefinite"
-                   values="
-M0,0.9 C0.15,0.8 0.25,0.95 0.45,0.85 C0.65,0.75 0.75,0.9 0.9,0.85 L1,0.85 L1,1 L0,1 Z;
-M0,0.85 C0.2,0.9 0.35,0.75 0.5,0.88 C0.7,1.02 0.78,0.82 1,0.9 L1,0.85 L1,1 L0,1 Z;
-M0,0.9 C0.15,0.8 0.25,0.95 0.45,0.85 C0.65,0.75 0.75,0.9 0.9,0.85 L1,0.85 L1,1 L0,1 Z"/>
-        </path>
-      </clipPath>
-    </defs>
-  </svg>
-
-  <!-- Small JS fallback to animate clipPath via requestAnimationFrame on browsers where SMIL is disabled.
-       It also demonstrates how to control speed/direction. -->
   <script>
-    (function(){
-      // Check if SMIL animation worked by checking computed length of the path animation list
-      const path = document.getElementById('wavePath');
-      const hasSMIL = path && path.getAnimations && path.getAnimations().length > 0;
-
-      if (!hasSMIL) {
-        // Fallback: animate by swapping between three path strings
-        const frames = [
-          "M0,0.9 C0.15,0.8 0.25,0.95 0.45,0.85 C0.65,0.75 0.75,0.9 0.9,0.85 L1,0.85 L1,1 L0,1 Z",
-          "M0,0.85 C0.2,0.9 0.35,0.75 0.5,0.88 C0.7,1.02 0.78,0.82 1,0.9 L1,0.85 L1,1 L0,1 Z",
-          "M0,0.9 C0.15,0.8 0.25,0.95 0.45,0.85 C0.65,0.75 0.75,0.9 0.9,0.85 L1,0.85 L1,1 L0,1 Z"
-        ];
-        let i = 0;
-        const dt = 180; // ms between key frames; adjust for speed
-        setInterval(()=> {
-          path.setAttribute('d', frames[i % frames.length]);
-          i++;
-        }, dt);
+    // Generate Bricks
+    const wall = document.getElementById('wall');
+    const NUM_ROWS = 12;
+    const NUM_COLS = 300;
+    const bricks = [];
+    for (let r = 0; r < NUM_ROWS; r++) {
+      const row = document.createElement('div');
+      row.className = 'row';
+      for (let c = 0; c < NUM_COLS; c++) {
+        const brick = document.createElement('div');
+        brick.className = 'brick';
+        brick.style.setProperty('--rand', Math.random() * 20 + '%');
+        row.appendChild(brick);
+        bricks.push(brick);
       }
-    })();
+      wall.appendChild(row);
+    }
+
+    // Wave Animation
+    let time = 0;
+    const AMPLITUDE = 80;
+    const FREQUENCY = 0.12; // ~6 waves
+    const SPEED = 3;
+    const glow = document.getElementById('glow');
+
+    function animate() {
+      time += 0.015 * SPEED;
+      bricks.forEach((brick, i) => {
+        const col = i % NUM_COLS;
+        const x = (col / NUM_COLS) * Math.PI * 20;
+        const wave = Math.sin(x + time) * AMPLITUDE;
+        brick.style.transform = `translateY(${wave}px)`;
+      });
+      // Sync Glow
+      const glowX = ((time % (2 * Math.PI)) / (2 * Math.PI)) * 100;
+      glow.style.transform = `translateX(calc(${glowX}% - 50vw))`;
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    // Pause on Reduced Motion
+    if (matchMedia('(prefers-reduced-motion)').matches) {
+      cancelAnimationFrame(animate);
+    }
   </script>
 </body>
 </html>

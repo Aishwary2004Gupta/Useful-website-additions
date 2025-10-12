@@ -215,11 +215,19 @@ function update(t) {
 
     // for intro motion
     if (!mouseMoved) {
-        pointer.x = (.5 + .2 * Math.cos(.002 * t) * (Math.sin(.005 * t))) * window.innerWidth;
-        pointer.y = (.5 + .3 * (Math.cos(.005 * t)) + .1 * Math.cos(.01 * t)) * window.innerHeight;
+        pointer.x =
+            window.innerWidth / 2 +
+            Math.sin(t * 0.001) * 200 +
+            Math.cos(t * 0.002) * 150;
+        pointer.y =
+            window.innerHeight / 2 +
+            Math.cos(t * 0.0013) * 150 +
+            Math.sin(t * 0.0025) * 100;
     }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // ctx.clearRect(0, 0, canvas.width, canvas.height);
     trail.forEach((p, pIdx) => {
         const prev = pIdx === 0 ? pointer : trail[pIdx - 1];
         const spring = pIdx === 0 ? .4 * params.spring : params.spring;

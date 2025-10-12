@@ -1,4 +1,4 @@
-let mouseMoved = false;
+let mouseMoved = true;
 
 function n(e) {
     this.init(e || {});

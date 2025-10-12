@@ -1,133 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Coding My Way Since 1987</title>
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      background: #0a0a0a;
-      color: white;
-      font-family: system-ui, -apple-system, sans-serif;
-      overflow-x: hidden;
-    }
-    .hero {
-      text-align: center;
-      padding: 4rem 1rem;
-    }
-    h1 {
-      font-size: clamp(2.5rem, 8vw, 5rem);
-      margin-bottom: 2rem;
-      background: linear-gradient(45deg, #00d4ff, #0099cc);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-shadow: 0 0 30px rgba(0,212,255,0.5);
-    }
-    .wall {
-      margin: 0 auto;
-      width: 100%;
-      max-width: 1400px;
-      height: 220px;
-      position: relative;
-      perspective: 800px;
-      overflow: hidden;
-    }
-    .row {
-      display: flex;
-      height: calc(220px / 12);
-    }
-    .row:nth-child(even) {
-      margin-left: calc(100% / 300 / 2);
-    }
-    .brick {
-      flex: 1 0 calc(100% / 300);
-      background: hsl(25, 60%, calc(40% + var(--rand, 0)));
-      border-top: 1px solid #5c4033;
-      border-right: 1px solid #5c4033;
-      transform-style: preserve-3d;
-    }
-    .row:nth-child(even) .brick {
-      border-left: 1px solid #5c4033;
-      border-bottom: 1px solid #5c4033;
-    }
-    .row:nth-child(odd) .brick:last-child {
-      border-right: 1px solid #5c4033;
-    }
-    /* Glow Wave Overlay */
-    .wave-glow {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 200%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent 0%, rgba(0,212,255,0.8) 50%, transparent 100%);
-      border-radius: 50%;
-      filter: blur(20px);
-      opacity: 0.6;
-      will-change: transform;
-      pointer-events: none;
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .brick { transition: none !important; transform: none !important; }
-      .wave-glow { display: none; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Cursor Effect</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            background: #0D0D0D;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
 </head>
 <body>
-  <section class="hero">
-    <h1>Coding My Way Since 1987</h1>
-    <div class="wall">
-      <div class="wave-glow" id="glow"></div>
-      <div id="wall"></div>
-    </div>
-  </section>
-
-  <script>
-    // Generate Bricks
-    const wall = document.getElementById('wall');
-    const NUM_ROWS = 12;
-    const NUM_COLS = 300;
-    const bricks = [];
-    for (let r = 0; r < NUM_ROWS; r++) {
-      const row = document.createElement('div');
-      row.className = 'row';
-      for (let c = 0; c < NUM_COLS; c++) {
-        const brick = document.createElement('div');
-        brick.className = 'brick';
-        brick.style.setProperty('--rand', Math.random() * 20 + '%');
-        row.appendChild(brick);
-        bricks.push(brick);
-      }
-      wall.appendChild(row);
-    }
-
-    // Wave Animation
-    let time = 0;
-    const AMPLITUDE = 80;
-    const FREQUENCY = 0.12; // ~6 waves
-    const SPEED = 3;
-    const glow = document.getElementById('glow');
-
-    function animate() {
-      time += 0.015 * SPEED;
-      bricks.forEach((brick, i) => {
-        const col = i % NUM_COLS;
-        const x = (col / NUM_COLS) * Math.PI * 20;
-        const wave = Math.sin(x + time) * AMPLITUDE;
-        brick.style.transform = `translateY(${wave}px)`;
-      });
-      // Sync Glow
-      const glowX = ((time % (2 * Math.PI)) / (2 * Math.PI)) * 100;
-      glow.style.transform = `translateX(calc(${glowX}% - 50vw))`;
-      requestAnimationFrame(animate);
-    }
-    animate();
-
-    // Pause on Reduced Motion
-    if (matchMedia('(prefers-reduced-motion)').matches) {
-      cancelAnimationFrame(animate);
-    }
-  </script>
+    <canvas id="canvas"></canvas>
+    <script src="script.js"></script>
 </body>
 </html>

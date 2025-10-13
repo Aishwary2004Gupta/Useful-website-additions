@@ -12,6 +12,7 @@
             height: 100%;
             background: #0D0D0D;
             font-family: Arial, sans-serif;
+            cursor: none;
         }
         canvas {
             display: block;
@@ -20,34 +21,52 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            padding: 10px 15px;
-            background: rgba(255, 255, 255, 0.1);
+            padding: 12px 20px;
+            background: rgba(100, 200, 255, 0.3);
             color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 5px;
+            border: 1px solid rgba(100, 200, 255, 0.7);
+            border-radius: 8px;
             cursor: pointer;
             z-index: 1000;
             backdrop-filter: blur(5px);
             transition: all 0.3s ease;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         }
         #autoMoveBtn:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(100, 200, 255, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
         }
         #autoMoveBtn.active {
-            background: rgba(100, 200, 255, 0.3);
-            border-color: rgba(100, 200, 255, 0.7);
+            background: rgba(255, 100, 100, 0.3);
+            border-color: rgba(255, 100, 100, 0.7);
+        }
+        .info {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
         }
     </style>
 </head>
 <body>
-    <button id="autoMoveBtn">Auto Move Cursor</button>
+    <button id="autoMoveBtn">Stop Auto Move</button>
+    <div class="info">Move your cursor to stop automatic movement</div>
     <canvas id="canvas"></canvas>
     <script>
         // Global variables
         let mouseMoved = false;
-        let autoMoveActive = false;
+        let autoMoveActive = true; // Start with auto-move enabled
         let autoMoveInterval = null;
-        let ctx, f, pos = {}, lines = [];
+        let ctx, f, pos = {x: 0, y: 0}, lines = [];
         const E = {
             debug: true,
             friction: 0.5,
@@ -150,15 +169,26 @@
             }
 
             function c(e) {
-                e.touches
-                    ? ((pos.x = e.touches[0].pageX), (pos.y = e.touches[0].pageY))
-                    : ((pos.x = e.clientX), (pos.y = e.clientY)),
-                e.preventDefault();
+                // Get the correct coordinates regardless of event type
+                let clientX, clientY;
+                if (e.touches) {
+                    clientX = e.touches[0].pageX;
+                    clientY = e.touches[0].pageY;
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                
+                // Update position
+                pos.x = clientX;
+                pos.y = clientY;
                 
                 // Stop auto movement if user moves cursor manually
-                // if (autoMoveActive) {
-                //     stopAutoMove();
-                // }
+                if (autoMoveActive && e.type !== 'automove') {
+                    stopAutoMove();
+                }
+                
+                e.preventDefault();
             }
 
             function l(e) {
@@ -166,13 +196,13 @@
                 ((pos.x = e.touches[0].pageX), (pos.y = e.touches[0].pageY));
             }
 
-            document.removeEventListener('mousemove', onMousemove),
-            document.removeEventListener('touchstart', onMousemove),
-            document.addEventListener('mousemove', c),
-            document.addEventListener('touchmove', c),
-            document.addEventListener('touchstart', l),
-            c(e),
-            o(),
+            document.removeEventListener('mousemove', onMousemove);
+            document.removeEventListener('touchstart', onMousemove);
+            document.addEventListener('mousemove', c);
+            document.addEventListener('touchmove', c);
+            document.addEventListener('touchstart', l);
+            c(e);
+            o();
             render();
         }
 
@@ -195,7 +225,7 @@
 
         // Canvas resize function
         function resizeCanvas() {
-            ctx.canvas.width = window.innerWidth - 20;
+            ctx.canvas.width = window.innerWidth;
             ctx.canvas.height = window.innerHeight;
         }
 
@@ -204,6 +234,12 @@
             autoMoveActive = true;
             document.getElementById('autoMoveBtn').classList.add('active');
             document.getElementById('autoMoveBtn').textContent = 'Stop Auto Move';
+            
+            // Initialize position if not set
+            if (!pos.x || !pos.y) {
+                pos.x = window.innerWidth / 2;
+                pos.y = window.innerHeight / 2;
+            }
             
             autoMoveInterval = setInterval(() => {
                 if (autoMoveActive) {
@@ -215,10 +251,12 @@
                     pos.x = randomX;
                     pos.y = randomY;
                     
-                    // Create a fake mousemove event to trigger the trail effect
-                    const event = new MouseEvent('mousemove', {
-                        clientX: randomX,
-                        clientY: randomY
+                    // Create a custom event to trigger the trail effect
+                    const event = new CustomEvent('automove', {
+                        detail: {
+                            clientX: randomX,
+                            clientY: randomY
+                        }
                     });
                     
                     // Dispatch the event
@@ -230,7 +268,7 @@
         function stopAutoMove() {
             autoMoveActive = false;
             document.getElementById('autoMoveBtn').classList.remove('active');
-            document.getElementById('autoMoveBtn').textContent = 'Auto Move Cursor';
+            document.getElementById('autoMoveBtn').textContent = 'Start Auto Move';
             
             if (autoMoveInterval) {
                 clearInterval(autoMoveInterval);
@@ -257,8 +295,40 @@
                 frequency: 0.0015,
                 offset: 285,
             });
-            document.addEventListener('mousemove', onMousemove);
-            document.addEventListener('touchstart', onMousemove);
+            
+            // Set initial position
+            pos.x = window.innerWidth / 2;
+            pos.y = window.innerHeight / 2;
+            
+            // Add event listeners
+            document.addEventListener('mousemove', function(e) {
+                // Update position
+                pos.x = e.clientX;
+                pos.y = e.clientY;
+                
+                // Stop auto movement if user moves cursor manually
+                if (autoMoveActive) {
+                    stopAutoMove();
+                }
+            });
+            
+            document.addEventListener('touchmove', function(e) {
+                // Update position
+                pos.x = e.touches[0].pageX;
+                pos.y = e.touches[0].pageY;
+                
+                // Stop auto movement if user moves cursor manually
+                if (autoMoveActive) {
+                    stopAutoMove();
+                }
+            });
+            
+            document.addEventListener('automove', function(e) {
+                // Update position for auto movement
+                pos.x = e.detail.clientX;
+                pos.y = e.detail.clientY;
+            });
+            
             document.body.addEventListener('orientationchange', resizeCanvas);
             window.addEventListener('resize', resizeCanvas);
             window.addEventListener('focus', () => {
@@ -270,7 +340,14 @@
             window.addEventListener('blur', () => {
                 ctx.running = true;
             });
+            
+            // Initialize lines
+            lines = [];
+            for (var e = 0; e < E.trails; e++)
+                lines.push(new Line({ spring: 0.4 + (e / E.trails) * 0.025 }));
+                
             resizeCanvas();
+            render();
         };
 
         // Initialize on page load
@@ -279,6 +356,9 @@
             
             // Add event listener to the button
             document.getElementById('autoMoveBtn').addEventListener('click', toggleAutoMove);
+            
+            // Start auto-move on page load
+            startAutoMove();
         };
     </script>
 </body>

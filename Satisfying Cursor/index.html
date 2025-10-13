@@ -1,17 +1,227 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Satisfying Cursor</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Interactive Cursor Effect</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            background: #0D0D0D;
+            font-family: Arial, sans-serif;
+            cursor: none;
+        }
+        canvas {
+            display: block;
+        }
+        #autoMoveBtn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: rgba(100, 200, 255, 0.3);
+            color: white;
+            border: 1px solid rgba(100, 200, 255, 0.7);
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        #autoMoveBtn:hover {
+            background: rgba(100, 200, 255, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+        #autoMoveBtn.active {
+            background: rgba(255, 100, 100, 0.3);
+            border-color: rgba(255, 100, 100, 0.7);
+        }
+        .info {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+        }
+    </style>
 </head>
-
 <body>
-    <canvas></canvas>
-    <div class="links"></div>
-    <script src="script.js"></script>
-</body>
+    <button id="autoMoveBtn">Stop Auto Move</button>
+    <div class="info">Move your cursor to stop automatic movement</div>
+    <canvas id="canvas"></canvas>
+    <script>
+        // Global variables
+        let mouseMoved = false;
+        let autoMoveActive = true;
+        let autoMoveInterval = null;
+        let animationId = null;
+        let startTime = null;
 
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext('2d');
+
+        const pointer = {
+            x: 0.5 * window.innerWidth,
+            y: 0.5 * window.innerHeight,
+        };
+
+        const params = {
+            pointsNumber: 40,
+            widthFactor: 0.3,
+            mouseThreshold: 0.6,
+            spring: 0.4,
+            friction: 0.5
+        };
+
+        const trail = new Array(params.pointsNumber);
+        for (let i = 0; i < params.pointsNumber; i++) {
+            trail[i] = {
+                x: pointer.x,
+                y: pointer.y,
+                dx: 0,
+                dy: 0,
+            };
+        }
+
+        // Event listeners
+        window.addEventListener("click", e => {
+            updateMousePosition(e.pageX, e.pageY);
+        });
+        
+        window.addEventListener("mousemove", e => {
+            if (autoMoveActive) {
+                stopAutoMove();
+            }
+            mouseMoved = true;
+            updateMousePosition(e.pageX, e.pageY);
+        });
+        
+        window.addEventListener("touchmove", e => {
+            if (autoMoveActive) {
+                stopAutoMove();
+            }
+            mouseMoved = true;
+            updateMousePosition(e.targetTouches[0].pageX, e.targetTouches[0].pageY);
+        });
+
+        function updateMousePosition(eX, eY) {
+            pointer.x = eX;
+            pointer.y = eY;
+        }
+
+        // Auto-move functionality with wave pattern
+        function startAutoMove() {
+            autoMoveActive = true;
+            mouseMoved = false;
+            document.getElementById('autoMoveBtn').classList.add('active');
+            document.getElementById('autoMoveBtn').textContent = 'Stop Auto Move';
+            
+            // Reset start time for consistent wave pattern
+            startTime = performance.now();
+            
+            if (!animationId) {
+                update(0);
+            }
+        }
+
+        function stopAutoMove() {
+            autoMoveActive = false;
+            mouseMoved = true;
+            document.getElementById('autoMoveBtn').classList.remove('active');
+            document.getElementById('autoMoveBtn').textContent = 'Start Auto Move';
+        }
+
+        function toggleAutoMove() {
+            if (autoMoveActive) {
+                stopAutoMove();
+            } else {
+                startAutoMove();
+            }
+        }
+
+        // Main update function
+        function update(t) {
+            // For auto motion - using the wave pattern from your example
+            if (!mouseMoved && autoMoveActive) {
+                const currentTime = performance.now() - startTime;
+                pointer.x = (0.5 + 0.2 * Math.cos(0.002 * currentTime) * Math.sin(0.005 * currentTime)) * window.innerWidth;
+                pointer.y = (0.5 + 0.3 * Math.cos(0.005 * currentTime) + 0.1 * Math.cos(0.01 * currentTime)) * window.innerHeight;
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Update trail positions
+            trail.forEach((p, pIdx) => {
+                const prev = pIdx === 0 ? pointer : trail[pIdx - 1];
+                const spring = pIdx === 0 ? 0.4 * params.spring : params.spring;
+                p.dx += (prev.x - p.x) * spring;
+                p.dy += (prev.y - p.y) * spring;
+                p.dx *= params.friction;
+                p.dy *= params.friction;
+                p.x += p.dx;
+                p.y += p.dy;
+            });
+
+            // Draw the trail
+            ctx.strokeStyle = 'hsla(' + (t * 0.05) % 360 + ', 80%, 60%, 0.8)';
+            ctx.lineCap = "round";
+            ctx.beginPath();
+            ctx.moveTo(trail[0].x, trail[0].y);
+
+            for (let i = 1; i < trail.length - 1; i++) {
+                const xc = 0.5 * (trail[i].x + trail[i + 1].x);
+                const yc = 0.5 * (trail[i].y + trail[i + 1].y);
+                ctx.quadraticCurveTo(trail[i].x, trail[i].y, xc, yc);
+                ctx.lineWidth = params.widthFactor * (params.pointsNumber - i);
+                ctx.stroke();
+            }
+            ctx.lineTo(trail[trail.length - 1].x, trail[trail.length - 1].y);
+            ctx.stroke();
+            
+            animationId = window.requestAnimationFrame(update);
+        }
+
+        function setupCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // Initialize pointer position to center
+            pointer.x = window.innerWidth / 2;
+            pointer.y = window.innerHeight / 2;
+            
+            // Reset trail positions
+            for (let i = 0; i < params.pointsNumber; i++) {
+                trail[i].x = pointer.x;
+                trail[i].y = pointer.y;
+                trail[i].dx = 0;
+                trail[i].dy = 0;
+            }
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', function() {
+            setupCanvas();
+            
+            // Add event listener to the button
+            document.getElementById('autoMoveBtn').addEventListener('click', toggleAutoMove);
+            
+            // Start auto-move on page load
+            startAutoMove();
+        });
+
+        window.addEventListener("resize", setupCanvas);
+    </script>
+</body>
 </html>

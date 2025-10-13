@@ -12,7 +12,6 @@
             height: 100%;
             background: #0D0D0D;
             font-family: Arial, sans-serif;
-            cursor: none;
         }
         canvas {
             display: block;
@@ -55,17 +54,31 @@
             border-radius: 8px;
             backdrop-filter: blur(5px);
         }
+        /* Simple dot cursor */
+        .cursor {
+            position: fixed;
+            width: 6px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+        }
     </style>
 </head>
 <body>
     <button id="autoMoveBtn">Stop Auto Move</button>
     <div class="info">Move your cursor to stop automatic movement</div>
+    <div class="cursor"></div>
     <canvas id="canvas"></canvas>
     <script>
         // Global variables
         let mouseMoved = false;
-        let autoMoveActive = true; // Start with auto-move enabled
-        let autoMoveInterval = null;
+        let autoMoveActive = true;
+        let startTime = null;
+
+        // Your existing code with modifications
         let ctx, f, pos = {x: 0, y: 0}, lines = [];
         const E = {
             debug: true,
@@ -76,12 +89,13 @@
             tension: 0.98,
         };
 
-        // Node constructor
-        function Node() {
-            this.x = 0;
-            this.y = 0;
-            this.vy = 0;
-            this.vx = 0;
+        // Get cursor element
+        const cursor = document.querySelector('.cursor');
+
+        // Update cursor position
+        function updateCursorPosition(x, y) {
+            cursor.style.left = x + 'px';
+            cursor.style.top = y + 'px';
         }
 
         // Oscillator function
@@ -104,6 +118,14 @@
                 return this.update();
             },
         };
+
+        // Node constructor
+        function Node() {
+            this.x = 0;
+            this.y = 0;
+            this.vy = 0;
+            this.vx = 0;
+        }
 
         // Line constructor
         function Line(e) {
@@ -169,8 +191,8 @@
             }
 
             function c(e) {
-                // Get the correct coordinates regardless of event type
                 let clientX, clientY;
+                
                 if (e.touches) {
                     clientX = e.touches[0].pageX;
                     clientY = e.touches[0].pageY;
@@ -179,12 +201,13 @@
                     clientY = e.clientY;
                 }
                 
-                // Update position
+                // Update cursor position
                 pos.x = clientX;
                 pos.y = clientY;
+                updateCursorPosition(clientX, clientY);
                 
                 // Stop auto movement if user moves cursor manually
-                if (autoMoveActive && e.type !== 'automove') {
+                if (autoMoveActive) {
                     stopAutoMove();
                 }
                 
@@ -219,6 +242,22 @@
                     e.draw();
                 }
                 ctx.frame++;
+                
+                // Auto movement logic - FASTER SPEED
+                if (autoMoveActive && ctx.running) {
+                    const currentTime = performance.now() - startTime;
+                    // Increased speed by multiplying time factors
+                    pos.x = window.innerWidth / 2 +
+                            Math.sin(currentTime * 0.003) * 250 +  // Faster X movement
+                            Math.cos(currentTime * 0.004) * 200;   // Faster X movement
+                    pos.y = window.innerHeight / 2 +
+                            Math.cos(currentTime * 0.0035) * 200 + // Faster Y movement
+                            Math.sin(currentTime * 0.005) * 150;   // Faster Y movement
+                    
+                    // Update visible cursor position during auto-move
+                    updateCursorPosition(pos.x, pos.y);
+                }
+                
                 window.requestAnimationFrame(render);
             }
         }
@@ -229,56 +268,22 @@
             ctx.canvas.height = window.innerHeight;
         }
 
-        // Auto-move functionality
+        // Auto-move functionality with faster wave pattern
         function startAutoMove() {
             autoMoveActive = true;
+            mouseMoved = false;
             document.getElementById('autoMoveBtn').classList.add('active');
             document.getElementById('autoMoveBtn').textContent = 'Stop Auto Move';
             
-            // Initialize position if not set
-            if (!pos.x || !pos.y) {
-                pos.x = window.innerWidth / 2;
-                pos.y = window.innerHeight / 2;
-            }
-            
-            autoMoveInterval = setInterval(() => {
-                if (autoMoveActive) {
-                    // Generate smaller, smoother movements from current position
-                    const moveDistance = 110; // Even smaller maximum movement
-                    const randomX = pos.x + (Math.random() - 0.5) * 2 * moveDistance;
-                    const randomY = pos.y + (Math.random() - 0.5) * 2 * moveDistance;
-                    
-                    // Keep within screen bounds
-                    const boundedX = Math.max(50, Math.min(window.innerWidth - 50, randomX));
-                    const boundedY = Math.max(50, Math.min(window.innerHeight - 50, randomY));
-                    
-                    // Update cursor position
-                    pos.x = boundedX;
-                    pos.y = boundedY;
-                    
-                    // Create a custom event to trigger the trail effect
-                    const event = new CustomEvent('automove', {
-                        detail: {
-                            clientX: boundedX,
-                            clientY: boundedY
-                        }
-                    });
-                    
-                    // Dispatch the event
-                    document.dispatchEvent(event);
-                }
-            }, 200); // Slower interval combined with smaller movements
+            // Reset start time for consistent wave pattern
+            startTime = performance.now();
         }
-        
+
         function stopAutoMove() {
             autoMoveActive = false;
+            mouseMoved = true;
             document.getElementById('autoMoveBtn').classList.remove('active');
             document.getElementById('autoMoveBtn').textContent = 'Start Auto Move';
-            
-            if (autoMoveInterval) {
-                clearInterval(autoMoveInterval);
-                autoMoveInterval = null;
-            }
         }
 
         function toggleAutoMove() {
@@ -304,36 +309,10 @@
             // Set initial position
             pos.x = window.innerWidth / 2;
             pos.y = window.innerHeight / 2;
+            updateCursorPosition(pos.x, pos.y);
             
-            // Add event listeners
-            document.addEventListener('mousemove', function(e) {
-                // Update position
-                pos.x = e.clientX;
-                pos.y = e.clientY;
-                
-                // Stop auto movement if user moves cursor manually
-                if (autoMoveActive) {
-                    stopAutoMove();
-                }
-            });
-            
-            document.addEventListener('touchmove', function(e) {
-                // Update position
-                pos.x = e.touches[0].pageX;
-                pos.y = e.touches[0].pageY;
-                
-                // Stop auto movement if user moves cursor manually
-                if (autoMoveActive) {
-                    stopAutoMove();
-                }
-            });
-            
-            document.addEventListener('automove', function(e) {
-                // Update position for auto movement
-                pos.x = e.detail.clientX;
-                pos.y = e.detail.clientY;
-            });
-            
+            document.addEventListener('mousemove', onMousemove);
+            document.addEventListener('touchstart', onMousemove);
             document.body.addEventListener('orientationchange', resizeCanvas);
             window.addEventListener('resize', resizeCanvas);
             window.addEventListener('focus', () => {
@@ -345,14 +324,12 @@
             window.addEventListener('blur', () => {
                 ctx.running = true;
             });
+            resizeCanvas();
             
             // Initialize lines
             lines = [];
             for (var e = 0; e < E.trails; e++)
                 lines.push(new Line({ spring: 0.4 + (e / E.trails) * 0.025 }));
-                
-            resizeCanvas();
-            render();
         };
 
         // Initialize on page load

@@ -73,10 +73,10 @@
     <div class="cursor"></div>
     <canvas id="canvas"></canvas>
     <script>
-        // Global variables
+        // Global variables - AUTO MOVE ENABLED BY DEFAULT
         let mouseMoved = false;
         let autoMoveActive = true;
-        let startTime = null;
+        let startTime = performance.now(); // START TIME SET IMMEDIATELY
 
         // Your existing code with modifications
         let ctx, f, pos = {x: 0, y: 0}, lines = [];
@@ -229,22 +229,11 @@
             render();
         }
 
-        // Render function
+        // Render function with auto-move integrated
         function render() {
             if (ctx.running) {
-                ctx.globalCompositeOperation = 'source-over';
-                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                ctx.globalCompositeOperation = 'lighter';
-                ctx.strokeStyle = 'hsla(' + Math.round(f.update()) + ',50%,20%,0.8)';
-                ctx.lineWidth = 3;
-                for (var e, t = 0; t < E.trails; t++) {
-                    (e = lines[t]).update();
-                    e.draw();
-                }
-                ctx.frame++;
-                
                 // Auto movement logic - FASTER SPEED
-                if (autoMoveActive && ctx.running) {
+                if (autoMoveActive) {
                     const currentTime = performance.now() - startTime;
                     // Increased speed by multiplying time factors
                     pos.x = window.innerWidth / 2 +
@@ -257,6 +246,17 @@
                     // Update visible cursor position during auto-move
                     updateCursorPosition(pos.x, pos.y);
                 }
+
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                ctx.globalCompositeOperation = 'lighter';
+                ctx.strokeStyle = 'hsla(' + Math.round(f.update()) + ',50%,20%,0.8)';
+                ctx.lineWidth = 3;
+                for (var e, t = 0; t < E.trails; t++) {
+                    (e = lines[t]).update();
+                    e.draw();
+                }
+                ctx.frame++;
                 
                 window.requestAnimationFrame(render);
             }
@@ -268,15 +268,13 @@
             ctx.canvas.height = window.innerHeight;
         }
 
-        // Auto-move functionality with faster wave pattern
+        // Auto-move functionality
         function startAutoMove() {
             autoMoveActive = true;
             mouseMoved = false;
+            startTime = performance.now(); // Reset start time
             document.getElementById('autoMoveBtn').classList.add('active');
             document.getElementById('autoMoveBtn').textContent = 'Stop Auto Move';
-            
-            // Reset start time for consistent wave pattern
-            startTime = performance.now();
         }
 
         function stopAutoMove() {
@@ -306,10 +304,15 @@
                 offset: 285,
             });
             
-            // Set initial position
+            // Set initial position to center
             pos.x = window.innerWidth / 2;
             pos.y = window.innerHeight / 2;
             updateCursorPosition(pos.x, pos.y);
+            
+            // Initialize lines immediately
+            lines = [];
+            for (var e = 0; e < E.trails; e++)
+                lines.push(new Line({ spring: 0.4 + (e / E.trails) * 0.025 }));
             
             document.addEventListener('mousemove', onMousemove);
             document.addEventListener('touchstart', onMousemove);
@@ -326,10 +329,8 @@
             });
             resizeCanvas();
             
-            // Initialize lines
-            lines = [];
-            for (var e = 0; e < E.trails; e++)
-                lines.push(new Line({ spring: 0.4 + (e / E.trails) * 0.025 }));
+            // START RENDER LOOP IMMEDIATELY
+            render();
         };
 
         // Initialize on page load
@@ -339,8 +340,8 @@
             // Add event listener to the button
             document.getElementById('autoMoveBtn').addEventListener('click', toggleAutoMove);
             
-            // Start auto-move on page load
-            startAutoMove();
+            // Auto-move is already active by default (autoMoveActive = true)
+            // and startTime is already set at the top
         };
     </script>
 </body>

@@ -243,28 +243,32 @@
             
             autoMoveInterval = setInterval(() => {
                 if (autoMoveActive) {
-                    // Generate random position within screen bounds
-                    const randomX = Math.random() * (window.innerWidth - 100) + 50;
-                    const randomY = Math.random() * (window.innerHeight - 100) + 50;
+                    // Generate smaller, smoother movements from current position
+                    const moveDistance = 110; // Even smaller maximum movement
+                    const randomX = pos.x + (Math.random() - 0.5) * 2 * moveDistance;
+                    const randomY = pos.y + (Math.random() - 0.5) * 2 * moveDistance;
+                    
+                    // Keep within screen bounds
+                    const boundedX = Math.max(50, Math.min(window.innerWidth - 50, randomX));
+                    const boundedY = Math.max(50, Math.min(window.innerHeight - 50, randomY));
                     
                     // Update cursor position
-                    pos.x = randomX;
-                    pos.y = randomY;
+                    pos.x = boundedX;
+                    pos.y = boundedY;
                     
                     // Create a custom event to trigger the trail effect
                     const event = new CustomEvent('automove', {
                         detail: {
-                            clientX: randomX,
-                            clientY: randomY
+                            clientX: boundedX,
+                            clientY: boundedY
                         }
                     });
                     
                     // Dispatch the event
                     document.dispatchEvent(event);
                 }
-            }, 100); // Move every 100ms
+            }, 200); // Slower interval combined with smaller movements
         }
-
         function stopAutoMove() {
             autoMoveActive = false;
             document.getElementById('autoMoveBtn').classList.remove('active');

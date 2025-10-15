@@ -55,7 +55,7 @@
             border-radius: 8px;
             backdrop-filter: blur(5px);
         }
-        /* Visible cursor styles */
+        /* Visible cursor styles - NO TRANSITIONS for instant response */
         .cursor-dot {
             position: fixed;
             width: 12px;
@@ -67,7 +67,7 @@
             transform: translate(-50%, -50%);
             mix-blend-mode: difference;
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-            transition: transform 0.1s ease-out;
+            /* No transition for instant response */
         }
         .cursor-ring {
             position: fixed;
@@ -78,8 +78,8 @@
             pointer-events: none;
             z-index: 9998;
             transform: translate(-50%, -50%);
-            transition: all 0.15s ease-out;
             mix-blend-mode: difference;
+            /* No transition for instant response */
         }
         .cursor-ring.pulsing {
             animation: pulse 1.5s ease-in-out infinite;
@@ -132,7 +132,7 @@
             };
         }
 
-        // Update cursor position
+        // Update cursor position - INSTANT without delays
         function updateCursorPosition(x, y) {
             cursorDot.style.left = x + 'px';
             cursorDot.style.top = y + 'px';
@@ -140,32 +140,37 @@
             cursorRing.style.top = y + 'px';
         }
 
-        // Event listeners
-        window.addEventListener("click", e => {
-            updateMousePosition(e.pageX, e.pageY);
-        });
-        
+        // Event listeners with direct cursor updates
         window.addEventListener("mousemove", e => {
+            // Update cursor immediately
+            updateCursorPosition(e.pageX, e.pageY);
+            
             if (autoMoveActive) {
                 stopAutoMove();
             }
             mouseMoved = true;
-            updateMousePosition(e.pageX, e.pageY);
-        });
+            pointer.x = e.pageX;
+            pointer.y = e.pageY;
+        }, { passive: true });
         
         window.addEventListener("touchmove", e => {
+            const touch = e.targetTouches[0];
+            // Update cursor immediately
+            updateCursorPosition(touch.pageX, touch.pageY);
+            
             if (autoMoveActive) {
                 stopAutoMove();
             }
             mouseMoved = true;
-            updateMousePosition(e.targetTouches[0].pageX, e.targetTouches[0].pageY);
-        });
+            pointer.x = touch.pageX;
+            pointer.y = touch.pageY;
+        }, { passive: true });
 
-        function updateMousePosition(eX, eY) {
-            pointer.x = eX;
-            pointer.y = eY;
-            updateCursorPosition(eX, eY);
-        }
+        window.addEventListener("click", e => {
+            updateCursorPosition(e.pageX, e.pageY);
+            pointer.x = e.pageX;
+            pointer.y = e.pageY;
+        }, { passive: true });
 
         // Auto-move functionality with wave pattern
         function startAutoMove() {
@@ -199,7 +204,7 @@
 
         // Main update function
         function update(t) {
-            // For auto motion - using the wave pattern from your example
+            // For auto motion - using the wave pattern
             if (!mouseMoved && autoMoveActive) {
                 const currentTime = performance.now() - startTime;
                 pointer.x = (0.5 + 0.2 * Math.cos(0.002 * currentTime) * Math.sin(0.005 * currentTime)) * window.innerWidth;

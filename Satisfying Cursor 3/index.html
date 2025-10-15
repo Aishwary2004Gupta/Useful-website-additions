@@ -1,348 +1,359 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Interactive Cursor Effect</title>
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            height: 100%;
-            background: #0D0D0D;
-            font-family: Arial, sans-serif;
-        }
-        canvas {
-            display: block;
-        }
-        #autoMoveBtn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 12px 20px;
-            background: rgba(100, 200, 255, 0.3);
-            color: white;
-            border: 1px solid rgba(100, 200, 255, 0.7);
-            border-radius: 8px;
-            cursor: pointer;
-            z-index: 1000;
-            backdrop-filter: blur(5px);
-            transition: all 0.3s ease;
-            font-size: 16px;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        }
-        #autoMoveBtn:hover {
-            background: rgba(100, 200, 255, 0.5);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-        }
-        #autoMoveBtn.active {
-            background: rgba(255, 100, 100, 0.3);
-            border-color: rgba(255, 100, 100, 0.7);
-        }
-        .info {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 14px;
-            z-index: 1000;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 10px 15px;
-            border-radius: 8px;
-            backdrop-filter: blur(5px);
-        }
-        /* Simple dot cursor */
-        .cursor {
-            position: fixed;
-            width: 6px;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9999;
-            transform: translate(-50%, -50%);
-        }
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        height: 100%;
+        background: #0d0d0d;
+        font-family: Arial, sans-serif;
+      }
+      canvas {
+        display: block;
+      }
+      #autoMoveBtn {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        background: rgba(100, 200, 255, 0.3);
+        color: white;
+        border: 1px solid rgba(100, 200, 255, 0.7);
+        border-radius: 8px;
+        cursor: pointer;
+        z-index: 1000;
+        backdrop-filter: blur(5px);
+        transition: all 0.3s ease;
+        font-size: 16px;
+        font-weight: bold;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      }
+      #autoMoveBtn:hover {
+        background: rgba(100, 200, 255, 0.5);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+      }
+      #autoMoveBtn.active {
+        background: rgba(255, 100, 100, 0.3);
+        border-color: rgba(255, 100, 100, 0.7);
+      }
+      .info {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 14px;
+        z-index: 1000;
+        background: rgba(0, 0, 0, 0.3);
+        padding: 10px 15px;
+        border-radius: 8px;
+        backdrop-filter: blur(5px);
+      }
+      /* Simple dot cursor */
+      .cursor {
+        position: fixed;
+        width: 6px;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 9999;
+        transform: translate(-50%, -50%);
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <button id="autoMoveBtn">Stop Auto Move</button>
     <div class="info">Move your cursor to stop automatic movement</div>
     <div class="cursor"></div>
     <canvas id="canvas"></canvas>
     <script>
-        // Global variables - AUTO MOVE ENABLED BY DEFAULT
-        let mouseMoved = false;
-        let autoMoveActive = true;
-        let startTime = performance.now(); // START TIME SET IMMEDIATELY
+      // Global variables - AUTO MOVE ENABLED BY DEFAULT
+      let mouseMoved = false;
+      let autoMoveActive = true;
+      let startTime = performance.now(); // START TIME SET IMMEDIATELY
 
-        // Your existing code with modifications
-        let ctx, f, pos = {x: 0, y: 0}, lines = [];
-        const E = {
-            debug: true,
-            friction: 0.5,
-            trails: 20,
-            size: 50,
-            dampening: 0.25,
-            tension: 0.98,
-        };
+      // Your existing code with modifications
+      let ctx,
+        f,
+        pos = { x: 0, y: 0 },
+        lines = [];
+      const E = {
+        debug: true,
+        friction: 0.5,
+        trails: 20,
+        size: 50,
+        dampening: 0.25,
+        tension: 0.98,
+      };
 
-        // Get cursor element
-        const cursor = document.querySelector('.cursor');
+      // Get cursor element
+      const cursor = document.querySelector(".cursor");
 
-        // Update cursor position
-        function updateCursorPosition(x, y) {
-            cursor.style.left = x + 'px';
-            cursor.style.top = y + 'px';
+      // Update cursor position
+      function updateCursorPosition(x, y) {
+        cursor.style.left = x + "px";
+        cursor.style.top = y + "px";
+      }
+
+      // Oscillator function
+      function Oscillator(e) {
+        this.init(e || {});
+      }
+
+      Oscillator.prototype = {
+        init: function (e) {
+          this.phase = e.phase || 0;
+          this.offset = e.offset || 0;
+          this.frequency = e.frequency || 0.001;
+          this.amplitude = e.amplitude || 1;
+        },
+        update: function () {
+          this.phase += this.frequency;
+          return this.offset + Math.sin(this.phase) * this.amplitude;
+        },
+        value: function () {
+          return this.update();
+        },
+      };
+
+      // Node constructor
+      function Node() {
+        this.x = 0;
+        this.y = 0;
+        this.vy = 0;
+        this.vx = 0;
+      }
+
+      // Line constructor
+      function Line(e) {
+        this.init(e || {});
+      }
+
+      Line.prototype = {
+        init: function (e) {
+          this.spring = e.spring + 0.1 * Math.random() - 0.02;
+          this.friction = E.friction + 0.01 * Math.random() - 0.002;
+          this.nodes = [];
+          for (var t, n = 0; n < E.size; n++) {
+            t = new Node();
+            t.x = pos.x;
+            t.y = pos.y;
+            this.nodes.push(t);
+          }
+        },
+        update: function () {
+          var e = this.spring,
+            t = this.nodes[0];
+          t.vx += (pos.x - t.x) * e;
+          t.vy += (pos.y - t.y) * e;
+          for (var n, i = 0, a = this.nodes.length; i < a; i++)
+            (t = this.nodes[i]),
+              0 < i &&
+                ((n = this.nodes[i - 1]),
+                (t.vx += (n.x - t.x) * e),
+                (t.vy += (n.y - t.y) * e),
+                (t.vx += n.vx * E.dampening),
+                (t.vy += n.vy * E.dampening)),
+              (t.vx *= this.friction),
+              (t.vy *= this.friction),
+              (t.x += t.vx),
+              (t.y += t.vy),
+              (e *= E.tension);
+        },
+        draw: function () {
+          var e,
+            t,
+            n = this.nodes[0].x,
+            i = this.nodes[0].y;
+          ctx.beginPath();
+          ctx.moveTo(n, i);
+          for (var a = 1, o = this.nodes.length - 2; a < o; a++) {
+            e = this.nodes[a];
+            t = this.nodes[a + 1];
+            n = 0.5 * (e.x + t.x);
+            i = 0.5 * (e.y + t.y);
+            ctx.quadraticCurveTo(e.x, e.y, n, i);
+          }
+          e = this.nodes[a];
+          t = this.nodes[a + 1];
+          ctx.quadraticCurveTo(e.x, e.y, t.x, t.y);
+          ctx.stroke();
+          ctx.closePath();
+        },
+      };
+
+      // Event handlers
+      function onMousemove(e) {
+        function o() {
+          lines = [];
+          for (var e = 0; e < E.trails; e++)
+            lines.push(new Line({ spring: 0.4 + (e / E.trails) * 0.025 }));
         }
 
-        // Oscillator function
-        function Oscillator(e) {
-            this.init(e || {});
+        function c(e) {
+          let clientX, clientY;
+
+          if (e.touches) {
+            clientX = e.touches[0].pageX;
+            clientY = e.touches[0].pageY;
+          } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+          }
+
+          // Update cursor position
+          pos.x = clientX;
+          pos.y = clientY;
+          updateCursorPosition(clientX, clientY);
+
+          // Stop auto movement if user moves cursor manually
+          if (autoMoveActive) {
+            stopAutoMove();
+          }
+
+          e.preventDefault();
         }
 
-        Oscillator.prototype = {
-            init: function (e) {
-                this.phase = e.phase || 0;
-                this.offset = e.offset || 0;
-                this.frequency = e.frequency || 0.001;
-                this.amplitude = e.amplitude || 1;
-            },
-            update: function () {
-                this.phase += this.frequency;
-                return this.offset + Math.sin(this.phase) * this.amplitude;
-            },
-            value: function () {
-                return this.update();
-            },
-        };
-
-        // Node constructor
-        function Node() {
-            this.x = 0;
-            this.y = 0;
-            this.vy = 0;
-            this.vx = 0;
+        function l(e) {
+          1 == e.touches.length &&
+            ((pos.x = e.touches[0].pageX), (pos.y = e.touches[0].pageY));
         }
 
-        // Line constructor
-        function Line(e) {
-            this.init(e || {});
-        }
+        document.removeEventListener("mousemove", onMousemove);
+        document.removeEventListener("touchstart", onMousemove);
+        document.addEventListener("mousemove", c);
+        document.addEventListener("touchmove", c);
+        document.addEventListener("touchstart", l);
+        c(e);
+        o();
+        render();
+      }
 
-        Line.prototype = {
-            init: function (e) {
-                this.spring = e.spring + 0.1 * Math.random() - 0.02;
-                this.friction = E.friction + 0.01 * Math.random() - 0.002;
-                this.nodes = [];
-                for (var t, n = 0; n < E.size; n++) {
-                    t = new Node();
-                    t.x = pos.x;
-                    t.y = pos.y;
-                    this.nodes.push(t);
-                }
-            },
-            update: function () {
-                var e = this.spring,
-                    t = this.nodes[0];
-                t.vx += (pos.x - t.x) * e;
-                t.vy += (pos.y - t.y) * e;
-                for (var n, i = 0, a = this.nodes.length; i < a; i++)
-                    (t = this.nodes[i]),
-                    0 < i &&
-                    ((n = this.nodes[i - 1]),
-                        (t.vx += (n.x - t.x) * e),
-                        (t.vy += (n.y - t.y) * e),
-                        (t.vx += n.vx * E.dampening),
-                        (t.vy += n.vy * E.dampening)),
-                (t.vx *= this.friction),
-                (t.vy *= this.friction),
-                (t.x += t.vx),
-                (t.y += t.vy),
-                (e *= E.tension);
-            },
-            draw: function () {
-                var e, t, n = this.nodes[0].x, i = this.nodes[0].y;
-                ctx.beginPath();
-                ctx.moveTo(n, i);
-                for (var a = 1, o = this.nodes.length - 2; a < o; a++) {
-                    e = this.nodes[a];
-                    t = this.nodes[a + 1];
-                    n = 0.5 * (e.x + t.x);
-                    i = 0.5 * (e.y + t.y);
-                    ctx.quadraticCurveTo(e.x, e.y, n, i);
-                }
-                e = this.nodes[a];
-                t = this.nodes[a + 1];
-                ctx.quadraticCurveTo(e.x, e.y, t.x, t.y);
-                ctx.stroke();
-                ctx.closePath();
-            },
-        };
+      // Render function with auto-move integrated
+      function render() {
+        if (ctx.running) {
+          // Auto movement logic - FASTER SPEED
+          if (autoMoveActive) {
+            const currentTime = performance.now() - startTime;
+            // Increased speed by multiplying time factors
+            pos.x =
+              window.innerWidth / 2 +
+              Math.sin(currentTime * 0.003) * 250 + // Faster X movement
+              Math.cos(currentTime * 0.004) * 200; // Faster X movement
+            pos.y =
+              window.innerHeight / 2 +
+              Math.cos(currentTime * 0.0035) * 200 + // Faster Y movement
+              Math.sin(currentTime * 0.005) * 150; // Faster Y movement
 
-        // Event handlers
-        function onMousemove(e) {
-            function o() {
-                lines = [];
-                for (var e = 0; e < E.trails; e++)
-                    lines.push(new Line({ spring: 0.4 + (e / E.trails) * 0.025 }));
-            }
-
-            function c(e) {
-                let clientX, clientY;
-                
-                if (e.touches) {
-                    clientX = e.touches[0].pageX;
-                    clientY = e.touches[0].pageY;
-                } else {
-                    clientX = e.clientX;
-                    clientY = e.clientY;
-                }
-                
-                // Update cursor position
-                pos.x = clientX;
-                pos.y = clientY;
-                updateCursorPosition(clientX, clientY);
-                
-                // Stop auto movement if user moves cursor manually
-                if (autoMoveActive) {
-                    stopAutoMove();
-                }
-                
-                e.preventDefault();
-            }
-
-            function l(e) {
-                1 == e.touches.length &&
-                ((pos.x = e.touches[0].pageX), (pos.y = e.touches[0].pageY));
-            }
-
-            document.removeEventListener('mousemove', onMousemove);
-            document.removeEventListener('touchstart', onMousemove);
-            document.addEventListener('mousemove', c);
-            document.addEventListener('touchmove', c);
-            document.addEventListener('touchstart', l);
-            c(e);
-            o();
-            render();
-        }
-
-        // Render function with auto-move integrated
-        function render() {
-            if (ctx.running) {
-                // Auto movement logic - FASTER SPEED
-                if (autoMoveActive) {
-                    const currentTime = performance.now() - startTime;
-                    // Increased speed by multiplying time factors
-                    pos.x = window.innerWidth / 2 +
-                            Math.sin(currentTime * 0.003) * 250 +  // Faster X movement
-                            Math.cos(currentTime * 0.004) * 200;   // Faster X movement
-                    pos.y = window.innerHeight / 2 +
-                            Math.cos(currentTime * 0.0035) * 200 + // Faster Y movement
-                            Math.sin(currentTime * 0.005) * 150;   // Faster Y movement
-                    
-                    // Update visible cursor position during auto-move
-                    updateCursorPosition(pos.x, pos.y);
-                }
-
-                ctx.globalCompositeOperation = 'source-over';
-                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                ctx.globalCompositeOperation = 'lighter';
-                ctx.strokeStyle = 'hsla(' + Math.round(f.update()) + ',50%,20%,0.8)';
-                ctx.lineWidth = 3;
-                for (var e, t = 0; t < E.trails; t++) {
-                    (e = lines[t]).update();
-                    e.draw();
-                }
-                ctx.frame++;
-                
-                window.requestAnimationFrame(render);
-            }
-        }
-
-        // Canvas resize function
-        function resizeCanvas() {
-            ctx.canvas.width = window.innerWidth;
-            ctx.canvas.height = window.innerHeight;
-        }
-
-        // Auto-move functionality
-        function startAutoMove() {
-            autoMoveActive = true;
-            mouseMoved = false;
-            startTime = performance.now(); // Reset start time
-            document.getElementById('autoMoveBtn').classList.add('active');
-            document.getElementById('autoMoveBtn').textContent = 'Stop Auto Move';
-        }
-
-        function stopAutoMove() {
-            autoMoveActive = false;
-            mouseMoved = true;
-            document.getElementById('autoMoveBtn').classList.remove('active');
-            document.getElementById('autoMoveBtn').textContent = 'Start Auto Move';
-        }
-
-        function toggleAutoMove() {
-            if (autoMoveActive) {
-                stopAutoMove();
-            } else {
-                startAutoMove();
-            }
-        }
-
-        // Initialize canvas
-        const renderCanvas = function () {
-            ctx = document.getElementById('canvas').getContext('2d');
-            ctx.running = true;
-            ctx.frame = 1;
-            f = new Oscillator({
-                phase: Math.random() * 2 * Math.PI,
-                amplitude: 85,
-                frequency: 0.0015,
-                offset: 285,
-            });
-            
-            // Set initial position to center
-            pos.x = window.innerWidth / 2;
-            pos.y = window.innerHeight / 2;
+            // Update visible cursor position during auto-move
             updateCursorPosition(pos.x, pos.y);
-            
-            // Initialize lines immediately
-            lines = [];
-            for (var e = 0; e < E.trails; e++)
-                lines.push(new Line({ spring: 0.4 + (e / E.trails) * 0.025 }));
-            
-            document.addEventListener('mousemove', onMousemove);
-            document.addEventListener('touchstart', onMousemove);
-            document.body.addEventListener('orientationchange', resizeCanvas);
-            window.addEventListener('resize', resizeCanvas);
-            window.addEventListener('focus', () => {
-                if (!ctx.running) {
-                    ctx.running = true;
-                    render();
-                }
-            });
-            window.addEventListener('blur', () => {
-                ctx.running = true;
-            });
-            resizeCanvas();
-            
-            // START RENDER LOOP IMMEDIATELY
-            render();
-        };
+          }
 
-        // Initialize on page load
-        window.onload = function () {
-            renderCanvas();
-            
-            // Add event listener to the button
-            document.getElementById('autoMoveBtn').addEventListener('click', toggleAutoMove);
-            
-            // Auto-move is already active by default (autoMoveActive = true)
-            // and startTime is already set at the top
-        };
+          ctx.globalCompositeOperation = "source-over";
+          ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+          ctx.globalCompositeOperation = "lighter";
+          ctx.strokeStyle = "hsla(" + Math.round(f.update()) + ",50%,20%,0.8)";
+          ctx.lineWidth = 3;
+          for (var e, t = 0; t < E.trails; t++) {
+            (e = lines[t]).update();
+            e.draw();
+          }
+          ctx.frame++;
+
+          window.requestAnimationFrame(render);
+        }
+      }
+
+      // Canvas resize function
+      function resizeCanvas() {
+        ctx.canvas.width = window.innerWidth;
+        ctx.canvas.height = window.innerHeight;
+      }
+
+      // Auto-move functionality
+      function startAutoMove() {
+        autoMoveActive = true;
+        mouseMoved = false;
+        startTime = performance.now(); // Reset start time
+        document.getElementById("autoMoveBtn").classList.add("active");
+        document.getElementById("autoMoveBtn").textContent = "Stop Auto Move";
+      }
+
+      function stopAutoMove() {
+        autoMoveActive = false;
+        mouseMoved = true;
+        document.getElementById("autoMoveBtn").classList.remove("active");
+        document.getElementById("autoMoveBtn").textContent = "Start Auto Move";
+      }
+
+      function toggleAutoMove() {
+        if (autoMoveActive) {
+          stopAutoMove();
+        } else {
+          startAutoMove();
+        }
+      }
+
+      // Initialize canvas
+      const renderCanvas = function () {
+        ctx = document.getElementById("canvas").getContext("2d");
+        ctx.running = true;
+        ctx.frame = 1;
+        f = new Oscillator({
+          phase: Math.random() * 2 * Math.PI,
+          amplitude: 85,
+          frequency: 0.0015,
+          offset: 285,
+        });
+
+        // Set initial position to center
+        pos.x = window.innerWidth / 2;
+        pos.y = window.innerHeight / 2;
+        updateCursorPosition(pos.x, pos.y);
+
+        // Initialize lines immediately
+        lines = [];
+        for (var e = 0; e < E.trails; e++)
+          lines.push(new Line({ spring: 0.4 + (e / E.trails) * 0.025 }));
+
+        document.addEventListener("mousemove", onMousemove);
+        document.addEventListener("touchstart", onMousemove);
+        document.body.addEventListener("orientationchange", resizeCanvas);
+        window.addEventListener("resize", resizeCanvas);
+        window.addEventListener("focus", () => {
+          if (!ctx.running) {
+            ctx.running = true;
+            render();
+          }
+        });
+        window.addEventListener("blur", () => {
+          ctx.running = true;
+        });
+        resizeCanvas();
+
+        // START RENDER LOOP IMMEDIATELY
+        render();
+      };
+
+      // Initialize on page load
+      window.onload = function () {
+        renderCanvas();
+
+        // Add event listener to the button
+        document
+          .getElementById("autoMoveBtn")
+          .addEventListener("click", toggleAutoMove);
+
+        // Auto-move is already active by default (autoMoveActive = true)
+        // and startTime is already set at the top
+      };
     </script>
-</body>
+  </body>
 </html>

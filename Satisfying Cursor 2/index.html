@@ -221,10 +221,10 @@
   </head>
   <body>
     <canvas id="canvas"></canvas>
-    
+
     <!-- Auto Move Button -->
     <button id="autoMoveBtn">Stop Auto Move</button>
-    
+
     <!-- Cursor Dot -->
     <div class="cursor-dot"></div>
 
@@ -253,8 +253,8 @@
     <script>
       let canvas = document.getElementById("canvas");
       let ctx = canvas.getContext("2d");
-      let cursorDot = document.querySelector('.cursor-dot');
-      let autoMoveBtn = document.getElementById('autoMoveBtn');
+      let cursorDot = document.querySelector(".cursor-dot");
+      let autoMoveBtn = document.getElementById("autoMoveBtn");
 
       let pointer = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
       let mouseMoved = false;
@@ -264,7 +264,7 @@
         pointsNumber: 30,
         spring: 0.25,
         friction: 0.5,
-        widthFactor: 0.6
+        widthFactor: 0.6,
       };
 
       // Initialize trail points
@@ -272,13 +272,13 @@
         x: pointer.x,
         y: pointer.y,
         dx: 0,
-        dy: 0
+        dy: 0,
       }));
 
       // Update cursor position
       function updateCursorPosition(x, y) {
-        cursorDot.style.left = x + 'px';
-        cursorDot.style.top = y + 'px';
+        cursorDot.style.left = x + "px";
+        cursorDot.style.top = y + "px";
       }
 
       // Handle actual user movement
@@ -321,15 +321,15 @@
       function startAutoMove() {
         autoMoveActive = true;
         mouseMoved = false;
-        autoMoveBtn.classList.add('active');
-        autoMoveBtn.textContent = 'Stop Auto Move';
+        autoMoveBtn.classList.add("active");
+        autoMoveBtn.textContent = "Stop Auto Move";
       }
 
       function stopAutoMove() {
         autoMoveActive = false;
         mouseMoved = true;
-        autoMoveBtn.classList.remove('active');
-        autoMoveBtn.textContent = 'Start Auto Move';
+        autoMoveBtn.classList.remove("active");
+        autoMoveBtn.textContent = "Start Auto Move";
       }
 
       function toggleAutoMove() {
@@ -341,7 +341,7 @@
       }
 
       // Add event listener to auto move button
-      autoMoveBtn.addEventListener('click', toggleAutoMove);
+      autoMoveBtn.addEventListener("click", toggleAutoMove);
 
       // ---- RANDOM TRAIL MOTION ----
       function randomMotion(t) {
@@ -355,7 +355,7 @@
             window.innerHeight / 2 +
             Math.cos(t * 0.0015) * 150 +
             Math.sin(t * 0.0025) * 80;
-          
+
           updateCursorPosition(pointer.x, pointer.y);
         }
       }
@@ -399,7 +399,7 @@
       }
 
       // Initialize auto move on page load
-      window.addEventListener('load', function() {
+      window.addEventListener("load", function () {
         startAutoMove(); // Start auto move when page loads
         update(0); // Start animation loop
       });

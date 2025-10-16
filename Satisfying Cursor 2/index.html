@@ -4,10 +4,229 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Satisfying Cursor 2</title>
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        height: 100%;
+        background: #0d0d0d;
+        cursor: none;
+      }
+      canvas {
+        display: block;
+      }
+
+      /* Auto Move Button */
+      #autoMoveBtn {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        background: rgba(100, 200, 255, 0.3);
+        color: white;
+        border: 1px solid rgba(100, 200, 255, 0.7);
+        border-radius: 8px;
+        cursor: pointer;
+        z-index: 1000;
+        backdrop-filter: blur(5px);
+        transition: all 0.3s ease;
+        font-size: 16px;
+        font-weight: bold;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        font-family: Arial, sans-serif;
+      }
+      #autoMoveBtn:hover {
+        background: rgba(100, 200, 255, 0.5);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+      }
+      #autoMoveBtn.active {
+        background: rgba(255, 100, 100, 0.3);
+        border-color: rgba(255, 100, 100, 0.7);
+      }
+
+      /* Cursor dot */
+      .cursor-dot {
+        position: fixed;
+        width: 12px;
+        height: 12px;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 9999;
+        transform: translate(-50%, -50%);
+        mix-blend-mode: difference;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+      }
+
+      .btn--tl {
+        position: absolute;
+        top: 0.8em;
+        left: 0.8em;
+        z-index: 10;
+        pointer-events: all;
+        cursor: pointer;
+        opacity: 1;
+        background: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+        text-decoration: none;
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        transform: translateZ(0);
+        width: 3em;
+        height: 3em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .logo-svg-wrapper {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .logo-svg {
+        width: 100%;
+        height: 100%;
+        fill: #1a365d;
+        transition: all 0.4s ease;
+      }
+
+      .logo-path {
+        stroke: #1a365d;
+        stroke-width: 0;
+        stroke-dasharray: 1000;
+        stroke-dashoffset: 1000;
+        transition: all 0.8s ease;
+      }
+
+      /* Hover effects */
+      .btn--tl:hover .logo-path {
+        animation: drawLogo 2s ease-in-out forwards;
+        stroke-width: 1.5;
+      }
+
+      .btn--tl:hover .logo-svg {
+        transform: scale(1.1);
+        filter: drop-shadow(0 2px 4px rgba(26, 54, 93, 0.3));
+      }
+
+      .btn--tl:hover {
+        transform: scale(1.05) translateZ(0);
+      }
+
+      /* SVG drawing animation */
+      @keyframes drawLogo {
+        0% {
+          stroke-dashoffset: 1000;
+          fill: transparent;
+          stroke: #1a365d;
+        }
+        50% {
+          stroke-dashoffset: 0;
+          fill: transparent;
+          stroke: #2d3748;
+        }
+        80% {
+          fill: rgba(26, 54, 93, 0.3);
+          stroke: #2d3748;
+        }
+        100% {
+          stroke-dashoffset: 0;
+          fill: #1a365d;
+          stroke: transparent;
+        }
+      }
+
+      /* Ink drip effect */
+      .logo-svg::before {
+        content: "";
+        position: absolute;
+        top: -5px;
+        left: -5px;
+        right: -5px;
+        bottom: -5px;
+        background: radial-gradient(
+            circle at 30% 20%,
+            rgba(26, 54, 93, 0.1) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 70% 80%,
+            rgba(26, 54, 93, 0.05) 0%,
+            transparent 50%
+          );
+        border-radius: 50%;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: -1;
+      }
+
+      .btn--tl:hover .logo-svg::before {
+        opacity: 1;
+        animation: inkDrip 0.5s ease-out 1.5s;
+      }
+
+      @keyframes inkDrip {
+        0% {
+          transform: scale(0.8);
+          opacity: 0.5;
+        }
+        50% {
+          transform: scale(1.1);
+          opacity: 0.3;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 0.1;
+        }
+      }
+
+      .btn--tl:active {
+        transform: scale(0.95) translateZ(0);
+        transition: all 0.15s cubic-bezier(0.215, 0.61, 0.355, 1);
+      }
+
+      .btn--tl a {
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: all;
+        position: relative;
+        z-index: 11;
+        cursor: pointer;
+        background: none;
+        transition: inherit;
+        width: 100%;
+        height: 100%;
+      }
+
+      /* Remove any box shadows or backgrounds */
+      .btn--tl,
+      .btn--tl:focus,
+      .btn--tl:active {
+        background: transparent !important;
+        box-shadow: none !important;
+        outline: none !important;
+      }
+    </style>
   </head>
   <body>
     <canvas id="canvas"></canvas>
-    <link rel="stylesheet" href="style.css" />
+    
+    <!-- Auto Move Button -->
+    <button id="autoMoveBtn">Start Auto Move</button>
+    
+    <!-- Cursor Dot -->
+    <div class="cursor-dot"></div>
 
     <button class="btn btn--tl">
       <a
@@ -30,6 +249,156 @@
         </div>
       </a>
     </button>
-    <script type="module" src="script.js"></script>
+
+    <script>
+      let canvas = document.getElementById("canvas");
+      let ctx = canvas.getContext("2d");
+      let cursorDot = document.querySelector('.cursor-dot');
+      let autoMoveBtn = document.getElementById('autoMoveBtn');
+
+      let pointer = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+      let mouseMoved = false;
+      let autoMoveActive = false;
+
+      const params = {
+        pointsNumber: 30,
+        spring: 0.25,
+        friction: 0.5,
+        widthFactor: 0.6
+      };
+
+      // Initialize trail points
+      const trail = new Array(params.pointsNumber).fill().map(() => ({
+        x: pointer.x,
+        y: pointer.y,
+        dx: 0,
+        dy: 0
+      }));
+
+      // Update cursor position
+      function updateCursorPosition(x, y) {
+        cursorDot.style.left = x + 'px';
+        cursorDot.style.top = y + 'px';
+      }
+
+      // Handle actual user movement
+      function updateMousePosition(eX, eY) {
+        pointer.x = eX;
+        pointer.y = eY;
+        updateCursorPosition(eX, eY);
+      }
+
+      // When user moves the mouse for the first time
+      window.addEventListener("mousemove", (e) => {
+        if (autoMoveActive) {
+          stopAutoMove();
+        }
+        mouseMoved = true;
+        updateMousePosition(e.pageX, e.pageY);
+      });
+      window.addEventListener("touchmove", (e) => {
+        if (autoMoveActive) {
+          stopAutoMove();
+        }
+        mouseMoved = true;
+        updateMousePosition(e.targetTouches[0].pageX, e.targetTouches[0].pageY);
+      });
+      window.addEventListener("click", (e) => {
+        updateMousePosition(e.pageX, e.pageY);
+      });
+
+      // Resize canvas
+      function setupCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        // Reset cursor position
+        updateCursorPosition(pointer.x, pointer.y);
+      }
+      window.addEventListener("resize", setupCanvas);
+      setupCanvas();
+
+      // Auto-move functions
+      function startAutoMove() {
+        autoMoveActive = true;
+        mouseMoved = false;
+        autoMoveBtn.classList.add('active');
+        autoMoveBtn.textContent = 'Stop Auto Move';
+      }
+
+      function stopAutoMove() {
+        autoMoveActive = false;
+        mouseMoved = true;
+        autoMoveBtn.classList.remove('active');
+        autoMoveBtn.textContent = 'Start Auto Move';
+      }
+
+      function toggleAutoMove() {
+        if (autoMoveActive) {
+          stopAutoMove();
+        } else {
+          startAutoMove();
+        }
+      }
+
+      // Add event listener to auto move button
+      autoMoveBtn.addEventListener('click', toggleAutoMove);
+
+      // ---- RANDOM TRAIL MOTION ----
+      function randomMotion(t) {
+        // Only applies if auto move is active and user hasn't moved mouse
+        if (!mouseMoved && autoMoveActive) {
+          pointer.x =
+            window.innerWidth / 2 +
+            Math.sin(t * 0.001) * 200 +
+            Math.cos(t * 0.003) * 100;
+          pointer.y =
+            window.innerHeight / 2 +
+            Math.cos(t * 0.0015) * 150 +
+            Math.sin(t * 0.0025) * 80;
+          
+          updateCursorPosition(pointer.x, pointer.y);
+        }
+      }
+
+      // ---- ANIMATION LOOP ----
+      function update(t) {
+        randomMotion(t); // add automatic trail movement
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Smooth follow for trail points
+        trail.forEach((p, i) => {
+          const prev = i === 0 ? pointer : trail[i - 1];
+          const spring = i === 0 ? 0.4 * params.spring : params.spring;
+          p.dx += (prev.x - p.x) * spring;
+          p.dy += (prev.y - p.y) * spring;
+          p.dx *= params.friction;
+          p.dy *= params.friction;
+          p.x += p.dx;
+          p.y += p.dy;
+        });
+
+        // Draw line
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(trail[0].x, trail[0].y);
+
+        for (let i = 1; i < trail.length - 1; i++) {
+          const xc = 0.5 * (trail[i].x + trail[i + 1].x);
+          const yc = 0.5 * (trail[i].y + trail[i + 1].y);
+          ctx.quadraticCurveTo(trail[i].x, trail[i].y, xc, yc);
+          ctx.lineWidth = params.widthFactor * (params.pointsNumber - i);
+          ctx.strokeStyle = `hsla(${(t / 10 + i * 10) % 360}, 80%, 60%, 0.8)`;
+          ctx.stroke();
+        }
+
+        ctx.lineTo(trail[trail.length - 1].x, trail[trail.length - 1].y);
+        ctx.stroke();
+
+        requestAnimationFrame(update);
+      }
+
+      update(0);
+    </script>
   </body>
 </html>

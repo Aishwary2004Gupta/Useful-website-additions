@@ -55,7 +55,7 @@
             border-radius: 8px;
             backdrop-filter: blur(5px);
         }
-        /* Visible cursor styles - NO TRANSITIONS for instant response */
+        /* Simple dot cursor only */
         .cursor-dot {
             position: fixed;
             width: 12px;
@@ -67,27 +67,6 @@
             transform: translate(-50%, -50%);
             mix-blend-mode: difference;
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-            /* No transition for instant response */
-        }
-        .cursor-ring {
-            position: fixed;
-            width: 32px;
-            height: 32px;
-            border: 2px solid rgba(100, 200, 255, 0.8);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9998;
-            transform: translate(-50%, -50%);
-            mix-blend-mode: difference;
-            /* No transition for instant response */
-        }
-        .cursor-ring.pulsing {
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-        @keyframes pulse {
-            0% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
-            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.4; }
-            100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
         }
     </style>
 </head>
@@ -95,7 +74,6 @@
     <button id="autoMoveBtn">Stop Auto Move</button>
     <div class="info">Move your cursor to stop automatic movement</div>
     <div class="cursor-dot"></div>
-    <div class="cursor-ring pulsing"></div>
     <canvas id="canvas"></canvas>
     <script>
         // Global variables
@@ -107,7 +85,6 @@
         const canvas = document.getElementById("canvas");
         const ctx = canvas.getContext('2d');
         const cursorDot = document.querySelector('.cursor-dot');
-        const cursorRing = document.querySelector('.cursor-ring');
 
         const pointer = {
             x: 0.5 * window.innerWidth,
@@ -136,8 +113,6 @@
         function updateCursorPosition(x, y) {
             cursorDot.style.left = x + 'px';
             cursorDot.style.top = y + 'px';
-            cursorRing.style.left = x + 'px';
-            cursorRing.style.top = y + 'px';
         }
 
         // Event listeners with direct cursor updates
@@ -265,34 +240,12 @@
             }
         }
 
-        // Add hover effects for the button
-        function setupButtonEffects() {
-            const button = document.getElementById('autoMoveBtn');
-            
-            button.addEventListener('mouseenter', function() {
-                cursorRing.style.width = '45px';
-                cursorRing.style.height = '45px';
-                cursorRing.style.borderColor = 'rgba(255, 255, 255, 0.9)';
-                cursorRing.classList.remove('pulsing');
-            });
-            
-            button.addEventListener('mouseleave', function() {
-                cursorRing.style.width = '32px';
-                cursorRing.style.height = '32px';
-                cursorRing.style.borderColor = 'rgba(100, 200, 255, 0.8)';
-                cursorRing.classList.add('pulsing');
-            });
-        }
-
         // Initialize on page load
         window.addEventListener('load', function() {
             setupCanvas();
             
             // Add event listener to the button
             document.getElementById('autoMoveBtn').addEventListener('click', toggleAutoMove);
-            
-            // Setup button hover effects
-            setupButtonEffects();
             
             // Start auto-move on page load
             startAutoMove();

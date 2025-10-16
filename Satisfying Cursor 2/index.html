@@ -366,7 +366,6 @@
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Smooth follow for trail points
         trail.forEach((p, i) => {
           const prev = i === 0 ? pointer : trail[i - 1];
           const spring = i === 0 ? 0.4 * params.spring : params.spring;

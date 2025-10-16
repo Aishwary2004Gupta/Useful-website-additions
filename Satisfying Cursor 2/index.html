@@ -24,9 +24,9 @@
         top: 20px;
         right: 20px;
         padding: 12px 20px;
-        background: rgba(100, 200, 255, 0.3);
+        background: rgba(255, 100, 100, 0.3);
         color: white;
-        border: 1px solid rgba(100, 200, 255, 0.7);
+        border: 1px solid rgba(255, 100, 100, 0.7);
         border-radius: 8px;
         cursor: pointer;
         z-index: 1000;
@@ -38,13 +38,13 @@
         font-family: Arial, sans-serif;
       }
       #autoMoveBtn:hover {
-        background: rgba(100, 200, 255, 0.5);
+        background: rgba(255, 100, 100, 0.5);
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
       }
       #autoMoveBtn.active {
-        background: rgba(255, 100, 100, 0.3);
-        border-color: rgba(255, 100, 100, 0.7);
+        background: rgba(100, 200, 255, 0.3);
+        border-color: rgba(100, 200, 255, 0.7);
       }
 
       /* Cursor dot */
@@ -223,7 +223,7 @@
     <canvas id="canvas"></canvas>
     
     <!-- Auto Move Button -->
-    <button id="autoMoveBtn">Start Auto Move</button>
+    <button id="autoMoveBtn">Stop Auto Move</button>
     
     <!-- Cursor Dot -->
     <div class="cursor-dot"></div>
@@ -258,7 +258,7 @@
 
       let pointer = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
       let mouseMoved = false;
-      let autoMoveActive = false;
+      let autoMoveActive = true; // AUTO MOVE ENABLED BY DEFAULT
 
       const params = {
         pointsNumber: 30,
@@ -398,7 +398,11 @@
         requestAnimationFrame(update);
       }
 
-      update(0);
+      // Initialize auto move on page load
+      window.addEventListener('load', function() {
+        startAutoMove(); // Start auto move when page loads
+        update(0); // Start animation loop
+      });
     </script>
   </body>
 </html>

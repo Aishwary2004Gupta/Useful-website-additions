@@ -781,7 +781,6 @@
           this.backgroundImage.style.opacity = 1 - this.scrollProgress;
           this.mediaOverlay.style.opacity = 0.7 - this.scrollProgress * 0.3;
 
-          // Update expanded content
           this.expandedContent.style.opacity = this.showContent ? "1" : "0";
 
           if (this.mediaContent.complete || this.mediaContent.readyState >= 3) {

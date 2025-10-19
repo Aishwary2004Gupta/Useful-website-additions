@@ -118,7 +118,7 @@ header {
   top: 50%;
 } */
 
-.circle-1 {
+/* .circle-1 {
   left: 0;
   transform: translate(0, -50%);
 }
@@ -135,7 +135,7 @@ header {
 
 .logo-container:hover .circle-2 {
   transform: translate(0.5rem, -50%);
-}
+} */
 
 .effects {
   text-align: left;

@@ -102,11 +102,11 @@ header {
   position: relative;
 }
 
-.logo-circles {
+/* .logo-circles {
   position: relative;
   width: 100%;
   height: 100%;
-}
+} */
 
 .circle {
   position: absolute;

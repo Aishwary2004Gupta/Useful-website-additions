@@ -5,31 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GSAP Hero Section with Advanced Image Cursor Trail Effects</title>
     <link rel="stylesheet" href="styles.css" />
-    <style>
-      /* Add custom styles for random cursor movement */
-      .random-cursor-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 9999;
-        pointer-events: none;
-        cursor: none;
-      }
-      
-      .random-cursor {
-        position: absolute;
-        width: 20px;
-        height: 20px;
-        background: rgba(255, 255, 255, 0.5);
-        border-radius: 50%;
-        transform: translate(-50%, -50%);
-        pointer-events: none;
-        z-index: 10000;
-        transition: transform 0.1s linear;
-      }
-    </style>
   </head>
   <body>
     <!-- My Logo -->
@@ -249,77 +224,6 @@
       </div>
       <div class="speed-indicator"></div>
     </section>
-    
-    <!-- Random cursor overlay -->
-    <div class="random-cursor-overlay" id="randomCursorOverlay"></div>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script type="module" src="script.js"></script>
-    <script>
-      // Random cursor movement functionality
-      document.addEventListener("DOMContentLoaded", () => {
-        const overlay = document.getElementById('randomCursorOverlay');
-        const cursor = document.createElement('div');
-        cursor.className = 'random-cursor';
-        overlay.appendChild(cursor);
-        
-        let isRandomMoving = true;
-        let randomMoveInterval;
-        
-        // Function to move cursor randomly
-        function moveCursorRandomly() {
-          if (!isRandomMoving) return;
-          
-          const viewportWidth = window.innerWidth;
-          const viewportHeight = window.innerHeight;
-          
-          // Generate random coordinates within the viewport
-          const randomX = Math.random() * viewportWidth;
-          const randomY = Math.random() * viewportHeight;
-          
-          // Update the cursor position
-          cursor.style.left = `${randomX}px`;
-          cursor.style.top = `${randomY}px`;
-          
-          // Update the global mouse position variables to trigger trail effects
-          window.mouseX = randomX;
-          window.mouseY = randomY;
-          window.isCursorInContainer = true;
-          window.isMoving = true;
-          
-          // Clear the moving flag after a short delay
-          setTimeout(() => {
-            window.isMoving = false;
-          }, 100);
-        }
-        
-        // Start random movement
-        function startRandomMovement() {
-          isRandomMoving = true;
-          // Move cursor every 200ms for a natural random movement
-          randomMoveInterval = setInterval(moveCursorRandomly, 200);
-          
-          // Stop after 5 seconds
-          setTimeout(() => {
-            stopRandomMovement();
-          }, 5000);
-        }
-        
-        // Stop random movement
-        function stopRandomMovement() {
-          isRandomMoving = false;
-          clearInterval(randomMoveInterval);
-          overlay.style.display = 'none';
-        }
-        
-        // Start random movement after a brief delay
-        setTimeout(startRandomMovement, 1000);
-        
-        // Stop random movement on user interaction
-        document.addEventListener('mousemove', stopRandomMovement);
-        document.addEventListener('touchstart', stopRandomMovement);
-        document.addEventListener('click', stopRandomMovement);
-      });
-    </script>
   </body>
 </html>

@@ -53,14 +53,14 @@ class AutoImageCursorTrail {
         // Auto movement variables - Infinity symbol parameters
         this.mouseMoved = false;
         this.autoMovementTime = 0;
-        this.autoMovementSpeed = 0.002; // Speed of infinity symbol animation
+        this.autoMovementSpeed = 0.004; // Speed of infinity symbol animation
 
         // Infinity symbol parameters
         this.infinityParams = {
             centerX: 0.5 * window.innerWidth,
             centerY: 0.5 * window.innerHeight,
-            width: 300,  // Width of the infinity symbol
-            height: 150, // Height of the infinity symbol
+            width: 450,  // Width of the infinity symbol
+            height: 650, // Height of the infinity symbol
             rotation: 0  // Current rotation angle
         };
 

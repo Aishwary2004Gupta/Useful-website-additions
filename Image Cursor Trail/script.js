@@ -415,34 +415,34 @@ class AutoImageCursorTrail {
     }
 
     updateAutoPointer(t) {
-    if (!this.mouseMoved && !this.userInteracted) {
-        this.autoMovementTime = t;
-        
-        // Add pause every 8 seconds (adjust as needed)
-        const pauseInterval = 2000; // 8 seconds between pauses
-        const pauseDuration = 1500; // 1 second pause
-        
-        const cycleTime = (t % (pauseInterval + pauseDuration));
-        
-        if (cycleTime < pauseInterval) {
-            // Normal movement
-            const progress = cycleTime / pauseInterval;
-            const newPos = this.calculateInfinityPosition(t);
-            this.pointer.x = newPos.x;
-            this.pointer.y = newPos.y;
-        } else {
-            // Pause - keep cursor at current position
-            // No movement during pause
-        }
-        
-        // Change starting point after each pause
-        if (cycleTime < 50 && cycleTime > 0) { // At the very beginning of each cycle
-            // Randomize the starting point of the infinity symbol
-            this.infinityParams.centerX = (0.3 + Math.random() * 0.4) * window.innerWidth;
-            this.infinityParams.centerY = (0.3 + Math.random() * 0.4) * window.innerHeight;
+        if (!this.mouseMoved && !this.userInteracted) {
+            this.autoMovementTime = t;
+
+            // Add pause every 8 seconds (adjust as needed)
+            const pauseInterval = 2000; // 8 seconds between pauses
+            const pauseDuration = 1500; // 1 second pause
+
+            const cycleTime = (t % (pauseInterval + pauseDuration));
+
+            if (cycleTime < pauseInterval) {
+                // Normal movement
+                const progress = cycleTime / pauseInterval;
+                const newPos = this.calculateInfinityPosition(t);
+                this.pointer.x = newPos.x;
+                this.pointer.y = newPos.y;
+            } else {
+                // Pause - keep cursor at current position
+                // No movement during pause
+            }
+
+            // Change starting point after each pause
+            if (cycleTime < 50 && cycleTime > 0) { // At the very beginning of each cycle
+                // Randomize the starting point of the infinity symbol
+                this.infinityParams.centerX = (0.3 + Math.random() * 0.4) * window.innerWidth;
+                this.infinityParams.centerY = (0.3 + Math.random() * 0.4) * window.innerHeight;
+            }
         }
     }
-}
 
     updateTrailPhysics() {
         this.trail.forEach((p, pIdx) => {

@@ -67,19 +67,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const images = [
     "https://assets.codepen.io/7558/cr-blurry-orange-small-001.jpg",
-    "https://assets.codepen.io/7558/cr-blurry-orange-small-002.jpg",
-    "https://assets.codepen.io/7558/cr-blurry-orange-small-003.jpg",
-    "https://assets.codepen.io/7558/cr-blurry-orange-small-004.jpg",
-    "https://assets.codepen.io/7558/cr-blurry-orange-small-005.jpg",
-    "https://assets.codepen.io/7558/cr-blurry-orange-small-006.jpg",
-    "https://assets.codepen.io/7558/cr-blurry-orange-small-007.jpg",
-    "https://assets.codepen.io/7558/cr-blurry-orange-small-008.jpg",
-    "https://assets.codepen.io/7558/cr-blurry-orange-small-009.jpg",
-    "https://assets.codepen.io/7558/cr-blurry-orange-small-010.jpg",
-    "https://assets.codepen.io/7558/cr-blurry-orange-small-011.jpg",
-    "https://assets.codepen.io/7558/cr-blurry-orange-small-012.jpg",
-    "https://assets.codepen.io/7558/cr-blurry-orange-small-013.jpg",
-    "https://assets.codepen.io/7558/cr-blurry-orange-small-014.jpg"
+    // "https://assets.codepen.io/7558/cr-blurry-orange-small-002.jpg",
+    // "https://assets.codepen.io/7558/cr-blurry-orange-small-003.jpg",
+    // "https://assets.codepen.io/7558/cr-blurry-orange-small-004.jpg",
+    // "https://assets.codepen.io/7558/cr-blurry-orange-small-005.jpg",
+    // "https://assets.codepen.io/7558/cr-blurry-orange-small-006.jpg",
+    // "https://assets.codepen.io/7558/cr-blurry-orange-small-007.jpg",
+    // "https://assets.codepen.io/7558/cr-blurry-orange-small-008.jpg",
+    // "https://assets.codepen.io/7558/cr-blurry-orange-small-009.jpg",
+    // "https://assets.codepen.io/7558/cr-blurry-orange-small-010.jpg",
+    // "https://assets.codepen.io/7558/cr-blurry-orange-small-011.jpg",
+    // "https://assets.codepen.io/7558/cr-blurry-orange-small-012.jpg",
+    // "https://assets.codepen.io/7558/cr-blurry-orange-small-013.jpg",
+    // "https://assets.codepen.io/7558/cr-blurry-orange-small-014.jpg"
   ];
 
   // Pattern definitions (unchanged)

@@ -59,7 +59,7 @@ class AutoImageCursorTrail {
         this.infinityParams = {
             centerX: 0.5 * window.innerWidth,
             centerY: 0.5 * window.innerHeight,
-            width: 450,  // Width of the infinity symbol
+            width: 700,  // Width of the infinity symbol
             height: 650, // Height of the infinity symbol
             rotation: 0  // Current rotation angle
         };

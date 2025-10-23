@@ -45,17 +45,17 @@ Line.prototype = {
         t.vy += (pos.y - t.y) * e;
         for (var n, i = 0, a = this.nodes.length; i < a; i++)
             (t = this.nodes[i]),
-            0 < i &&
-            ((n = this.nodes[i - 1]),
-                (t.vx += (n.x - t.x) * e),
-                (t.vy += (n.y - t.y) * e),
-                (t.vx += n.vx * E.dampening),
-                (t.vy += n.vy * E.dampening)),
-            (t.vx *= this.friction),
-            (t.vy *= this.friction),
-            (t.x += t.vx),
-            (t.y += t.vy),
-            (e *= E.tension);
+                0 < i &&
+                ((n = this.nodes[i - 1]),
+                    (t.vx += (n.x - t.x) * e),
+                    (t.vy += (n.y - t.y) * e),
+                    (t.vx += n.vx * E.dampening),
+                    (t.vy += n.vy * E.dampening)),
+                (t.vx *= this.friction),
+                (t.vy *= this.friction),
+                (t.x += t.vx),
+                (t.y += t.vy),
+                (e *= E.tension);
     },
     draw: function () {
         var e,
@@ -95,17 +95,17 @@ function onMousemove(e) {
 
     function l(e) {
         1 == e.touches.length &&
-        ((pos.x = e.touches[0].pageX), (pos.y = e.touches[0].pageY));
+            ((pos.x = e.touches[0].pageX), (pos.y = e.touches[0].pageY));
     }
 
     document.removeEventListener('mousemove', onMousemove),
-    document.removeEventListener('touchstart', onMousemove),
-    document.addEventListener('mousemove', c),
-    document.addEventListener('touchmove', c),
-    document.addEventListener('touchstart', l),
-    c(e),
-    o(),
-    render();
+        document.removeEventListener('touchstart', onMousemove),
+        document.addEventListener('mousemove', c),
+        document.addEventListener('touchmove', c),
+        document.addEventListener('touchstart', l),
+        c(e),
+        o(),
+        render();
 }
 
 function render() {
@@ -114,7 +114,7 @@ function render() {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         ctx.globalCompositeOperation = 'lighter';
         ctx.strokeStyle = 'hsla(' + Math.round
-        (f.update()) + ',50%,20%,0.8)';
+            (f.update()) + ',50%,20%,0.8)';
         ctx.lineWidth = 3;
         for (var e, t = 0; t < E.trails; t++) {
             (e = lines[t]).update();
@@ -242,7 +242,7 @@ function update(t) {
     });
 
     ctx.lineCap = "round";
-	 ctx.beginPath();
+    ctx.beginPath();
     ctx.moveTo(trail[0].x, trail[0].y);
 
     for (let i = 1; i < trail.length - 1; i++) {
@@ -254,7 +254,7 @@ function update(t) {
     }
     ctx.lineTo(trail[trail.length - 1].x, trail[trail.length - 1].y);
     ctx.stroke();
-    
+
     window.requestAnimationFrame(update);
 }
 

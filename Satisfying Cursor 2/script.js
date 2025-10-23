@@ -1,4 +1,3 @@
-{/* <script> */ }
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 let cursorDot = document.querySelector(".cursor-dot");
@@ -146,4 +145,3 @@ window.addEventListener("load", function () {
   startAutoMove();
   update(0);
 });
-// </script>

@@ -169,7 +169,7 @@ function render() {
       // Increased speed by multiplying time factors
       pos.x =
         window.innerWidth / 2 +
-        Math.sin(currentTime * 0.007) * 250 + // Faster X movement
+        Math.sin(currentTime * 0.008) * 250 + // Faster X movement
         Math.cos(currentTime * 0.004) * 200; // Faster X movement
       pos.y =
         window.innerHeight / 2 +

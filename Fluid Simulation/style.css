@@ -11,3 +11,14 @@ body {
     background-color: #fb7427;
     color: #fef4b8;
 }
+
+h1 {
+    font-size: 36px;
+    font-weight: 400;
+    line-height: 1.25;
+}
+
+p {
+    font-size: 15px;
+    line-height: 1.25;
+}

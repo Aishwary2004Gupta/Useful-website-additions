@@ -51,3 +51,24 @@ button {
     font-size: 15px;
     padding: 0.5em 1em;
 }
+
+footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    padding: 2em;
+    display: flex;
+    justify-content: space-between;
+    align-self: flex-end;
+    z-index: 2;
+}
+
+footer h1 {
+    width: 40%;
+}
+
+.footer-links {
+    display: flex;
+    gap: 2em;
+}

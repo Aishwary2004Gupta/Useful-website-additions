@@ -1,192 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Liquid Water Flow</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      width: 100%;
-      height: 100%;
-      font-family: "Test Söhne", sans-serif;
-      background: #000;
-      color: #fef4b8;
-      overflow: hidden;
-    }
-
-    canvas#bg {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 0;
-    }
-
-    nav,
-    footer {
-      position: fixed;
-      width: 100vw;
-      padding: 2em;
-      display: flex;
-      justify-content: space-between;
-      z-index: 2;
-    }
-
-    nav {
-      top: 0;
-    }
-
-    footer {
-      bottom: 0;
-    }
-
-    .nav-items,
-    .footer-links {
-      display: flex;
-      gap: 2em;
-      align-items: center;
-    }
-
-    button {
-      outline: none;
-      border: 2px solid #fef4b8;
-      border-radius: 2em;
-      color: #fef4b8;
-      background-color: transparent;
-      font-family: "Test Söhne";
-      font-size: 15px;
-      padding: 0.5em 1em;
-      transition: 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #fef4b8;
-      color: #000;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fluid Simulation</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <nav>
-    <div class="logo"><p>Fluid Simulation</p></div>
-    <div class="nav-items">
-      <p>Product</p>
-      <p>Product</p>
-      <p>Product</p>
-      <button>Try Now</button>
-    </div>
-  </nav>
 
-  <footer>
-    <h1>Liquid Water Flow</h1>
-    <div class="footer-links">
-      <p>About Us</p>
-      <p>Contact</p>
-    </div>
-  </footer>
+    <nav>
+        <div class="logo">
+        <p>Fluid Simulation</p>
+        </div>
+        <div class="nav-items">
+            <p>Product</p>
+            <p>Product</p>
+            <p>Product</p>
+            <button>Try Now</button>
+        </div>
+    </nav>
 
-  <canvas id="bg"></canvas>
+    <footer>
+        <h1>Liquid Water Flow</h1>
+        <div class="footer-links">
+            <p>About Us</p>
+            <p>Contact</p>
+        </div>
+    </footer>
 
-  <script id="vertexShader" type="x-shader/x-vertex">
-    varying vec2 vUv;
-    void main() {
-      vUv = uv;
-      gl_Position = vec4(position, 1.0);
-    }
-  </script>
-
-  <script id="fragmentShader" type="x-shader/x-fragment">
-    uniform vec2 iResolution;
-    uniform float iTime;
-    uniform vec2 iMouse;
-    varying vec2 vUv;
-
-    float wave(vec2 p, float t) {
-      return sin(p.x * 10.0 + t * 2.0) * 0.02 +
-             sin(p.y * 15.0 + t * 1.5) * 0.02;
-    }
-
-    void main() {
-      vec2 uv = vUv;
-      vec2 pos = uv * iResolution / min(iResolution.x, iResolution.y);
-      float t = iTime * 0.5;
-      float w = wave(pos, t);
-
-      vec3 col = vec3(0.1, 0.3, 0.6);
-      col += vec3(0.05 * sin(t + uv.x * 3.0),
-                  0.1 * sin(t + uv.y * 4.0),
-                  0.15);
-
-      float dist = distance(uv, iMouse / iResolution);
-      col += 0.1 / (dist * 40.0 + 0.5);
-
-      col += vec3(w * 1.5, w * 1.0, w * 2.0);
-
-      gl_FragColor = vec4(col, 1.0);
-    }
-  </script>
-
-  <script type="module">
-    import * as THREE from "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js";
-
-    let scene, camera, renderer, material, mesh;
-    let mouse = new THREE.Vector2(0, 0);
-
-    init();
-    animate();
-
-    async function init() {
-      const canvas = document.getElementById("bg");
-
-      scene = new THREE.Scene();
-      camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-
-      const geometry = new THREE.PlaneBufferGeometry(2, 2);
-      const vertexShader = document.getElementById("vertexShader").textContent;
-      const fragmentShader = document.getElementById("fragmentShader").textContent;
-
-      material = new THREE.ShaderMaterial({
-        uniforms: {
-          iTime: { value: 0 },
-          iResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
-          iMouse: { value: new THREE.Vector2() },
-        },
-        vertexShader,
-        fragmentShader,
-      });
-
-      mesh = new THREE.Mesh(geometry, material);
-      scene.add(mesh);
-
-      renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setPixelRatio(window.devicePixelRatio);
-
-      window.addEventListener("resize", onWindowResize);
-      window.addEventListener("mousemove", (e) => {
-        mouse.x = e.clientX;
-        mouse.y = window.innerHeight - e.clientY;
-        material.uniforms.iMouse.value.set(mouse.x, mouse.y);
-      });
-    }
-
-    function onWindowResize() {
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      material.uniforms.iResolution.value.set(window.innerWidth, window.innerHeight);
-    }
-
-    function animate(t) {
-      requestAnimationFrame(animate);
-      material.uniforms.iTime.value = t * 0.001;
-      renderer.render(scene, camera);
-    }
-  </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="script.js" type="module"></script>
 </body>
 </html>

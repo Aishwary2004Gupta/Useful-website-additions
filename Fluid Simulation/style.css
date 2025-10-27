@@ -34,3 +34,20 @@ nav {
     align-self: center;
     z-index: 2;
 }
+
+.nav-items {
+    display: flex;
+    align-items: center;
+    gap: 2em;
+}
+
+button {
+    outline: none;
+    border: 2px solid #fef4b8;
+    border-radius: 2em;
+    color: #fef4b8;
+    background-color: transparent;
+    font-family: "Test Söhne";
+    font-size: 15px;
+    padding: 0.5em 1em;
+}

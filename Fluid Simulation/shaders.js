@@ -112,21 +112,29 @@ void main() {
   vec3 normal = normalize(vec3((hr - hl) * 0.5, (hu - hd) * 0.5, 1.0));
 
   // distortion: use gradient to offset UV for refraction effect
-  float distortionStrength = 0.025; // tweak for stronger/weaker refraction
+  float distortionStrength = 0.045; // stronger refraction for visible effect
   vec2 offset = vec2((hr - hl), (hu - hd)) * distortionStrength;
 
-  vec2 sampleUV = vUv + offset;
-  // sample background
+  vec2 sampleUV = clamp(vUv + offset, vec2(0.0), vec2(1.0));
+  // sample background safely
   vec4 base = texture2D(textureB, sampleUV);
+  vec3 baseCol = base.rgb;
 
-  // simple lighting/specular
+  // lighting/specular + fresnel
   vec3 L = normalize(lightDir);
   float diff = clamp(dot(normal, L), 0.0, 1.0);
-  float spec = pow(clamp(dot(reflect(normal, L), vec3(0.0,0.0,1.0)), 0.0, 1.0), 40.0);
 
-  vec3 waterColor = mix(vec3(0.08,0.12,0.22), vec3(0.12,0.28,0.6), base.r);
-  vec3 col = base.rgb * (0.6 + diff * 0.6) + vec3(1.0) * spec * 0.6;
+  // view vector roughly (0,0,1) in screen space; fresnel enhances rim highlights
+  float fresnel = pow(1.0 - clamp(dot(normal, vec3(0.0,0.0,1.0)), 0.0, 1.0), 3.0);
+  float spec = pow(clamp(dot(reflect(-L, normal), vec3(0.0,0.0,1.0)), 0.0, 1.0), 40.0) * 0.9;
 
-  gl_FragColor = vec4(col, 1.0);
+  // tint water using the background brightness for subtle color variation
+  float brightness = dot(baseCol, vec3(0.3333));
+  vec3 waterColor = mix(vec3(0.06,0.10,0.18), vec3(0.12,0.28,0.6), brightness);
+
+  // combine base (refracted background) with water color, lighting and specular
+  vec3 lit = baseCol * (0.6 + diff * 0.6) + waterColor * 0.25 * fresnel + vec3(1.0) * spec * 0.7;
+
+  gl_FragColor = vec4(lit, 1.0);
 }
 `;

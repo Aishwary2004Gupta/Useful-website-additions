@@ -89,4 +89,3 @@ void main() {
     gl_FragColor = color + vec4(specular);
 }
 `;
-

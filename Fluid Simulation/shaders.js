@@ -20,6 +20,7 @@ uniform vec2 mouse;
 uniform vec2 mousePrev;    
 uniform float time;
 uniform int frame;
+uniform float resetProgress; // NEW: 0..1, when >0 damps the sim toward calm
 
 varying vec2 vUv;
 
@@ -63,6 +64,17 @@ void main() {
     // When cursor leaves, let the waves slowly relax to calm state
     pressure *= 0.97;
     vel *= 0.97;
+  }
+
+  // APPLY RESET DAMPING: smoothly mix pressure/velocity toward zero
+  // resetProgress expected 0..1 (we drive it from JS). Mixing provides a smooth fade out/in.
+  if (resetProgress > 0.0) {
+    float rp = clamp(resetProgress, 0.0, 1.0);
+    pressure = mix(pressure, 0.0, rp);
+    vel = mix(vel, 0.0, rp);
+    // additional damping while resetting
+    pressure *= (1.0 - 0.5 * rp);
+    vel *= (1.0 - 0.5 * rp);
   }
 
   // stability

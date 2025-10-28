@@ -71,6 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
     mousePrev: { value: mousePrev },
     time: { value: 0.0 },
     frame: { value: 0 },
+    resetProgress: { value: 0.0 }, // NEW: drives smooth reset in the shader
   };
 
   const simMaterial = new THREE.ShaderMaterial({
@@ -147,6 +148,23 @@ document.addEventListener("DOMContentLoaded", () => {
     mousePrev.set(-1, -1);
   });
 
+  // hook up reset button (rename made in HTML)
+  const resetBtn = document.querySelector('button');
+  let resetting = false;
+  let resetStart = 0;
+  const resetTotal = 1200; // ms total for 0 -> 1 -> 0 triangular animation
+
+  resetBtn.addEventListener('click', () => {
+    if (resetting) return;
+    // start resetting
+    resetting = true;
+    resetStart = performance.now();
+    resetBtn.disabled = true;
+    // ignore further mouse input during reset
+    mouse.set(-1, -1);
+    mousePrev.set(-1, -1);
+  });
+
   // handle resize
   function onResize() {
     const dpr = window.devicePixelRatio || 1;
@@ -163,6 +181,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // keep uniforms pointing to the new textures & resolution
     simUniforms.resolution.value = res;
     simUniforms.textureA.value = rtA.texture;
+    simUniforms.resetProgress.value = simUniforms.resetProgress.value || 0.0;
     renderUniforms.resolution.value = res;
     renderUniforms.textureA.value = rtA.texture;
 
@@ -180,8 +199,23 @@ document.addEventListener("DOMContentLoaded", () => {
   // animation
   let frame = 0;
   function step() {
-    simUniforms.time.value = performance.now() / 1000;
+    const now = performance.now();
+    simUniforms.time.value = now / 1000;
     simUniforms.frame.value = frame++;
+
+    // If resetting, compute triangular smooth progress (0 -> 1 -> 0) using sin(pi * t)
+    if (resetting) {
+      const t = (now - resetStart) / resetTotal;
+      if (t >= 1.0) {
+        // finished
+        simUniforms.resetProgress.value = 0.0;
+        resetting = false;
+        resetBtn.disabled = false;
+      } else {
+        // sin(pi * t) goes 0 -> 1 -> 0 as t goes 0..1 (peak at t=0.5)
+        simUniforms.resetProgress.value = Math.sin(Math.PI * Math.min(1.0, Math.max(0.0, t)));
+      }
+    }
 
     // feed previous state
     simUniforms.textureA.value = rtA.texture;

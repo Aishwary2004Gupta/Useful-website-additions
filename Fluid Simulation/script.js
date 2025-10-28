@@ -59,6 +59,9 @@ document.addEventListener("DOMContentLoaded", () => {
   bgTexture.magFilter = THREE.LinearFilter;
   bgTexture.format = THREE.RGBAFormat;
   bgTexture.needsUpdate = true;
+  // ensure edge sampling doesn't wrap (safe sampling when we offset UVs)
+  bgTexture.wrapS = THREE.ClampToEdgeWrapping;
+  bgTexture.wrapT = THREE.ClampToEdgeWrapping;
 
   // simulation material
   const simUniforms = {
@@ -94,6 +97,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const plane = new THREE.PlaneGeometry(2, 2);
   const simQuad = new THREE.Mesh(plane, simMaterial);
   const renderQuad = new THREE.Mesh(plane, renderMaterial);
+  // avoid any depth interactions and ensure they always render full screen
+  simQuad.frustumCulled = false;
+  renderQuad.frustumCulled = false;
+  simMaterial.depthTest = false;
+  renderMaterial.depthTest = false;
   simScene.add(simQuad);
   scene.add(renderQuad);
 
@@ -101,8 +109,8 @@ document.addEventListener("DOMContentLoaded", () => {
   function clearRenderTarget(rt) {
     const old = renderer.getRenderTarget();
     renderer.setRenderTarget(rt);
-    renderer.clearColor();
-    renderer.setClearColor(new THREE.Color(0,0,0), 1);
+    // set a clean clear color and clear
+    renderer.setClearColor(new THREE.Color(0, 0, 0), 1.0);
     renderer.clear(true, true, true);
     renderer.setRenderTarget(old);
   }
@@ -114,10 +122,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const dpr = window.devicePixelRatio || 1;
     mousePrev.x = mouse.x; mousePrev.y = mouse.y;
     mouse.x = e.clientX * dpr;
-    mouse.y = (window.innerHeight - e.clientY) * dpr; // flip Y to match texture coords used in shader
+    // flip Y so shader coords match canvas texel orientation
+    mouse.y = (window.innerHeight - e.clientY) * dpr;
   });
 
+  // add touch support
+  function handleTouch(e) {
+    if (e.touches && e.touches.length > 0) {
+      const t = e.touches[0];
+      const dpr = window.devicePixelRatio || 1;
+      mousePrev.x = mouse.x; mousePrev.y = mouse.y;
+      mouse.x = t.clientX * dpr;
+      mouse.y = (window.innerHeight - t.clientY) * dpr;
+    }
+  }
+  window.addEventListener("touchstart", handleTouch, { passive: true });
+  window.addEventListener("touchmove", handleTouch, { passive: true });
   window.addEventListener("mouseleave", () => {
+    mouse.set(-1, -1);
+    mousePrev.set(-1, -1);
+  });
+  window.addEventListener("touchend", () => {
     mouse.set(-1, -1);
     mousePrev.set(-1, -1);
   });
@@ -135,8 +160,11 @@ document.addEventListener("DOMContentLoaded", () => {
     rtA = new THREE.WebGLRenderTarget(res.x, res.y, options);
     rtB = new THREE.WebGLRenderTarget(res.x, res.y, options);
 
+    // keep uniforms pointing to the new textures & resolution
     simUniforms.resolution.value = res;
+    simUniforms.textureA.value = rtA.texture;
     renderUniforms.resolution.value = res;
+    renderUniforms.textureA.value = rtA.texture;
 
     // redraw background canvas texture for new size
     bgCanvas.width = w; bgCanvas.height = h;
@@ -162,12 +190,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // simulation pass: render simScene into rtB
     renderer.setRenderTarget(rtB);
+    renderer.clear();
     renderer.render(simScene, camera);
 
     // render pass: use rtB as the sim texture to shade the visible scene
     renderUniforms.textureA.value = rtB.texture;
     renderUniforms.textureB.value = bgTexture;
     renderer.setRenderTarget(null);
+    renderer.clear();
     renderer.render(scene, camera);
 
     // swap RTs

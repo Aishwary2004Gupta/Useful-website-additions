@@ -63,3 +63,30 @@ void main() {
 }
 `;
 
+export const renderVertexShader = `
+varying vec2 vUv;
+void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`;
+
+export const renderFragmentShader = `
+uniform sampler2D TextureA;
+uniform sampler2D TextureB;
+varying vec2 vUv;
+
+void main() {
+    vec4 data = texture2D(TextureA, vUv);
+
+    vec2 distortion = 0.3 * data.zw;
+    vec4 color = texture2D(TextureB, vUv + distortion);
+
+    vec3 normal = normalize(vec3(-data.z * 2.0, 0.5, -deta.x * 2.0));
+    vec3 lightDir = normalize(vec3(-3.0, 10.0, 3.0));
+    float specular = pow(max(dot(normal, lightDir)), 60.0) * 1.5;
+
+    gl_FragColor = color + vec4(specular);
+}
+`;
+

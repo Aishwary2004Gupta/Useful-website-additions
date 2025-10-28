@@ -52,7 +52,7 @@ void main() {
   if (mouse.x >= 0.0) {
     float dist = distance(uv, mouseUV);
     float speed = length((mouse - mousePrev)) / max(resolution.x, 1.0);
-    float strength = 0.15 + speed * 0.25; // smaller force
+    float strength = 5.15 + speed * 0.25; // smaller force
     float radius = 0.015 + speed * 0.05;  // smaller radius
     if (dist < radius) {
       float fall = (1.0 - dist / radius);

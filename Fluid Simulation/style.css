@@ -13,8 +13,23 @@ nav, footer {
 nav { top: 0; }
 footer { bottom: 0; }
 button{
-  padding: .4rem .9rem; border-radius: 18px; border:2px solid #fef4b8;
-  background: transparent; color: #fef4b8;
+  padding: .4rem .9rem;
+  border-radius: 18px;
+  border: 2px solid #fef4b8;
+  background: transparent;
+  color: #fef4b8;
+  cursor: pointer;
+  transition: background-color 220ms ease, color 220ms ease, border-color 220ms ease, transform 120ms ease;
+}
+button:hover,
+button:focus {
+  background: #ffffff;
+  color: #fb7427;
+  border-color: #fb7427;
+  outline: none;
+}
+button:active {
+  transform: translateY(1px);
 }
 canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 1; display:block; }
 .logo p { font-weight: 600; }

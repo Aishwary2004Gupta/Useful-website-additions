@@ -40,7 +40,7 @@ void main() {
   float lap = (l + r + u + d - 4.0 * c);
 
   // wave step (reduced stiffness, more damping)
-  float stiffness = 0.25; // slower propagation
+  float stiffness = 0.5; // slower propagation
   float damping = 0.985;  // stronger damping
   float vel = v + lap * stiffness;
   float pressure = c + vel;

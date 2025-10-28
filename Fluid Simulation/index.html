@@ -1,35 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fluid Simulation</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Fluid Ripple Demo</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <nav>
+    <div class="logo"><p>Fluid Simulation</p></div>
+    <div class="nav-items">
+      <p>Product</p><p>Product</p><p>Product</p>
+      <button>Try Now</button>
+    </div>
+  </nav>
 
-    <nav>
-        <div class="logo">
-        <p>Fluid Simulation</p>
-        </div>
-        <div class="nav-items">
-            <p>Product</p>
-            <p>Product</p>
-            <p>Product</p>
-            <button>Try Now</button>
-        </div>
-    </nav>
+  <footer>
+    <h1>Liquid Water Flow</h1>
+    <div class="footer-links"><p>About Us</p><p>Contact</p></div>
+  </footer>
 
-    <footer>
-        <h1>Liquid Water Flow</h1>
-        <div class="footer-links">
-            <p>About Us</p>
-            <p>Contact</p>
-        </div>
-    </footer>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="script.js" type="module"></script>
-    <!-- <script src="shaders.js" type="module"></script> -->
+  <!-- THREE r128 (module not required, we use the global) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>

@@ -1,91 +1,134 @@
+// Note: shader variable/ uniform names are case-sensitive and must match the JS side.
+
 export const simulationVertexShader = `
 varying vec2 vUv;
 void main() {
-    vUv = uv;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  vUv = uv;
+  gl_Position = vec4(position, 1.0);
 }
 `;
 
+/* Simulation shader: stores pressure in .r and velocity in .g
+   Basic discrete wave equation with damping. Mouse injects impulses.
+*/
 export const simulationFragmentShader = `
-uniform sampler2D TextureA;
-uniform vec2 mouse;
+precision highp float;
+
+uniform sampler2D textureA; // previous state
 uniform vec2 resolution;
+uniform vec2 mouse;        // in pixels
+uniform vec2 mousePrev;    // in pixels
 uniform float time;
 uniform int frame;
+
 varying vec2 vUv;
 
-const float delta = 1.4;
-
 void main() {
-    vec2 uv = vUv;
-    if (frame == 0) {
-        gl_FragColor = vec4(0.0);
-        return;
+  vec2 uv = vUv;
+  vec2 texel = 1.0 / resolution;
+
+  // read neighbors and center
+  float c = texture2D(textureA, uv).r;
+  float v = texture2D(textureA, uv).g;
+
+  float l = texture2D(textureA, uv - vec2(texel.x,0.0)).r;
+  float r = texture2D(textureA, uv + vec2(texel.x,0.0)).r;
+  float u = texture2D(textureA, uv + vec2(0.0,texel.y)).r;
+  float d = texture2D(textureA, uv - vec2(0.0,texel.y)).r;
+
+  // Laplacian (approx)
+  float lap = (l + r + u + d - 4.0 * c);
+
+  // wave step
+  float stiffness = 0.5; // how fast waves propagate
+  float damping = 0.995; // damping factor
+  float vel = v + lap * stiffness;
+  float pressure = c + vel;
+
+  // damping
+  vel *= damping;
+  pressure *= 1.0;
+
+  // Mouse injection: compute distance to current mouse (in uv)
+  vec2 mouseUV = mouse / resolution;
+  vec2 mousePrevUV = mousePrev / resolution;
+
+  // If mouse.x < 0 => no mouse
+  if (mouse.x >= 0.0) {
+    float dist = distance(uv, mouseUV);
+    // Inject strength based on proximity and mouse speed
+    float speed = length((mouse - mousePrev)) / max(resolution.x, 1.0);
+    float strength = 0.45 + speed * 0.7;
+    float radius = 0.035 + speed * 0.12;
+    if (dist < radius) {
+      float fall = (1.0 - dist / radius);
+      // Add both pressure impulse and a velocity bump
+      pressure += strength * fall * 0.8;
+      vel += strength * fall * 0.6;
     }
+  }
 
-    vec4 data = texture2D(TextureA, uv);
-    float pressure = data.x;
-    float pVel = data.y;
+  // Prevent NaNs and keep values stable
+  if (abs(pressure) < 1e-6) pressure = 0.0;
+  if (abs(vel) < 1e-6) vel = 0.0;
 
-    vec2 texelSize = 1.0 / resolution;
-    float p_right = texture2D(TextureA, uv + vec2(texelSize.x, 0.0)).x;
-    float p_left = texture2D(TextureA, uv + vec2(-texelSize.x, 0.0)).x;
-    float p_up = texture2D(TextureA, uv + vec2(0.0, texelSize.y)).x;
-    float p_down = texture2D(TextureA, uv + vec2(0.0, -texelSize.y)).x;
-
-    if (uv.x <= texelSize.x) p_left = p_right;
-    if (uv.x >= 1.0 - texelSize.x) p_right = p_left;
-    if (uv.y <= texelSize.y) p_down = p_up;
-    if (uv.y >= 1.0 - texelSize.y) p_up = p_down;
-
-    //Enhanced wave equation matching ShaderToy
-    pVel += delta * (-2.0 * pressure + p_right + p_left) / 4.0;
-    pVel += delta * (-2.0 * pressure + p_up + p_down) / 4.0;
-
-    pressure += delta * pVel;
-
-    pVel *= 0.005 * delta * pressure;
-
-    pvel *= 1.0 - 0.002 * delta;
-    pressure *= 0.999;
-
-    vec2 mouseUV = mouse / resolution;
-    if (mouse.x >= 0.0) {
-        float dist = distance(uv, mouseUV);
-        if (dist < 0.02) {
-            pressure += 2.0 * (1.0 - dist / 0.02);
-        }
-    }
-
-    gl_FragColor = vec4(pressure, pVel, 
-        (p_right - p_left) / 2.0,
-        (p_up - p_down) / 2.0);
+  gl_FragColor = vec4(pressure, vel, 0.0, 1.0);
 }
 `;
 
+/* Render shader: compute gradient (normal) and refract sampling of background texture
+   textureA: simulation texture (pressure -> displacement)
+   textureB: background texture (the text / image)
+*/
 export const renderVertexShader = `
 varying vec2 vUv;
 void main() {
-    vUv = uv;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  vUv = uv;
+  gl_Position = vec4(position, 1.0);
 }
 `;
 
+
 export const renderFragmentShader = `
-uniform sampler2D TextureA;
-uniform sampler2D TextureB;
+precision highp float;
+uniform sampler2D textureA; // sim
+uniform sampler2D textureB; // background
+uniform vec2 resolution;
+uniform vec3 lightDir;
+
 varying vec2 vUv;
 
 void main() {
-    vec4 data = texture2D(TextureA, vUv);
+  // read simulation data
+  vec4 sim = texture2D(textureA, vUv);
+  float h = sim.r;
 
-    vec2 distortion = 0.3 * data.zw;
-    vec4 color = texture2D(TextureB, vUv + distortion);
+  // compute gradient using neighbors
+  vec2 texel = 1.0 / resolution;
+  float hl = texture2D(textureA, vUv - vec2(texel.x, 0.0)).r;
+  float hr = texture2D(textureA, vUv + vec2(texel.x, 0.0)).r;
+  float hu = texture2D(textureA, vUv + vec2(0.0, texel.y)).r;
+  float hd = texture2D(textureA, vUv - vec2(0.0, texel.y)).r;
 
-    vec3 normal = normalize(vec3(-data.z * 2.0, 0.5, -deta.x * 2.0));
-    vec3 lightDir = normalize(vec3(-3.0, 10.0, 3.0));
-    float specular = pow(max(dot(normal, lightDir)), 60.0) * 1.5;
+  // gradient -> approximate normal
+  vec3 normal = normalize(vec3((hr - hl) * 0.5, (hu - hd) * 0.5, 1.0));
 
-    gl_FragColor = color + vec4(specular);
+  // distortion: use gradient to offset UV for refraction effect
+  float distortionStrength = 0.025; // tweak for stronger/weaker refraction
+  vec2 offset = vec2((hr - hl), (hu - hd)) * distortionStrength;
+
+  vec2 sampleUV = vUv + offset;
+  // sample background
+  vec4 base = texture2D(textureB, sampleUV);
+
+  // simple lighting/specular
+  vec3 L = normalize(lightDir);
+  float diff = clamp(dot(normal, L), 0.0, 1.0);
+  float spec = pow(clamp(dot(reflect(normal, L), vec3(0.0,0.0,1.0)), 0.0, 1.0), 40.0);
+
+  vec3 waterColor = mix(vec3(0.08,0.12,0.22), vec3(0.12,0.28,0.6), base.r);
+  vec3 col = base.rgb * (0.6 + diff * 0.6) + vec3(1.0) * spec * 0.6;
+
+  gl_FragColor = vec4(col, 1.0);
 }
 `;

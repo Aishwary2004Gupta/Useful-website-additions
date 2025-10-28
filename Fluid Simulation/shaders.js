@@ -16,8 +16,8 @@ precision highp float;
 
 uniform sampler2D textureA; // previous state
 uniform vec2 resolution;
-uniform vec2 mouse;        // in pixels
-uniform vec2 mousePrev;    // in pixels
+uniform vec2 mouse;        
+uniform vec2 mousePrev;    
 uniform float time;
 uniform int frame;
 
@@ -39,42 +39,40 @@ void main() {
   // Laplacian (approx)
   float lap = (l + r + u + d - 4.0 * c);
 
-  // wave step
-  float stiffness = 0.5; // how fast waves propagate
-  float damping = 0.995; // damping factor
+  // wave step (reduced stiffness, more damping)
+  float stiffness = 0.25; // slower propagation
+  float damping = 0.985;  // stronger damping
   float vel = v + lap * stiffness;
   float pressure = c + vel;
 
-  // damping
-  vel *= damping;
-  pressure *= 1.0;
-
-  // Mouse injection: compute distance to current mouse (in uv)
+  // Mouse influence (smaller radius, gentler force)
   vec2 mouseUV = mouse / resolution;
   vec2 mousePrevUV = mousePrev / resolution;
 
-  // If mouse.x < 0 => no mouse
   if (mouse.x >= 0.0) {
     float dist = distance(uv, mouseUV);
-    // Inject strength based on proximity and mouse speed
     float speed = length((mouse - mousePrev)) / max(resolution.x, 1.0);
-    float strength = 0.45 + speed * 0.7;
-    float radius = 0.035 + speed * 0.12;
+    float strength = 0.15 + speed * 0.25; // smaller force
+    float radius = 0.015 + speed * 0.05;  // smaller radius
     if (dist < radius) {
       float fall = (1.0 - dist / radius);
-      // Add both pressure impulse and a velocity bump
-      pressure += strength * fall * 0.8;
-      vel += strength * fall * 0.6;
+      pressure += strength * fall * 0.5;
+      vel += strength * fall * 0.3;
     }
+  } else {
+    // When cursor leaves, let the waves slowly relax to calm state
+    pressure *= 0.97;
+    vel *= 0.97;
   }
 
-  // Prevent NaNs and keep values stable
+  // stability
   if (abs(pressure) < 1e-6) pressure = 0.0;
   if (abs(vel) < 1e-6) vel = 0.0;
 
   gl_FragColor = vec4(pressure, vel, 0.0, 1.0);
 }
 `;
+
 
 /* Render shader: compute gradient (normal) and refract sampling of background texture
    textureA: simulation texture (pressure -> displacement)

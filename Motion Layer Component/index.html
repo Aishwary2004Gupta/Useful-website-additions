@@ -1,44 +1,275 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Motion Layer - 3D Parallax</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motion Layer Scroller</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Spacer for scroll -->
+    <div class="spacer"></div>
 
-  <!-- Motion Layer Container -->
-  <div class="motion-layer" id="motionLayer">
-    <!-- Background Layer (farthest) -->
-    <div class="layer" data-depth="0" data-speed="0.01">
-      <div class="content">BACKGROUND</div>
-      <img src="https://via.placeholder.com/1500x600?text=Mountains" alt="Background">
+    <!-- Motion Layer Scroller Container -->
+    <div class="motion-scroller-wrapper">
+        <div class="motion-scroller-container" id="motionScroller">
+            <!-- Layer 1 - Background -->
+            <div class="motion-layer" 
+                 data-start-z="0" 
+                 data-end-z="-500"
+                 data-start-opacity="1"
+                 data-end-opacity="0.3"
+                 data-start-scale="1"
+                 data-end-scale="0.8">
+                <div class="layer-content layer-bg">
+                    <div class="gradient-orb orb-1"></div>
+                    <div class="gradient-orb orb-2"></div>
+                </div>
+            </div>
+
+            <!-- Layer 2 - Text Background -->
+            <div class="motion-layer" 
+                 data-start-z="0" 
+                 data-end-z="-300"
+                 data-start-y="0"
+                 data-end-y="-100"
+                 data-start-opacity="1"
+                 data-end-opacity="0.5">
+                <div class="layer-content">
+                    <h1 class="main-title">Motion Layer</h1>
+                </div>
+            </div>
+
+            <!-- Layer 3 - Foreground Text -->
+            <div class="motion-layer" 
+                 data-start-z="100" 
+                 data-end-z="-200"
+                 data-start-y="0"
+                 data-end-y="-50"
+                 data-start-scale="1"
+                 data-end-scale="1.2">
+                <div class="layer-content">
+                    <h2 class="sub-title">Scroller</h2>
+                </div>
+            </div>
+
+            <!-- Layer 4 - Floating Elements -->
+            <div class="motion-layer" 
+                 data-start-z="200" 
+                 data-end-z="-100"
+                 data-start-rotate="0"
+                 data-end-rotate="360"
+                 data-start-x="0"
+                 data-end-x="50">
+                <div class="layer-content">
+                    <div class="floating-shape shape-1"></div>
+                </div>
+            </div>
+
+            <div class="motion-layer" 
+                 data-start-z="150" 
+                 data-end-z="-150"
+                 data-start-rotate="0"
+                 data-end-rotate="-180"
+                 data-start-x="0"
+                 data-end-x="-50">
+                <div class="layer-content">
+                    <div class="floating-shape shape-2"></div>
+                </div>
+            </div>
+
+            <!-- Layer 5 - Info Card -->
+            <div class="motion-layer" 
+                 data-start-z="250" 
+                 data-end-z="0"
+                 data-start-y="100"
+                 data-end-y="0"
+                 data-start-opacity="0"
+                 data-end-opacity="1"
+                 data-start-scale="0.8"
+                 data-end-scale="1">
+                <div class="layer-content">
+                    <div class="info-card">
+                        <h3>Scroll to Explore</h3>
+                        <p>3D depth transforms</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Midground Layer -->
-    <div class="layer" data-depth="50" data-speed="0.03">
-      <div class="content">MIDGROUND</div>
-      <img src="https://via.placeholder.com/1500x600?text=Forest" alt="Midground">
+    <!-- Second Section -->
+    <section class="content-section">
+        <div class="container">
+            <h2>Smooth Parallax Motion</h2>
+            <p>Each layer moves at different speeds creating depth</p>
+        </div>
+    </section>
+
+    <!-- Second Motion Scroller -->
+    <div class="motion-scroller-wrapper dark-theme">
+        <div class="motion-scroller-container" id="motionScroller2">
+            <!-- Card Layers -->
+            <div class="motion-layer" 
+                 data-start-z="300" 
+                 data-end-z="-400"
+                 data-start-y="0"
+                 data-end-y="-150"
+                 data-start-rotate-x="0"
+                 data-end-rotate-x="15">
+                <div class="layer-content">
+                    <div class="feature-card card-1">
+                        <div class="card-icon">🎨</div>
+                        <h3>Design</h3>
+                        <p>Beautiful 3D layers</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="motion-layer" 
+                 data-start-z="200" 
+                 data-end-z="-300"
+                 data-start-y="0"
+                 data-end-y="-100"
+                 data-start-rotate-x="0"
+                 data-end-rotate-x="10">
+                <div class="layer-content">
+                    <div class="feature-card card-2">
+                        <div class="card-icon">⚡</div>
+                        <h3>Performance</h3>
+                        <p>Smooth animations</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="motion-layer" 
+                 data-start-z="100" 
+                 data-end-z="-200"
+                 data-start-y="0"
+                 data-end-y="-50"
+                 data-start-rotate-x="0"
+                 data-end-rotate-x="5">
+                <div class="layer-content">
+                    <div class="feature-card card-3">
+                        <div class="card-icon">🚀</div>
+                        <h3>Modern</h3>
+                        <p>CSS3 transforms</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Background gradient -->
+            <div class="motion-layer" 
+                 data-start-z="-100" 
+                 data-end-z="-600"
+                 data-start-opacity="0.5"
+                 data-end-opacity="1">
+                <div class="layer-content layer-bg">
+                    <div class="gradient-mesh"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Foreground Layer (closest) -->
-    <div class="layer" data-depth="100" data-speed="0.06">
-      <div class="content">FOREGROUND</div>
-      <img src="https://via.placeholder.com/1500x600?text=Grass" alt="Foreground">
+    <!-- Third Section -->
+    <section class="content-section">
+        <div class="container">
+            <h2>Interactive Depth</h2>
+            <p>Scroll-driven 3D transformations</p>
+        </div>
+    </section>
+
+    <!-- Third Motion Scroller - Image Gallery Style -->
+    <div class="motion-scroller-wrapper gallery-theme">
+        <div class="motion-scroller-container" id="motionScroller3">
+            <div class="motion-layer" 
+                 data-start-z="400" 
+                 data-end-z="-200"
+                 data-start-rotate-y="-45"
+                 data-end-rotate-y="0"
+                 data-start-x="-100"
+                 data-end-x="0">
+                <div class="layer-content">
+                    <div class="gallery-item item-1">
+                        <div class="item-number">01</div>
+                        <h4>First Layer</h4>
+                    </div>
+                </div>
+            </div>
+
+            <div class="motion-layer" 
+                 data-start-z="300" 
+                 data-end-z="-100"
+                 data-start-rotate-y="45"
+                 data-end-rotate-y="0"
+                 data-start-x="100"
+                 data-end-x="0">
+                <div class="layer-content">
+                    <div class="gallery-item item-2">
+                        <div class="item-number">02</div>
+                        <h4>Second Layer</h4>
+                    </div>
+                </div>
+            </div>
+
+            <div class="motion-layer" 
+                 data-start-z="200" 
+                 data-end-z="0"
+                 data-start-scale="0.5"
+                 data-end-scale="1"
+                 data-start-opacity="0"
+                 data-end-opacity="1">
+                <div class="layer-content">
+                    <div class="gallery-item item-3">
+                        <div class="item-number">03</div>
+                        <h4>Third Layer</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- Scroll Content (to trigger parallax) -->
-  <div class="scroll-content">
-    <h1>Scroll Down to See 3D Effect</h1>
-    <p>Add more content here to enable scrolling...</p>
-    <!-- Add 2000px of content to enable scrolling -->
-    <?php for($i=0;$i<20;$i++): ?>
-      <div class="dummy-content">Scroll Section <?= $i+1 ?></div>
-    <?php endfor; ?>
-  </div>
+    <!-- Configuration Panel -->
+    <div class="config-panel" id="configPanel">
+        <button class="config-toggle" id="configToggle">⚙️</button>
+        <div class="config-content">
+            <h3>Configuration</h3>
+            
+            <div class="config-group">
+                <label>Perspective: <span id="perspectiveValue">1000</span>px</label>
+                <input type="range" id="perspectiveSlider" min="500" max="2000" value="1000">
+            </div>
 
-  <script src="script.js"></script>
+            <div class="config-group">
+                <label>Scroll Speed: <span id="speedValue">1</span>x</label>
+                <input type="range" id="speedSlider" min="0.5" max="2" step="0.1" value="1">
+            </div>
+
+            <div class="config-group">
+                <label>Smoothness: <span id="smoothnessValue">0.1</span></label>
+                <input type="range" id="smoothnessSlider" min="0.05" max="0.3" step="0.05" value="0.1">
+            </div>
+
+            <button class="reset-btn" id="resetBtn">Reset</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <section class="footer-section">
+        <div class="container">
+            <h2>Motion Layer Scroller</h2>
+            <p>Create stunning 3D scroll experiences</p>
+            <div class="scroll-indicator">
+                <span>Scroll Progress</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="spacer"></div>
+
+    <script src="script.js"></script>
 </body>
 </html>

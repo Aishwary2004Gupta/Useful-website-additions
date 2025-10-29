@@ -2,16 +2,68 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Motion Layer Scroller Demo</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>Liquid Effect Animation Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Optional: Montserrat font for similar look -->
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: "Montserrat", serif;
+      background: #101014;
+    }
+    #main-container {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      touch-action: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+    #liquid-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      display: block;
+      outline: none;
+      border: none;
+      z-index: 1;
+    }
+    /* Optionally hide scrollbars for a cleaner look */
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
 </head>
 <body>
-  <div class="scroller">
-    <div class="layer layer-back">Background Layer</div>
-    <div class="layer layer-mid">Middle Layer</div>
-    <div class="layer layer-front">Front Layer</div>
+  <div id="main-container">
+    <canvas id="liquid-canvas"></canvas>
   </div>
+  <script type="module">
+    // Dynamically load the effect just like the original
+    import LiquidBackground from 'https://cdn.jsdelivr.net/npm/threejs-components@0.0.22/build/backgrounds/liquid1.min.js';
 
-  <script src="script.js"></script>
+    const canvas = document.getElementById('liquid-canvas');
+    if (canvas) {
+      const app = LiquidBackground(canvas);
+      // Use the same image resource
+      app.loadImage('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/enhanced_8bfe61b0-d431-433a-8acb-49d508bf88b4-image-vWzKFKS7vQy7s8wfQYzEpaoiYaVMkr.png');
+      
+      // Effect parameters as shown
+      app.liquidPlane.material.metalness = 0.75;
+      app.liquidPlane.material.roughness = 0.25;
+      app.liquidPlane.uniforms.displacementScale.value = 5;
+      app.setRain(false);
+
+      // Store for potential cleanup
+      window.__liquidApp = app;
+    }
+  </script>
 </body>
 </html>

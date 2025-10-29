@@ -1,132 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Motion Layer - 3D Perspective Scroll</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Motion Layer - 3D Parallax</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="motion-layer-container" id="heroMotion">
-            <div class="motion-layer" data-depth="10">
-                <div class="layer-content bg-1">
-                    <h1>Motion Layer</h1>
-                </div>
-            </div>
-            <div class="motion-layer" data-depth="20">
-                <div class="layer-content bg-2">
-                    <div class="shape circle"></div>
-                </div>
-            </div>
-            <div class="motion-layer" data-depth="30">
-                <div class="layer-content bg-3">
-                    <div class="shape square"></div>
-                </div>
-            </div>
-            <div class="motion-layer" data-depth="40">
-                <div class="layer-content bg-4">
-                    <p class="subtitle">3D Perspective Scroll</p>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- Feature Section -->
-    <section class="feature-section">
-        <div class="container">
-            <h2>Dynamic Depth Effects</h2>
-            <p>Scroll to experience the parallax motion</p>
-        </div>
-    </section>
+  <!-- Motion Layer Container -->
+  <div class="motion-layer" id="motionLayer">
+    <!-- Background Layer (farthest) -->
+    <div class="layer" data-depth="0" data-speed="0.01">
+      <div class="content">BACKGROUND</div>
+      <img src="https://via.placeholder.com/1500x600?text=Mountains" alt="Background">
+    </div>
 
-    <!-- Second Motion Layer -->
-    <section class="second-motion">
-        <div class="motion-layer-container" id="secondMotion">
-            <div class="motion-layer" data-depth="15">
-                <div class="layer-content">
-                    <div class="card card-1">
-                        <h3>Layer 1</h3>
-                        <p>Closest to viewer</p>
-                    </div>
-                </div>
-            </div>
-            <div class="motion-layer" data-depth="30">
-                <div class="layer-content">
-                    <div class="card card-2">
-                        <h3>Layer 2</h3>
-                        <p>Middle depth</p>
-                    </div>
-                </div>
-            </div>
-            <div class="motion-layer" data-depth="45">
-                <div class="layer-content">
-                    <div class="card card-3">
-                        <h3>Layer 3</h3>
-                        <p>Furthest depth</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    <!-- Midground Layer -->
+    <div class="layer" data-depth="50" data-speed="0.03">
+      <div class="content">MIDGROUND</div>
+      <img src="https://via.placeholder.com/1500x600?text=Forest" alt="Midground">
+    </div>
 
-    <!-- Info Section -->
-    <section class="info-section">
-        <div class="container">
-            <h2>Perspective Point Control</h2>
-            <div class="controls">
-                <div class="control-group">
-                    <label for="perspectiveX">Perspective X: <span id="perspXValue">50</span>%</label>
-                    <input type="range" id="perspectiveX" min="0" max="100" value="50">
-                </div>
-                <div class="control-group">
-                    <label for="perspectiveY">Perspective Y: <span id="perspYValue">50</span>%</label>
-                    <input type="range" id="perspectiveY" min="0" max="100" value="50">
-                </div>
-                <div class="control-group">
-                    <label for="depth">Depth Intensity: <span id="depthValue">1</span></label>
-                    <input type="range" id="depth" min="0.5" max="2" step="0.1" value="1">
-                </div>
-            </div>
-        </div>
-    </section>
+    <!-- Foreground Layer (closest) -->
+    <div class="layer" data-depth="100" data-speed="0.06">
+      <div class="content">FOREGROUND</div>
+      <img src="https://via.placeholder.com/1500x600?text=Grass" alt="Foreground">
+    </div>
+  </div>
 
-    <!-- Third Motion Layer with Different Style -->
-    <section class="third-motion">
-        <div class="motion-layer-container radial-perspective" id="thirdMotion">
-            <div class="motion-layer" data-depth="20" data-rotate="true">
-                <div class="layer-content">
-                    <div class="floating-element el-1"></div>
-                </div>
-            </div>
-            <div class="motion-layer" data-depth="35" data-rotate="true">
-                <div class="layer-content">
-                    <div class="floating-element el-2"></div>
-                </div>
-            </div>
-            <div class="motion-layer" data-depth="50" data-rotate="true">
-                <div class="layer-content">
-                    <div class="floating-element el-3"></div>
-                </div>
-            </div>
-            <div class="motion-layer" data-depth="10">
-                <div class="layer-content center-content">
-                    <h2>Radial Depth</h2>
-                    <p>Multiple perspective points</p>
-                </div>
-            </div>
-        </div>
-    </section>
+  <!-- Scroll Content (to trigger parallax) -->
+  <div class="scroll-content">
+    <h1>Scroll Down to See 3D Effect</h1>
+    <p>Add more content here to enable scrolling...</p>
+    <!-- Add 2000px of content to enable scrolling -->
+    <?php for($i=0;$i<20;$i++): ?>
+      <div class="dummy-content">Scroll Section <?= $i+1 ?></div>
+    <?php endfor; ?>
+  </div>
 
-    <!-- Footer -->
-    <section class="footer">
-        <div class="container">
-            <h2>Motion Layer Component</h2>
-            <p>Create stunning 3D compositions with depth and perspective</p>
-        </div>
-    </section>
-
-    <script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>

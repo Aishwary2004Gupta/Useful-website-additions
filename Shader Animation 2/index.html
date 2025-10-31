@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shader Lines Animation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/89/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #0f0f0f;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .demo-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: 650px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .shader-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        .title {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            text-align: center;
+            z-index: 10;
+            pointer-events: none;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        @media (max-width: 768px) {
+            .title {
+                font-size: 3rem;
+            }
+            
+            .demo-container {
+                height: 500px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .title {
+                font-size: 2.5rem;
+            }
+            
+            .demo-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div id="shader-container" class="shader-container"></div>
+        <span class="title">Shader Lines</span>
+    </div>
+
+    <script>
+        class ShaderAnimation {
+            constructor(container) {
+                this.container = container;
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.uniforms = null;
+                this.animationId = null;
+                
+                this.init();
+            }
+            
+            init() {
+                // Clear any existing content
+                this.container.innerHTML = '';
+                
+                // Initialize camera
+                this.camera = new THREE.Camera();
+                this.camera.position.z = 1;
+                
+                // Initialize scene
+                this.scene = new THREE.Scene();
+                
+                // Create geometry
+                const geometry = new THREE.PlaneBufferGeometry(2, 2);
+                
+                // Define uniforms
+                this.uniforms = {
+                    time: { type: "f", value: 1.0 },
+                    resolution: { type: "v2", value: new THREE.Vector2() },
+                };
+                
+                // Vertex shader
+                const vertexShader = `
+                    void main() {
+                        gl_Position = vec4( position, 1.0 );
+                    }
+                `;
+                
+                // Fragment shader
+                const fragmentShader = `
+                    #define TWO_PI 6.2831853072
+                    #define PI 3.14159265359
+
+                    precision highp float;
+                    uniform vec2 resolution;
+                    uniform float time;
+                        
+                    float random (in float x) {
+                        return fract(sin(x)*1e4);
+                    }
+                    float random (vec2 st) {
+                        return fract(sin(dot(st.xy,
+                                            vec2(12.9898,78.233)))*
+                            43758.5453123);
+                    }
+                    
+                    varying vec2 vUv;
+
+                    void main(void) {
+                        vec2 uv = (gl_FragCoord.xy * 2.0 - resolution.xy) / min(resolution.x, resolution.y);
+                        
+                        vec2 fMosaicScal = vec2(4.0, 2.0);
+                        vec2 vScreenSize = vec2(256,256);
+                        uv.x = floor(uv.x * vScreenSize.x / fMosaicScal.x) / (vScreenSize.x / fMosaicScal.x);
+                        uv.y = floor(uv.y * vScreenSize.y / fMosaicScal.y) / (vScreenSize.y / fMosaicScal.y);       
+                          
+                        float t = time*0.06+random(uv.x)*0.4;
+                        float lineWidth = 0.0008;
+
+                        vec3 color = vec3(0.0);
+                        for(int j = 0; j < 3; j++){
+                        for(int i=0; i < 5; i++){
+                            color[j] += lineWidth*float(i*i) / abs(fract(t - 0.01*float(j)+float(i)*0.01)*1.0 - length(uv));        
+                        }
+                        }
+
+                        gl_FragColor = vec4(color[2],color[1],color[0],1.0);
+                    }
+                `;
+                
+                // Create material
+                const material = new THREE.ShaderMaterial({
+                    uniforms: this.uniforms,
+                    vertexShader: vertexShader,
+                    fragmentShader: fragmentShader,
+                });
+                
+                // Create mesh and add to scene
+                const mesh = new THREE.Mesh(geometry, material);
+                this.scene.add(mesh);
+                
+                // Initialize renderer
+                this.renderer = new THREE.WebGLRenderer({ antialias: true });
+                this.renderer.setPixelRatio(window.devicePixelRatio);
+                this.container.appendChild(this.renderer.domElement);
+                
+                // Handle resize
+                this.onWindowResize();
+                window.addEventListener("resize", () => this.onWindowResize(), false);
+                
+                // Start animation
+                this.animate();
+            }
+            
+            onWindowResize() {
+                const rect = this.container.getBoundingClientRect();
+                this.renderer.setSize(rect.width, rect.height);
+                this.uniforms.resolution.value.x = this.renderer.domElement.width;
+                this.uniforms.resolution.value.y = this.renderer.domElement.height;
+            }
+            
+            animate() {
+                this.animationId = requestAnimationFrame(() => this.animate());
+                this.uniforms.time.value += 0.05;
+                this.renderer.render(this.scene, this.camera);
+            }
+            
+            destroy() {
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                }
+                if (this.renderer) {
+                    this.renderer.dispose();
+                }
+                window.removeEventListener("resize", this.onWindowResize);
+            }
+        }
+        
+        // Initialize the animation when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('shader-container');
+            const shaderAnimation = new ShaderAnimation(container);
+            
+            // Clean up on page unload
+            window.addEventListener('beforeunload', () => {
+                shaderAnimation.destroy();
+            });
+        });
+    </script>
+</body>
+</html>

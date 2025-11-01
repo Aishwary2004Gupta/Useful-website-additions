@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Particle Animation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+            cursor: none;
+        }
+
+        .s-hero {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            z-index: 10;
+        }
+
+        .s__title {
+            font-size: 1.5rem;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+        }
+
+        .s__catcher {
+            font-size: 1.2rem;
+            color: #aaa;
+        }
+
+        .s__burger {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            width: 30px;
+            height: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            z-index: 10;
+        }
+
+        .s__burger__line {
+            height: 3px;
+            background: #fff;
+            border-radius: 2px;
+        }
+
+        .s-scene {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 10;
+        }
+
+        .s__title__line {
+            font-size: 4rem;
+            font-weight: bold;
+            line-height: 1.2;
+        }
+
+        .s__word {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+            --max-scale: 1;
+        }
+
+        .s__word__char {
+            font-size: 8rem;
+            font-weight: bold;
+            margin: 0 0.5rem;
+            transform: scale(var(--max-scale));
+            transition: transform 0.3s ease;
+        }
+
+        .cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.8);
+            pointer-events: none;
+            z-index: 100;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: difference;
+        }
+
+        .s-svg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        circle {
+            transition: all 0.2s ease;
+        }
+
+        @media (max-width: 768px) {
+            .s__title__line {
+                font-size: 2.5rem;
+            }
+            
+            .s__word__char {
+                font-size: 5rem;
+            }
+            
+            .s-hero {
+                top: 1rem;
+                left: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="s-hero">
+        <h1 class="s__title">
+            100 Day Challenge<br />
+            by Suz Sirunyan<br />
+            Day 88/100
+        </h1>
+        <div class="s__catcher">Underneath It all</div>
+        <div class="s__burger">
+            <div class="s__burger__line"></div>
+            <div class="s__burger__line"></div>
+            <div class="s__burger__line"></div>
+        </div>
+    </div>
+
+    <div class="s-scene">
+        <div class="s__title">
+            <div class="s__title__line">We Are All</div>
+            <div class="s__title__line">A Little Bit</div>
+        </div>
+        <div class="s__word js-word">
+            <div class="s__word__char">M</div>
+            <div class="s__word__char">A</div>
+            <div class="s__word__char">D</div>
+        </div>
+    </div>
+
+    <div class="cursor js-cursor"></div>
+
+    <svg class="s-svg js-svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <defs>
+            <filter id="gooey">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="25" />
+                <feColorMatrix
+                    type="matrix"
+                    values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 30 -7"
+                    result="goo"
+                />
+            </filter>
+        </defs>
+        <g filter="url(#gooey)" class="js-particles-wrapper"></g>
+    </svg>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mouse tracking
+            const mouse = {
+                x: 0,
+                y: 0,
+                smoothX: 0,
+                smoothY: 0,
+                diff: 0,
+                vx: 0,
+                vy: 0
+            };
+
+            // Viewport dimensions
+            const viewport = {
+                width: window.innerWidth,
+                height: window.innerHeight
+            };
+
+            // Elements
+            const cursor = document.querySelector('.js-cursor');
+            const word = document.querySelector('.js-word');
+            const svg = document.querySelector('.js-svg');
+            const particlesWrapper = document.querySelector('.js-particles-wrapper');
+            
+            // Particles array
+            const particles = [];
+            let animationId;
+
+            // Particle class
+            class Particle {
+                constructor(x, y, size, particlesArray) {
+                    this.size = size;
+                    this.x = x;
+                    this.y = y;
+                    this.seed = Math.random() * 1000;
+                    this.freq = (0.5 + Math.random() * 1) * 0.01;
+                    this.amplitude = (1 - Math.random() * 2) * 0.5;
+                    this.color = '#fff';
+                    this.startTime = Date.now();
+                    this.lifeDuration = 6000; // 6 seconds total
+
+                    // Create SVG circle element
+                    this.el = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    this.el.setAttribute('cx', this.x.toString());
+                    this.el.setAttribute('cy', this.y.toString());
+                    this.el.setAttribute('r', this.size.toString());
+                    this.el.setAttribute('fill', this.color);
+
+                    // Add to DOM
+                    particlesWrapper.appendChild(this.el);
+
+                    // Start animation
+                    this.animate();
+                }
+
+                animate() {
+                    const currentTime = Date.now();
+                    const elapsed = currentTime - this.startTime;
+                    
+                    if (elapsed > this.lifeDuration) {
+                        this.kill();
+                        return;
+                    }
+
+                    // First phase: grow
+                    if (elapsed < 2000) {
+                        const progress = elapsed / 2000;
+                        this.currentSize = this.size + (this.size * progress);
+                    } 
+                    // Second phase: shrink
+                    else if (elapsed < 6000) {
+                        const progress = (elapsed - 2000) / 4000;
+                        this.currentSize = this.size * 2 * (1 - progress);
+                    }
+
+                    // Apply size
+                    this.el.setAttribute('r', this.currentSize.toString());
+                    
+                    // Continue animation
+                    requestAnimationFrame(() => this.animate());
+                }
+
+                kill() {
+                    const index = particles.indexOf(this);
+                    if (index > -1) {
+                        particles.splice(index, 1);
+                    }
+                    if (this.el.parentNode) {
+                        this.el.remove();
+                    }
+                }
+
+                render() {
+                    // Update position based on mouse movement
+                    this.el.setAttribute('cy', this.y.toString());
+                    this.el.setAttribute('cx', this.x.toString());
+                }
+            }
+
+            // Mouse move handler
+            function onMouseMove(e) {
+                if (mouse.vx !== undefined && mouse.vy !== undefined) {
+                    mouse.vx += mouse.x - e.pageX;
+                    mouse.vy += mouse.y - e.pageY;
+                }
+                mouse.x = e.pageX;
+                mouse.y = e.pageY;
+            }
+
+            // Window resize handler
+            function onResize() {
+                viewport.width = window.innerWidth;
+                viewport.height = window.innerHeight;
+
+                if (svg) {
+                    svg.style.width = viewport.width + 'px';
+                    svg.style.height = viewport.height + 'px';
+                }
+
+                if (word) {
+                    const maxScale = viewport.height / (word.clientHeight * 0.75);
+                    word.style.setProperty('--max-scale', Math.min(maxScale, 1.5).toString());
+                }
+            }
+
+            // Emit particles
+            function emitParticle() {
+                let x = 0;
+                let y = 0;
+                let size = 0;
+
+                if (mouse.diff > 0.01) {
+                    x = mouse.smoothX;
+                    y = mouse.smoothY;
+                    size = Math.min(mouse.diff * 0.2, 30); // Limit max size
+                }
+
+                if (size > 1) {
+                    const particle = new Particle(x, y, size, particles);
+                    particles.push(particle);
+                }
+            }
+
+            // Main render loop
+            function render() {
+                // Smooth mouse movement
+                mouse.smoothX += (mouse.x - mouse.smoothX) * 0.1;
+                mouse.smoothY += (mouse.y - mouse.smoothY) * 0.1;
+                mouse.diff = Math.hypot(mouse.x - mouse.smoothX, mouse.y - mouse.smoothY);
+
+                // Emit particles based on mouse movement
+                emitParticle();
+
+                // Update cursor position
+                if (cursor) {
+                    cursor.style.setProperty('--x', mouse.smoothX + 'px');
+                    cursor.style.setProperty('--y', mouse.smoothY + 'px');
+                }
+
+                // Continue animation
+                animationId = requestAnimationFrame(render);
+            }
+
+            // Event listeners
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('resize', onResize);
+
+            // Initialize
+            onResize();
+            render();
+
+            // Clean up function (not strictly needed for this demo)
+            window.cleanupParticles = function() {
+                window.removeEventListener('mousemove', onMouseMove);
+                window.removeEventListener('resize', onResize);
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                }
+                
+                // Remove all particles
+                particles.forEach(particle => {
+                    if (particle.el.parentNode) {
+                        particle.el.remove();
+                    }
+                });
+                particles.length = 0;
+            };
+        });
+    </script>
+</body>
+</html>

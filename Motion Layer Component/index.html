@@ -1,116 +1,235 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D Motion Layer Scroller</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Particle Animation (Vanilla Version)</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <style>
+    /* Tailwind-like reset */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-
-    html, body {
-      height: 100%;
-      overflow-x: hidden;
-      font-family: 'Poppins', sans-serif;
+    body {
       background: #000;
       color: #fff;
+      overflow: hidden;
+      font-family: "Poppins", sans-serif;
+      height: 100vh;
+      width: 100vw;
     }
 
-    .scroll-container {
-      position: relative;
-      height: 500vh; /* Enough scroll space */
-      perspective: 1200px; /* Adjust for depth effect */
-      perspective-origin: 50% 50%;
-      overflow-x: hidden;
+    /* Hero text section */
+    .s-hero {
+      position: fixed;
+      top: 2rem;
+      left: 2rem;
+      z-index: 10;
+    }
+    .s__title {
+      font-size: 2rem;
+      line-height: 1.3;
+      font-weight: 700;
+    }
+    .s__catcher {
+      font-size: 1rem;
+      opacity: 0.7;
+    }
+    .s__burger {
+      margin-top: 1rem;
+      width: 24px;
+    }
+    .s__burger__line {
+      height: 3px;
+      background: #fff;
+      margin: 4px 0;
     }
 
-    .layer {
+    /* Scene */
+    .s-scene {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      z-index: 1;
+    }
+    .s__title__line {
+      font-size: 2rem;
+      opacity: 0.8;
+      letter-spacing: 1px;
+    }
+
+    .s__word {
+      display: flex;
+      gap: 0.2em;
+      margin-top: 1rem;
+    }
+    .s__word__char {
+      font-size: 6rem;
+      font-weight: 900;
+      color: #fff;
+      animation: char-scale 4s ease-in-out infinite;
+      transform-origin: bottom center;
+    }
+
+    @keyframes char-scale {
+      0% {
+        scale: 1 0.1;
+      }
+      50% {
+        scale: 1 var(--max-scale, 1.5);
+      }
+      100% {
+        scale: 1 0.1;
+      }
+    }
+
+    /* Cursor dot */
+    .cursor {
       position: fixed;
       top: 0;
       left: 0;
-      width: 100%;
+      width: 10px;
+      height: 10px;
+      background: #fff;
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      mix-blend-mode: difference;
+      z-index: 20;
+    }
+
+    /* SVG mask layer for particles */
+    svg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
       height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      transform-style: preserve-3d;
-      transition: transform 0.1s linear;
-    }
-
-    .layer h1 {
-      font-size: 8vw;
-      font-weight: 700;
-      opacity: 0.85;
-      letter-spacing: 2px;
-      text-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
-      transform: translateZ(0);
-    }
-
-    /* Different background visuals per layer */
-    .layer:nth-child(1) {
-      background: radial-gradient(circle at 30% 50%, #111, #000);
-      color: #f1f1f1;
-    }
-
-    .layer:nth-child(2) {
-      background: linear-gradient(135deg, #111, #1a1a1a, #000);
-      color: #ff6b6b;
-    }
-
-    .layer:nth-child(3) {
-      background: linear-gradient(135deg, #000, #001d3d, #003566);
-      color: #f2f2f2;
-    }
-
-    .layer:nth-child(4) {
-      background: linear-gradient(135deg, #000, #370617, #6a040f);
-      color: #ffd60a;
-    }
-
-    .layer:nth-child(5) {
-      background: radial-gradient(circle at 70% 30%, #000, #111);
-      color: #00b4d8;
+      z-index: 0;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
-
-  <div class="scroll-container">
-    <div class="layer" data-depth="0.1"><h1>Front Layer</h1></div>
-    <div class="layer" data-depth="0.3"><h1>Mid Layer 1</h1></div>
-    <div class="layer" data-depth="0.5"><h1>Mid Layer 2</h1></div>
-    <div class="layer" data-depth="0.7"><h1>Back Layer 1</h1></div>
-    <div class="layer" data-depth="1.0"><h1>Back Layer 2</h1></div>
+  <div class="s-hero">
+    <h1 class="s__title">
+      100 Day Challenge<br />
+      by Suz Sirunyan<br />
+      Day 88/100
+    </h1>
+    <div class="s__catcher">Underneath It all</div>
+    <div class="s__burger">
+      <div class="s__burger__line"></div>
+      <div class="s__burger__line"></div>
+      <div class="s__burger__line"></div>
+    </div>
   </div>
 
+  <div class="s-scene">
+    <div class="s__title">
+      <div class="s__title__line">We Are All</div>
+      <div class="s__title__line">A Little Bit</div>
+    </div>
+    <div class="s__word js-word">
+      <div class="s__word__char">M</div>
+      <div class="s__word__char">A</div>
+      <div class="s__word__char">D</div>
+    </div>
+  </div>
+
+  <div class="cursor js-cursor"></div>
+
+  <svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" class="s-svg js-svg">
+    <mask id="mask">
+      <g class="particles-wrapper" filter="url(#gooey)"></g>
+    </mask>
+    <filter id="gooey">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="25" />
+      <feColorMatrix
+        type="matrix"
+        values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 30 -7"
+        result="goo"
+      />
+    </filter>
+  </svg>
+
   <script>
-    const layers = document.querySelectorAll('.layer');
+    // === Particle animation ===
+    const svg = document.querySelector(".s-svg");
+    const wrapper = document.querySelector(".particles-wrapper");
+    const cursor = document.querySelector(".cursor");
 
-    window.addEventListener('scroll', () => {
-      const scrollTop = window.scrollY;
-      const maxScroll = document.body.scrollHeight - window.innerHeight;
-      const scrollProgress = scrollTop / maxScroll;
+    const mouse = { x: 0, y: 0, smoothX: 0, smoothY: 0, diff: 0 };
+    const particles = [];
 
-      layers.forEach(layer => {
-        const depth = layer.getAttribute('data-depth');
-        const moveY = scrollTop * depth * 0.6;
-        const rotateX = scrollProgress * depth * 20; // slight 3D tilt
-        const translateZ = depth * -300; // move layers in Z-space
+    class Particle {
+      constructor(x, y, size) {
+        this.size = size;
+        this.x = x;
+        this.y = y;
+        this.seed = Math.random() * 1000;
+        this.freq = (0.5 + Math.random() * 1) * 0.01;
+        this.amplitude = (1 - Math.random() * 2) * 0.5;
+        this.color = "#fff";
+        this.el = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        this.el.setAttribute("cx", this.x);
+        this.el.setAttribute("cy", this.y);
+        this.el.setAttribute("r", this.size);
+        this.el.setAttribute("fill", this.color);
+        wrapper.prepend(this.el);
 
-        layer.style.transform = `
-          translateY(${moveY}px)
-          rotateX(${rotateX}deg)
-          translateZ(${translateZ}px)
-        `;
+        const tl = gsap.timeline();
+        tl.to(this, { size: this.size * 2, ease: "power1.inOut", duration: 2 });
+        tl.to(this, { size: 0, ease: "power4.in", duration: 4 }, 3);
+        tl.call(() => this.kill());
+      }
 
-        // Optional opacity for depth realism
-        layer.style.opacity = 1 - depth * 0.3;
-      });
+      kill() {
+        const i = particles.indexOf(this);
+        if (i > -1) particles.splice(i, 1);
+        this.el.remove();
+      }
+
+      render() {
+        this.el.setAttribute("cx", this.x);
+        this.el.setAttribute("cy", this.y);
+        this.el.setAttribute("r", this.size);
+      }
+    }
+
+    window.addEventListener("mousemove", (e) => {
+      mouse.x = e.pageX;
+      mouse.y = e.pageY;
     });
-  </script>
 
+    function emitParticle() {
+      if (mouse.diff > 0.01) {
+        const size = mouse.diff * 0.2;
+        const p = new Particle(mouse.smoothX, mouse.smoothY, size);
+        particles.push(p);
+      }
+    }
+
+    function render() {
+      mouse.smoothX += (mouse.x - mouse.smoothX) * 0.1;
+      mouse.smoothY += (mouse.y - mouse.smoothY) * 0.1;
+      mouse.diff = Math.hypot(mouse.x - mouse.smoothX, mouse.y - mouse.smoothY);
+
+      emitParticle();
+
+      cursor.style.transform = `translate(${mouse.smoothX - 5}px, ${mouse.smoothY - 5}px)`;
+
+      particles.forEach((p) => p.render());
+      requestAnimationFrame(render);
+    }
+
+    render();
+  </script>
 </body>
 </html>

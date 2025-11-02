@@ -26,6 +26,12 @@
             top: 2rem;
             left: 2rem;
             z-index: 10;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .s-hero.visible {
+            opacity: 1;
         }
 
         .s__title {
@@ -38,11 +44,16 @@
         }
 
         .s__catcher {
-            font-size: 1.1rem;
-            color: #a0a0a0;
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.5rem;
+            color: #ffffff;
             letter-spacing: 2px;
             text-transform: uppercase;
-            font-weight: 300;
+            font-weight: 700;
+            z-index: 10;
         }
 
         .s__burger {
@@ -56,6 +67,12 @@
             justify-content: space-between;
             z-index: 100;
             cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .s__burger.visible {
+            opacity: 1;
         }
 
         .s__burger__line {
@@ -78,6 +95,12 @@
             z-index: 10;
             width: 90%;
             max-width: 1200px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .s-scene.visible {
+            opacity: 1;
         }
 
         .s__title__line {
@@ -190,6 +213,42 @@
             left: 20%;
         }
 
+        .hover-zones {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .zone {
+            position: absolute;
+            pointer-events: auto;
+        }
+
+        .zone-top-left {
+            top: 0;
+            left: 0;
+            width: 30%;
+            height: 30%;
+        }
+
+        .zone-top-right {
+            top: 0;
+            right: 0;
+            width: 30%;
+            height: 30%;
+        }
+
+        .zone-center {
+            top: 30%;
+            left: 30%;
+            width: 40%;
+            height: 40%;
+        }
+
         @media (max-width: 768px) {
             .s__title__line {
                 font-size: 3rem;
@@ -212,6 +271,11 @@
                 top: 1rem;
                 right: 1rem;
             }
+            
+            .s__catcher {
+                font-size: 1.2rem;
+                bottom: 1rem;
+            }
         }
 
         @media (max-width: 480px) {
@@ -223,6 +287,10 @@
                 font-size: 4rem;
                 margin: 0 0.5rem;
             }
+            
+            .s__catcher {
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
@@ -233,13 +301,18 @@
         <div class="decoration-circle circle-3"></div>
     </div>
 
+    <div class="hover-zones">
+        <div class="zone zone-top-left"></div>
+        <div class="zone zone-top-right"></div>
+        <div class="zone zone-center"></div>
+    </div>
+
     <div class="s-hero">
         <h1 class="s__title">
             100 Day Challenge<br />
             by Suz Sirunyan<br />
             Day 88/100
         </h1>
-        <div class="s__catcher">Underneath It all</div>
     </div>
 
     <div class="s__burger">
@@ -259,6 +332,8 @@
             <div class="s__word__char">D</div>
         </div>
     </div>
+
+    <div class="s__catcher">Underneath It All</div>
 
     <div class="cursor js-cursor"></div>
 
@@ -301,6 +376,13 @@
             const svg = document.querySelector('.js-svg');
             const particlesWrapper = document.querySelector('.js-particles-wrapper');
             const burger = document.querySelector('.s__burger');
+            const hero = document.querySelector('.s-hero');
+            const scene = document.querySelector('.s-scene');
+            
+            // Hover zones
+            const zoneTopLeft = document.querySelector('.zone-top-left');
+            const zoneTopRight = document.querySelector('.zone-top-right');
+            const zoneCenter = document.querySelector('.zone-center');
             
             // Particles array
             const particles = [];
@@ -452,6 +534,36 @@
                 animationId = requestAnimationFrame(render);
             }
 
+            // Show/hide text elements based on hover zones
+            function setupHoverZones() {
+                // Top-left zone shows the hero text
+                zoneTopLeft.addEventListener('mouseenter', function() {
+                    hero.classList.add('visible');
+                });
+                
+                zoneTopLeft.addEventListener('mouseleave', function() {
+                    hero.classList.remove('visible');
+                });
+                
+                // Top-right zone shows the burger menu
+                zoneTopRight.addEventListener('mouseenter', function() {
+                    burger.classList.add('visible');
+                });
+                
+                zoneTopRight.addEventListener('mouseleave', function() {
+                    burger.classList.remove('visible');
+                });
+                
+                // Center zone shows the main scene text
+                zoneCenter.addEventListener('mouseenter', function() {
+                    scene.classList.add('visible');
+                });
+                
+                zoneCenter.addEventListener('mouseleave', function() {
+                    scene.classList.remove('visible');
+                });
+            }
+
             // Event listeners
             window.addEventListener('mousemove', onMouseMove);
             window.addEventListener('resize', onResize);
@@ -470,6 +582,7 @@
             // Initialize
             onResize();
             updateCursor(); // Set initial cursor position
+            setupHoverZones();
             render();
         });
     </script>

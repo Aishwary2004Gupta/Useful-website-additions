@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Particle Animation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,8 +13,8 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            background: #000;
+            font-family: 'Montserrat', sans-serif;
+            background: #000000;
             color: #fff;
             overflow: hidden;
             height: 100vh;
@@ -28,18 +29,24 @@
         }
 
         .s__title {
+            font-family: 'Playfair Display', serif;
             font-size: 1.5rem;
             line-height: 1.3;
             margin-bottom: 1rem;
+            font-weight: 400;
+            letter-spacing: 1px;
         }
 
         .s__catcher {
-            font-size: 1.2rem;
-            color: #aaa;
+            font-size: 1.1rem;
+            color: #a0a0a0;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 300;
         }
 
         .s__burger {
-            position: absolute;
+            position: fixed;
             top: 2rem;
             right: 2rem;
             width: 30px;
@@ -47,13 +54,19 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            z-index: 10;
+            z-index: 100;
+            cursor: pointer;
         }
 
         .s__burger__line {
-            height: 3px;
+            height: 2px;
             background: #fff;
             border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .s__burger:hover .s__burger__line {
+            background: #ff6b6b;
         }
 
         .s-scene {
@@ -63,27 +76,44 @@
             transform: translate(-50%, -50%);
             text-align: center;
             z-index: 10;
+            width: 90%;
+            max-width: 1200px;
         }
 
         .s__title__line {
-            font-size: 4rem;
-            font-weight: bold;
-            line-height: 1.2;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 5rem;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            background: linear-gradient(45deg, #ffffff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
         .s__word {
             display: flex;
             justify-content: center;
-            margin-top: 2rem;
+            margin-top: 3rem;
             --max-scale: 1;
         }
 
         .s__word__char {
-            font-size: 8rem;
-            font-weight: bold;
-            margin: 0 0.5rem;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 10rem;
+            font-weight: 900;
+            margin: 0 1rem;
             transform: scale(var(--max-scale));
             transition: transform 0.3s ease;
+            background: linear-gradient(45deg, #ff6b6b, #ffa500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
         }
 
         .cursor {
@@ -91,11 +121,19 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.9);
             pointer-events: none;
             z-index: 100;
             transform: translate(-50%, -50%);
             mix-blend-mode: difference;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+            transition: width 0.2s, height 0.2s;
+        }
+
+        .cursor.hover {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 107, 107, 0.8);
         }
 
         .s-svg {
@@ -111,23 +149,90 @@
             transition: all 0.2s ease;
         }
 
+        .background-decoration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .decoration-circle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.03;
+            filter: blur(40px);
+        }
+
+        .circle-1 {
+            width: 300px;
+            height: 300px;
+            background: #ff6b6b;
+            top: 10%;
+            left: 10%;
+        }
+
+        .circle-2 {
+            width: 400px;
+            height: 400px;
+            background: #4ecdc4;
+            bottom: 10%;
+            right: 10%;
+        }
+
+        .circle-3 {
+            width: 250px;
+            height: 250px;
+            background: #45b7d1;
+            top: 50%;
+            left: 20%;
+        }
+
         @media (max-width: 768px) {
             .s__title__line {
-                font-size: 2.5rem;
+                font-size: 3rem;
             }
             
             .s__word__char {
-                font-size: 5rem;
+                font-size: 6rem;
             }
             
             .s-hero {
                 top: 1rem;
                 left: 1rem;
             }
+            
+            .s__title {
+                font-size: 1.2rem;
+            }
+            
+            .s__burger {
+                top: 1rem;
+                right: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .s__title__line {
+                font-size: 2.2rem;
+            }
+            
+            .s__word__char {
+                font-size: 4rem;
+                margin: 0 0.5rem;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="background-decoration">
+        <div class="decoration-circle circle-1"></div>
+        <div class="decoration-circle circle-2"></div>
+        <div class="decoration-circle circle-3"></div>
+    </div>
+
     <div class="s-hero">
         <h1 class="s__title">
             100 Day Challenge<br />
@@ -135,11 +240,12 @@
             Day 88/100
         </h1>
         <div class="s__catcher">Underneath It all</div>
-        <div class="s__burger">
-            <div class="s__burger__line"></div>
-            <div class="s__burger__line"></div>
-            <div class="s__burger__line"></div>
-        </div>
+    </div>
+
+    <div class="s__burger">
+        <div class="s__burger__line"></div>
+        <div class="s__burger__line"></div>
+        <div class="s__burger__line"></div>
     </div>
 
     <div class="s-scene">
@@ -194,10 +300,25 @@
             const word = document.querySelector('.js-word');
             const svg = document.querySelector('.js-svg');
             const particlesWrapper = document.querySelector('.js-particles-wrapper');
+            const burger = document.querySelector('.s__burger');
             
             // Particles array
             const particles = [];
             let animationId;
+
+            // Set initial cursor position to center
+            mouse.x = viewport.width / 2;
+            mouse.y = viewport.height / 2;
+            mouse.smoothX = mouse.x;
+            mouse.smoothY = mouse.y;
+
+            // Update cursor position
+            function updateCursor() {
+                if (cursor) {
+                    cursor.style.left = mouse.smoothX + 'px';
+                    cursor.style.top = mouse.smoothY + 'px';
+                }
+            }
 
             // Particle class
             class Particle {
@@ -325,10 +446,7 @@
                 emitParticle();
 
                 // Update cursor position
-                if (cursor) {
-                    cursor.style.setProperty('--x', mouse.smoothX + 'px');
-                    cursor.style.setProperty('--y', mouse.smoothY + 'px');
-                }
+                updateCursor();
 
                 // Continue animation
                 animationId = requestAnimationFrame(render);
@@ -337,27 +455,22 @@
             // Event listeners
             window.addEventListener('mousemove', onMouseMove);
             window.addEventListener('resize', onResize);
+            
+            // Burger menu hover effect
+            if (burger) {
+                burger.addEventListener('mouseenter', function() {
+                    cursor.classList.add('hover');
+                });
+                
+                burger.addEventListener('mouseleave', function() {
+                    cursor.classList.remove('hover');
+                });
+            }
 
             // Initialize
             onResize();
+            updateCursor(); // Set initial cursor position
             render();
-
-            // Clean up function (not strictly needed for this demo)
-            window.cleanupParticles = function() {
-                window.removeEventListener('mousemove', onMouseMove);
-                window.removeEventListener('resize', onResize);
-                if (animationId) {
-                    cancelAnimationFrame(animationId);
-                }
-                
-                // Remove all particles
-                particles.forEach(particle => {
-                    if (particle.el.parentNode) {
-                        particle.el.remove();
-                    }
-                });
-                particles.length = 0;
-            };
         });
     </script>
 </body>

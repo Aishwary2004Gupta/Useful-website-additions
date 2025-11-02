@@ -58,6 +58,20 @@
             z-index: 10;
         }
 
+        .s__author {
+            position: fixed;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2.0rem;
+            font-family: "Momo Signature", cursive;
+            color: #ffffff;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 700;
+            z-index: 10;
+        }
+
         .s__burger {
             position: fixed;
             top: 2rem;
@@ -278,6 +292,11 @@
                 font-size: 1.2rem;
                 bottom: 1rem;
             }
+            
+            .s__author {
+                font-size: 1.2rem;
+                top: 1rem;
+            }
         }
 
         @media (max-width: 480px) {
@@ -291,6 +310,10 @@
             }
             
             .s__catcher {
+                font-size: 1rem;
+            }
+            
+            .s__author {
                 font-size: 1rem;
             }
         }
@@ -310,10 +333,7 @@
     </div>
 
     <div class="s-hero">
-        <h1 class="s__title">
-            Made By<br />
-            Aish2004Gupta on X<br />
-        </h1>
+        <!-- Removed the text from here -->
     </div>
 
     <div class="s__burger">
@@ -334,6 +354,7 @@
         </div>
     </div> -->
 
+    <div class="s__author">Made By Aish2004Gupta on X</div>
     <div class="s__catcher">Underneath It All</div>
 
     <div class="cursor js-cursor"></div>

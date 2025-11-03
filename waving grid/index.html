@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D Wavy Grid</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #efefef;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <!-- Include Three.js and Simplex Noise -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/simplex-noise@4.0.1/simplex-noise.min.js"></script>
+
+  <script type="module">
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+    import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+    import SimplexNoise from 'https://cdn.jsdelivr.net/npm/simplex-noise@4.0.1/dist/esm/simplex-noise.js';
+  
+    // Scene setup
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
+    camera.position.set(0, 300, 500);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Lighting
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(0, 1, 1).normalize();
+    scene.add(light);
+
+    // Create a grid similar to the OpenFrameworks setup
+    const width = 6000;  // similar to range -3000..3000
+    const height = 4800; // similar to range -2400..2400
+    const span = 50;
+    const widthSegments = width / span;
+    const heightSegments = height / span;
+
+    const geometry = new THREE.PlaneGeometry(width, height, widthSegments, heightSegments);
+    const material = new THREE.MeshLambertMaterial({
+      color: 0x0099ff,
+      side: THREE.DoubleSide,
+      wireframe: false
+    });
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.rotation.x = -Math.PI / 2;
+    scene.add(mesh);
+
+    // Frame/Wireframe version
+    const wireMaterial = new THREE.MeshBasicMaterial({
+      color: 0x000000,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.4
+    });
+    const wireframe = new THREE.Mesh(geometry.clone(), wireMaterial);
+    wireframe.rotation.x = -Math.PI / 2;
+    scene.add(wireframe);
+
+    // Simplex noise for smooth terrain-like animation
+    const simplex = new SimplexNoise();
+
+    // Animation loop
+    function animate(time) {
+      requestAnimationFrame(animate);
+
+      const t = time * 0.0005;
+      const position = geometry.attributes.position;
+      const arr = position.array;
+
+      for (let i = 0; i < arr.length; i += 3) {
+        const x = arr[i];
+        const y = arr[i + 1];
+        const noiseValue = simplex.noise3D(x * 0.00025, y * 0.00025, t);
+        arr[i + 2] = Math.pow((noiseValue + 1) * 14, 2) * 0.02; // similar to pow(ofMap(...), 2)
+      }
+
+      position.needsUpdate = true;
+
+      // Dynamic hue color similar to OpenFrameworks HSB animation
+      const hue = (time * 0.05) % 360;
+      material.color.setHSL(hue / 360, 0.7, 0.5);
+
+      renderer.render(scene, camera);
+    }
+
+    animate(0);
+
+    // Handle window resizing
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>

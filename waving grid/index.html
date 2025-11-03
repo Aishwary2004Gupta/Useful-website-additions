@@ -1,101 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>3D Wavy Grid (Three.js r160+)</title>
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      background: #efefef;
-    }
-    canvas {
-      display: block;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Waving Grid – openFrameworks clone</title>
+    <style>
+        /* ---------------- CSS ---------------- */
+        body{
+            margin:0;
+            overflow:hidden;
+            background: #eff3f4;          /* the same background colour (239) */
+        }
+
+        #gridCanvas{
+            display:block;
+            width:100vw;
+            height:100vh;
+        }
+    </style>
 </head>
 <body>
-  <script type="module">
-    // ✅ Import directly from CDN with full URLs
-    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-    import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
-    import SimplexNoise from 'https://cdn.jsdelivr.net/npm/simplex-noise@4.0.1/dist/esm/simplex-noise.js';
 
-    // Scene setup
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
-    camera.position.set(0, 300, 500);
+<canvas id="gridCanvas"></canvas>
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+<script>
+// ------------------- JavaScript -------------------
 
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
+const canvas = document.getElementById('gridCanvas');
+const ctx = canvas.getContext('2d');
 
-    const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(0, 1, 1);
-    scene.add(light);
+// Resize canvas when the window changes size
+function resizeCanvas(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
 
-    // Grid setup
-    const width = 6000;
-    const height = 4800;
-    const span = 50;
-    const widthSegments = width / span;
-    const heightSegments = height / span;
+// Settings – the same values that are used in the OF code
+const SPAN      = 50;          // distance between two lines
+const AMPLITUDE = 15;          // max height of the wave
+const TIME_SPEED= 0.0005;      // animation speed
 
-    const geometry = new THREE.PlaneGeometry(width, height, widthSegments, heightSegments);
-    const material = new THREE.MeshLambertMaterial({
-      color: 0x0099ff,
-      side: THREE.DoubleSide
-    });
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.rotation.x = -Math.PI / 2;
-    scene.add(mesh);
+// --------------------------------------------------------------
+// A simple 2‑D noise function.
+// It does not use real Perlin noise but gives a smooth animated pattern.
+// --------------------------------------------------------------
+function noise(x, y, time) {
+    let value = 0;
 
-    const wireMaterial = new THREE.MeshBasicMaterial({
-      color: 0x000000,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.4
-    });
-    const wireframe = new THREE.Mesh(geometry.clone(), wireMaterial);
-    wireframe.rotation.x = -Math.PI / 2;
-    scene.add(wireframe);
+    // Combine several sine waves to obtain a smooth looking noise
+    value += Math.sin(x * 0.003 + time * TIME_SPEED);
+    value += 0.5 * Math.sin(y * 0.003 + time * TIME_SPEED);
+    value += 0.3 * Math.sin((x + y) * 0.005 + time * TIME_SPEED);
 
-    const simplex = new SimplexNoise();
+    // The sum is between approximately -2 and 2 → normalise to [0, 1]
+    return (value + 2) / 4;
+}
 
-    function animate(time) {
-      requestAnimationFrame(animate);
+// Counter that works like ofGetFrameNum()
+let frame = 0;
 
-      const t = time * 0.0005;
-      const pos = geometry.attributes.position;
-      const arr = pos.array;
+function drawGrid(){
+    // Clear the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      for (let i = 0; i < arr.length; i += 3) {
-        const x = arr[i];
-        const y = arr[i + 1];
-        const noiseValue = simplex.noise3D(x * 0.00025, y * 0.00025, t);
-        arr[i + 2] = Math.pow((noiseValue + 1) * 14, 2) * 0.02;
-      }
+    // Save the current transformation matrix
+    ctx.save();
 
-      pos.needsUpdate = true;
+    /* In the OF example the camera is rotated with ofRotateX(270).
+       We emulate that by moving the origin to the centre of the canvas
+       and rotating the whole scene –90 degrees. */
+    ctx.translate(canvas.width / 2, canvas.height / 2);   // centre
+    ctx.rotate(-Math.PI / 2);                              // -90°
 
-      const hue = (time * 0.05) % 360;
-      material.color.setHSL(hue / 360, 0.7, 0.5);
+    // Draw the same light grey background as in OF
+    ctx.fillStyle = '#eff3f4';
+    ctx.fillRect(-canvas.width/2, -canvas.height/2, canvas.width, canvas.height);
 
-      controls.update();
-      renderer.render(scene, camera);
+    // Loop through the grid.
+    // The grid is drawn from the centre outward so it is always centred.
+    for(let x = -canvas.width; x <= canvas.width; x += SPAN){
+        for(let y = -canvas.height; y <= canvas.height; y += SPAN){
+
+            // Compute noise for the current cell.
+            const n = noise(x, y, frame);
+
+            // In OF the height is calculated with
+            //      pow(ofMap(noise_value,0,1,0,28), 2)
+            // Here we simplify it to pow(n,2) * AMPLITUDE
+            const height = Math.pow(n, 2) * AMPLITUDE;
+
+            // Vertices of the current cell
+            const p1 = {x: x    , y: y    };
+            const p2 = {x: x+SPAN, y: y    };
+            const p3 = {x: x+SPAN, y: y+SPAN};
+            const p4 = {x: x    , y: y+SPAN};
+
+            // ------------------------------------------------------
+            //  Draw the coloured face
+            // ------------------------------------------------------
+            // Hue changes every 500 frames – exactly as in the OF code
+            const hue = (frame % 500) * 360 / 500;  
+            ctx.fillStyle = `hsla(${hue}, 80%, 50%, 0.9)`;
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.lineTo(p3.x, p3.y);
+            ctx.lineTo(p4.x, p4.y);
+            ctx.closePath();
+            ctx.fill();
+
+            // ------------------------------------------------------
+            //  Draw the wireframe (black lines) on top
+            // ------------------------------------------------------
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth   = 1;
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.lineTo(p3.x, p3.y);
+            ctx.lineTo(p4.x, p4.y);
+            ctx.closePath();
+            ctx.stroke();
+        }
     }
 
-    animate(0);
+    ctx.restore();          // restore the original transformation
+    frame++;                // next frame
+}
 
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-  </script>
+// Animation loop
+function animate(){
+    drawGrid();
+    requestAnimationFrame(animate);
+}
+
+animate();   // start animation
+</script>
 </body>
 </html>

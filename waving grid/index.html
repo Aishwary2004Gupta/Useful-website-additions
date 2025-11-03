@@ -2,140 +2,258 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Waving Grid – openFrameworks clone</title>
+    <title>Waving Grid</title>
     <style>
-        /* ---------------- CSS ---------------- */
-        body{
-            margin:0;
-            overflow:hidden;
-            background: #eff3f4;          /* the same background colour (239) */
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #efefef;
         }
-
-        #gridCanvas{
-            display:block;
-            width:100vw;
-            height:100vh;
-        }
+        canvas { display: block; } /* avoid scrollbars */
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
+    <script>
+        // Improved Perlin Noise implementation
+        class ImprovedNoise {
+            constructor() {
+                this.p = new Array(512);
+                this.permutation = [
+                    151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
+                    190,6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,88,237,149,56,87,174,20,125,
+                    136,171,168,68,175,74,165,71,134,139,48,27,166,77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,
+                    55,46,245,40,244,102,143,54,65,25,63,161,1,216,80,73,209,76,132,187,208,89,18,169,200,196,135,130,116,188,
+                    159,86,164,100,109,198,173,186,3,64,52,217,226,250,124,123,5,202,38,147,118,126,255,82,85,212,207,206,59,
+                    227,47,16,58,17,182,189,28,42,223,183,170,213,119,248,152,2,44,154,163,70,221,153,101,155,167,43,172,9,
+                    129,22,39,253,19,98,108,110,79,113,224,232,178,185,112,104,218,246,97,228,251,34,242,193,238,210,144,12,191,
+                    179,162,241,81,51,145,235,249,14,239,107,49,192,214,31,181,199,106,157,184,84,204,176,115,121,50,45,127,4,
+                    150,254,138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180
+                ];
 
-<canvas id="gridCanvas"></canvas>
+                for (let i = 0; i < 256; i++) {
+                    this.p[i] = this.p[i + 256] = this.permutation[i];
+                }
+            }
 
-<script>
-// ------------------- JavaScript -------------------
+            fade(t) {
+                return t * t * t * (t * (t * 6 - 15) + 10);
+            }
 
-const canvas = document.getElementById('gridCanvas');
-const ctx = canvas.getContext('2d');
+            lerp(t, a, b) {
+                return a + t * (b - a);
+            }
 
-// Resize canvas when the window changes size
-function resizeCanvas(){
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-}
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
+            grad(hash, x, y, z) {
+                const h = hash & 15;
+                const u = h < 8 ? x : y;
+                const v = h < 4 ? y : (h === 12 || h === 14 ? x : z);
+                return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+            }
 
-// Settings – the same values that are used in the OF code
-const SPAN      = 50;          // distance between two lines
-const AMPLITUDE = 15;          // max height of the wave
-const TIME_SPEED= 0.0005;      // animation speed
+            noise(x, y, z) {
+                const X = Math.floor(x) & 255;
+                const Y = Math.floor(y) & 255;
+                const Z = Math.floor(z) & 255;
 
-// --------------------------------------------------------------
-// A simple 2‑D noise function.
-// It does not use real Perlin noise but gives a smooth animated pattern.
-// --------------------------------------------------------------
-function noise(x, y, time) {
-    let value = 0;
+                x -= Math.floor(x);
+                y -= Math.floor(y);
+                z -= Math.floor(z);
 
-    // Combine several sine waves to obtain a smooth looking noise
-    value += Math.sin(x * 0.003 + time * TIME_SPEED);
-    value += 0.5 * Math.sin(y * 0.003 + time * TIME_SPEED);
-    value += 0.3 * Math.sin((x + y) * 0.005 + time * TIME_SPEED);
+                const u = this.fade(x);
+                const v = this.fade(y);
+                const w = this.fade(z);
 
-    // The sum is between approximately -2 and 2 → normalise to [0, 1]
-    return (value + 2) / 4;
-}
+                const A = this.p[X] + Y;
+                const AA = this.p[A] + Z;
+                const AB = this.p[A + 1] + Z;
+                const B = this.p[X + 1] + Y;
+                const BA = this.p[B] + Z;
+                const BB = this.p[B + 1] + Z;
 
-// Counter that works like ofGetFrameNum()
-let frame = 0;
+                // properly balanced nested lerps, return value scaled to [0,1]
+                const res = this.lerp(w,
+                    this.lerp(v,
+                        this.lerp(u, this.grad(this.p[AA], x, y, z),
+                                      this.grad(this.p[BA], x - 1, y, z)),
+                        this.lerp(u, this.grad(this.p[AB], x, y - 1, z),
+                                      this.grad(this.p[BB], x - 1, y - 1, z))),
+                    this.lerp(v,
+                        this.lerp(u, this.grad(this.p[AA + 1], x, y, z - 1),
+                                      this.grad(this.p[BA + 1], x - 1, y, z - 1)),
+                        this.lerp(u, this.grad(this.p[AB + 1], x, y - 1, z - 1),
+                                      this.grad(this.p[BB + 1], x - 1, y - 1, z - 1)))
+                );
 
-function drawGrid(){
-    // Clear the canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Save the current transformation matrix
-    ctx.save();
-
-    /* In the OF example the camera is rotated with ofRotateX(270).
-       We emulate that by moving the origin to the centre of the canvas
-       and rotating the whole scene –90 degrees. */
-    ctx.translate(canvas.width / 2, canvas.height / 2);   // centre
-    ctx.rotate(-Math.PI / 2);                              // -90°
-
-    // Draw the same light grey background as in OF
-    ctx.fillStyle = '#eff3f4';
-    ctx.fillRect(-canvas.width/2, -canvas.height/2, canvas.width, canvas.height);
-
-    // Loop through the grid.
-    // The grid is drawn from the centre outward so it is always centred.
-    for(let x = -canvas.width; x <= canvas.width; x += SPAN){
-        for(let y = -canvas.height; y <= canvas.height; y += SPAN){
-
-            // Compute noise for the current cell.
-            const n = noise(x, y, frame);
-
-            // In OF the height is calculated with
-            //      pow(ofMap(noise_value,0,1,0,28), 2)
-            // Here we simplify it to pow(n,2) * AMPLITUDE
-            const height = Math.pow(n, 2) * AMPLITUDE;
-
-            // Vertices of the current cell
-            const p1 = {x: x    , y: y    };
-            const p2 = {x: x+SPAN, y: y    };
-            const p3 = {x: x+SPAN, y: y+SPAN};
-            const p4 = {x: x    , y: y+SPAN};
-
-            // ------------------------------------------------------
-            //  Draw the coloured face
-            // ------------------------------------------------------
-            // Hue changes every 500 frames – exactly as in the OF code
-            const hue = (frame % 500) * 360 / 500;  
-            ctx.fillStyle = `hsla(${hue}, 80%, 50%, 0.9)`;
-            ctx.beginPath();
-            ctx.moveTo(p1.x, p1.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.lineTo(p3.x, p3.y);
-            ctx.lineTo(p4.x, p4.y);
-            ctx.closePath();
-            ctx.fill();
-
-            // ------------------------------------------------------
-            //  Draw the wireframe (black lines) on top
-            // ------------------------------------------------------
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth   = 1;
-            ctx.beginPath();
-            ctx.moveTo(p1.x, p1.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.lineTo(p3.x, p3.y);
-            ctx.lineTo(p4.x, p4.y);
-            ctx.closePath();
-            ctx.stroke();
+                return res * 0.5 + 0.5;
+            }
         }
-    }
 
-    ctx.restore();          // restore the original transformation
-    frame++;                // next frame
-}
+        // HSB to RGB conversion
+        function hsbToRgb(h, s, v) {
+            const i = Math.floor(h * 6);
+            const f = h * 6 - i;
+            const p = v * (1 - s);
+            const q = v * (1 - f * s);
+            const t = v * (1 - (1 - f) * s);
 
-// Animation loop
-function animate(){
-    drawGrid();
-    requestAnimationFrame(animate);
-}
+            switch (i % 6) {
+                case 0: return { r: v, g: t, b: p };
+                case 1: return { r: q, g: v, b: p };
+                case 2: return { r: p, g: v, b: t };
+                case 3: return { r: p, g: q, b: v };
+                case 4: return { r: t, g: p, b: v };
+                case 5: return { r: v, g: p, b: q };
+            }
+        }
 
-animate();   // start animation
-</script>
+        // Initialize scene
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xefefef);
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
+        camera.position.set(0, 1500, 2000);
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setPixelRatio(window.devicePixelRatio || 1);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Add orbit controls for better viewing
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
+        // Create group for rotation
+        const group = new THREE.Group();
+        group.rotation.x = -Math.PI / 2; // match openFrameworks view
+        scene.add(group);
+
+        // Grid parameters
+        const span = 50;
+        const width = 3000;
+        const height = 2400;
+        const cols = Math.floor(width / span) + 1;
+        const rows = Math.floor(height / span) + 1;
+        const vertsCount = cols * rows;
+
+        // Prepare position buffers
+        const positions = new Float32Array(vertsCount * 3);
+        let vp = 0;
+        for (let y = 0; y < rows; y++) {
+            for (let x = 0; x < cols; x++) {
+                positions[vp++] = x * span - width / 2;   // x
+                positions[vp++] = y * span - height / 2;  // y
+                positions[vp++] = 0;                      // z
+            }
+        }
+
+        // Create indices for faces and lines
+        const indices = [];
+        const lineIndices = [];
+        for (let y = 0; y < rows - 1; y++) {
+            for (let x = 0; x < cols - 1; x++) {
+                const a = y * cols + x;
+                const b = y * cols + x + 1;
+                const c = (y + 1) * cols + x + 1;
+                const d = (y + 1) * cols + x;
+
+                indices.push(d, a, b);
+                indices.push(d, c, b);
+
+                // lines (pairs)
+                lineIndices.push(d, c);
+                lineIndices.push(d, a);
+                lineIndices.push(b, a);
+                lineIndices.push(b, c);
+            }
+        }
+
+        // Face geometry
+        const faceGeometry = new THREE.BufferGeometry();
+        faceGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        faceGeometry.setIndex(indices);
+
+        // Line geometry: clone position buffer so updates are independent
+        const linePositions = new Float32Array(positions); // cloned copy
+        const lineGeometry = new THREE.BufferGeometry();
+        lineGeometry.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
+        lineGeometry.setIndex(lineIndices);
+
+        // Create face mesh
+        const faceMaterial = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            side: THREE.DoubleSide,
+            wireframe: false
+        });
+        const faceMesh = new THREE.Mesh(faceGeometry, faceMaterial);
+        group.add(faceMesh);
+
+        // Create line mesh
+        const lineMaterial = new THREE.LineBasicMaterial({
+            color: 0x000000
+        });
+        const lineMesh = new THREE.LineSegments(lineGeometry, lineMaterial);
+        group.add(lineMesh);
+
+        // Noise generator
+        const noise = new ImprovedNoise();
+        let frame = 0;
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            frame++;
+
+            // Update vertices with noise
+            const position = faceGeometry.attributes.position;
+            const linePosition = lineGeometry.attributes.position;
+
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    const i = y * cols + x;
+                    const px = x * span - width / 2;
+                    const py = y * span - height / 2;
+
+                    // distance from (0,2700) as in original
+                    const dist = Math.sqrt(px * px + (py - 2700) * (py - 2700));
+
+                    // noise: match original parameters (frame ~ ofGetFrameNum * 0.05)
+                    const noiseVal = noise.noise(
+                        dist * 0.0008 - frame * 0.05,
+                        px * 0.00025,
+                        py * 0.00025
+                    );
+
+                    const z = Math.pow(noiseVal * 28, 2);
+
+                    position.setZ(i, z);
+                    linePosition.setZ(i, z);
+                }
+            }
+
+            position.needsUpdate = true;
+            linePosition.needsUpdate = true;
+
+            // Update color with HSB cycling similar to original
+            const hue = (frame % 500) / 500; // cycles every 500 frames
+            const rgb = hsbToRgb(hue, 0.7, 1);
+            faceMesh.material.color.setRGB(rgb.r, rgb.g, rgb.b);
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
 </body>
 </html>

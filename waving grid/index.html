@@ -1,47 +1,142 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title>Interactive Wireframe Platform</title>
+    <meta charset="UTF-8">
+    <title>Wireframe Platform</title>
     <style>
-        html, body {
+        * {
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
+            box-sizing: border-box;
+        }
+        body {
             overflow: hidden;
             background: #000;
+            font-family: Arial, sans-serif;
+        }
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
         }
         canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
             display: block;
         }
-        .info {
+        #mode-indicator {
             position: absolute;
             top: 20px;
             left: 20px;
             color: white;
-            font-family: Arial, sans-serif;
             font-size: 14px;
             z-index: 100;
-            background: rgba(0,0,0,0.5);
-            padding: 10px;
-            border-radius: 5px;
         }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
-    <div class="info">
-        Double-click to toggle wireframe/filled view
+    <div id="container">
+        <div id="mode-indicator">Wireframe Only - Double-click to change</div>
     </div>
-    
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // Simplex-like noise using ImprovedNoise class
+        // Scene setup
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.Fog(0x000000, 1000, 6000);
+
+        const camera = new THREE.PerspectiveCamera(
+            50,
+            window.innerWidth / window.innerHeight,
+            1,
+            10000
+        );
+        camera.position.set(0, 300, 1200);
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.getElementById('container').appendChild(renderer.domElement);
+
+        // Lighting
+        const light = new THREE.DirectionalLight(0xffffff, 1.5);
+        light.position.set(1, 1, 1);
+        scene.add(light);
+        scene.add(new THREE.AmbientLight(0x222222));
+
+        // Create platform geometry
+        const width = 6000, height = 6000, segments = 150;
+        const geometry = new THREE.PlaneGeometry(width, height, segments, segments);
+
+        // Create materials
+        const wireframeMaterial = new THREE.MeshBasicMaterial({
+            color: 0x0077ff,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.8
+        });
+
+        const blackWireframeMaterial = new THREE.MeshBasicMaterial({
+            color: 0x000000,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.9
+        });
+
+        const surfaceMaterial = new THREE.MeshPhongMaterial({
+            color: 0x0077ff,
+            emissive: 0x001020,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.9,
+            shininess: 100
+        });
+
+        // Create meshes
+        const surfaceMesh = new THREE.Mesh(geometry, surfaceMaterial);
+        surfaceMesh.rotation.x = -Math.PI / 2;
+        scene.add(surfaceMesh);
+
+        const wireframeMesh = new THREE.Mesh(geometry, wireframeMaterial);
+        wireframeMesh.rotation.x = -Math.PI / 2;
+        scene.add(wireframeMesh);
+
+        const blackWireframeMesh = new THREE.Mesh(geometry, blackWireframeMaterial);
+        blackWireframeMesh.rotation.x = -Math.PI / 2;
+        scene.add(blackWireframeMesh);
+
+        // Initially show only wireframe
+        wireframeMesh.visible = true;
+        surfaceMesh.visible = false;
+        blackWireframeMesh.visible = false;
+
+        // Mode tracking
+        let currentMode = 1;
+        const modeIndicator = document.getElementById('mode-indicator');
+
+        // Double-click event listener
+        renderer.domElement.addEventListener('dblclick', function() {
+            currentMode = (currentMode % 3) + 1;
+            
+            // Update visibility based on mode
+            if (currentMode === 1) {
+                wireframeMesh.visible = true;
+                surfaceMesh.visible = false;
+                blackWireframeMesh.visible = false;
+                modeIndicator.textContent = "Wireframe Only - Double-click to change";
+            } else if (currentMode === 2) {
+                wireframeMesh.visible = false;
+                surfaceMesh.visible = true;
+                blackWireframeMesh.visible = false;
+                modeIndicator.textContent = "Surface Only - Double-click to change";
+            } else {
+                wireframeMesh.visible = false;
+                surfaceMesh.visible = true;
+                blackWireframeMesh.visible = true;
+                modeIndicator.textContent = "Wireframe Over Surface - Double-click to change";
+            }
+        });
+
+        // Simplex-like noise implementation
         class ImprovedNoise {
             constructor() {
                 this.p = new Array(512);
@@ -133,88 +228,40 @@
             }
         }
 
-        const scene = new THREE.Scene();
-        scene.fog = new THREE.Fog(0x000000, 1000, 6000);
-
-        const camera = new THREE.PerspectiveCamera(
-            50,
-            window.innerWidth / window.innerHeight,
-            1,
-            10000
-        );
-        camera.position.set(0, 300, 1200);
-        camera.lookAt(0, 0, 0);
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        document.body.appendChild(renderer.domElement);
-
-        const light = new THREE.DirectionalLight(0xffffff, 1.5);
-        light.position.set(1, 1, 1);
-        scene.add(light);
-        scene.add(new THREE.AmbientLight(0x222222));
-
         const noise = new ImprovedNoise();
-        const width = 6000,
-            height = 6000,
-            seg = 150;
-        const geometry = new THREE.PlaneGeometry(width, height, seg, seg);
-
-        // Material with dynamic color & visible wireframe
-        const material = new THREE.MeshPhongMaterial({
-            color: 0x0077ff,
-            emissive: 0x001020,
-            side: THREE.DoubleSide,
-            wireframe: true,
-            wireframeLinewidth: 1,
-        });
-
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.rotation.x = -Math.PI / 2;
-        scene.add(mesh);
-
-        // Double-click event listener
-        let isWireframe = true;
-        renderer.domElement.addEventListener('dblclick', function() {
-            isWireframe = !isWireframe;
-            material.wireframe = isWireframe;
-            
-            // Adjust material properties for filled view
-            if (!isWireframe) {
-                material.transparent = true;
-                material.opacity = 0.9;
-                material.emissiveIntensity = 0.3;
-            } else {
-                material.transparent = false;
-                material.emissiveIntensity = 1.0;
-            }
-        });
-
         let t = 0;
+
+        // Animation loop
         function animate() {
             requestAnimationFrame(animate);
             t += 0.02;
 
-            const pos = geometry.attributes.position;
-            const arr = pos.array;
-            for (let i = 0; i < arr.length; i += 3) {
-                const x = arr[i];
-                const y = arr[i + 1];
-                const val = noise.noise(x * 0.002, (y + t * 1000) * 0.002, t * 0.5);
-                arr[i + 2] = val * 800 - 400; // 🔥 Higher amplitude waves
-            }
-            pos.needsUpdate = true;
-            mesh.geometry.computeVertexNormals();
+            // Update geometry for all meshes
+            [surfaceMesh, wireframeMesh, blackWireframeMesh].forEach(mesh => {
+                const pos = mesh.geometry.attributes.position;
+                const arr = pos.array;
+                for (let i = 0; i < arr.length; i += 3) {
+                    const x = arr[i];
+                    const y = arr[i + 1];
+                    const val = noise.noise(x * 0.002, (y + t * 1000) * 0.002, t * 0.5);
+                    arr[i + 2] = val * 800 - 400;
+                }
+                pos.needsUpdate = true;
+                mesh.geometry.computeVertexNormals();
+            });
 
-            // Smooth color change with time (cycling through hues)
+            // Smooth color change with time
             const hue = (Math.sin(t * 0.3) * 0.5 + 0.5) * 0.7;
-            material.color.setHSL(hue, 1.0, 0.5);
+            const color = new THREE.Color().setHSL(hue, 1.0, 0.5);
+            
+            wireframeMaterial.color.copy(color);
+            surfaceMaterial.color.copy(color);
 
             renderer.render(scene, camera);
         }
         animate();
 
+        // Handle window resize
         window.addEventListener("resize", () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();

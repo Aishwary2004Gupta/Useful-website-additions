@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Particle Image Reveal</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Playfair+Display:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- Background Image Layer -->
+    <div class="image-layer"></div>
+
+    <!-- Black Overlay -->
+    <div class="overlay"></div>
+
+    <!-- SVG Mask Layer -->
+    <svg
+      class="s-svg js-svg"
+      xmlns="http://www.w3.org/2000/svg"
+      preserveAspectRatio="none"
+    >
+      <defs>
+        <filter id="gooey">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="25" />
+          <feColorMatrix
+            type="matrix"
+            values="1 0 0 0 0  
+                    0 1 0 0 0  
+                    0 0 1 0 0  
+                    0 0 0 30 -7"
+            result="goo"
+          />
+        </filter>
+        <mask id="revealMask">
+          <g filter="url(#gooey)" class="js-particles-wrapper"></g>
+        </mask>
+      </defs>
+    </svg>
+
+    <!-- The visible content masked -->
+    <div class="masked-content" style="mask: url(#revealMask); -webkit-mask: url(#revealMask);">
+      <div class="image-layer"></div>
+    </div>
+
+    <div class="cursor js-cursor"></div>
+    <script src="script.js"></script>
+  </body>
+</html>

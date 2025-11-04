@@ -52,6 +52,7 @@
         left: 50%;
         transform: translateX(-50%);
         font-size: 4rem;
+        /* font-family: Impact, "Arial Black", Gadget, sans-serif; */
         font-family: "Momo Signature", cursive;
         color: #ffffff;
         letter-spacing: 2px;
@@ -186,7 +187,7 @@
         pointer-events: none;
       }
 
-      .particle {
+      circle {
         transition: all 0.2s ease;
       }
 
@@ -580,12 +581,6 @@
         // Particles array
         const particles = [];
         let animationId;
-        
-        // Background image
-        const bgImageUrl = "https://images.unsplash.com/photo-1760644520246-e84fadc18cd6?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170";
-        const bgImage = new Image();
-        bgImage.crossOrigin = "anonymous";
-        bgImage.src = bgImageUrl;
 
         // Set initial cursor position to center
         mouse.x = viewport.width / 2;
@@ -610,6 +605,7 @@
             this.seed = Math.random() * 1000;
             this.freq = (0.5 + Math.random() * 1) * 0.01;
             this.amplitude = (1 - Math.random() * 2) * 0.5;
+            this.color = "#fff";
             this.startTime = Date.now();
             this.lifeDuration = 6000; // 6 seconds total
 
@@ -621,34 +617,7 @@
             this.el.setAttribute("cx", this.x.toString());
             this.el.setAttribute("cy", this.y.toString());
             this.el.setAttribute("r", this.size.toString());
-            this.el.setAttribute("class", "particle");
-            
-            // Create pattern for the background image
-            const patternId = "bg-pattern-" + Math.random().toString(36).substr(2, 9);
-            const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
-            const pattern = document.createElementNS("http://www.w3.org/2000/svg", "pattern");
-            pattern.setAttribute("id", patternId);
-            pattern.setAttribute("x", "0");
-            pattern.setAttribute("y", "0");
-            pattern.setAttribute("width", "1");
-            pattern.setAttribute("height", "1");
-            pattern.setAttribute("viewBox", "0 0 100 100");
-            pattern.setAttribute("preserveAspectRatio", "xMidYMid slice");
-            
-            const image = document.createElementNS("http://www.w3.org/2000/svg", "image");
-            image.setAttribute("href", bgImageUrl);
-            image.setAttribute("x", "0");
-            image.setAttribute("y", "0");
-            image.setAttribute("width", "100");
-            image.setAttribute("height", "100");
-            image.setAttribute("preserveAspectRatio", "xMidYMid slice");
-            
-            pattern.appendChild(image);
-            defs.appendChild(pattern);
-            particlesWrapper.appendChild(defs);
-            
-            // Apply the pattern as fill
-            this.el.setAttribute("fill", "url(#" + patternId + ")");
+            this.el.setAttribute("fill", this.color);
 
             // Add to DOM
             particlesWrapper.appendChild(this.el);

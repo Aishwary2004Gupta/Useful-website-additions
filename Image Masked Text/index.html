@@ -4,45 +4,12 @@
     <meta charset="utf-8" />
     <title>Image Masked Text — cover / contain / percent</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- Google Fonts bundle -->
+    <!-- Google Fonts -->
     <link
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;700;900&family=Montserrat:wght@400;700;900&family=Playfair+Display:wght@400;700;900&family=Poppins:wght@400;600;800&display=swap"
       rel="stylesheet"
     />
     <style>
-            body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #000;
-      color: #fff;
-      overflow: hidden;
-      font-family: 'Poppins', sans-serif;
-    }
-
-    h1 {
-      font-size: 14vw;
-      font-weight: 900;
-      text-transform: uppercase;
-      /* The magic: image masking */
-      background-image: url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop");
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-
-      /* Show image through text */
-      -webkit-background-clip: text;
-      background-clip: text;
-
-      /* Make the fill transparent to reveal image */
-      color: transparent;
-      -webkit-text-fill-color: transparent;
-
-      /* Optional outline */
-      -webkit-text-stroke: 1px rgba(255, 255, 255, 0.1);
-    }
       :root {
         --img: url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop");
         --bg-size: cover; /* cover | contain | <percent>% */
@@ -58,6 +25,7 @@
       * {
         box-sizing: border-box;
       }
+
       body {
         margin: 0;
         min-height: 100svh;
@@ -83,6 +51,7 @@
         align-items: center;
         justify-content: space-between;
       }
+
       header h1 {
         font-size: 16px;
         font-weight: 700;
@@ -90,12 +59,14 @@
         margin: 0;
         color: #f1f1f1;
       }
+
       .container {
         display: grid;
         grid-template-columns: 360px 1fr;
         gap: 16px;
         padding: 16px;
       }
+
       @media (max-width: 920px) {
         .container {
           grid-template-columns: 1fr;
@@ -115,6 +86,7 @@
         top: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
       }
+
       .panel h2 {
         margin: 4px 0 6px;
         font-size: 13px;
@@ -123,14 +95,17 @@
         letter-spacing: 0.12em;
         color: #bdbdbd;
       }
+
       .row {
         display: grid;
         gap: 6px;
       }
+
       label {
         font-size: 12px;
         color: #a7a7a7;
       }
+
       input[type="text"],
       select,
       input[type="url"],
@@ -143,19 +118,23 @@
         color: #e8e8e8;
         outline: none;
       }
+
       input[type="range"] {
         width: 100%;
       }
+
       .inline {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 10px;
       }
+
       .btns {
         display: flex;
         gap: 8px;
         flex-wrap: wrap;
       }
+
       button {
         padding: 9px 12px;
         border-radius: 10px;
@@ -164,9 +143,11 @@
         color: #f0f0f0;
         cursor: pointer;
       }
+
       button:hover {
         background: #1b1b1f;
       }
+
       .secondary {
         background: #0f0f12;
       }
@@ -203,7 +184,8 @@
         line-height: 0.92;
         letter-spacing: 0.02em;
         margin: 0 auto;
-        /* The mask */
+
+        /* Image mask */
         background-image: var(--img);
         background-repeat: no-repeat;
         background-position: var(--posX) var(--posY);
@@ -213,13 +195,13 @@
         color: transparent;
         -webkit-text-fill-color: transparent;
 
-        /* Optional outline to boost contrast on dark UIs */
+        /* Outline */
         -webkit-text-stroke: var(--stroke-w) var(--stroke-c);
         text-shadow: 0 0 calc(var(--stroke-w)) var(--stroke-c);
         user-select: text;
       }
 
-      /* Fallback solid text mode (disable the image clip) */
+      /* Fallback solid color */
       .fallback .masked-text {
         background-image: none !important;
         color: var(--fallback);
@@ -233,6 +215,7 @@
         color: #9d9d9d;
         margin-top: -6px;
       }
+
       .kbd {
         border: 1px solid #2a2a2f;
         padding: 2px 6px;
@@ -242,115 +225,45 @@
       }
     </style>
   </head>
+
   <body>
     <header>
       <h1>Image Masked Text</h1>
       <div class="btns">
-        <button
-          id="toggleFallback"
-          class="secondary"
-          title="Toggle fallback color mode"
-        >
-          Toggle Fallback
-        </button>
+        <button id="toggleFallback" class="secondary">Toggle Fallback</button>
         <button id="reset">Reset</button>
       </div>
     </header>
 
     <main class="container">
       <!-- Controls -->
-      <section class="panel" id="panel">
+      <section class="panel">
         <h2>Text</h2>
         <div class="row">
           <label for="text">Content</label>
           <input id="text" type="text" value="MASKED TEXT" />
-          <div class="hint">
-            Tip: You can also click the text and type directly.
-          </div>
+          <div class="hint">Click the text to edit directly.</div>
         </div>
 
         <div class="inline">
           <div class="row">
-            <label for="font">Font family</label>
+            <label for="font">Font</label>
             <select id="font">
               <option value='"Bebas Neue", system-ui, sans-serif' selected>
-                Bebas Neue (display)
+                Bebas Neue
               </option>
               <option value='"Montserrat", system-ui, sans-serif'>
                 Montserrat
               </option>
-              <option value='"Playfair Display", serif'>
-                Playfair Display
-              </option>
+              <option value='"Playfair Display", serif'>Playfair Display</option>
               <option value='"Poppins", system-ui, sans-serif'>Poppins</option>
-              <option value="Inter, system-ui, sans-serif">Inter</option>
-              <option value="system-ui, sans-serif">system-ui</option>
+              <option value='Inter, system-ui, sans-serif'>Inter</option>
             </select>
           </div>
-          <div class="row">
-            <label for="weight"
-              >Weight <span id="weightVal" class="kbd">900</span></label
-            >
-            <input
-              id="weight"
-              type="range"
-              min="100"
-              max="900"
-              step="100"
-              value="900"
-            />
-          </div>
-        </div>
 
-        <div class="row">
-          <label>Fit mode</label>
-          <div class="inline">
-            <select id="fit">
-              <option value="cover" selected>cover</option>
-              <option value="contain">contain</option>
-              <option value="percent">percent</option>
-            </select>
-            <div class="row">
-              <label for="percent"
-                >Percent size (<span id="pctVal" class="kbd">120%</span>)</label
-              >
-              <input
-                id="percent"
-                type="range"
-                min="20"
-                max="300"
-                step="1"
-                value="120"
-              />
-            </div>
-          </div>
-          <div class="inline">
-            <div class="row">
-              <label for="posX"
-                >Pos X (<span id="posXVal" class="kbd">50%</span>)</label
-              >
-              <input
-                id="posX"
-                type="range"
-                min="0"
-                max="100"
-                step="1"
-                value="50"
-              />
-            </div>
-            <div class="row">
-              <label for="posY"
-                >Pos Y (<span id="posYVal" class="kbd">50%</span>)</label
-              >
-              <input
-                id="posY"
-                type="range"
-                min="0"
-                max="100"
-                step="1"
-                value="50"
-              />
-            </div>
+          <div class="row">
+            <label for="weight">Weight <span id="weightVal" class="kbd">900</span></label>
+            <input id="weight" type="range" min="100" max="900" step="100" value="900" />
           </div>
         </div>
 
@@ -360,37 +273,8 @@
           <input
             id="img"
             type="url"
-            placeholder="https://…"
             value="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop"
           />
-          <div class="btns">
-            <button id="useSample1" class="secondary">Sample – Nature</button>
-            <button id="useSample2" class="secondary">Sample – City</button>
-            <button id="useSample3" class="secondary">Sample – Abstract</button>
-          </div>
-        </div>
-
-        <h2>Styling</h2>
-        <div class="inline">
-          <div class="row">
-            <label for="fallback">Fallback color</label>
-            <input id="fallback" type="color" value="#111111" />
-          </div>
-          <div class="row">
-            <label for="strokeW">Outline width</label>
-            <input
-              id="strokeW"
-              type="number"
-              min="0"
-              max="20"
-              step="1"
-              value="0"
-            />
-          </div>
-        </div>
-        <div class="row">
-          <label for="strokeC">Outline color</label>
-          <input id="strokeC" type="color" value="#000000" />
         </div>
       </section>
 
@@ -405,119 +289,45 @@
           >
             MASKED TEXT
           </div>
-          <div class="hint">
-            Double-click to edit. Press <span class="kbd">Esc</span> to leave
-            editing.
-          </div>
+          <div class="hint">Double-click to edit, press Esc to exit edit mode.</div>
         </div>
       </section>
     </main>
 
     <script>
       const root = document.documentElement;
-      const wrap = document.getElementById("wrap");
       const display = document.getElementById("display");
-      const stage = document.getElementById("stage");
-
-      // Controls
       const elText = document.getElementById("text");
       const elFont = document.getElementById("font");
       const elWeight = document.getElementById("weight");
       const weightVal = document.getElementById("weightVal");
-
-      const elFit = document.getElementById("fit");
-      const elPercent = document.getElementById("percent");
-      const pctVal = document.getElementById("pctVal");
-
-      const elPosX = document.getElementById("posX");
-      const elPosY = document.getElementById("posY");
-      const posXVal = document.getElementById("posXVal");
-      const posYVal = document.getElementById("posYVal");
-
       const elImg = document.getElementById("img");
-      const elFallback = document.getElementById("fallback");
-
-      const elStrokeW = document.getElementById("strokeW");
-      const elStrokeC = document.getElementById("strokeC");
-
+      const wrap = document.getElementById("wrap");
       const btnFallback = document.getElementById("toggleFallback");
       const btnReset = document.getElementById("reset");
 
-      const btnS1 = document.getElementById("useSample1");
-      const btnS2 = document.getElementById("useSample2");
-      const btnS3 = document.getElementById("useSample3");
+      // Set CSS variable
+      const setVar = (n, v) => root.style.setProperty(n, v);
 
-      // --- helpers
-      function setVar(name, value) {
-        root.style.setProperty(name, value);
-      }
-      function applyBgSize() {
-        if (elFit.value === "percent") {
-          setVar("--bg-size", `${elPercent.value}% auto`);
-          pctVal.textContent = `${elPercent.value}%`;
-        } else {
-          setVar("--bg-size", elFit.value);
-        }
-      }
-      function setImage(url) {
-        setVar("--img", `url("${url}")`);
-      }
-      function clamp(val, min, max) {
-        return Math.min(Math.max(val, min), max);
-      }
-
-      // --- init defaults
-      applyBgSize();
-      setVar("--posX", `${elPosX.value}%`);
-      setVar("--posY", `${elPosY.value}%`);
-      setVar("--fallback", elFallback.value);
-      setVar("--stroke-w", `${elStrokeW.value}px`);
-      setVar("--stroke-c", elStrokeC.value);
-
-      // --- bindings
-      elText.addEventListener(
-        "input",
-        () => (display.textContent = elText.value || " ")
-      );
+      // Bind events
+      elText.addEventListener("input", () => {
+        display.textContent = elText.value || " ";
+      });
 
       display.addEventListener("input", () => {
-        elText.value = display.textContent.replace(/\n/g, " ");
-      });
-      display.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") {
-          display.blur();
-        }
+        elText.value = display.textContent;
       });
 
       elFont.addEventListener("change", () => setVar("--font", elFont.value));
+
       elWeight.addEventListener("input", () => {
         weightVal.textContent = elWeight.value;
         setVar("--weight", elWeight.value);
       });
 
-      elFit.addEventListener("change", applyBgSize);
-      elPercent.addEventListener("input", applyBgSize);
-
-      elPosX.addEventListener("input", () => {
-        setVar("--posX", `${elPosX.value}%`);
-        posXVal.textContent = `${elPosX.value}%`;
+      elImg.addEventListener("change", () => {
+        setVar("--img", `url("${elImg.value}")`);
       });
-      elPosY.addEventListener("input", () => {
-        setVar("--posY", `${elPosY.value}%`);
-        posYVal.textContent = `${elPosY.value}%`;
-      });
-
-      elImg.addEventListener("change", () => setImage(elImg.value));
-      elFallback.addEventListener("input", () =>
-        setVar("--fallback", elFallback.value)
-      );
-
-      elStrokeW.addEventListener("input", () =>
-        setVar("--stroke-w", `${clamp(+elStrokeW.value, 0, 20)}px`)
-      );
-      elStrokeC.addEventListener("input", () =>
-        setVar("--stroke-c", elStrokeC.value)
-      );
 
       btnFallback.addEventListener("click", () => {
         wrap.classList.toggle("fallback");
@@ -527,97 +337,19 @@
       });
 
       btnReset.addEventListener("click", () => {
-        // state
-        wrap.classList.remove("fallback");
         elText.value = "MASKED TEXT";
         display.textContent = "MASKED TEXT";
-
         elFont.value = '"Bebas Neue", system-ui, sans-serif';
         setVar("--font", elFont.value);
-
         elWeight.value = 900;
-        weightVal.textContent = "900";
         setVar("--weight", 900);
-
-        elFit.value = "cover";
-        elPercent.value = 120;
-        pctVal.textContent = "120%";
-        applyBgSize();
-
-        elPosX.value = 50;
-        elPosY.value = 50;
-        setVar("--posX", "50%");
-        setVar("--posY", "50%");
-        posXVal.textContent = "50%";
-        posYVal.textContent = "50%";
-
+        weightVal.textContent = "900";
         const defImg =
           "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop";
         elImg.value = defImg;
-        setImage(defImg);
-
-        elFallback.value = "#111111";
-        setVar("--fallback", "#111111");
-
-        elStrokeW.value = 0;
-        setVar("--stroke-w", "0px");
-        elStrokeC.value = "#000000";
-        setVar("--stroke-c", "#000000");
-        btnFallback.textContent = "Toggle Fallback";
+        setVar("--img", `url("${defImg}")`);
+        wrap.classList.remove("fallback");
       });
-
-      // Quick samples
-      btnS1.addEventListener("click", () => {
-        const url =
-          "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?q=80&w=1600&auto=format&fit=crop";
-        elImg.value = url;
-        setImage(url);
-      });
-      btnS2.addEventListener("click", () => {
-        const url =
-          "https://images.unsplash.com/photo-1508057198894-247b23fe5ade?q=80&w=1600&auto=format&fit=crop";
-        elImg.value = url;
-        setImage(url);
-      });
-      btnS3.addEventListener("click", () => {
-        const url =
-          "https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=1600&auto=format&fit=crop";
-        elImg.value = url;
-        setImage(url);
-      });
-
-      // Bonus: click-drag to pan the image
-      let dragging = false,
-        startX = 0,
-        startY = 0,
-        baseX = 50,
-        baseY = 50;
-      stage.addEventListener("pointerdown", (e) => {
-        dragging = true;
-        startX = e.clientX;
-        startY = e.clientY;
-        baseX = parseFloat(getComputedStyle(root).getPropertyValue("--posX"));
-        baseY = parseFloat(getComputedStyle(root).getPropertyValue("--posY"));
-        stage.setPointerCapture(e.pointerId);
-      });
-      stage.addEventListener("pointermove", (e) => {
-        if (!dragging) return;
-        const dx = ((e.clientX - startX) / stage.clientWidth) * 100;
-        const dy = ((e.clientY - startY) / stage.clientHeight) * 100;
-        const x = clamp(baseX + dx, 0, 100);
-        const y = clamp(baseY + dy, 0, 100);
-        elPosX.value = x.toFixed(0);
-        elPosY.value = y.toFixed(0);
-        posXVal.textContent = `${elPosX.value}%`;
-        posYVal.textContent = `${elPosY.value}%`;
-        setVar("--posX", `${elPosX.value}%`);
-        setVar("--posY", `${elPosY.value}%`);
-      });
-      stage.addEventListener("pointerup", (e) => {
-        dragging = false;
-        stage.releasePointerCapture?.(e.pointerId);
-      });
-      stage.addEventListener("pointercancel", () => (dragging = false));
     </script>
   </body>
 </html>

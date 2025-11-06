@@ -94,47 +94,6 @@ body {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-
-/* Hover effects on letters */
-.cursor-trail-container:hover .trail-t {
-    color: rgba(59, 130, 246, 0.25);
-    transform: translateY(-8px) scale(1.05);
-}
-
-.cursor-trail-container:hover .trail-r {
-    color: rgba(16, 185, 129, 0.25);
-    transform: translateY(4px) scale(1.05);
-}
-
-.cursor-trail-container:hover .trail-a {
-    color: rgba(245, 158, 11, 0.25);
-    transform: translateY(-12px) scale(1.05);
-}
-
-.cursor-trail-container:hover .trail-i {
-    color: rgba(139, 92, 246, 0.25);
-    transform: translateY(5px) scale(1.05);
-}
-
-.cursor-trail-container:hover .trail-l {
-    color: rgba(239, 68, 68, 0.25);
-    transform: translateY(-10px) scale(1.05);
-}
-
-@media (max-width: 768px) {
-    .trail-letter {
-        font-size: 4rem;
-        gap: 4px;
-    }
-}
-
-@media (max-width: 480px) {
-    .trail-letter {
-        font-size: 3rem;
-        gap: 2px;
-    }
-}
-
 /* Flame Cursor Styles */
 .flame-trail-img {
     position: absolute;

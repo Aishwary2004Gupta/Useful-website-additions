@@ -40,6 +40,14 @@ class AutoImageCursorTrail {
             // "https://assets.codepen.io/7558/cr-blurry-orange-small-012.jpg",
             // "https://assets.codepen.io/7558/cr-blurry-orange-small-013.jpg",
             // "https://assets.codepen.io/7558/cr-blurry-orange-small-014.jpg"
+            "https://picsum.photos/1920/1080?random",
+            "https://picsum.photos/1920/1080?random=1",
+            "https://picsum.photos/1920/1080?random=2",
+            "https://picsum.photos/1920/1080?random=3",
+            "https://picsum.photos/1920/1080?random=4",
+            "https://picsum.photos/1920/1080?random=5",
+            "https://picsum.photos/1920/1080?random=6",
+            "https://picsum.photos/1920/1080?random=7"
         ];
 
         // Flame trail variables

@@ -2,18 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Image Masked Text — Full Control</title>
+  <title>Image Masked Text — Percent Default + Thumbnail</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@100;400;900&family=Montserrat:wght@100;900&family=Playfair+Display:wght@400;900&family=Poppins:wght@100;900&display=swap" rel="stylesheet">
   <style>
     :root {
       --img: url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop");
-      --bg-size: cover;
+      --bg-size: 120% auto; /* percent default */
       --posX: 50%;
       --posY: 50%;
       --font: "Bebas Neue", system-ui, sans-serif;
       --weight: 900;
-      --fallback: #111;
+      --fallback: #ffffff; /* white fallback */
       --stroke-w: 0px;
       --stroke-c: #000000;
     }
@@ -150,6 +150,22 @@
 
     .hint { font-size: 12px; color: #999; text-align: center; }
     .kbd { font-size: 11px; padding: 2px 5px; background: #0b0b0e; border: 1px solid #2a2a2f; border-radius: 5px; }
+
+    /* Thumbnail preview */
+    .thumb {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      width: 120px;
+      height: 80px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #444;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      background-size: cover;
+      background-position: center;
+      z-index: 100;
+    }
   </style>
 </head>
 
@@ -197,9 +213,9 @@
         <div class="row">
           <label for="fit">Fit</label>
           <select id="fit">
-            <option value="cover" selected>cover</option>
+            <option value="cover">cover</option>
             <option value="contain">contain</option>
-            <option value="percent">percent</option>
+            <option value="percent" selected>percent</option>
           </select>
         </div>
         <div class="row">
@@ -233,7 +249,7 @@
 
       <div class="row">
         <label for="fallback">Fallback Color</label>
-        <input id="fallback" type="color" value="#111111">
+        <input id="fallback" type="color" value="#ffffff">
       </div>
     </section>
 
@@ -245,10 +261,13 @@
     </section>
   </main>
 
+  <div class="thumb" id="thumb"></div>
+
   <script>
     const root = document.documentElement;
     const wrap = document.getElementById("wrap");
     const display = document.getElementById("display");
+    const thumb = document.getElementById("thumb");
 
     const $ = id => document.getElementById(id);
     const setVar = (n,v)=>root.style.setProperty(n,v);
@@ -273,18 +292,18 @@
       toggleFallback: $("toggleFallback")
     };
 
+    // Set thumbnail background
+    function updateThumb(url){ thumb.style.backgroundImage = `url("${url}")`; }
+
     // Live updates
     controls.text.addEventListener("input", ()=> display.textContent = controls.text.value);
     display.addEventListener("input", ()=> controls.text.value = display.textContent);
     controls.font.addEventListener("change", ()=> setVar("--font", controls.font.value));
-
-    // Smooth weight logic
     controls.weight.addEventListener("input", ()=>{
       controls.wval.textContent = controls.weight.value;
       setVar("--weight", controls.weight.value);
     });
 
-    // Image fit logic
     const updateFit = ()=>{
       if(controls.fit.value==="percent"){
         setVar("--bg-size", `${controls.percent.value}% auto`);
@@ -305,7 +324,12 @@
       controls.yval.textContent = `${controls.posY.value}%`;
     });
 
-    controls.img.addEventListener("input", ()=> setVar("--img", `url("${controls.img.value}")`));
+    controls.img.addEventListener("input", ()=>{
+      const url = controls.img.value;
+      setVar("--img", `url("${url}")`);
+      updateThumb(url);
+    });
+
     controls.strokeW.addEventListener("input", ()=> setVar("--stroke-w", `${controls.strokeW.value}px`));
     controls.strokeC.addEventListener("input", ()=> setVar("--stroke-c", controls.strokeC.value));
     controls.fallback.addEventListener("input", ()=> setVar("--fallback", controls.fallback.value));
@@ -322,17 +346,18 @@
       controls.font.value = '"Poppins", system-ui, sans-serif';
       setVar("--font", controls.font.value);
       controls.weight.value = 900; controls.wval.textContent = "900"; setVar("--weight", 900);
-      controls.fit.value = "cover"; setVar("--bg-size", "cover");
+      controls.fit.value = "percent"; setVar("--bg-size", "120% auto"); controls.percent.value = 120; controls.pval.textContent = "120%";
       controls.posX.value = 50; controls.posY.value = 50; setVar("--posX", "50%"); setVar("--posY", "50%");
       controls.strokeW.value = 0; setVar("--stroke-w", "0px");
       controls.strokeC.value = "#000000"; setVar("--stroke-c", "#000000");
-      controls.fallback.value = "#111111"; setVar("--fallback", "#111111");
+      controls.fallback.value = "#ffffff"; setVar("--fallback", "#ffffff");
       const defImg = "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop";
-      controls.img.value = defImg; setVar("--img", `url("${defImg}")`);
+      controls.img.value = defImg; setVar("--img", `url("${defImg}")`); updateThumb(defImg);
     });
 
     // init
     updateFit();
+    updateThumb("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop");
   </script>
 </body>
 </html>

@@ -94,31 +94,6 @@ body {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-/* Individual letter styling */
-.trail-t {
-    color: rgba(59, 130, 246, 0.15);
-    transform: translateY(-5px);
-}
-
-.trail-r {
-    color: rgba(16, 185, 129, 0.15);
-    transform: translateY(2px);
-}
-
-.trail-a {
-    color: rgba(245, 158, 11, 0.15);
-    transform: translateY(-8px);
-}
-
-.trail-i {
-    color: rgba(139, 92, 246, 0.15);
-    transform: translateY(3px);
-}
-
-.trail-l {
-    color: rgba(239, 68, 68, 0.15);
-    transform: translateY(-6px);
-}
 
 /* Hover effects on letters */
 .cursor-trail-container:hover .trail-t {

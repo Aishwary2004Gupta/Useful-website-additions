@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Image Masked Text — Toggle Controls + Thumbnail</title>
+  <title>Image Masked Text — Percent Default + Thumbnail</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@100;400;900&family=Montserrat:wght@100;900&family=Playfair+Display:wght@400;900&family=Poppins:wght@100;900&display=swap" rel="stylesheet">
   <style>
@@ -48,61 +48,38 @@
 
     .container {
       display: grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: 360px 1fr;
       gap: 16px;
       padding: 16px;
     }
 
-    /* Toggle button */
-    #togglePanel {
-      position: fixed;
-      bottom: 16px;
-      left: 16px;
-      z-index: 120;
-      background: #1a1a1d;
-      color: #fff;
-      border: 1px solid #333;
-      padding: 10px 14px;
-      border-radius: 8px;
-      cursor: pointer;
-      box-shadow: 0 0 8px rgba(0,0,0,0.4);
-      transition: background 0.3s;
-    }
-
-    #togglePanel:hover {
-      background: #222;
+    @media (max-width: 920px) {
+      .container { grid-template-columns: 1fr; }
     }
 
     /* Control panel */
-    .panel-container {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      height: 100vh;
-      width: 360px;
+    .panel {
       background: #121214;
-      border-right: 1px solid #1f1f22;
-      box-shadow: 4px 0 20px rgba(0,0,0,0.4);
+      border: 1px solid #1f1f22;
+      border-radius: 14px;
       padding: 16px;
-      overflow-y: auto;
-      transform: translateX(-100%);
-      transition: transform 0.35s ease;
-      z-index: 110;
-    }
-
-    .panel-container.active {
-      transform: translateX(0);
+      display: grid;
+      gap: 14px;
+      align-content: start;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+      position: sticky;
+      top: 16px;
     }
 
     .panel h2 {
       font-size: 13px;
+      margin: 0;
       text-transform: uppercase;
       color: #bdbdbd;
       letter-spacing: .1em;
-      margin: 0 0 8px;
     }
 
-    .row { display: grid; gap: 6px; margin-bottom: 10px; }
+    .row { display: grid; gap: 6px; }
     .inline { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
     label { font-size: 12px; color: #a7a7a7; }
@@ -135,9 +112,15 @@
       padding: 16px;
       border: 1px dashed #242428;
       border-radius: 14px;
-      min-height: 80vh;
+      min-height: 64vh;
       position: relative;
       background: radial-gradient(1600px 800px at 20% 120%, rgba(255,255,255,0.03), transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    }
+
+    .masked-wrap {
+      text-align: center;
+      display: grid;
+      gap: 16px;
     }
 
     .masked-text {
@@ -154,9 +137,8 @@
       color: transparent;
       -webkit-text-fill-color: transparent;
       -webkit-text-stroke: var(--stroke-w) var(--stroke-c);
-      transition: font-weight 0.1s ease, font-family 0.1s ease;
-      text-align: center;
       user-select: text;
+      transition: font-weight 0.1s ease, font-family 0.1s ease;
     }
 
     .fallback .masked-text {
@@ -183,11 +165,6 @@
       background-size: cover;
       background-position: center;
       z-index: 100;
-      transition: transform 0.2s;
-    }
-
-    .thumb:hover {
-      transform: scale(1.05);
     }
   </style>
 </head>
@@ -202,16 +179,6 @@
   </header>
 
   <main class="container">
-    <section class="stage" id="stage">
-      <div id="wrap">
-        <div id="display" class="masked-text" contenteditable="true">MASKED TEXT</div>
-        <div class="hint">Double-click to edit, press <span class="kbd">Esc</span> to exit</div>
-      </div>
-    </section>
-  </main>
-
-  <!-- Hidden controls panel -->
-  <div id="panelContainer" class="panel-container">
     <section class="panel">
       <h2>Text</h2>
       <div class="row">
@@ -285,9 +252,15 @@
         <input id="fallback" type="color" value="#ffffff">
       </div>
     </section>
-  </div>
 
-  <button id="togglePanel">Show Controls ⚙️</button>
+    <section class="stage" id="stage">
+      <div class="masked-wrap" id="wrap">
+        <div id="display" class="masked-text" contenteditable="true">MASKED TEXT</div>
+        <div class="hint">Double-click to edit, press <span class="kbd">Esc</span> to exit</div>
+      </div>
+    </section>
+  </main>
+
   <div class="thumb" id="thumb"></div>
 
   <script>
@@ -295,42 +268,78 @@
     const wrap = document.getElementById("wrap");
     const display = document.getElementById("display");
     const thumb = document.getElementById("thumb");
-    const panel = document.getElementById("panelContainer");
-    const togglePanel = document.getElementById("togglePanel");
 
     const $ = id => document.getElementById(id);
     const setVar = (n,v)=>root.style.setProperty(n,v);
 
     const controls = {
-      text: $("text"), font: $("font"), weight: $("weight"), wval: $("wval"),
-      img: $("img"), fit: $("fit"), percent: $("percent"), pval: $("pval"),
-      posX: $("posX"), posY: $("posY"), xval: $("xval"), yval: $("yval"),
-      strokeW: $("strokeW"), strokeC: $("strokeC"), fallback: $("fallback"),
-      reset: $("reset"), toggleFallback: $("toggleFallback")
+      text: $("text"),
+      font: $("font"),
+      weight: $("weight"),
+      wval: $("wval"),
+      img: $("img"),
+      fit: $("fit"),
+      percent: $("percent"),
+      pval: $("pval"),
+      posX: $("posX"),
+      posY: $("posY"),
+      xval: $("xval"),
+      yval: $("yval"),
+      strokeW: $("strokeW"),
+      strokeC: $("strokeC"),
+      fallback: $("fallback"),
+      reset: $("reset"),
+      toggleFallback: $("toggleFallback")
     };
 
+    // Set thumbnail background
     function updateThumb(url){ thumb.style.backgroundImage = `url("${url}")`; }
 
+    // Live updates
     controls.text.addEventListener("input", ()=> display.textContent = controls.text.value);
     display.addEventListener("input", ()=> controls.text.value = display.textContent);
     controls.font.addEventListener("change", ()=> setVar("--font", controls.font.value));
-    controls.weight.addEventListener("input", ()=>{ controls.wval.textContent = controls.weight.value; setVar("--weight", controls.weight.value); });
+    controls.weight.addEventListener("input", ()=>{
+      controls.wval.textContent = controls.weight.value;
+      setVar("--weight", controls.weight.value);
+    });
 
-    const updateFit = ()=>{ if(controls.fit.value==="percent"){ setVar("--bg-size", `${controls.percent.value}% auto`); controls.pval.textContent = `${controls.percent.value}%`; } else { setVar("--bg-size", controls.fit.value); } };
+    const updateFit = ()=>{
+      if(controls.fit.value==="percent"){
+        setVar("--bg-size", `${controls.percent.value}% auto`);
+        controls.pval.textContent = `${controls.percent.value}%`;
+      }else{
+        setVar("--bg-size", controls.fit.value);
+      }
+    };
     controls.fit.addEventListener("change", updateFit);
     controls.percent.addEventListener("input", updateFit);
 
-    controls.posX.addEventListener("input", ()=>{ setVar("--posX", `${controls.posX.value}%`); controls.xval.textContent = `${controls.posX.value}%`; });
-    controls.posY.addEventListener("input", ()=>{ setVar("--posY", `${controls.posY.value}%`); controls.yval.textContent = `${controls.posY.value}%`; });
+    controls.posX.addEventListener("input", ()=>{
+      setVar("--posX", `${controls.posX.value}%`);
+      controls.xval.textContent = `${controls.posX.value}%`;
+    });
+    controls.posY.addEventListener("input", ()=>{
+      setVar("--posY", `${controls.posY.value}%`);
+      controls.yval.textContent = `${controls.posY.value}%`;
+    });
 
-    controls.img.addEventListener("input", ()=>{ const url = controls.img.value; setVar("--img", `url("${url}")`); updateThumb(url); });
+    controls.img.addEventListener("input", ()=>{
+      const url = controls.img.value;
+      setVar("--img", `url("${url}")`);
+      updateThumb(url);
+    });
+
     controls.strokeW.addEventListener("input", ()=> setVar("--stroke-w", `${controls.strokeW.value}px`));
     controls.strokeC.addEventListener("input", ()=> setVar("--stroke-c", controls.strokeC.value));
     controls.fallback.addEventListener("input", ()=> setVar("--fallback", controls.fallback.value));
 
-    controls.toggleFallback.addEventListener("click", ()=>{ wrap.classList.toggle("fallback"); controls.toggleFallback.textContent = wrap.classList.contains("fallback") ? "Use Image Mask" : "Toggle Fallback"; });
+    controls.toggleFallback.addEventListener("click", ()=>{
+      wrap.classList.toggle("fallback");
+      controls.toggleFallback.textContent = wrap.classList.contains("fallback") ? "Use Image Mask" : "Toggle Fallback";
+    });
 
-    controls.reset?.addEventListener("click", ()=>{
+    controls.reset.addEventListener("click", ()=>{
       wrap.classList.remove("fallback");
       display.textContent = "MASKED TEXT";
       controls.text.value = "MASKED TEXT";
@@ -346,11 +355,7 @@
       controls.img.value = defImg; setVar("--img", `url("${defImg}")`); updateThumb(defImg);
     });
 
-    togglePanel.addEventListener("click", ()=>{
-      panel.classList.toggle("active");
-      togglePanel.textContent = panel.classList.contains("active") ? "Hide Controls ❌" : "Show Controls ⚙️";
-    });
-
+    // init
     updateFit();
     updateThumb("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop");
   </script>

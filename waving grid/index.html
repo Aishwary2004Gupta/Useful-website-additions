@@ -34,7 +34,9 @@
   </head>
   <body>
     <div id="container">
-      <div id="mode-indicator">Wireframe Only - Double-click to change</div>
+      <div id="mode-indicator">
+        Wireframe Over Surface - Double-click to change
+      </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -114,31 +116,32 @@
       blackWireframeMesh.rotation.x = -Math.PI / 2;
       scene.add(blackWireframeMesh);
 
-      // Initially show only wireframe
-      wireframeMesh.visible = true;
-      surfaceMesh.visible = false;
-      blackWireframeMesh.visible = false;
+      // Default: Wireframe Over Surface
+      wireframeMesh.visible = false;
+      surfaceMesh.visible = true;
+      blackWireframeMesh.visible = true;
 
-      // Mode tracking
-      let currentMode = 1;
+      let currentMode = 3; // 3 = Wireframe Over Surface
       const modeIndicator = document.getElementById("mode-indicator");
 
       // Double-click event listener
       renderer.domElement.addEventListener("dblclick", function () {
         currentMode = (currentMode % 3) + 1;
 
-        // Update visibility based on mode
         if (currentMode === 1) {
-          wireframeMesh.visible = true;
-          surfaceMesh.visible = false;
-          blackWireframeMesh.visible = false;
-          modeIndicator.textContent = "Wireframe Only - Double-click to change";
-        } else if (currentMode === 2) {
+          // Surface Only
           wireframeMesh.visible = false;
           surfaceMesh.visible = true;
           blackWireframeMesh.visible = false;
           modeIndicator.textContent = "Surface Only - Double-click to change";
+        } else if (currentMode === 2) {
+          // Wireframe Only
+          wireframeMesh.visible = true;
+          surfaceMesh.visible = false;
+          blackWireframeMesh.visible = false;
+          modeIndicator.textContent = "Wireframe Only - Double-click to change";
         } else {
+          // Wireframe Over Surface
           wireframeMesh.visible = false;
           surfaceMesh.visible = true;
           blackWireframeMesh.visible = true;
@@ -242,12 +245,10 @@
       const noise = new ImprovedNoise();
       let t = 0;
 
-      // Animation loop
       function animate() {
         requestAnimationFrame(animate);
         t += 0.02;
 
-        // Update geometry for all meshes
         [surfaceMesh, wireframeMesh, blackWireframeMesh].forEach((mesh) => {
           const pos = mesh.geometry.attributes.position;
           const arr = pos.array;
@@ -261,7 +262,6 @@
           mesh.geometry.computeVertexNormals();
         });
 
-        // Smooth color change with time
         const hue = (Math.sin(t * 0.3) * 0.5 + 0.5) * 0.7;
         const color = new THREE.Color().setHSL(hue, 1.0, 0.5);
 
@@ -272,7 +272,6 @@
       }
       animate();
 
-      // Handle window resize
       window.addEventListener("resize", () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();

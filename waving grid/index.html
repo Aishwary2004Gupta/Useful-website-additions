@@ -29,13 +29,14 @@
         color: white;
         font-size: 14px;
         z-index: 100;
+        user-select: none;
       }
     </style>
   </head>
   <body>
     <div id="container">
       <div id="mode-indicator">
-        Wireframe Over Surface - Double-click to change
+        Wireframe Over Surface - Double-click or Press Space to change
       </div>
     </div>
 
@@ -65,7 +66,7 @@
       scene.add(light);
       scene.add(new THREE.AmbientLight(0x222222));
 
-      // Create platform geometry
+      // Platform geometry
       const width = 6000,
         height = 6000,
         segments = 150;
@@ -76,7 +77,7 @@
         segments
       );
 
-      // Create materials
+      // Materials
       const wireframeMaterial = new THREE.MeshBasicMaterial({
         color: 0x0077ff,
         wireframe: true,
@@ -100,7 +101,7 @@
         shininess: 100,
       });
 
-      // Create meshes
+      // Meshes
       const surfaceMesh = new THREE.Mesh(geometry, surfaceMaterial);
       surfaceMesh.rotation.x = -Math.PI / 2;
       scene.add(surfaceMesh);
@@ -116,16 +117,16 @@
       blackWireframeMesh.rotation.x = -Math.PI / 2;
       scene.add(blackWireframeMesh);
 
-      // Default: Wireframe Over Surface
+      // Default mode: Wireframe Over Surface
+      let currentMode = 3;
       wireframeMesh.visible = false;
       surfaceMesh.visible = true;
       blackWireframeMesh.visible = true;
 
-      let currentMode = 3; // 3 = Wireframe Over Surface
       const modeIndicator = document.getElementById("mode-indicator");
 
-      // Double-click event listener
-      renderer.domElement.addEventListener("dblclick", function () {
+      // Function to change modes
+      function cycleMode() {
         currentMode = (currentMode % 3) + 1;
 
         if (currentMode === 1) {
@@ -133,20 +134,33 @@
           wireframeMesh.visible = false;
           surfaceMesh.visible = true;
           blackWireframeMesh.visible = false;
-          modeIndicator.textContent = "Surface Only - Double-click to change";
+          modeIndicator.textContent =
+            "Surface Only - Double-click or Press Space to change";
         } else if (currentMode === 2) {
           // Wireframe Only
           wireframeMesh.visible = true;
           surfaceMesh.visible = false;
           blackWireframeMesh.visible = false;
-          modeIndicator.textContent = "Wireframe Only - Double-click to change";
+          modeIndicator.textContent =
+            "Wireframe Only - Double-click or Press Space to change";
         } else {
           // Wireframe Over Surface
           wireframeMesh.visible = false;
           surfaceMesh.visible = true;
           blackWireframeMesh.visible = true;
           modeIndicator.textContent =
-            "Wireframe Over Surface - Double-click to change";
+            "Wireframe Over Surface - Double-click or Press Space to change";
+        }
+      }
+
+      // Double-click listener
+      renderer.domElement.addEventListener("dblclick", cycleMode);
+
+      // Spacebar listener
+      window.addEventListener("keydown", (event) => {
+        if (event.code === "Space") {
+          event.preventDefault();
+          cycleMode();
         }
       });
 

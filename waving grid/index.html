@@ -269,7 +269,7 @@
           for (let i = 0; i < arr.length; i += 3) {
             const x = arr[i];
             const y = arr[i + 1];
-            const val = noise.noise(x * 0.002, (y + t * 100) * 0.002, t * 0.5);
+            const val = noise.noise(x * 0.002, (y + t * 1000) * 0.002, t * 0.5);
             arr[i + 2] = val * 800 - 400;
           }
           pos.needsUpdate = true;

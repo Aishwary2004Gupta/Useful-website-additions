@@ -682,7 +682,7 @@
             this.color = "#fff";
             this.startTime = Date.now();
             this.lifeDuration = 6000;
-            this.maxSize = size * 2;
+            this.maxSize = size * 3; // Increase maximum size multiplier
 
             // Create SVG circle element
             this.el = document.createElementNS(
@@ -783,7 +783,7 @@
           if (mouse.diff > 0.01) {
             x = mouse.smoothX;
             y = mouse.smoothY;
-            size = Math.min(mouse.diff * 0.2, 30);
+            size = Math.min(mouse.diff * 0.5, 50); // Increase base size and maximum
           }
 
           if (size > 1) {

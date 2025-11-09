@@ -520,6 +520,63 @@
         height: 100%;
       }
 
+      /* Image selection box (preview + file input) */
+      .image-box {
+        position: fixed;
+        top: 4.2rem;
+        left: 0.8rem;
+        width: 320px;
+        height: 200px;
+        z-index: 25;
+        border: 2px dashed rgba(255, 255, 255, 0.12);
+        border-radius: 8px;
+        overflow: hidden;
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding: 0.5rem;
+        color: #fff;
+        backdrop-filter: blur(4px);
+        transition: box-shadow 0.2s ease, transform 0.12s ease;
+        pointer-events: auto;
+      }
+
+      .image-box.dragover {
+        box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+        transform: translateY(-2px);
+        border-color: rgba(255,255,255,0.28);
+      }
+
+      .image-controls {
+        width: 100%;
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .image-label {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.06);
+        padding: 0.4rem 0.6rem;
+        font-size: 0.9rem;
+        border-radius: 6px;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .image-input {
+        display: none;
+      }
+
+      .image-hint {
+        font-size: 0.75rem;
+        opacity: 0.9;
+        text-align: right;
+      }
+
       /* Remove any box shadows or backgrounds */
       .btn--tl,
       .btn--tl:focus,
@@ -583,6 +640,15 @@
       </a>
     </button>
 
+    <!-- Image preview box + file input -->
+    <div class="image-box js-image-box" id="imageBox" aria-label="Image preview box" style="background-image: url('https://images.unsplash.com/photo-1741851374540-c64860d3bcb7?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170');">
+      <div class="image-controls">
+        <label for="imageInput" class="image-label">Choose image</label>
+        <input id="imageInput" class="image-input" type="file" accept="image/*" />
+        <div class="image-hint">or drop image here</div>
+      </div>
+    </div>
+
     <div class="cursor js-cursor"></div>
 
     <!-- Main SVG for particles and mask -->
@@ -642,6 +708,67 @@
         const hero = document.querySelector(".s-hero");
         const scene = document.querySelector(".s-scene");
         const textOverlay = document.getElementById("textOverlay");
+
+        // Image selection and preview elements
+        const imageBox = document.getElementById('imageBox');
+        const imageInput = document.getElementById('imageInput');
+        const backgroundBW = document.querySelector('.background-bw');
+        const backgroundColor = document.querySelector('.background-color');
+
+        // Helper to set background images (accepts a URL or dataURL)
+        function setBackgrounds(url) {
+          if (backgroundBW) backgroundBW.style.backgroundImage = `url('${url}')`;
+          if (backgroundColor) backgroundColor.style.backgroundImage = `url('${url}')`;
+          if (imageBox) imageBox.style.backgroundImage = `url('${url}')`;
+        }
+
+        // Handle file input selection
+        if (imageInput) {
+          imageInput.addEventListener('change', function (e) {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) return;
+            const reader = new FileReader();
+            reader.onload = function (ev) {
+              setBackgrounds(ev.target.result);
+            };
+            reader.readAsDataURL(file);
+          });
+        }
+
+        // Allow drag & drop onto the preview box
+        if (imageBox) {
+          imageBox.addEventListener('dragenter', (ev) => {
+            ev.preventDefault();
+            imageBox.classList.add('dragover');
+          });
+
+          imageBox.addEventListener('dragover', (ev) => {
+            ev.preventDefault();
+          });
+
+          imageBox.addEventListener('dragleave', (ev) => {
+            ev.preventDefault();
+            imageBox.classList.remove('dragover');
+          });
+
+          imageBox.addEventListener('drop', (ev) => {
+            ev.preventDefault();
+            imageBox.classList.remove('dragover');
+            const file = ev.dataTransfer && ev.dataTransfer.files && ev.dataTransfer.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              setBackgrounds(e.target.result);
+            };
+            reader.readAsDataURL(file);
+          });
+        }
+
+        // Prevent default browser drop behavior on the window to avoid navigating away
+        window.addEventListener('dragover', function (e) { e.preventDefault(); });
+        window.addEventListener('drop', function (e) { e.preventDefault(); });
 
         // Track total particle area
         let totalParticleArea = 0;

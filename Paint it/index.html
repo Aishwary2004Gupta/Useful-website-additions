@@ -592,23 +592,19 @@
       preserveAspectRatio="none"
     >
       <defs>
-        <!-- Enhanced gooey filter for 3D liquid effect -->
+        <!-- Gooey filter for particles -->
         <filter id="gooey">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="30" result="blur" />
+          <feGaussianBlur in="SourceGraphic" stdDeviation="25" />
           <feColorMatrix
-            in="blur"
             type="matrix"
-            values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 35 -15"
-            result="gooey"
+            values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 30 -7"
+            result="goo"
           />
-          <feComposite in="SourceGraphic" in2="gooey" operator="atop"/>
         </filter>
         
         <!-- Mask that will be created by particles -->
         <mask id="particleMask">
-          <g filter="url(#gooey)" class="js-particles-wrapper">
-            <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#000000" flood-opacity="0.3"/>
-          </g>
+          <g filter="url(#gooey)" class="js-particles-wrapper"></g>
         </mask>
       </defs>
       
@@ -683,17 +679,12 @@
             this.seed = Math.random() * 1000;
             this.freq = (0.5 + Math.random() * 1) * 0.01;
             this.amplitude = (1 - Math.random() * 2) * 0.5;
-            this.color = "rgba(255, 255, 255, 0.9)";
+            this.color = "#fff";
             this.startTime = Date.now();
-            this.lifeDuration = 8000; // Increased duration
-            this.maxSize = size * 4; // Larger max size
-            this.velocity = {
-              x: (Math.random() - 0.5) * 2,
-              y: (Math.random() - 0.5) * 2
-            };
-            this.elasticity = 0.8;
+            this.lifeDuration = 6000;
+            this.maxSize = size * 3; // Increase maximum size multiplier
 
-            // Create SVG circle element with gradient
+            // Create SVG circle element
             this.el = document.createElementNS(
               "http://www.w3.org/2000/svg",
               "circle"
@@ -702,12 +693,11 @@
             this.el.setAttribute("cy", this.y.toString());
             this.el.setAttribute("r", this.size.toString());
             this.el.setAttribute("fill", this.color);
-            
-            // Add subtle movement
-            this.el.style.filter = "url(#gooey)";
-            
+
             // Add to DOM
             particlesWrapper.appendChild(this.el);
+
+            // Start animation
             this.animate();
           }
 
@@ -720,40 +710,20 @@
               return;
             }
 
-            // Add subtle floating movement
-            this.x += this.velocity.x;
-            this.y += this.velocity.y;
-            
-            // Add gravity effect
-            this.velocity.y += 0.05;
-            
-            // Bounce effect
-            if (this.y > window.innerHeight || this.y < 0) {
-              this.velocity.y *= -this.elasticity;
-            }
-            if (this.x > window.innerWidth || this.x < 0) {
-              this.velocity.x *= -this.elasticity;
-            }
-
-            // Calculate current size with pulsing effect
-            const pulseSpeed = 0.003;
-            const pulseAmount = 0.2;
+            // Calculate current size
             if (elapsed < 2000) {
               const progress = elapsed / 2000;
               this.currentSize = this.size + (this.maxSize - this.size) * progress;
-            } else if (elapsed < this.lifeDuration) {
-              const progress = (elapsed - 2000) / (this.lifeDuration - 2000);
-              const pulse = Math.sin(elapsed * pulseSpeed) * pulseAmount + 1;
-              this.currentSize = this.maxSize * (1 - progress * 0.5) * pulse;
+            } else if (elapsed < 6000) {
+              const progress = (elapsed - 2000) / 4000;
+              this.currentSize = this.maxSize * (1 - progress);
             }
 
-            // Apply position and size with easing
-            this.el.setAttribute("cx", this.x.toString());
-            this.el.setAttribute("cy", this.y.toString());
+            // Apply size
             this.el.setAttribute("r", this.currentSize.toString());
 
             // Add to total area
-            totalParticleArea += Math.PI * Math.pow(this.currentSize, 2) * 0.15;
+            totalParticleArea += Math.PI * Math.pow(this.currentSize, 2) * 0.1;
 
             // Show text overlay when enough area is revealed
             if (totalParticleArea > revealThreshold && !textOverlay.classList.contains('visible')) {

@@ -45,7 +45,7 @@
         max-height: 820px;
         position: relative;
         z-index: 2; /* above outer-dim */
-        border: 4px solid rgba(255, 255, 255, 0.10);
+        border: 4px solid rgba(255, 255, 255, 0.1);
         border-radius: 8px;
         overflow: hidden;
         box-shadow: 0 30px 80px rgba(0, 0, 0, 0.75),
@@ -137,7 +137,7 @@
       .s__author {
         position: fixed;
         top: 1rem;
-        transform:none; 
+        transform: none;
         font-size: 1.1rem;
         font-family: "Momo Signature", cursive;
         color: #ffffff;
@@ -416,13 +416,17 @@
       <!-- Black and white background (now constrained to frame) -->
       <div
         class="background-bw"
-        style="background-image: url('https://images.unsplash.com/photo-1741851374540-c64860d3bcb7?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170')"
+        style="
+          background-image: url('https://images.unsplash.com/photo-1741851374540-c64860d3bcb7?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170');
+        "
       ></div>
 
       <!-- Color background that gets revealed by particles (constrained) -->
       <div
         class="background-color"
-        style="background-image: url('https://images.unsplash.com/photo-1741851374540-c64860d3bcb7?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170')"
+        style="
+          background-image: url('https://images.unsplash.com/photo-1741851374540-c64860d3bcb7?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170');
+        "
       ></div>
 
       <!-- Text overlay inside the frame -->
@@ -524,7 +528,9 @@
         const cursor = document.querySelector(".js-cursor");
         const frame = document.querySelector(".frame");
         const svg = document.querySelector(".js-svg");
-        const particlesWrapper = document.querySelector(".js-particles-wrapper");
+        const particlesWrapper = document.querySelector(
+          ".js-particles-wrapper"
+        );
         const burger = document.querySelector(".s__burger");
         const hero = document.querySelector(".s-hero");
         const scene = document.querySelector(".s-scene");
@@ -547,7 +553,12 @@
         function getFrameRect() {
           return frame
             ? frame.getBoundingClientRect()
-            : { left: 0, top: 0, width: viewport.width, height: viewport.height };
+            : {
+                left: 0,
+                top: 0,
+                width: viewport.width,
+                height: viewport.height,
+              };
         }
 
         const frameRectInit = getFrameRect();
@@ -579,7 +590,10 @@
             this.maxSize = size * 3;
 
             // Create SVG circle element
-            this.el = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            this.el = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "circle"
+            );
             this.el.setAttribute("cx", this.x.toString());
             this.el.setAttribute("cy", this.y.toString());
             this.el.setAttribute("r", this.size.toString());
@@ -604,7 +618,8 @@
             // Calculate current size
             if (elapsed < 2000) {
               const progress = elapsed / 2000;
-              this.currentSize = this.size + (this.maxSize - this.size) * progress;
+              this.currentSize =
+                this.size + (this.maxSize - this.size) * progress;
             } else if (elapsed < 6000) {
               const progress = (elapsed - 2000) / 4000;
               this.currentSize = this.maxSize * (1 - progress);
@@ -617,7 +632,10 @@
             totalParticleArea += Math.PI * Math.pow(this.currentSize, 2) * 0.1;
 
             // Show text overlay when enough area is revealed
-            if (totalParticleArea > revealThreshold && !textOverlay.classList.contains("visible")) {
+            if (
+              totalParticleArea > revealThreshold &&
+              !textOverlay.classList.contains("visible")
+            ) {
               textOverlay.classList.add("visible");
             }
 
@@ -693,7 +711,10 @@
           // Smooth mouse movement
           mouse.smoothX += (mouse.x - mouse.smoothX) * 0.1;
           mouse.smoothY += (mouse.y - mouse.smoothY) * 0.1;
-          mouse.diff = Math.hypot(mouse.x - mouse.smoothX, mouse.y - mouse.smoothY);
+          mouse.diff = Math.hypot(
+            mouse.x - mouse.smoothX,
+            mouse.y - mouse.smoothY
+          );
 
           // Emit particles based on mouse movement (inside frame)
           emitParticle();

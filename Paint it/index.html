@@ -9,6 +9,7 @@
       rel="stylesheet"
     />
     <style>
+      /* filepath: c:\Users\asus\Downloads\Useful-website-additions\Paint it\index.html */
       * {
         margin: 0;
         padding: 0;
@@ -16,56 +17,79 @@
       }
 
       body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
         font-family: "Montserrat", sans-serif;
-        background: #000000;
+        background: #0b0b0b; /* darker background so framed image pops */
         color: #fff;
         overflow: hidden;
-        height: 100vh;
         cursor: none;
         position: relative;
       }
 
-      /* Black and white background image */
-      .background-bw {
+      /* Dim the outside area so the framed image stands out */
+      .outer-dim {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-image: url("https://images.unsplash.com/photo-1741851374540-c64860d3bcb7?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170");
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        z-index: 0;
-        filter: grayscale(100%);
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        pointer-events: none;
+        z-index: 1;
       }
 
-      /* Color background image that gets revealed */
+      /* The centered frame that contains the background images and particles */
+      .frame {
+        width: 82vw;
+        max-width: 1200px;
+        height: 70vh;
+        max-height: 820px;
+        position: relative;
+        z-index: 2; /* above outer-dim */
+        border: 4px solid rgba(255, 255, 255, 0.10);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.75),
+          inset 0 0 60px rgba(0, 0, 0, 0.3);
+        background: #000; /* fallback */
+      }
+
+      /* Adjust backgrounds to be inside the frame (not full-page) */
+      .background-bw,
       .background-color {
-        position: fixed;
+        position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background-image: url("https://images.unsplash.com/photo-1741851374540-c64860d3bcb7?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170");
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
+        border-radius: 6px;
+      }
+
+      .background-bw {
+        z-index: 0;
+        filter: grayscale(100%);
+        transform-origin: center;
+      }
+
+      .background-color {
         z-index: 1;
-        /* Initially hidden by mask */
         mask: url(#particleMask);
         -webkit-mask: url(#particleMask);
+        transform-origin: center;
       }
 
       /* Text overlay for readability */
       .text-overlay {
-        position: fixed;
+        position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.3);
-        z-index: 2;
+        background: rgba(0, 0, 0, 0.25);
+        z-index: 4;
         pointer-events: none;
         opacity: 0;
         transition: opacity 0.5s ease;
@@ -228,208 +252,25 @@
         background: rgba(255, 107, 107, 0.8);
       }
 
-      .s-svg {
+      /* Keep cursor and other UI elements on top of the page */
+      .cursor {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        z-index: 3;
-      }
-
-      circle {
-        transition: all 0.2s ease;
-      }
-
-      .background-decoration {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 4;
-        pointer-events: none;
-      }
-
-      .decoration-circle {
-        position: absolute;
+        width: 20px;
+        height: 20px;
         border-radius: 50%;
-        opacity: 0.03;
-        filter: blur(40px);
-      }
-
-      .circle-1 {
-        width: 300px;
-        height: 300px;
-        background: #ff6b6b;
-        top: 10%;
-        left: 10%;
-      }
-
-      .circle-2 {
-        width: 400px;
-        height: 400px;
-        background: #4ecdc4;
-        bottom: 10%;
-        right: 10%;
-      }
-
-      .circle-3 {
-        width: 250px;
-        height: 250px;
-        background: #45b7d1;
-        top: 50%;
-        left: 20%;
-      }
-
-      .hover-zones {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 15;
+        background: rgba(255, 255, 255, 0.9);
         pointer-events: none;
+        z-index: 100;
+        transform: translate(-50%, -50%);
+        mix-blend-mode: difference;
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+        transition: width 0.2s, height 0.2s;
       }
 
-      .zone {
-        position: absolute;
-        pointer-events: auto;
-      }
-
-      .zone-top-left {
-        top: 0;
-        left: 0;
-        width: 30%;
-        height: 30%;
-      }
-
-      .zone-top-right {
-        top: 0;
-        right: 0;
-        width: 30%;
-        height: 30%;
-      }
-
-      .zone-center {
-        top: 30%;
-        left: 30%;
-        width: 40%;
-        height: 40%;
-      }
-
-      @media (max-width: 768px) {
-        .s__title__line {
-          font-size: 3rem;
-        }
-
-        .s__word__char {
-          font-size: 6rem;
-        }
-
-        .s-hero {
-          top: 1rem;
-          left: 1rem;
-        }
-
-        .s__title {
-          font-size: 1.2rem;
-        }
-
-        .s__burger {
-          top: 1rem;
-          right: 1rem;
-        }
-
-        .s__catcher {
-          font-size: 1.2rem;
-          bottom: 1rem;
-        }
-
-        .s__author {
-          font-size: 1.2rem;
-          top: 1rem;
-        }
-      }
-
-      @media (max-width: 480px) {
-        .s__title__line {
-          font-size: 2.2rem;
-        }
-
-        .s__word__char {
-          font-size: 4rem;
-          margin: 0 0.5rem;
-        }
-
-        .s__catcher {
-          font-size: 1rem;
-        }
-
-        .s__author {
-          font-size: 1rem;
-        }
-      }
-
-      .btn--tl {
-        position: absolute;
-        top: 0.8em;
-        left: 0.8em;
-        z-index: 20;
-        pointer-events: all;
-        cursor: pointer;
-        opacity: 1;
-        background: none;
-        border: none;
-        padding: 0;
-        margin: 0;
-        text-decoration: none;
-        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        transform: translateZ(0);
-        width: 3em;
-        height: 3em;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .logo-svg-wrapper {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .logo-svg {
-        width: 100%;
-        height: 100%;
-        fill: #ffffff;
-        transition: all 0.4s ease;
-      }
-
-      .logo-path {
-        stroke: #ffffff;
-        stroke-width: 0;
-        stroke-dasharray: 1000;
-        stroke-dashoffset: 1000;
-        transition: all 0.8s ease;
-      }
-
-      /* Hover effects */
-      .btn--tl:hover .logo-path {
-        animation: drawLogo 2s ease-in-out forwards;
-        stroke-width: 1.5;
-      }
-
-      .btn--tl:hover .logo-svg {
-        transform: scale(1.1);
-        filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.3));
-      }
-
-      .btn--tl:hover {
-        transform: scale(1.05) translateZ(0);
+      .cursor.hover {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 107, 107, 0.8);
       }
 
       /* SVG drawing animation */
@@ -531,14 +372,53 @@
     </style>
   </head>
   <body>
-    <!-- Black and white background -->
-    <div class="background-bw"></div>
+    <!-- Dim outside the frame -->
+    <div class="outer-dim"></div>
 
-    <!-- Color background that gets revealed by particles -->
-    <div class="background-color"></div>
+    <!-- Centered framed box for backgrounds + particles -->
+    <div class="frame">
+      <!-- Black and white background (now constrained to frame) -->
+      <div
+        class="background-bw"
+        style="background-image: url('https://images.unsplash.com/photo-1741851374540-c64860d3bcb7?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170')"
+      ></div>
 
-    <!-- Text overlay for readability -->
-    <div class="text-overlay" id="textOverlay"></div>
+      <!-- Color background that gets revealed by particles (constrained) -->
+      <div
+        class="background-color"
+        style="background-image: url('https://images.unsplash.com/photo-1741851374540-c64860d3bcb7?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170')"
+      ></div>
+
+      <!-- Text overlay inside the frame -->
+      <div class="text-overlay" id="textOverlay"></div>
+
+      <!-- Main SVG for particles and mask (moved inside the frame) -->
+      <svg
+        class="s-svg js-svg"
+        xmlns="http://www.w3.org/2000/svg"
+        preserveAspectRatio="none"
+      >
+        <defs>
+          <!-- Gooey filter for particles -->
+          <filter id="gooey">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="25" />
+            <feColorMatrix
+              type="matrix"
+              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 30 -7"
+              result="goo"
+            />
+          </filter>
+
+          <!-- Mask that will be created by particles -->
+          <mask id="particleMask">
+            <g filter="url(#gooey)" class="js-particles-wrapper"></g>
+          </mask>
+        </defs>
+
+        <!-- Visible particles -->
+        <g filter="url(#gooey)" class="js-particles-wrapper"></g>
+      </svg>
+    </div>
 
     <div class="background-decoration">
       <div class="decoration-circle circle-1"></div>
@@ -585,33 +465,6 @@
 
     <div class="cursor js-cursor"></div>
 
-    <!-- Main SVG for particles and mask -->
-    <svg
-      class="s-svg js-svg"
-      xmlns="http://www.w3.org/2000/svg"
-      preserveAspectRatio="none"
-    >
-      <defs>
-        <!-- Gooey filter for particles -->
-        <filter id="gooey">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="25" />
-          <feColorMatrix
-            type="matrix"
-            values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 30 -7"
-            result="goo"
-          />
-        </filter>
-
-        <!-- Mask that will be created by particles -->
-        <mask id="particleMask">
-          <g filter="url(#gooey)" class="js-particles-wrapper"></g>
-        </mask>
-      </defs>
-
-      <!-- Visible particles -->
-      <g filter="url(#gooey)" class="js-particles-wrapper"></g>
-    </svg>
-
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         // Mouse tracking
@@ -625,7 +478,7 @@
           vy: 0,
         };
 
-        // Viewport dimensions
+        // Viewport and frame dimensions
         const viewport = {
           width: window.innerWidth,
           height: window.innerHeight,
@@ -633,11 +486,9 @@
 
         // Elements
         const cursor = document.querySelector(".js-cursor");
-        const word = document.querySelector(".js-word");
+        const frame = document.querySelector(".frame");
         const svg = document.querySelector(".js-svg");
-        const particlesWrapper = document.querySelector(
-          ".js-particles-wrapper"
-        );
+        const particlesWrapper = document.querySelector(".js-particles-wrapper");
         const burger = document.querySelector(".s__burger");
         const hero = document.querySelector(".s-hero");
         const scene = document.querySelector(".s-scene");
@@ -656,9 +507,16 @@
         const particles = [];
         let animationId;
 
-        // Set initial cursor position to center
-        mouse.x = viewport.width / 2;
-        mouse.y = viewport.height / 2;
+        // If frame exists use it as initial center for mouse
+        function getFrameRect() {
+          return frame
+            ? frame.getBoundingClientRect()
+            : { left: 0, top: 0, width: viewport.width, height: viewport.height };
+        }
+
+        const frameRectInit = getFrameRect();
+        mouse.x = (frameRectInit.left || 0) + frameRectInit.width / 2;
+        mouse.y = (frameRectInit.top || 0) + frameRectInit.height / 2;
         mouse.smoothX = mouse.x;
         mouse.smoothY = mouse.y;
 
@@ -670,7 +528,7 @@
           }
         }
 
-        // Particle class
+        // Particle class (unchanged logic, coordinates are in SVG space)
         class Particle {
           constructor(x, y, size, particlesArray) {
             this.size = size;
@@ -682,13 +540,10 @@
             this.color = "#fff";
             this.startTime = Date.now();
             this.lifeDuration = 6000;
-            this.maxSize = size * 3; // Increase maximum size multiplier
+            this.maxSize = size * 3;
 
             // Create SVG circle element
-            this.el = document.createElementNS(
-              "http://www.w3.org/2000/svg",
-              "circle"
-            );
+            this.el = document.createElementNS("http://www.w3.org/2000/svg", "circle");
             this.el.setAttribute("cx", this.x.toString());
             this.el.setAttribute("cy", this.y.toString());
             this.el.setAttribute("r", this.size.toString());
@@ -713,8 +568,7 @@
             // Calculate current size
             if (elapsed < 2000) {
               const progress = elapsed / 2000;
-              this.currentSize =
-                this.size + (this.maxSize - this.size) * progress;
+              this.currentSize = this.size + (this.maxSize - this.size) * progress;
             } else if (elapsed < 6000) {
               const progress = (elapsed - 2000) / 4000;
               this.currentSize = this.maxSize * (1 - progress);
@@ -727,10 +581,7 @@
             totalParticleArea += Math.PI * Math.pow(this.currentSize, 2) * 0.1;
 
             // Show text overlay when enough area is revealed
-            if (
-              totalParticleArea > revealThreshold &&
-              !textOverlay.classList.contains("visible")
-            ) {
+            if (totalParticleArea > revealThreshold && !textOverlay.classList.contains("visible")) {
               textOverlay.classList.add("visible");
             }
 
@@ -764,30 +615,35 @@
           viewport.width = window.innerWidth;
           viewport.height = window.innerHeight;
 
-          if (svg) {
-            svg.style.width = viewport.width + "px";
-            svg.style.height = viewport.height + "px";
-          }
+          if (frame) {
+            const rect = frame.getBoundingClientRect();
+            if (svg) {
+              svg.style.width = rect.width + "px";
+              svg.style.height = rect.height + "px";
+              // ensure svg element has explicit viewBox matching pixel coordinates (optional)
+            }
 
-          if (word) {
-            const maxScale = viewport.height / (word.clientHeight * 0.75);
-            word.style.setProperty(
-              "--max-scale",
-              Math.min(maxScale, 1.5).toString()
-            );
+            // Recenter mouse smooth if needed
+            // ...existing code...
           }
         }
 
-        // Emit particles
+        // Emit particles (place them inside the frame's SVG coordinate system)
         function emitParticle() {
+          if (!frame) return;
+
+          const rect = frame.getBoundingClientRect();
           let x = 0;
           let y = 0;
           let size = 0;
 
           if (mouse.diff > 0.01) {
-            x = mouse.smoothX;
-            y = mouse.smoothY;
-            size = Math.min(mouse.diff * 0.5, 50); // Increase base size and maximum
+            // Convert page coords to frame-local SVG coords
+            const localX = mouse.smoothX - rect.left;
+            const localY = mouse.smoothY - rect.top;
+            x = Math.max(0, Math.min(localX, rect.width));
+            y = Math.max(0, Math.min(localY, rect.height));
+            size = Math.min(mouse.diff * 0.5, 50);
           }
 
           if (size > 1) {
@@ -801,12 +657,9 @@
           // Smooth mouse movement
           mouse.smoothX += (mouse.x - mouse.smoothX) * 0.1;
           mouse.smoothY += (mouse.y - mouse.smoothY) * 0.1;
-          mouse.diff = Math.hypot(
-            mouse.x - mouse.smoothX,
-            mouse.y - mouse.smoothY
-          );
+          mouse.diff = Math.hypot(mouse.x - mouse.smoothX, mouse.y - mouse.smoothY);
 
-          // Emit particles based on mouse movement
+          // Emit particles based on mouse movement (inside frame)
           emitParticle();
 
           // Update cursor position
@@ -850,12 +703,10 @@
         window.addEventListener("mousemove", onMouseMove);
         window.addEventListener("resize", onResize);
 
-        // Burger menu hover effect
         if (burger) {
           burger.addEventListener("mouseenter", function () {
             cursor.classList.add("hover");
           });
-
           burger.addEventListener("mouseleave", function () {
             cursor.classList.remove("hover");
           });

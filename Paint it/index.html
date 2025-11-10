@@ -232,74 +232,143 @@
         text-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
       }
 
-      /* Cursor: make it paint-like with inner droplet and glossy look */
       .cursor {
         position: fixed;
-        width: 30px;
-        height: 30px;
+        width: 20px;
+        height: 20px;
         border-radius: 50%;
-        background: radial-gradient(
-            circle at 30% 30%,
-            rgba(255, 255, 255, 0.95) 0%,
-            rgba(255, 255, 255, 0.55) 12%,
-            rgba(255, 107, 107, 0.25) 40%,
-            rgba(0, 0, 0, 0) 60%
-          );
+        background: rgba(255, 255, 255, 0.9);
         pointer-events: none;
-        z-index: 120;
-        transform: translate(-50%, -50%) scale(1);
-        mix-blend-mode: screen;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6),
-          inset 0 4px 10px rgba(255, 255, 255, 0.08);
-        transition: transform 180ms cubic-bezier(0.22, 0.9, 0.25, 1),
-          width 180ms,
-          height 180ms,
-          background 180ms;
-        backdrop-filter: blur(2px);
-      }
-
-      /* Inner paint droplet (3D-ish highlight) */
-      .cursor .cursor-dot {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        width: 10px;
-        height: 10px;
+        z-index: 100;
         transform: translate(-50%, -50%);
+        mix-blend-mode: difference;
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+        transition: width 0.2s, height 0.2s;
+      }
+
+      .cursor.hover {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 107, 107, 0.8);
+      }
+
+      /* Keep cursor and other UI elements on top of the page */
+      .cursor {
+        position: fixed;
+        width: 20px;
+        height: 20px;
         border-radius: 50%;
+        background: rgba(255, 255, 255, 0.9);
+        pointer-events: none;
+        z-index: 100;
+        transform: translate(-50%, -50%);
+        mix-blend-mode: difference;
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+        transition: width 0.2s, height 0.2s;
+      }
+
+      .cursor.hover {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 107, 107, 0.8);
+      }
+
+      /* SVG drawing animation */
+      @keyframes drawLogo {
+        0% {
+          stroke-dashoffset: 1000;
+          fill: transparent;
+          stroke: #ffffff;
+        }
+        50% {
+          stroke-dashoffset: 0;
+          fill: transparent;
+          stroke: #f0f0f0;
+        }
+        80% {
+          fill: rgba(255, 255, 255, 0.3);
+          stroke: #f0f0f0;
+        }
+        100% {
+          stroke-dashoffset: 0;
+          fill: #ffffff;
+          stroke: transparent;
+        }
+      }
+
+      /* Ink drip effect */
+      .logo-svg::before {
+        content: "";
+        position: absolute;
+        top: -5px;
+        left: -5px;
+        right: -5px;
+        bottom: -5px;
         background: radial-gradient(
-            circle at 30% 30%,
-            #fff 0%,
-            rgba(255, 255, 255, 0.85) 10%,
-            rgba(255, 107, 107, 1) 40%,
-            rgba(255, 107, 107, 0.9) 60%
+            circle at 30% 20%,
+            rgba(255, 255, 255, 0.1) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 70% 80%,
+            rgba(255, 255, 255, 0.05) 0%,
+            transparent 50%
           );
-        box-shadow: 0 8px 18px rgba(255, 107, 107, 0.4),
-          0 2px 6px rgba(0, 0, 0, 0.4),
-          inset 0 2px 6px rgba(255, 255, 255, 0.6);
-        transition: transform 180ms, width 180ms, height 180ms, opacity 180ms;
+        border-radius: 50%;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: -1;
       }
 
-      /* When moving fast, enlarge cursor to simulate splash */
-      .cursor.active {
-        transform: translate(-50%, -50%) scale(1.7);
-        width: 56px;
-        height: 56px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7),
-          inset 0 6px 18px rgba(255, 255, 255, 0.06);
+      .btn--tl:hover .logo-svg::before {
+        opacity: 1;
+        animation: inkDrip 0.5s ease-out 1.5s;
       }
 
-      .cursor.active .cursor-dot {
-        width: 18px;
-        height: 18px;
-        transform: translate(-50%, -50%) scale(1.05);
+      @keyframes inkDrip {
+        0% {
+          transform: scale(0.8);
+          opacity: 0.5;
+        }
+        50% {
+          transform: scale(1.1);
+          opacity: 0.3;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 0.1;
+        }
       }
 
-      /* Slight visual improvement for the frame particles */
-      /* ...existing code... */
+      .btn--tl:active {
+        transform: scale(0.95) translateZ(0);
+        transition: all 0.15s cubic-bezier(0.215, 0.61, 0.355, 1);
+      }
 
-      /* Tune gooey filter slightly stronger for a more viscous look */
-      /* will modify the SVG defs in-body as well */
+      .btn--tl a {
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: all;
+        position: relative;
+        z-index: 21;
+        cursor: pointer;
+        background: none;
+        transition: inherit;
+        width: 100%;
+        height: 100%;
+      }
+
+      /* Remove any box shadows or backgrounds */
+      .btn--tl,
+      .btn--tl:focus,
+      .btn--tl:active {
+        background: transparent !important;
+        box-shadow: none !important;
+        outline: none !important;
+      }
     </style>
   </head>
   <body>
@@ -330,16 +399,14 @@
         preserveAspectRatio="none"
       >
         <defs>
-          <!-- Enhanced gooey filter (stronger blur to help liquid merging) -->
+          <!-- Gooey filter for particles -->
           <filter id="gooey">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="30" result="blur" />
+            <feGaussianBlur in="SourceGraphic" stdDeviation="25" />
             <feColorMatrix
-              in="blur"
               type="matrix"
-              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 40 -10"
+              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 30 -7"
               result="goo"
             />
-            <feComposite in="SourceGraphic" in2="goo" operator="atop" />
           </filter>
 
           <!-- Mask that will be created by particles -->
@@ -396,10 +463,7 @@
       </a>
     </button>
 
-    <!-- Cursor with inner droplet element -->
-    <div class="cursor js-cursor">
-      <div class="cursor-dot"></div>
-    </div>
+    <div class="cursor js-cursor"></div>
 
     <script>
       document.addEventListener("DOMContentLoaded", function () {
@@ -464,98 +528,75 @@
           }
         }
 
-        // Particle class — now creates a small group with soft outer circle + dense core and wobble
+        // Particle class (unchanged logic, coordinates are in SVG space)
         class Particle {
-          constructor(x, y, size) {
-            this.baseX = x;
-            this.baseY = y;
+          constructor(x, y, size, particlesArray) {
             this.size = size;
+            this.x = x;
+            this.y = y;
             this.seed = Math.random() * 1000;
+            this.freq = (0.5 + Math.random() * 1) * 0.01;
+            this.amplitude = (1 - Math.random() * 2) * 0.5;
+            this.color = "#fff";
             this.startTime = Date.now();
             this.lifeDuration = 6000;
             this.maxSize = size * 3;
 
-            // Create group
-            this.group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            // Create SVG circle element
+            this.el = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            this.el.setAttribute("cx", this.x.toString());
+            this.el.setAttribute("cy", this.y.toString());
+            this.el.setAttribute("r", this.size.toString());
+            this.el.setAttribute("fill", this.color);
 
-            // Soft outer (blurry) circle
-            this.soft = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-            this.soft.setAttribute("cx", this.baseX.toString());
-            this.soft.setAttribute("cy", this.baseY.toString());
-            this.soft.setAttribute("r", (this.size * 1.6).toString());
-            this.soft.setAttribute("fill", "#ffffff");
-            this.soft.setAttribute("opacity", "0.65");
-
-            // Core (denser) circle
-            this.core = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-            this.core.setAttribute("cx", this.baseX.toString());
-            this.core.setAttribute("cy", this.baseY.toString());
-            this.core.setAttribute("r", (this.size * 0.6).toString());
-            this.core.setAttribute("fill", "#ffffff");
-            this.core.setAttribute("opacity", "1");
-
-            // Append to group and DOM (group will be filtered by gooey)
-            this.group.appendChild(this.soft);
-            this.group.appendChild(this.core);
-            particlesWrapper.appendChild(this.group);
+            // Add to DOM
+            particlesWrapper.appendChild(this.el);
 
             // Start animation
             this.animate();
           }
 
           animate() {
-            const now = Date.now();
-            const elapsed = now - this.startTime;
+            const currentTime = Date.now();
+            const elapsed = currentTime - this.startTime;
 
             if (elapsed > this.lifeDuration) {
               this.kill();
               return;
             }
 
-            // Progress for size curve
-            let progress = 0;
+            // Calculate current size
             if (elapsed < 2000) {
-              progress = elapsed / 2000;
+              const progress = elapsed / 2000;
               this.currentSize = this.size + (this.maxSize - this.size) * progress;
-            } else {
-              progress = Math.min(1, (elapsed - 2000) / 4000);
+            } else if (elapsed < 6000) {
+              const progress = (elapsed - 2000) / 4000;
               this.currentSize = this.maxSize * (1 - progress);
             }
 
-            // Wobble offsets (seed-based) to give a liquid movement
-            const t = (now + this.seed) * 0.002;
-            const wobbleAmp = Math.max(1, (1 - progress) * 12);
-            const ox = Math.sin(t * (1 + (this.seed % 3))) * wobbleAmp;
-            const oy = Math.cos(t * (1 + ((this.seed + 1) % 4))) * (wobbleAmp * 0.7);
+            // Apply size
+            this.el.setAttribute("r", this.currentSize.toString());
 
-            const cxCore = this.baseX + ox;
-            const cyCore = this.baseY + oy;
-            const rCore = Math.max(0.5, this.currentSize * 0.55);
-            const rSoft = Math.max(0.5, this.currentSize * 1.6);
+            // Add to total area
+            totalParticleArea += Math.PI * Math.pow(this.currentSize, 2) * 0.1;
 
-            // Apply to elements (soft slightly lagged and larger)
-            this.core.setAttribute("cx", cxCore.toString());
-            this.core.setAttribute("cy", cyCore.toString());
-            this.core.setAttribute("r", rCore.toString());
-
-            this.soft.setAttribute("cx", (this.baseX + ox * 0.6).toString());
-            this.soft.setAttribute("cy", (this.baseY + oy * 0.6).toString());
-            this.soft.setAttribute("r", rSoft.toString());
-
-            // Accumulate visible reveal area (approx)
-            totalParticleArea += Math.PI * Math.pow(rSoft, 2) * 0.08;
-
+            // Show text overlay when enough area is revealed
             if (totalParticleArea > revealThreshold && !textOverlay.classList.contains("visible")) {
               textOverlay.classList.add("visible");
             }
 
+            // Continue animation
             requestAnimationFrame(() => this.animate());
           }
 
           kill() {
-            const idx = particles.indexOf(this);
-            if (idx > -1) particles.splice(idx, 1);
-            if (this.group && this.group.parentNode) this.group.remove();
+            const index = particles.indexOf(this);
+            if (index > -1) {
+              particles.splice(index, 1);
+            }
+            if (this.el.parentNode) {
+              this.el.remove();
+            }
           }
         }
 
@@ -579,44 +620,44 @@
             if (svg) {
               svg.style.width = rect.width + "px";
               svg.style.height = rect.height + "px";
+              // ensure svg element has explicit viewBox matching pixel coordinates (optional)
             }
+
+            // Recenter mouse smooth if needed
+            // ...existing code...
           }
         }
 
-        // Emit particles inside frame; each will look liquid
+        // Emit particles (place them inside the frame's SVG coordinate system)
         function emitParticle() {
           if (!frame) return;
+
           const rect = frame.getBoundingClientRect();
-          let x = 0,
-            y = 0,
-            size = 0;
+          let x = 0;
+          let y = 0;
+          let size = 0;
 
           if (mouse.diff > 0.01) {
+            // Convert page coords to frame-local SVG coords
             const localX = mouse.smoothX - rect.left;
             const localY = mouse.smoothY - rect.top;
             x = Math.max(0, Math.min(localX, rect.width));
             y = Math.max(0, Math.min(localY, rect.height));
-            size = Math.min(mouse.diff * 0.6, 60);
+            size = Math.min(mouse.diff * 0.5, 50);
           }
 
           if (size > 1) {
-            const p = new Particle(x, y, size);
-            particles.push(p);
+            const particle = new Particle(x, y, size, particles);
+            particles.push(particle);
           }
         }
 
         // Main render loop
         function render() {
           // Smooth mouse movement
-          mouse.smoothX += (mouse.x - mouse.smoothX) * 0.12;
-          mouse.smoothY += (mouse.y - mouse.smoothY) * 0.12;
+          mouse.smoothX += (mouse.x - mouse.smoothX) * 0.1;
+          mouse.smoothY += (mouse.y - mouse.smoothY) * 0.1;
           mouse.diff = Math.hypot(mouse.x - mouse.smoothX, mouse.y - mouse.smoothY);
-
-          // Cursor active state when moving fast (gives splash feeling)
-          if (cursor) {
-            if (mouse.diff > 10) cursor.classList.add("active");
-            else cursor.classList.remove("active");
-          }
 
           // Emit particles based on mouse movement (inside frame)
           emitParticle();

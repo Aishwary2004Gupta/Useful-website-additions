@@ -136,47 +136,50 @@
       }
 
       .s__author {
+        /* moved from centered to top-left corner */
         position: fixed;
-        top: 2rem;
-        left: 50%;
-        transform: translateX(-50%);
-        font-size: 2rem;
+        top: 1rem;
+        left: 5rem; /* shifted right to make room for AG logo */
+        transform: none; /* remove centered translate */
+        font-size: 1.1rem;
         font-family: "Momo Signature", cursive;
         color: #ffffff;
-        letter-spacing: 2px;
+        letter-spacing: 1px;
         text-transform: uppercase;
         font-weight: 700;
-        z-index: 20;
+        z-index: 200; /* ensure it's above other UI */
+        pointer-events: none; /* avoid interfering with clicks */
       }
 
-      .s__burger {
+      /* AG logo button positioned top-left */
+      .btn--tl {
         position: fixed;
-        top: 2rem;
-        right: 2rem;
-        width: 30px;
-        height: 20px;
+        top: 0.8rem;
+        left: 0.8rem;
+        z-index: 220;
+        width: 3.2rem;
+        height: 3.2rem;
+        padding: 0;
+        border: none;
+        background: transparent;
         display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        z-index: 100;
+        align-items: center;
+        justify-content: center;
         cursor: pointer;
-        opacity: 0;
-        transition: opacity 0.5s ease;
+        border-radius: 6px;
       }
 
-      .s__burger.visible {
-        opacity: 1;
+      .btn--tl .logo-svg {
+        width: 2.6rem;
+        height: 2.6rem;
+        fill: #ffffff;
+        transition: transform 0.25s ease, filter 0.25s ease;
+        pointer-events: none; /* link is on the anchor */
       }
 
-      .s__burger__line {
-        height: 2px;
-        background: #fff;
-        border-radius: 2px;
-        transition: all 0.3s ease;
-      }
-
-      .s__burger:hover .s__burger__line {
-        background: #ff6b6b;
+      .btn--tl:hover .logo-svg {
+        transform: scale(1.08);
+        filter: drop-shadow(0 6px 12px rgba(255, 255, 255, 0.08));
       }
 
       .s-scene {
@@ -369,6 +372,42 @@
         box-shadow: none !important;
         outline: none !important;
       }
+
+      @media (max-width: 768px) {
+        .s__author {
+          top: 0.8rem;
+          left: 4.2rem; /* keep some gap on smaller screens */
+          font-size: 1rem;
+        }
+        .btn--tl {
+          top: 0.6rem;
+          left: 0.6rem;
+          width: 2.8rem;
+          height: 2.8rem;
+        }
+        .btn--tl .logo-svg {
+          width: 2.2rem;
+          height: 2.2rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .s__author {
+          top: 0.6rem;
+          left: 3.8rem;
+          font-size: 0.95rem;
+        }
+        .btn--tl {
+          top: 0.5rem;
+          left: 0.5rem;
+          width: 2.4rem;
+          height: 2.4rem;
+        }
+        .btn--tl .logo-svg {
+          width: 1.9rem;
+          height: 1.9rem;
+        }
+      }
     </style>
   </head>
   <body>
@@ -441,18 +480,18 @@
     <div class="s__author">Made By Aish2004Gupta</div>
     <!-- <div class="s__catcher">Underneath It All</div> -->
 
-    <button class="btn btn--tl">
+    <!-- AG logo button (already points to X) -->
+    <button class="btn btn--tl" aria-label="Follow on X">
       <a
         href="https://twitter.com/intent/follow?screen_name=aish2004gupta"
         target="_blank"
+        rel="noopener noreferrer"
       >
         <div class="logo-svg-wrapper">
           <svg
             class="logo-svg"
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0.5833333730697632 21 69.01666259765625 37.29999923706055"
-            width="69.01666259765625"
-            height="37.29999923706055"
           >
             <path
               class="logo-path"

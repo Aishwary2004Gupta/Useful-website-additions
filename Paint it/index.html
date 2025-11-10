@@ -370,6 +370,40 @@
         outline: none !important;
       }
 
+      /* Image URL Input Box Styles */
+      .image-url-container {
+        position: fixed;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 100;
+        width: 80%;
+        max-width: 600px;
+        text-align: center;
+      }
+
+      .image-url-input {
+        width: 100%;
+        padding: 12px 20px;
+        font-size: 16px;
+        background: rgba(0, 0, 0, 0.8);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        color: white;
+        font-family: "Montserrat", sans-serif;
+        transition: all 0.3s ease;
+      }
+
+      .image-url-input:focus {
+        outline: none;
+        border-color: rgba(255, 255, 255, 0.5);
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+      }
+
+      .image-url-input::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+      }
+
       @media (max-width: 768px) {
         .s__author {
           top: 0.8rem;
@@ -502,6 +536,14 @@
         </div>
       </a>
     </button>
+
+    <!-- Image URL Input Box -->
+    <div class="image-url-container">
+      <input type="text" 
+             class="image-url-input" 
+             placeholder="Paste an image URL and press Enter to paint it..."
+             id="imageUrlInput">
+    </div>
 
     <div class="cursor js-cursor"></div>
 
@@ -755,6 +797,27 @@
             scene.classList.remove("visible");
           });
         }
+
+        // Get references to the backgrounds
+        const bwBackground = document.querySelector('.background-bw');
+        const colorBackground = document.querySelector('.background-color');
+        
+        // Get reference to the image URL input
+        const imageUrlInput = document.getElementById('imageUrlInput');
+
+        // Handle image URL input
+        imageUrlInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            const url = this.value.trim();
+            if (url) {
+              // Update both background images
+              bwBackground.style.backgroundImage = `url('${url}')`;
+              colorBackground.style.backgroundImage = `url('${url}')`;
+              // Clear the input
+              this.value = '';
+            }
+          }
+        });
 
         // Event listeners
         window.addEventListener("mousemove", onMouseMove);

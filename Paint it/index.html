@@ -739,7 +739,7 @@
             const localY = mouse.smoothY - rect.top;
             x = Math.max(0, Math.min(localX, rect.width));
             y = Math.max(0, Math.min(localY, rect.height));
-            size = Math.min(mouse.diff * 0.5, 50);
+            size = Math.min(mouse.diff * 0.3, 30);
           }
 
           if (size > 1) {

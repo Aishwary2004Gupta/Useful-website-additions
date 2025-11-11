@@ -82,7 +82,6 @@
         canvas.dispatchEvent(event);
       }
 
-      // Start auto-clicking every 1 second
       autoClickInterval = setInterval(() => {
         if (!userMoved) autoClickCenter();
       }, 1000);

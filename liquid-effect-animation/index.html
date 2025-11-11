@@ -86,7 +86,6 @@
         if (!userMoved) autoClickCenter();
       }, 1000);
 
-      // Stop auto-clicking when user moves the mouse
       window.addEventListener("mousemove", () => {
         userMoved = true;
         clearInterval(autoClickInterval);

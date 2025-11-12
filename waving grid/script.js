@@ -1,4 +1,4 @@
-<script>
+
       // Scene setup
       const scene = new THREE.Scene();
       scene.fog = new THREE.Fog(0x000000, 1000, 6000);
@@ -248,4 +248,3 @@
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
       });
-    </script>

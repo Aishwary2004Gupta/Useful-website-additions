@@ -159,7 +159,6 @@ const loadTexture = () => {
         preloadNextTexture();
         showLoadingSpinner(false); // Hide spinner after loaded
     } else {
-        // Fallback: load immediately if not preloaded
         const url = `https://picsum.photos/1920/1080?random=${Date.now()}`;
         new THREE.TextureLoader().load(url, (texture) => {
             texture.minFilter = THREE.LinearFilter;
@@ -278,7 +277,40 @@ const animate = () => {
     renderer.render(scene, camera);
 };
 
+// TOUCH SUPPORT FOR MOBILE
+container.addEventListener("touchmove", (e) => {
+    const touch = e.touches[0];
+    const rect = container.getBoundingClientRect();
+    const x = (touch.clientX - rect.left) / rect.width;
+    const y = 1 - (touch.clientY - rect.top) / rect.height;
+
+    mouse.vX = x - mouse.prevX;
+    mouse.vY = y - mouse.prevY;
+
+    Object.assign(mouse, { x, y, prevX: x, prevY: y });
+}, { passive: true });
+
+window.addEventListener("resize", () => {
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    uniforms.resolution.value.set(
+        container.clientWidth,
+        container.clientHeight,
+        1,
+        1
+    );
+});
+
+container.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+}, { passive: false });
+
+container.addEventListener("touchmove", (e) => {
+    e.preventDefault();
+}, { passive: false });
+
+
+
 initScene();
 preloadNextTexture();
-loadTexture(); // <-- Ensure initial image loads immediately
+loadTexture();
 animate();

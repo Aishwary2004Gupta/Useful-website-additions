@@ -1,663 +1,725 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Glass+ — Striped Glass Effect</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    :root {
-      /* Tweakable via JS controls */
-      --glass-blur: 24px;
-      --glass-brightness: 1.1;
-      --stripe-opacity: 0.9;
-      --stripe-speed: 16s;
-      --stripe-angle: 115deg;
-      --stripe-thickness: 6px;
-      --stripe-gap: 22px;
-      --scroll-translate: 0px;
-      --scroll-rotate: 0deg;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      min-height: 200vh; /* so we can scroll */
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
-        "Segoe UI", sans-serif;
-      background:
-        radial-gradient(circle at 0% 0%, #3b0764 0%, #020617 40%, #000000 100%);
-      color: #f9fafb;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px 16px 80px;
-    }
-
-    h1 {
-      font-size: clamp(32px, 4vw, 40px);
-      letter-spacing: -0.04em;
-      margin-bottom: 6px;
-      text-align: center;
-    }
-
-    .sub {
-      max-width: 560px;
-      text-align: center;
-      opacity: 0.8;
-      font-size: 14px;
-      margin-bottom: 28px;
-    }
-
-    /* Controls panel */
-    .controls {
-      position: sticky;
-      top: 12px;
-      z-index: 10;
-      margin-bottom: 32px;
-      padding: 14px 16px;
-      border-radius: 14px;
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(148, 163, 184, 0.65);
-      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.9);
-      max-width: 860px;
-      width: 100%;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
-      gap: 16px;
-    }
-
-    .controls h2 {
-      font-size: 14px;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      opacity: 0.7;
-      margin-bottom: 8px;
-    }
-
-    .variants {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .variant-btn {
-      padding: 6px 10px;
-      font-size: 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.7);
-      background: rgba(15, 23, 42, 0.9);
-      color: #e5e7eb;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      opacity: 0.9;
-      transition:
-        background 0.15s ease,
-        border-color 0.15s ease,
-        opacity 0.15s ease,
-        transform 0.15s ease;
-    }
-
-    .variant-btn span.dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: #22c55e;
-      box-shadow: 0 0 10px rgba(34, 197, 94, 0.9);
-    }
-
-    .variant-btn.active {
-      background: #0f172a;
-      border-color: #e5e7eb;
-      opacity: 1;
-      transform: translateY(-1px);
-    }
-
-    .sliders {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 10px;
-      font-size: 11px;
-    }
-
-    .slider-group label {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 4px;
-      opacity: 0.85;
-    }
-
-    .slider-group input[type="range"] {
-      width: 100%;
-    }
-
-    /* Layout for the glass demo */
-    .demo-wrapper {
-      width: 100%;
-      max-width: 860px;
-      margin-top: 10px;
-    }
-
-    .spacer {
-      height: 24vh;
-    }
-
-    .glass-stack {
-      display: grid;
-      gap: 20px;
-    }
-
-    @media (min-width: 800px) {
-      .glass-stack {
-        grid-template-columns: 1.2fr 0.9fr;
+  <head>
+    <meta charset="UTF-8" />
+    <title>Glass+ — Striped Glass Effect</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root {
+        /* Tweakable via JS controls */
+        --glass-blur: 24px;
+        --glass-brightness: 1.1;
+        --stripe-opacity: 0.9;
+        --stripe-speed: 16s;
+        --stripe-angle: 115deg;
+        --stripe-thickness: 6px;
+        --stripe-gap: 22px;
+        --scroll-translate: 0px;
+        --scroll-rotate: 0deg;
       }
-    }
 
-    /* Background blobs */
-    .blob {
-      position: fixed;
-      width: 280px;
-      height: 280px;
-      border-radius: 999px;
-      filter: blur(40px);
-      opacity: 0.7;
-      mix-blend-mode: screen;
-      pointer-events: none;
-      z-index: -1;
-    }
-    .blob.one {
-      background: #6366f1;
-      top: -40px;
-      right: -40px;
-      animation: blob1 20s ease-in-out infinite alternate;
-    }
-    .blob.two {
-      background: #ec4899;
-      bottom: -60px;
-      left: -60px;
-      animation: blob2 21s ease-in-out infinite alternate;
-    }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-    @keyframes blob1 {
-      0%   { transform: translate(0, 0) scale(1); }
-      100% { transform: translate(-60px, 40px) scale(1.15); }
-    }
-    @keyframes blob2 {
-      0%   { transform: translate(0, 0) scale(1.1); }
-      100% { transform: translate(70px, -40px) scale(0.95); }
-    }
+      body {
+        min-height: 200vh; /* so we can scroll */
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+          "Segoe UI", sans-serif;
+        background: radial-gradient(
+          circle at 0% 0%,
+          #3b0764 0%,
+          #020617 40%,
+          #000000 100%
+        );
+        color: #f9fafb;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px 16px 80px;
+      }
 
-    /* GLASS CORE */
-    .glass {
-      position: relative;
-      border-radius: 26px;
-      background: rgba(15, 23, 42, 0.7);
-      border: 1px solid rgba(148, 163, 184, 0.8);
-      overflow: hidden;
-      padding: 20px 22px;
-      box-shadow:
-        0 26px 60px rgba(15, 23, 42, 0.9),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-      backdrop-filter: blur(var(--glass-blur)) saturate(135%);
-      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(135%);
-      transform:
-        translate3d(0, var(--scroll-translate), 0)
-        rotateX(0.001deg)
-        rotateY(var(--scroll-rotate));
-      transform-style: preserve-3d;
-      transition:
-        box-shadow 0.26s ease,
-        border-color 0.24s ease,
-        background 0.24s ease,
-        transform 0.2s ease;
-    }
+      h1 {
+        font-size: clamp(32px, 4vw, 40px);
+        letter-spacing: -0.04em;
+        margin-bottom: 6px;
+        text-align: center;
+      }
 
-    .glass[data-variant="hover"] {
-      box-shadow:
-        0 30px 80px rgba(15, 23, 42, 1),
-        0 0 0 1px rgba(248, 250, 252, 0.3);
-    }
+      .sub {
+        max-width: 560px;
+        text-align: center;
+        opacity: 0.8;
+        font-size: 14px;
+        margin-bottom: 28px;
+      }
 
-    .glass[data-variant="dramatic"] {
-      background: radial-gradient(circle at 0 0, rgba(56, 189, 248, 0.16), transparent 60%),
-                  radial-gradient(circle at 100% 110%, rgba(244, 114, 182, 0.16), transparent 65%),
-                  rgba(15, 23, 42, 0.85);
-      border-color: rgba(248, 250, 252, 0.85);
-      box-shadow:
-        0 38px 90px rgba(15, 23, 42, 1),
-        0 0 0 1px rgba(248, 250, 252, 0.4);
-    }
+      /* Controls panel */
+      .controls {
+        position: sticky;
+        top: 12px;
+        z-index: 10;
+        margin-bottom: 32px;
+        padding: 14px 16px;
+        border-radius: 14px;
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid rgba(148, 163, 184, 0.65);
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.9);
+        max-width: 860px;
+        width: 100%;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+        gap: 16px;
+      }
 
-    /* stripes */
-    .glass-stripes {
-      position: absolute;
-      inset: -40%;
-      pointer-events: none;
-      opacity: var(--stripe-opacity);
-      mix-blend-mode: screen;
-      filter: blur(1.4px) saturate(190%) brightness(var(--glass-brightness));
-      background:
-        repeating-linear-gradient(
+      .controls h2 {
+        font-size: 14px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        opacity: 0.7;
+        margin-bottom: 8px;
+      }
+
+      .variants {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .variant-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.7);
+        background: rgba(15, 23, 42, 0.9);
+        color: #e5e7eb;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        opacity: 0.9;
+        transition: background 0.15s ease, border-color 0.15s ease,
+          opacity 0.15s ease, transform 0.15s ease;
+      }
+
+      .variant-btn span.dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background: #22c55e;
+        box-shadow: 0 0 10px rgba(34, 197, 94, 0.9);
+      }
+
+      .variant-btn.active {
+        background: #0f172a;
+        border-color: #e5e7eb;
+        opacity: 1;
+        transform: translateY(-1px);
+      }
+
+      .sliders {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 10px;
+        font-size: 11px;
+      }
+
+      .slider-group label {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 4px;
+        opacity: 0.85;
+      }
+
+      .slider-group input[type="range"] {
+        width: 100%;
+      }
+
+      /* Layout for the glass demo */
+      .demo-wrapper {
+        width: 100%;
+        max-width: 860px;
+        margin-top: 10px;
+      }
+
+      .spacer {
+        height: 24vh;
+      }
+
+      .glass-stack {
+        display: grid;
+        gap: 20px;
+      }
+
+      @media (min-width: 800px) {
+        .glass-stack {
+          grid-template-columns: 1.2fr 0.9fr;
+        }
+      }
+
+      /* Background blobs */
+      .blob {
+        position: fixed;
+        width: 280px;
+        height: 280px;
+        border-radius: 999px;
+        filter: blur(40px);
+        opacity: 0.7;
+        mix-blend-mode: screen;
+        pointer-events: none;
+        z-index: -1;
+      }
+      .blob.one {
+        background: #6366f1;
+        top: -40px;
+        right: -40px;
+        animation: blob1 20s ease-in-out infinite alternate;
+      }
+      .blob.two {
+        background: #ec4899;
+        bottom: -60px;
+        left: -60px;
+        animation: blob2 21s ease-in-out infinite alternate;
+      }
+
+      @keyframes blob1 {
+        0% {
+          transform: translate(0, 0) scale(1);
+        }
+        100% {
+          transform: translate(-60px, 40px) scale(1.15);
+        }
+      }
+      @keyframes blob2 {
+        0% {
+          transform: translate(0, 0) scale(1.1);
+        }
+        100% {
+          transform: translate(70px, -40px) scale(0.95);
+        }
+      }
+
+      /* GLASS CORE */
+      .glass {
+        position: relative;
+        border-radius: 26px;
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(148, 163, 184, 0.8);
+        overflow: hidden;
+        padding: 20px 22px;
+        box-shadow: 0 26px 60px rgba(15, 23, 42, 0.9),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+        backdrop-filter: blur(var(--glass-blur)) saturate(135%);
+        -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(135%);
+        transform: translate3d(0, var(--scroll-translate), 0) rotateX(0.001deg)
+          rotateY(var(--scroll-rotate));
+        transform-style: preserve-3d;
+        transition: box-shadow 0.26s ease, border-color 0.24s ease,
+          background 0.24s ease, transform 0.2s ease;
+      }
+
+      .glass[data-variant="hover"] {
+        box-shadow: 0 30px 80px rgba(15, 23, 42, 1),
+          0 0 0 1px rgba(248, 250, 252, 0.3);
+      }
+
+      .glass[data-variant="dramatic"] {
+        background: radial-gradient(
+            circle at 0 0,
+            rgba(56, 189, 248, 0.16),
+            transparent 60%
+          ),
+          radial-gradient(
+            circle at 100% 110%,
+            rgba(244, 114, 182, 0.16),
+            transparent 65%
+          ),
+          rgba(15, 23, 42, 0.85);
+        border-color: rgba(248, 250, 252, 0.85);
+        box-shadow: 0 38px 90px rgba(15, 23, 42, 1),
+          0 0 0 1px rgba(248, 250, 252, 0.4);
+      }
+
+      /* stripes */
+      .glass-stripes {
+        position: absolute;
+        inset: -40%;
+        pointer-events: none;
+        opacity: var(--stripe-opacity);
+        mix-blend-mode: screen;
+        filter: blur(1.4px) saturate(190%) brightness(var(--glass-brightness));
+        background: repeating-linear-gradient(
           var(--stripe-angle),
           rgba(248, 250, 252, 0.12) 0px,
           rgba(248, 250, 252, 0.12) var(--stripe-thickness),
           rgba(15, 23, 42, 0) calc(var(--stripe-thickness) + 1px),
           rgba(15, 23, 42, 0) calc(var(--stripe-thickness) + var(--stripe-gap))
         );
-      transform: translate3d(0, 0, 0);
-      animation: stripeSlide var(--stripe-speed) linear infinite;
-    }
-
-    @keyframes stripeSlide {
-      0% {
-        transform: translate3d(-80px, -40px, 0) rotate(0.001deg);
+        transform: translate3d(0, 0, 0);
+        animation: stripeSlide var(--stripe-speed) linear infinite;
       }
-      100% {
-        transform: translate3d(80px, 40px, 0) rotate(0.001deg);
+
+      @keyframes stripeSlide {
+        0% {
+          transform: translate3d(-80px, -40px, 0) rotate(0.001deg);
+        }
+        100% {
+          transform: translate3d(80px, 40px, 0) rotate(0.001deg);
+        }
       }
-    }
 
-    /* subtle dispersion overlay */
-    .glass-dispersion {
-      content: "";
-      position: absolute;
-      inset: -40%;
-      mix-blend-mode: color-dodge;
-      background:
-        radial-gradient(circle at 0% 0%, rgba(56, 189, 248, 0.16), transparent 70%),
-        radial-gradient(circle at 100% 100%, rgba(244, 114, 182, 0.16), transparent 70%);
-      opacity: 0.9;
-      pointer-events: none;
-      animation: dispersion 18s ease-in-out infinite alternate;
-    }
-
-    @keyframes dispersion {
-      0% {
-        transform: scale(1) translate3d(0, 0, 0);
+      /* subtle dispersion overlay */
+      .glass-dispersion {
+        content: "";
+        position: absolute;
+        inset: -40%;
+        mix-blend-mode: color-dodge;
+        background: radial-gradient(
+            circle at 0% 0%,
+            rgba(56, 189, 248, 0.16),
+            transparent 70%
+          ),
+          radial-gradient(
+            circle at 100% 100%,
+            rgba(244, 114, 182, 0.16),
+            transparent 70%
+          );
+        opacity: 0.9;
+        pointer-events: none;
+        animation: dispersion 18s ease-in-out infinite alternate;
       }
-      100% {
-        transform: scale(1.15) translate3d(-10px, -6px, 0);
+
+      @keyframes dispersion {
+        0% {
+          transform: scale(1) translate3d(0, 0, 0);
+        }
+        100% {
+          transform: scale(1.15) translate3d(-10px, -6px, 0);
+        }
       }
-    }
 
-    /* Noise layer */
-    .glass-noise {
-      pointer-events: none;
-      position: absolute;
-      inset: 0;
-      opacity: 0.13;
-      mix-blend-mode: soft-light;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='3' stitchTiles='noStitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.7'/%3E%3C/svg%3E");
-      background-size: 260px 260px;
-      animation: noiseMove 2.8s steps(4) infinite;
-    }
-
-    @keyframes noiseMove {
-      0% { transform: translate3d(0, 0, 0); }
-      25% { transform: translate3d(-10px, 6px, 0); }
-      50% { transform: translate3d(6px, -8px, 0); }
-      75% { transform: translate3d(-6px, -4px, 0); }
-      100% { transform: translate3d(0, 0, 0); }
-    }
-
-    /* content */
-    .glass-inner {
-      position: relative;
-      z-index: 1;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.75);
-      border: 1px solid rgba(148, 163, 184, 0.7);
-      font-size: 11px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: #e5e7eb;
-    }
-
-    .badge-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background: #38bdf8;
-      box-shadow: 0 0 12px rgba(56, 189, 248, 1);
-    }
-
-    .glass-title {
-      margin-top: 14px;
-      font-size: 22px;
-      letter-spacing: -0.03em;
-    }
-
-    .glass-desc {
-      margin-top: 6px;
-      font-size: 13px;
-      opacity: 0.9;
-      max-width: 360px;
-    }
-
-    .chip-row {
-      margin-top: 14px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      font-size: 11px;
-    }
-
-    .chip {
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(148, 163, 184, 0.7);
-      opacity: 0.95;
-    }
-
-    .footer-row {
-      margin-top: 18px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      font-size: 12px;
-    }
-
-    .primary-btn {
-      border-radius: 999px;
-      padding: 8px 16px;
-      border: 0;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 500;
-      background: radial-gradient(circle at 0% 0%, #f97316, #fde047 52%, #a7f3d0 100%);
-      color: #0f172a;
-      box-shadow:
-        0 0 0 1px rgba(248, 250, 252, 0.7),
-        0 18px 40px rgba(15, 23, 42, 0.9);
-      transition:
-        transform 0.18s ease-out,
-        box-shadow 0.18s ease-out,
-        filter 0.18s ease-out;
-    }
-
-    .primary-btn:hover {
-      transform: translateY(-1px) scale(1.01);
-      filter: saturate(1.15);
-      box-shadow:
-        0 0 0 1px rgba(248, 250, 252, 0.9),
-        0 22px 50px rgba(15, 23, 42, 1);
-    }
-
-    .primary-btn:active {
-      transform: translateY(0) scale(0.985);
-      box-shadow:
-        0 0 0 1px rgba(248, 250, 252, 0.8),
-        0 12px 28px rgba(15, 23, 42, 0.9);
-    }
-
-    .note {
-      opacity: 0.75;
-    }
-
-    /* Small secondary glass card */
-    .mini-glass {
-      font-size: 12px;
-    }
-    .mini-glass .glass-title {
-      font-size: 16px;
-    }
-    .mini-glass .glass-desc {
-      font-size: 12px;
-    }
-
-    @media (max-width: 640px) {
-      .controls {
-        grid-template-columns: 1fr;
+      /* Noise layer */
+      .glass-noise {
+        pointer-events: none;
+        position: absolute;
+        inset: 0;
+        opacity: 0.13;
+        mix-blend-mode: soft-light;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='3' stitchTiles='noStitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.7'/%3E%3C/svg%3E");
+        background-size: 260px 260px;
+        animation: noiseMove 2.8s steps(4) infinite;
       }
+
+      @keyframes noiseMove {
+        0% {
+          transform: translate3d(0, 0, 0);
+        }
+        25% {
+          transform: translate3d(-10px, 6px, 0);
+        }
+        50% {
+          transform: translate3d(6px, -8px, 0);
+        }
+        75% {
+          transform: translate3d(-6px, -4px, 0);
+        }
+        100% {
+          transform: translate3d(0, 0, 0);
+        }
+      }
+
+      /* content */
+      .glass-inner {
+        position: relative;
+        z-index: 1;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.75);
+        border: 1px solid rgba(148, 163, 184, 0.7);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #e5e7eb;
+      }
+
+      .badge-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: #38bdf8;
+        box-shadow: 0 0 12px rgba(56, 189, 248, 1);
+      }
+
+      .glass-title {
+        margin-top: 14px;
+        font-size: 22px;
+        letter-spacing: -0.03em;
+      }
+
+      .glass-desc {
+        margin-top: 6px;
+        font-size: 13px;
+        opacity: 0.9;
+        max-width: 360px;
+      }
+
+      .chip-row {
+        margin-top: 14px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        font-size: 11px;
+      }
+
+      .chip {
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(148, 163, 184, 0.7);
+        opacity: 0.95;
+      }
+
       .footer-row {
-        flex-direction: column;
-        align-items: flex-start;
+        margin-top: 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        font-size: 12px;
       }
-    }
-  </style>
-</head>
-<body>
-  <!-- blobs behind -->
-  <div class="blob one"></div>
-  <div class="blob two"></div>
 
-  <h1>Glass+</h1>
-  <p class="sub">
-    Striped glass, scroll transforms, and variant-like animations —
-    recreated with pure HTML, CSS and JavaScript. Use the controls
-    to feel how the glass responds.
-  </p>
+      .primary-btn {
+        border-radius: 999px;
+        padding: 8px 16px;
+        border: 0;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        background: radial-gradient(
+          circle at 0% 0%,
+          #f97316,
+          #fde047 52%,
+          #a7f3d0 100%
+        );
+        color: #0f172a;
+        box-shadow: 0 0 0 1px rgba(248, 250, 252, 0.7),
+          0 18px 40px rgba(15, 23, 42, 0.9);
+        transition: transform 0.18s ease-out, box-shadow 0.18s ease-out,
+          filter 0.18s ease-out;
+      }
 
-  <!-- CONTROLS -->
-  <section class="controls">
-    <div>
-      <h2>Variants</h2>
-      <div class="variants">
-        <button class="variant-btn active" data-variant-target="default">
-          <span class="dot"></span>
-          Default
-        </button>
-        <button class="variant-btn" data-variant-target="hover">
-          Hovery
-        </button>
-        <button class="variant-btn" data-variant-target="dramatic">
-          Dramatic
-        </button>
+      .primary-btn:hover {
+        transform: translateY(-1px) scale(1.01);
+        filter: saturate(1.15);
+        box-shadow: 0 0 0 1px rgba(248, 250, 252, 0.9),
+          0 22px 50px rgba(15, 23, 42, 1);
+      }
+
+      .primary-btn:active {
+        transform: translateY(0) scale(0.985);
+        box-shadow: 0 0 0 1px rgba(248, 250, 252, 0.8),
+          0 12px 28px rgba(15, 23, 42, 0.9);
+      }
+
+      .note {
+        opacity: 0.75;
+      }
+
+      /* Small secondary glass card */
+      .mini-glass {
+        font-size: 12px;
+      }
+      .mini-glass .glass-title {
+        font-size: 16px;
+      }
+      .mini-glass .glass-desc {
+        font-size: 12px;
+      }
+
+      @media (max-width: 640px) {
+        .controls {
+          grid-template-columns: 1fr;
+        }
+        .footer-row {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- blobs behind -->
+    <div class="blob one"></div>
+    <div class="blob two"></div>
+
+    <h1>Glass+</h1>
+    <p class="sub">
+      Striped glass, scroll transforms, and variant-like animations — recreated
+      with pure HTML, CSS and JavaScript. Use the controls to feel how the glass
+      responds.
+    </p>
+
+    <!-- CONTROLS -->
+    <section class="controls">
+      <div>
+        <h2>Variants</h2>
+        <div class="variants">
+          <button class="variant-btn active" data-variant-target="default">
+            <span class="dot"></span>
+            Default
+          </button>
+          <button class="variant-btn" data-variant-target="hover">
+            Hovery
+          </button>
+          <button class="variant-btn" data-variant-target="dramatic">
+            Dramatic
+          </button>
+        </div>
       </div>
-    </div>
 
-    <div>
-      <h2>Glass Controls</h2>
-      <div class="sliders">
-        <div class="slider-group">
-          <label>
-            Stripe Opacity
-            <span id="val-opacity">0.9</span>
-          </label>
-          <input id="opacityRange" type="range" min="0" max="1" step="0.05" value="0.9" />
-        </div>
-        <div class="slider-group">
-          <label>
-            Blur
-            <span id="val-blur">24px</span>
-          </label>
-          <input id="blurRange" type="range" min="6" max="40" step="1" value="24" />
-        </div>
-        <div class="slider-group">
-          <label>
-            Stripe Speed
-            <span id="val-speed">16s</span>
-          </label>
-          <input id="speedRange" type="range" min="6" max="32" step="2" value="16" />
-        </div>
-        <div class="slider-group">
-          <label>
-            Stripe Angle
-            <span id="val-angle">115°</span>
-          </label>
-          <input id="angleRange" type="range" min="80" max="150" step="1" value="115" />
+      <div>
+        <h2>Glass Controls</h2>
+        <div class="sliders">
+          <div class="slider-group">
+            <label>
+              Stripe Opacity
+              <span id="val-opacity">0.9</span>
+            </label>
+            <input
+              id="opacityRange"
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              value="0.9"
+            />
+          </div>
+          <div class="slider-group">
+            <label>
+              Blur
+              <span id="val-blur">24px</span>
+            </label>
+            <input
+              id="blurRange"
+              type="range"
+              min="6"
+              max="40"
+              step="1"
+              value="24"
+            />
+          </div>
+          <div class="slider-group">
+            <label>
+              Stripe Speed
+              <span id="val-speed">16s</span>
+            </label>
+            <input
+              id="speedRange"
+              type="range"
+              min="6"
+              max="32"
+              step="2"
+              value="16"
+            />
+          </div>
+          <div class="slider-group">
+            <label>
+              Stripe Angle
+              <span id="val-angle">115°</span>
+            </label>
+            <input
+              id="angleRange"
+              type="range"
+              min="80"
+              max="150"
+              step="1"
+              value="115"
+            />
+          </div>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- DEMO -->
-  <main class="demo-wrapper">
-    <div class="spacer"></div>
-
-    <section class="glass-stack">
-
-      <!-- Main Glass Card -->
-      <article class="glass" data-speed="0.35" data-variant="default">
-        <div class="glass-stripes"></div>
-        <div class="glass-dispersion"></div>
-        <div class="glass-noise"></div>
-
-        <div class="glass-inner">
-          <div class="badge">
-            <span class="badge-dot"></span>
-            <span>Glass+</span>
-          </div>
-          <h2 class="glass-title">
-            Striped glass that bends light as you scroll.
-          </h2>
-          <p class="glass-desc">
-            Glass+ brings striped, stripe-parallax glass to your designs.
-            It reacts to scroll position and supports variant-like animation
-            states such as hover and press.
-          </p>
-          <div class="chip-row">
-            <span class="chip">Scroll Transform</span>
-            <span class="chip">Variants Animation</span>
-            <span class="chip">Chromatic Fringe</span>
-          </div>
-          <div class="footer-row">
-            <button class="primary-btn" id="copySnippet">
-              Copy Glass CSS
-            </button>
-            <div class="note">
-              Tip: Drop this into any hero section and wire scroll / variants
-              just like you would in Framer.
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <!-- Secondary Glass Card -->
-      <article class="glass mini-glass" data-speed="0.18" data-variant="default">
-        <div class="glass-stripes"></div>
-        <div class="glass-dispersion"></div>
-        <div class="glass-noise"></div>
-
-        <div class="glass-inner">
-          <div class="badge">
-            <span class="badge-dot"></span>
-            <span>Preset · Stripey</span>
-          </div>
-          <h3 class="glass-title">Hero Overlay</h3>
-          <p class="glass-desc">
-            Use this as a floating panel over photography or gradients
-            for Stripe-style hero sections.
-          </p>
-          <div class="chip-row">
-            <span class="chip">Hero Glass</span>
-            <span class="chip">Blurred Background</span>
-          </div>
-        </div>
-      </article>
-
     </section>
 
-    <div class="spacer"></div>
-  </main>
+    <!-- DEMO -->
+    <main class="demo-wrapper">
+      <div class="spacer"></div>
 
-  <script>
-    // ===== Variant buttons =====
-    const variantButtons = document.querySelectorAll(".variant-btn");
-    const glassCards = document.querySelectorAll(".glass");
+      <section class="glass-stack">
+        <!-- Main Glass Card -->
+        <article class="glass" data-speed="0.35" data-variant="default">
+          <div class="glass-stripes"></div>
+          <div class="glass-dispersion"></div>
+          <div class="glass-noise"></div>
 
-    variantButtons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const target = btn.getAttribute("data-variant-target");
+          <div class="glass-inner">
+            <div class="badge">
+              <span class="badge-dot"></span>
+              <span>Glass+</span>
+            </div>
+            <h2 class="glass-title">
+              Striped glass that bends light as you scroll.
+            </h2>
+            <p class="glass-desc">
+              Glass+ brings striped, stripe-parallax glass to your designs. It
+              reacts to scroll position and supports variant-like animation
+              states such as hover and press.
+            </p>
+            <div class="chip-row">
+              <span class="chip">Scroll Transform</span>
+              <span class="chip">Variants Animation</span>
+              <span class="chip">Chromatic Fringe</span>
+            </div>
+            <div class="footer-row">
+              <button class="primary-btn" id="copySnippet">
+                Copy Glass CSS
+              </button>
+              <div class="note">
+                Tip: Drop this into any hero section and wire scroll / variants
+                just like you would in Framer.
+              </div>
+            </div>
+          </div>
+        </article>
 
-        variantButtons.forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
+        <!-- Secondary Glass Card -->
+        <article
+          class="glass mini-glass"
+          data-speed="0.18"
+          data-variant="default"
+        >
+          <div class="glass-stripes"></div>
+          <div class="glass-dispersion"></div>
+          <div class="glass-noise"></div>
 
-        glassCards.forEach(card => {
-          card.setAttribute("data-variant", target === "default" ? "default" : target);
+          <div class="glass-inner">
+            <div class="badge">
+              <span class="badge-dot"></span>
+              <span>Preset · Stripey</span>
+            </div>
+            <h3 class="glass-title">Hero Overlay</h3>
+            <p class="glass-desc">
+              Use this as a floating panel over photography or gradients for
+              Stripe-style hero sections.
+            </p>
+            <div class="chip-row">
+              <span class="chip">Hero Glass</span>
+              <span class="chip">Blurred Background</span>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <div class="spacer"></div>
+    </main>
+
+    <script>
+      // ===== Variant buttons =====
+      const variantButtons = document.querySelectorAll(".variant-btn");
+      const glassCards = document.querySelectorAll(".glass");
+
+      variantButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.getAttribute("data-variant-target");
+
+          variantButtons.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+
+          glassCards.forEach((card) => {
+            card.setAttribute(
+              "data-variant",
+              target === "default" ? "default" : target
+            );
+          });
         });
       });
-    });
 
-    // ===== Scroll Transform (parallax, tilt) =====
-    const handleScroll = () => {
-      const viewportH = window.innerHeight || document.documentElement.clientHeight;
+      // ===== Scroll Transform (parallax, tilt) =====
+      const handleScroll = () => {
+        const viewportH =
+          window.innerHeight || document.documentElement.clientHeight;
 
-      glassCards.forEach(card => {
-        const rect = card.getBoundingClientRect();
-        const speed = parseFloat(card.getAttribute("data-speed") || "0.3");
+        glassCards.forEach((card) => {
+          const rect = card.getBoundingClientRect();
+          const speed = parseFloat(card.getAttribute("data-speed") || "0.3");
 
-        // Compute progress where 0 is top offscreen, 1 is bottom offscreen
-        const center = rect.top + rect.height / 2;
-        const progress = (center / viewportH); // ~0 to >1
-        const normalized = Math.max(0, Math.min(1, progress)); // clamp
+          // Compute progress where 0 is top offscreen, 1 is bottom offscreen
+          const center = rect.top + rect.height / 2;
+          const progress = center / viewportH; // ~0 to >1
+          const normalized = Math.max(0, Math.min(1, progress)); // clamp
 
-        const translate = (0.5 - normalized) * 60 * speed; // px
-        const rotate = (0.5 - normalized) * 10 * speed;     // deg
+          const translate = (0.5 - normalized) * 60 * speed; // px
+          const rotate = (0.5 - normalized) * 10 * speed; // deg
 
-        card.style.setProperty("--scroll-translate", translate.toFixed(2) + "px");
-        card.style.setProperty("--scroll-rotate", rotate.toFixed(3) + "deg");
-      });
-    };
-
-    let ticking = false;
-    window.addEventListener("scroll", () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          handleScroll();
-          ticking = false;
+          card.style.setProperty(
+            "--scroll-translate",
+            translate.toFixed(2) + "px"
+          );
+          card.style.setProperty("--scroll-rotate", rotate.toFixed(3) + "deg");
         });
-        ticking = true;
-      }
-    });
-    window.addEventListener("resize", handleScroll);
-    handleScroll(); // initial
+      };
 
-    // ===== Controls: sliders -> CSS vars =====
-    const opacityRange = document.getElementById("opacityRange");
-    const blurRange = document.getElementById("blurRange");
-    const speedRange = document.getElementById("speedRange");
-    const angleRange = document.getElementById("angleRange");
+      let ticking = false;
+      window.addEventListener("scroll", () => {
+        if (!ticking) {
+          window.requestAnimationFrame(() => {
+            handleScroll();
+            ticking = false;
+          });
+          ticking = true;
+        }
+      });
+      window.addEventListener("resize", handleScroll);
+      handleScroll(); // initial
 
-    const valOpacity = document.getElementById("val-opacity");
-    const valBlur = document.getElementById("val-blur");
-    const valSpeed = document.getElementById("val-speed");
-    const valAngle = document.getElementById("val-angle");
+      // ===== Controls: sliders -> CSS vars =====
+      const opacityRange = document.getElementById("opacityRange");
+      const blurRange = document.getElementById("blurRange");
+      const speedRange = document.getElementById("speedRange");
+      const angleRange = document.getElementById("angleRange");
 
-    const setVar = (name, value) =>
-      document.documentElement.style.setProperty(name, value);
+      const valOpacity = document.getElementById("val-opacity");
+      const valBlur = document.getElementById("val-blur");
+      const valSpeed = document.getElementById("val-speed");
+      const valAngle = document.getElementById("val-angle");
 
-    opacityRange.addEventListener("input", e => {
-      const v = parseFloat(e.target.value).toFixed(2);
-      valOpacity.textContent = v;
-      setVar("--stripe-opacity", v);
-    });
+      const setVar = (name, value) =>
+        document.documentElement.style.setProperty(name, value);
 
-    blurRange.addEventListener("input", e => {
-      const v = e.target.value;
-      valBlur.textContent = v + "px";
-      setVar("--glass-blur", v + "px");
-    });
+      opacityRange.addEventListener("input", (e) => {
+        const v = parseFloat(e.target.value).toFixed(2);
+        valOpacity.textContent = v;
+        setVar("--stripe-opacity", v);
+      });
 
-    speedRange.addEventListener("input", e => {
-      const v = e.target.value;
-      valSpeed.textContent = v + "s";
-      setVar("--stripe-speed", v + "s");
-    });
+      blurRange.addEventListener("input", (e) => {
+        const v = e.target.value;
+        valBlur.textContent = v + "px";
+        setVar("--glass-blur", v + "px");
+      });
 
-    angleRange.addEventListener("input", e => {
-      const v = e.target.value;
-      valAngle.textContent = v + "°";
-      setVar("--stripe-angle", v + "deg");
-    });
+      speedRange.addEventListener("input", (e) => {
+        const v = e.target.value;
+        valSpeed.textContent = v + "s";
+        setVar("--stripe-speed", v + "s");
+      });
 
-    // ===== Copy some core CSS to clipboard =====
-    const copyBtn = document.getElementById("copySnippet");
-    const cssSnippet = `/* Glass+ core styles (drop into your project) */
+      angleRange.addEventListener("input", (e) => {
+        const v = e.target.value;
+        valAngle.textContent = v + "°";
+        setVar("--stripe-angle", v + "deg");
+      });
+
+      // ===== Copy some core CSS to clipboard =====
+      const copyBtn = document.getElementById("copySnippet");
+      const cssSnippet = `/* Glass+ core styles (drop into your project) */
 .glass {
   position: relative;
   border-radius: 26px;
@@ -694,18 +756,18 @@
   100% { transform: translate3d(80px, 40px, 0); }
 }`;
 
-    copyBtn.addEventListener("click", async () => {
-      try {
-        await navigator.clipboard.writeText(cssSnippet);
-        const old = copyBtn.textContent;
-        copyBtn.textContent = "Copied ✓";
-        setTimeout(() => (copyBtn.textContent = old), 1400);
-      } catch (err) {
-        console.error(err);
-        copyBtn.textContent = "Copy failed";
-        setTimeout(() => (copyBtn.textContent = "Copy Glass CSS"), 1400);
-      }
-    });
-  </script>
-</body>
+      copyBtn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(cssSnippet);
+          const old = copyBtn.textContent;
+          copyBtn.textContent = "Copied ✓";
+          setTimeout(() => (copyBtn.textContent = old), 1400);
+        } catch (err) {
+          console.error(err);
+          copyBtn.textContent = "Copy failed";
+          setTimeout(() => (copyBtn.textContent = "Copy Glass CSS"), 1400);
+        }
+      });
+    </script>
+  </body>
 </html>

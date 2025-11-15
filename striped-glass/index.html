@@ -89,8 +89,22 @@
       .blob.one { background: linear-gradient(180deg,#5b66ff,#3b82f6); top:-120px; right:-120px; animation:blob1 22s ease-in-out infinite alternate }
       .blob.two { background: linear-gradient(180deg,#ff6fa0,#ffba7a); bottom:-120px; left:-120px; animation:blob2 24s ease-in-out infinite alternate }
 
-      @keyframes blob1{0%{transform:translate(0,0) scale(1)}100%{transform:translate(-90px,72px) scale(1.12)}}
-      @keyframes blob2{0%{transform:translate(0,0) scale(1.05)}100%{transform:translate(98px,-80px) scale(0.95)}}
+      @keyframes blob1 {
+        0% {
+          transform: translate(0, 0) scale(1);
+        }
+        100% {
+          transform: translate(-60px, 40px) scale(1.15);
+        }
+      }
+      @keyframes blob2 {
+        0% {
+          transform: translate(0, 0) scale(1.1);
+        }
+        100% {
+          transform: translate(70px, -40px) scale(0.95);
+        }
+      }
 
       /* TV-style glass card */
       .glass {

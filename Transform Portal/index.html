@@ -1,230 +1,231 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Transform Portal — Three.js</title>
-  <style>
-    body,html{
-      margin:0;
-      padding:0;
-      overflow:hidden;
-      background:#0a0a0c;
-    }
-    canvas{display:block;}
-  </style>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Transform Portal — Three.js</title>
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: #0a0a0c;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="c"></canvas>
 
-<canvas id="c"></canvas>
+    <!-- ---------------- SHADERS ---------------- -->
 
-<!-- ---------------- SHADERS ---------------- -->
+    <script id="vs" type="x-shader/x-vertex">
+      varying vec2 vUv;
 
-<script id="vs" type="x-shader/x-vertex">
-varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        vec4 worldPos = modelMatrix * vec4(position, 1.0);
+        vec4 mvPosition = viewMatrix * worldPos;
+        gl_Position = projectionMatrix * mvPosition;
+      }
+    </script>
 
-void main() {
-  vUv = uv;
-  vec4 worldPos = modelMatrix * vec4(position, 1.0);
-  vec4 mvPosition = viewMatrix * worldPos;
-  gl_Position = projectionMatrix * mvPosition;
-}
-</script>
+    <script id="fs" type="x-shader/x-fragment">
+      uniform vec2 winResolution;
+      uniform sampler2D uTexture;
 
-<script id="fs" type="x-shader/x-fragment">
-uniform vec2 winResolution;
-uniform sampler2D uTexture;
+      void main() {
+        vec2 uv = gl_FragCoord.xy / winResolution.xy;
+        vec4 color = texture2D(uTexture, uv);
+        gl_FragColor = color;
+      }
+    </script>
 
-void main() {
-  vec2 uv = gl_FragCoord.xy / winResolution.xy;
-  vec4 color = texture2D(uTexture, uv);
-  gl_FragColor = color;
-}
-</script>
+    <!-- ------------------------------------------------------------- -->
+    <script type="module">
+      import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
+      import { OrbitControls } from "https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js";
 
-<!-- ------------------------------------------------------------- -->
-<script type="module">
-import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
-import { OrbitControls } from "https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js";
-
-/* ----------------------------------------------------------
+      /* ----------------------------------------------------------
     Basic Setup
 ---------------------------------------------------------- */
-const canvas = document.getElementById("c");
-const renderer = new THREE.WebGLRenderer({
-  canvas,
-  antialias: true
-});
+      const canvas = document.getElementById("c");
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: true,
+      });
 
-const dpr = Math.min(window.devicePixelRatio, 2);
-renderer.setPixelRatio(dpr);
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x0a0a0c, 1);
+      const dpr = Math.min(window.devicePixelRatio, 2);
+      renderer.setPixelRatio(dpr);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setClearColor(0x0a0a0c, 1);
 
-const scene = new THREE.Scene();
+      const scene = new THREE.Scene();
 
-const camera = new THREE.PerspectiveCamera(
-  35,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  100
-);
-camera.position.set(0,0,9);
-scene.add(camera);
+      const camera = new THREE.PerspectiveCamera(
+        35,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        100
+      );
+      camera.position.set(0, 0, 9);
+      scene.add(camera);
 
-/* ----------------------------------------------------------
+      /* ----------------------------------------------------------
     Controls
 ---------------------------------------------------------- */
-const controls = new OrbitControls(camera, canvas);
-controls.enableDamping = true;
-controls.autoRotate = true;
-controls.autoRotateSpeed = 3;
+      const controls = new OrbitControls(camera, canvas);
+      controls.enableDamping = true;
+      controls.autoRotate = true;
+      controls.autoRotateSpeed = 3;
 
-/* ----------------------------------------------------------
+      /* ----------------------------------------------------------
     Lights
 ---------------------------------------------------------- */
-scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+      scene.add(new THREE.AmbientLight(0xffffff, 0.4));
 
-const light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(10,10,10);
-scene.add(light);
+      const light = new THREE.DirectionalLight(0xffffff, 1);
+      light.position.set(10, 10, 10);
+      scene.add(light);
 
-/* ----------------------------------------------------------
+      /* ----------------------------------------------------------
     Objects to Render into Portals
 ---------------------------------------------------------- */
-const materialMain = new THREE.MeshPhysicalMaterial({
-  color: 0x73B9ED,
-  roughness: 0,
-  clearcoat: 1,
-  clearcoatRoughness: 0
-});
+      const materialMain = new THREE.MeshPhysicalMaterial({
+        color: 0x73b9ed,
+        roughness: 0,
+        clearcoat: 1,
+        clearcoatRoughness: 0,
+      });
 
-const box = new THREE.Mesh(
-  new THREE.BoxGeometry(1.5,1.5,1.5),
-  materialMain.clone()
-);
-scene.add(box);
+      const box = new THREE.Mesh(
+        new THREE.BoxGeometry(1.5, 1.5, 1.5),
+        materialMain.clone()
+      );
+      scene.add(box);
 
-const knot = new THREE.Mesh(
-  new THREE.TorusKnotGeometry(0.75,0.3,100,16),
-  materialMain.clone()
-);
-scene.add(knot);
+      const knot = new THREE.Mesh(
+        new THREE.TorusKnotGeometry(0.75, 0.3, 100, 16),
+        materialMain.clone()
+      );
+      scene.add(knot);
 
-/* ----------------------------------------------------------
+      /* ----------------------------------------------------------
     Static Ring
 ---------------------------------------------------------- */
-const ring = new THREE.Mesh(
-  new THREE.TorusGeometry(3,0.2,16,100),
-  new THREE.MeshStandardMaterial({color:"#F9F9F9"})
-);
-scene.add(ring);
+      const ring = new THREE.Mesh(
+        new THREE.TorusGeometry(3, 0.2, 16, 100),
+        new THREE.MeshStandardMaterial({ color: "#F9F9F9" })
+      );
+      scene.add(ring);
 
-/* ----------------------------------------------------------
+      /* ----------------------------------------------------------
     Render Targets (FBOs)
 ---------------------------------------------------------- */
-const rt1 = new THREE.WebGLRenderTarget(
-  window.innerWidth * dpr,
-  window.innerHeight * dpr
-);
-const rt2 = new THREE.WebGLRenderTarget(
-  window.innerWidth * dpr,
-  window.innerHeight * dpr
-);
+      const rt1 = new THREE.WebGLRenderTarget(
+        window.innerWidth * dpr,
+        window.innerHeight * dpr
+      );
+      const rt2 = new THREE.WebGLRenderTarget(
+        window.innerWidth * dpr,
+        window.innerHeight * dpr
+      );
 
-const winRes = new THREE.Vector2(
-  window.innerWidth,
-  window.innerHeight
-).multiplyScalar(dpr);
+      const winRes = new THREE.Vector2(
+        window.innerWidth,
+        window.innerHeight
+      ).multiplyScalar(dpr);
 
-/* ----------------------------------------------------------
+      /* ----------------------------------------------------------
     Portals (Cylinders)
 ---------------------------------------------------------- */
-const vs = document.getElementById("vs").textContent;
-const fs = document.getElementById("fs").textContent;
+      const vs = document.getElementById("vs").textContent;
+      const fs = document.getElementById("fs").textContent;
 
-function portalMaterial(texture) {
-  return new THREE.ShaderMaterial({
-    uniforms: {
-      uTexture: { value: texture },
-      winResolution: { value: winRes }
-    },
-    vertexShader: vs,
-    fragmentShader: fs,
-    side: THREE.DoubleSide
-  });
-}
+      function portalMaterial(texture) {
+        return new THREE.ShaderMaterial({
+          uniforms: {
+            uTexture: { value: texture },
+            winResolution: { value: winRes },
+          },
+          vertexShader: vs,
+          fragmentShader: fs,
+          side: THREE.DoubleSide,
+        });
+      }
 
-const cylGeo = new THREE.CylinderGeometry(3,3,8,32,1,true);
+      const cylGeo = new THREE.CylinderGeometry(3, 3, 8, 32, 1, true);
 
-const cyl1 = new THREE.Mesh(cylGeo, portalMaterial(rt1.texture));
-cyl1.rotation.x = -Math.PI/2;
-cyl1.position.z = -4;
-scene.add(cyl1);
+      const cyl1 = new THREE.Mesh(cylGeo, portalMaterial(rt1.texture));
+      cyl1.rotation.x = -Math.PI / 2;
+      cyl1.position.z = -4;
+      scene.add(cyl1);
 
-const cyl2 = new THREE.Mesh(cylGeo, portalMaterial(rt2.texture));
-cyl2.rotation.x = -Math.PI/2;
-cyl2.position.z = 4;
-scene.add(cyl2);
+      const cyl2 = new THREE.Mesh(cylGeo, portalMaterial(rt2.texture));
+      cyl2.rotation.x = -Math.PI / 2;
+      cyl2.position.z = 4;
+      scene.add(cyl2);
 
-/* ----------------------------------------------------------
+      /* ----------------------------------------------------------
     Animation Loop
 ---------------------------------------------------------- */
-const clock = new THREE.Clock();
+      const clock = new THREE.Clock();
 
-function animate(){
-  requestAnimationFrame(animate);
+      function animate() {
+        requestAnimationFrame(animate);
 
-  const t = clock.getElapsedTime();
-  const newZ = Math.sin(t) * 3.5;
+        const t = clock.getElapsedTime();
+        const newZ = Math.sin(t) * 3.5;
 
-  // Motion
-  box.position.z = knot.position.z = newZ;
-  box.rotation.set(Math.cos(t/2),Math.sin(t/2),Math.sin(t/2));
-  knot.rotation.copy(box.rotation);
+        // Motion
+        box.position.z = knot.position.z = newZ;
+        box.rotation.set(Math.cos(t / 2), Math.sin(t / 2), Math.sin(t / 2));
+        knot.rotation.copy(box.rotation);
 
-  ring.rotation.z = t * 0.1;
+        ring.rotation.z = t * 0.1;
 
-  controls.update();
+        controls.update();
 
-  // Pass 1: Box only
-  knot.visible = false;
-  box.visible = true;
-  renderer.setRenderTarget(rt1);
-  renderer.render(scene,camera);
+        // Pass 1: Box only
+        knot.visible = false;
+        box.visible = true;
+        renderer.setRenderTarget(rt1);
+        renderer.render(scene, camera);
 
-  // Pass 2: Knot only
-  knot.visible = true;
-  box.visible = false;
-  renderer.setRenderTarget(rt2);
-  renderer.render(scene,camera);
+        // Pass 2: Knot only
+        knot.visible = true;
+        box.visible = false;
+        renderer.setRenderTarget(rt2);
+        renderer.render(scene, camera);
 
-  // Final render
-  knot.visible = true;
-  box.visible = true;
-  renderer.setRenderTarget(null);
-  renderer.render(scene,camera);
-}
+        // Final render
+        knot.visible = true;
+        box.visible = true;
+        renderer.setRenderTarget(null);
+        renderer.render(scene, camera);
+      }
 
-animate();
+      animate();
 
-/* ----------------------------------------------------------
+      /* ----------------------------------------------------------
     Resize
 ---------------------------------------------------------- */
-window.addEventListener("resize", () => {
-  const w = window.innerWidth;
-  const h = window.innerHeight;
+      window.addEventListener("resize", () => {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
 
-  renderer.setSize(w,h);
-  camera.aspect = w/h;
-  camera.updateProjectionMatrix();
+        renderer.setSize(w, h);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
 
-  const dp = Math.min(window.devicePixelRatio, 2);
-  winRes.set(w,h).multiplyScalar(dp);
+        const dp = Math.min(window.devicePixelRatio, 2);
+        winRes.set(w, h).multiplyScalar(dp);
 
-  rt1.setSize(w*dp, h*dp);
-  rt2.setSize(w*dp, h*dp);
-});
-</script>
-
-</body>
+        rt1.setSize(w * dp, h * dp);
+        rt2.setSize(w * dp, h * dp);
+      });
+    </script>
+  </body>
 </html>

@@ -1,47 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Transform Portal — Soft Look</title>
+  <meta charset="UTF-8" />
+  <title>Ring Morph Animation</title>
 
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
-  }
-}
-</script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+      }
+    }
+  </script>
 
-<style>
-  body, html { margin: 0; padding: 0; overflow: hidden; }
-  canvas { display: block; }
-</style>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #e8f1ff;
+    }
+    canvas { display: block; }
+  </style>
 </head>
+
 <body>
-
 <canvas id="c"></canvas>
-
-<!-- Vertex Shader -->
-<script id="vs" type="x-shader/x-vertex">
-varying vec2 vUv;
-
-void main() {
-  vUv = uv;
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-}
-</script>
-
-<!-- Fragment Shader -->
-<script id="fs" type="x-shader/x-fragment">
-uniform sampler2D uTexture;
-uniform vec2 winResolution;
-
-void main() {
-  vec2 uv = gl_FragCoord.xy / winResolution.xy;
-  vec4 color = texture2D(uTexture, uv);
-  gl_FragColor = color;
-}
-</script>
 
 <script type="module">
 import * as THREE from "three";
@@ -51,10 +34,7 @@ import { OrbitControls } from "https://unpkg.com/three@0.160.0/examples/jsm/cont
    Renderer
 ---------------------------------------------------------- */
 const canvas = document.getElementById("c");
-const renderer = new THREE.WebGLRenderer({
-  canvas,
-  antialias: true
-});
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.setSize(innerWidth, innerHeight);
 
@@ -62,30 +42,20 @@ renderer.setSize(innerWidth, innerHeight);
    Scene + Camera
 ---------------------------------------------------------- */
 const scene = new THREE.Scene();
+scene.background = new THREE.Color("#e6f0ff");
+scene.fog = new THREE.Fog("#e6f0ff", 12, 26);
 
-// soft sky background
-const sky = new THREE.Color("#e9f2ff");
-scene.background = sky;
-
-// fog soften horizon
-scene.fog = new THREE.Fog("#d8e6ff", 12, 26);
-
-const camera = new THREE.PerspectiveCamera(40, innerWidth/innerHeight, 0.1, 100);
+const camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.1, 100);
 camera.position.set(0, 0, 9);
 
 /* ----------------------------------------------------------
-   Lighting (soft pastel)
+   Lighting
 ---------------------------------------------------------- */
-const amb = new THREE.AmbientLight(0xffffff, 1.1);
-scene.add(amb);
+scene.add(new THREE.HemisphereLight(0xd7e8ff, 0xffffff, 1));
 
-const sun = new THREE.DirectionalLight(0xffffff, 1.3);
+const sun = new THREE.DirectionalLight(0xffffff, 1.1);
 sun.position.set(5, 7, 10);
-sun.castShadow = false;
 scene.add(sun);
-
-const softBounce = new THREE.HemisphereLight(0xcfe2ff, 0xffffff, 0.45);
-scene.add(softBounce);
 
 /* ----------------------------------------------------------
    Controls
@@ -93,114 +63,81 @@ scene.add(softBounce);
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
 controls.autoRotate = true;
-controls.autoRotateSpeed = 1.5;
+controls.autoRotateSpeed = 1.2;
 
 /* ----------------------------------------------------------
    Materials
 ---------------------------------------------------------- */
-const mainMat = new THREE.MeshPhysicalMaterial({
-  color: 0x90c7ff,
-  roughness: 0.15,
-  metalness: 0.1,
+const objectMat = new THREE.MeshPhysicalMaterial({
+  color: 0x99c5ff,
+  roughness: 0.18,
+  metalness: 0,
   clearcoat: 1,
   clearcoatRoughness: 0,
-  transmission: 0.2,
-  thickness: 2
+  transmission: 0.1,
+  thickness: 1
 });
 
 /* ----------------------------------------------------------
-   Objects
+   Ring (Single Clean Ring)
 ---------------------------------------------------------- */
-const box = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), mainMat.clone());
-scene.add(box);
-
-const knot = new THREE.Mesh(new THREE.TorusKnotGeometry(0.75,0.3,120,18), mainMat.clone());
-scene.add(knot);
-
-// Ring (needs subsurface-looking softness)
-const ringMat = new THREE.MeshPhysicalMaterial({
-  color: 0xf7ecff,
-  roughness: 0.6,
-  metalness: 0.0,
-  transmission: 0.85,
-  thickness: 1.2,
-  clearcoat: 1,
-  clearcoatRoughness: 0.4
-});
-
-const ring = new THREE.Mesh(new THREE.TorusGeometry(3,0.18,32,120), ringMat);
+const ring = new THREE.Mesh(
+  new THREE.TorusGeometry(3, 0.18, 32, 120),
+  new THREE.MeshPhysicalMaterial({
+    color: 0xf7f1ff,
+    roughness: 0.55,
+    metalness: 0,
+    transmission: 0.6,
+    thickness: 1,
+    clearcoat: 1,
+    clearcoatRoughness: 0.35
+  })
+);
 scene.add(ring);
 
 /* ----------------------------------------------------------
-   Render targets for portals
+   Object: Box + Knot (We swap visibility)
 ---------------------------------------------------------- */
-const DPR = Math.min(devicePixelRatio, 2);
-const winRes = new THREE.Vector2(innerWidth, innerHeight).multiplyScalar(DPR);
+const box = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), objectMat.clone());
+const knot = new THREE.Mesh(new THREE.TorusKnotGeometry(0.65, 0.27, 120, 22), objectMat.clone());
 
-const rt1 = new THREE.WebGLRenderTarget(innerWidth*DPR, innerHeight*DPR);
-const rt2 = new THREE.WebGLRenderTarget(innerWidth*DPR, innerHeight*DPR);
+scene.add(box);
+scene.add(knot);
 
-const vs = document.getElementById("vs").textContent;
-const fs = document.getElementById("fs").textContent;
-
-function portalMat(tex) {
-  return new THREE.ShaderMaterial({
-    uniforms: {
-      uTexture: { value: tex },
-      winResolution: { value: winRes }
-    },
-    vertexShader: vs,
-    fragmentShader: fs,
-    side: THREE.DoubleSide,
-    transparent: true
-  });
-}
-
-const cylGeo = new THREE.CylinderGeometry(3,3,8,32,1,true);
-
-const cyl1 = new THREE.Mesh(cylGeo, portalMat(rt1.texture));
-cyl1.rotation.x = -Math.PI/2;
-cyl1.position.z = -4;
-scene.add(cyl1);
-
-const cyl2 = new THREE.Mesh(cylGeo, portalMat(rt2.texture));
-cyl2.rotation.x = -Math.PI/2;
-cyl2.position.z = 4;
-scene.add(cyl2);
+knot.visible = false;
 
 /* ----------------------------------------------------------
-   Animation loop
+   Animation (Move object through the ring)
 ---------------------------------------------------------- */
 const clock = new THREE.Clock();
 
-function animate(){
+function animate() {
   requestAnimationFrame(animate);
+
   const t = clock.getElapsedTime();
 
-  const Z = Math.sin(t) * 3.5;
-  box.position.z = knot.position.z = Z;
+  // Move object back & forth
+  const z = Math.sin(t) * 3.5;
+  box.position.z = knot.position.z = z;
 
-  const rot = Math.sin(t/2);
-  box.rotation.set(rot*0.6, rot, rot);
+  // Swap object when crossing the center of ring
+  if (Math.sin(t) > 0) {
+    box.visible = true;
+    knot.visible = false;
+  } else {
+    box.visible = false;
+    knot.visible = true;
+  }
+
+  // Rotate object
+  const r = t * 0.6;
+  box.rotation.set(r, r * 1.3, r * 0.7);
   knot.rotation.copy(box.rotation);
 
-  ring.rotation.z = t * 0.18;
+  // Rotate ring slowly
+  ring.rotation.z = t * 0.12;
 
   controls.update();
-
-  // pass 1: box only
-  knot.visible = false; box.visible = true;
-  renderer.setRenderTarget(rt1);
-  renderer.render(scene, camera);
-
-  // pass 2: knot only
-  knot.visible = true; box.visible = false;
-  renderer.setRenderTarget(rt2);
-  renderer.render(scene, camera);
-
-  // final
-  box.visible = true;
-  renderer.setRenderTarget(null);
   renderer.render(scene, camera);
 }
 
@@ -211,14 +148,8 @@ animate();
 ---------------------------------------------------------- */
 window.addEventListener("resize", () => {
   renderer.setSize(innerWidth, innerHeight);
-  camera.aspect = innerWidth/innerHeight;
+  camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
-
-  const dp = Math.min(devicePixelRatio, 2);
-  winRes.set(innerWidth, innerHeight).multiplyScalar(dp);
-
-  rt1.setSize(innerWidth*dp, innerHeight*dp);
-  rt2.setSize(innerWidth*dp, innerHeight*dp);
 });
 </script>
 

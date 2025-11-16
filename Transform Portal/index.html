@@ -1,169 +1,287 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Ring Switch Animation</title>
+<head>
+  <meta charset="UTF-8" />
+  <title>Portal Ring — Box / Knot Worlds</title>
 
-    <script type="importmap">
-      {
-        "imports": {
-          "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
-        }
-      }
-    </script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #0f172a;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+<canvas id="scene-canvas"></canvas>
 
-    <style>
-      body,
-      html {
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-        background: #dce7ff;
-      }
-      canvas {
-        display: block;
-      }
-    </style>
-  </head>
+<!-- Import map to resolve bare "three" specifier used by example modules -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+  }
+}
+</script>
 
-  <body>
-    <canvas id="c"></canvas>
+<!-- Portal vertex shader -->
+<script id="portal-vertex" type="x-shader/x-vertex">
+  varying vec3 vWorldPos;
+  varying vec3 vWorldNormal;
 
-    <script type="module">
-      import * as THREE from "three";
-      import { OrbitControls } from "https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js";
+  void main() {
+    vec4 worldPos = modelMatrix * vec4(position, 1.0);
+    vWorldPos = worldPos.xyz;
+    vWorldNormal = normalize(mat3(modelMatrix) * normal);
+    gl_Position = projectionMatrix * viewMatrix * worldPos;
+  }
+</script>
 
-      /* ----------------------------------------------------------
-   Renderer
----------------------------------------------------------- */
-      const canvas = document.getElementById("c");
-      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-      renderer.setSize(innerWidth, innerHeight);
+<!-- Portal fragment shader -->
+<script id="portal-fragment" type="x-shader/x-fragment">
+  uniform sampler2D uTexFront;   // box world
+  uniform sampler2D uTexBack;    // knot world
+  uniform vec2 uResolution;
+  uniform vec3 uCameraPosition;
 
-      /* ----------------------------------------------------------
-   Scene + Camera
----------------------------------------------------------- */
-      const scene = new THREE.Scene();
-      scene.background = new THREE.Color("#e6f0ff");
-      scene.fog = new THREE.Fog("#e6f0ff", 12, 26);
+  varying vec3 vWorldPos;
+  varying vec3 vWorldNormal;
 
-      const camera = new THREE.PerspectiveCamera(
-        40,
-        innerWidth / innerHeight,
-        0.1,
-        100
-      );
-      camera.position.set(0, 0, 9);
+  void main() {
+    // Direction from fragment to camera
+    vec3 viewDir = normalize(uCameraPosition - vWorldPos);
 
-      /* ----------------------------------------------------------
-   Lighting
----------------------------------------------------------- */
-      scene.add(new THREE.HemisphereLight(0xcddcff, 0xffffff, 1));
+    // Determine which side of the portal we are on
+    float side = sign(dot(viewDir, normalize(vWorldNormal)));
 
-      const sun = new THREE.DirectionalLight(0xffffff, 1.1);
-      sun.position.set(5, 7, 10);
-      scene.add(sun);
+    // Screen-space UV for sampling the render targets
+    vec2 uv = gl_FragCoord.xy / uResolution;
 
-      /* ----------------------------------------------------------
-   Controls
----------------------------------------------------------- */
-      const controls = new OrbitControls(camera, canvas);
-      controls.enableDamping = true;
-      controls.autoRotate = true;
-      controls.autoRotateSpeed = 1.2;
+    vec4 frontColor = texture2D(uTexFront, uv);
+    vec4 backColor  = texture2D(uTexBack,  uv);
 
-      /* ----------------------------------------------------------
-   Material (Dark Blue)
----------------------------------------------------------- */
-      const objectMat = new THREE.MeshPhysicalMaterial({
-        color: 0x1e3a8a, // deep dark blue
-        roughness: 0.18,
-        metalness: 0.1,
-        clearcoat: 1,
-        clearcoatRoughness: 0.1,
-        transmission: 0.05,
-        thickness: 1,
-      });
+    // If side > 0 → see front (box), else back (knot)
+    vec4 color = (side > 0.0) ? frontColor : backColor;
 
-      /* ----------------------------------------------------------
-   Ring
----------------------------------------------------------- */
-      const ring = new THREE.Mesh(
-        new THREE.TorusGeometry(3, 0.18, 40, 150),
-        new THREE.MeshPhysicalMaterial({
-          color: 0xffffff,
-          roughness: 0.45,
-          transmission: 0.55,
-          thickness: 1,
-          clearcoat: 1,
-          clearcoatRoughness: 0.3,
-        })
-      );
-      scene.add(ring);
+    gl_FragColor = color;
+  }
+</script>
 
-      /* ----------------------------------------------------------
-   Two Objects (we swap visibility)
----------------------------------------------------------- */
-      const box = new THREE.Mesh(
-        new THREE.BoxGeometry(1.2, 1.2, 1.2),
-        objectMat
-      );
-      const knot = new THREE.Mesh(
-        new THREE.TorusKnotGeometry(0.65, 0.27, 150, 22),
-        objectMat
-      );
+<script type="module">
+  import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
+  import { OrbitControls } from "https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js";
 
-      scene.add(box);
-      scene.add(knot);
+  const canvas = document.getElementById("scene-canvas");
 
-      knot.visible = false;
+  // -------------------------------------------------------------------
+  // Renderer
+  // -------------------------------------------------------------------
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  const DPR = Math.min(window.devicePixelRatio, 2);
+  renderer.setPixelRatio(DPR);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.0;
 
-      /* ----------------------------------------------------------
-   Animation (Instant Swap)
----------------------------------------------------------- */
-      const clock = new THREE.Clock();
+  // -------------------------------------------------------------------
+  // Main scene + two "world" scenes (front = box, back = knot)
+  // -------------------------------------------------------------------
+  const mainScene  = new THREE.Scene();
+  const frontScene = new THREE.Scene();
+  const backScene  = new THREE.Scene();
 
-      function animate() {
-        requestAnimationFrame(animate);
+  mainScene.background  = new THREE.Color("#020617");
+  frontScene.background = new THREE.Color("#020617");
+  backScene.background  = new THREE.Color("#020617");
 
-        const t = clock.getElapsedTime();
+  // -------------------------------------------------------------------
+  // Camera & controls
+  // -------------------------------------------------------------------
+  const camera = new THREE.PerspectiveCamera(
+    40,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    100
+  );
+  camera.position.set(0, 0, 9);
 
-        // Move object through the ring
-        const z = Math.sin(t) * 3.5;
-        box.position.z = knot.position.z = z;
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.autoRotate = true;
+  controls.autoRotateSpeed = 1.2;
 
-        // Perfect instant swap at center (no morph, no fade)
-        if (z > 0) {
-          box.visible = true;
-          knot.visible = false;
-        } else {
-          box.visible = false;
-          knot.visible = true;
-        }
+  // -------------------------------------------------------------------
+  // Lights (add similar lights to all scenes)
+  // -------------------------------------------------------------------
+  function addLights(scene) {
+    const hemi = new THREE.HemisphereLight(0x1f2937, 0x020617, 1.0);
+    scene.add(hemi);
 
-        // rotation match
-        const r = t * 0.6;
-        box.rotation.set(r, r * 1.3, r * 0.7);
-        knot.rotation.copy(box.rotation);
+    const key = new THREE.DirectionalLight(0xffffff, 1.1);
+    key.position.set(5, 8, 10);
+    scene.add(key);
 
-        // rotate ring
-        ring.rotation.z = t * 0.15;
+    const rim = new THREE.PointLight(0x1d4ed8, 0.7, 30);
+    rim.position.set(-6, -4, -8);
+    scene.add(rim);
+  }
 
-        controls.update();
-        renderer.render(scene, camera);
-      }
+  addLights(mainScene);
+  addLights(frontScene);
+  addLights(backScene);
 
-      animate();
+  // -------------------------------------------------------------------
+  // Materials
+  // -------------------------------------------------------------------
+  const darkBlueMat = new THREE.MeshPhysicalMaterial({
+    color: 0x1e3a8a,    // dark blue
+    roughness: 0.15,
+    metalness: 0.1,
+    clearcoat: 1,
+    clearcoatRoughness: 0.05,
+    transmission: 0.04,
+    thickness: 0.9
+  });
 
-      /* ----------------------------------------------------------
-   Resize
----------------------------------------------------------- */
-      window.addEventListener("resize", () => {
-        renderer.setSize(innerWidth, innerHeight);
-        camera.aspect = innerWidth / innerHeight;
-        camera.updateProjectionMatrix();
-      });
-    </script>
-  </body>
+  // -------------------------------------------------------------------
+  // Box world (front)
+  // -------------------------------------------------------------------
+  const box = new THREE.Mesh(
+    new THREE.BoxGeometry(1.4, 1.4, 1.4),
+    darkBlueMat.clone()
+  );
+  frontScene.add(box);
+
+  // -------------------------------------------------------------------
+  // Knot world (back)
+  // -------------------------------------------------------------------
+  const knot = new THREE.Mesh(
+    new THREE.TorusKnotGeometry(0.8, 0.32, 160, 32),
+    darkBlueMat.clone()
+  );
+  backScene.add(knot);
+
+  // -------------------------------------------------------------------
+  // Ring in main scene
+  // -------------------------------------------------------------------
+  const ring = new THREE.Mesh(
+    new THREE.TorusGeometry(3, 0.22, 40, 160),
+    new THREE.MeshPhysicalMaterial({
+      color: 0xf9fafb,
+      roughness: 0.35,
+      metalness: 0.0,
+      clearcoat: 1,
+      clearcoatRoughness: 0.2,
+      transmission: 0.4,
+      thickness: 0.8
+    })
+  );
+  mainScene.add(ring);
+
+  // -------------------------------------------------------------------
+  // Portal surface (flat disc) inside the ring
+  // -------------------------------------------------------------------
+  const width  = window.innerWidth;
+  const height = window.innerHeight;
+
+  const resolution = new THREE.Vector2(width * DPR, height * DPR);
+
+  const rtFront = new THREE.WebGLRenderTarget(width * DPR, height * DPR, {
+    depthBuffer: true
+  });
+  const rtBack = new THREE.WebGLRenderTarget(width * DPR, height * DPR, {
+    depthBuffer: true
+  });
+
+  const portalVertexShader = document.getElementById("portal-vertex").textContent;
+  const portalFragmentShader = document.getElementById("portal-fragment").textContent;
+
+  const portalMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      uTexFront:      { value: rtFront.texture },
+      uTexBack:       { value: rtBack.texture },
+      uResolution:    { value: resolution },
+      uCameraPosition:{ value: camera.position.clone() }
+    },
+    vertexShader: portalVertexShader,
+    fragmentShader: portalFragmentShader,
+    transparent: true,
+    side: THREE.DoubleSide
+  });
+
+  const portalGeo = new THREE.CircleGeometry(2.95, 128);
+  const portalMesh = new THREE.Mesh(portalGeo, portalMaterial);
+  // Place the disc exactly in the ring plane
+  portalMesh.position.set(0, 0, 0);
+  mainScene.add(portalMesh);
+
+  // -------------------------------------------------------------------
+  // Animation
+  // -------------------------------------------------------------------
+  const clock = new THREE.Clock();
+
+  function animate() {
+    requestAnimationFrame(animate);
+
+    const t = clock.getElapsedTime();
+
+    // Move the object in both worlds identically
+    const z = Math.sin(t) * 3.5;
+    box.position.set(0, 0, z);
+    knot.position.set(0, 0, z);
+
+    // Rotate objects
+    const r = t * 0.6;
+    box.rotation.set(r, r * 1.3, r * 0.7);
+    knot.rotation.copy(box.rotation);
+
+    // Rotate ring slowly
+    ring.rotation.z = t * 0.18;
+
+    controls.update();
+
+    // 1) Render BOX world into rtFront
+    renderer.setRenderTarget(rtFront);
+    renderer.render(frontScene, camera);
+
+    // 2) Render KNOT world into rtBack
+    renderer.setRenderTarget(rtBack);
+    renderer.render(backScene, camera);
+
+    // Update camera position uniform for side detection
+    portalMaterial.uniforms.uCameraPosition.value.copy(camera.position);
+
+    // 3) Render MAIN scene with portal using both textures
+    renderer.setRenderTarget(null);
+    renderer.render(mainScene, camera);
+  }
+
+  animate();
+
+  // -------------------------------------------------------------------
+  // Resize
+  // -------------------------------------------------------------------
+  window.addEventListener("resize", () => {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+
+    renderer.setSize(w, h);
+
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+
+    const newDPR = Math.min(window.devicePixelRatio, 2);
+    renderer.setPixelRatio(newDPR);
+
+    resolution.set(w * newDPR, h * newDPR);
+    rtFront.setSize(w * newDPR, h * newDPR);
+    rtBack.setSize(w * newDPR, h * newDPR);
+  });
+</script>
+</body>
 </html>

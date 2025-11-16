@@ -3,6 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <title>Transform Portal — Three.js</title>
+    <!-- Import map to resolve bare specifier "three" to the full module URL -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+        }
+      }
+    </script>
     <style>
       body,
       html {

@@ -220,6 +220,17 @@
   portalMesh.position.set(0, 0, 0);
   mainScene.add(portalMesh);
 
+  // --- Add: clones for objects so they can physically appear in main scene ---
+  const boxClone = box.clone();
+  boxClone.material = box.material.clone(); // separate material instance
+  boxClone.visible = false;
+  mainScene.add(boxClone);
+
+  const knotClone = knot.clone();
+  knotClone.material = knot.material.clone();
+  knotClone.visible = false;
+  mainScene.add(knotClone);
+
   // -------------------------------------------------------------------
   // Animation
   // -------------------------------------------------------------------
@@ -244,6 +255,30 @@
     ring.rotation.z = t * 0.18;
 
     controls.update();
+
+    // --- Add: sync clones' transforms and visibility so object appears to come out of the ring ---
+    boxClone.position.copy(box.position);
+    boxClone.rotation.copy(box.rotation);
+    knotClone.position.copy(knot.position);
+    knotClone.rotation.copy(knot.rotation);
+
+    // Determine portal normal in world space and which side the camera is on
+    const portalNormal = new THREE.Vector3();
+    portalMesh.getWorldDirection(portalNormal); // portal normal (world)
+    const portalWorldPos = portalMesh.getWorldPosition(new THREE.Vector3());
+    const camToPortal = camera.position.clone().sub(portalWorldPos);
+    const portalSide = Math.sign(camToPortal.dot(portalNormal)); // >0 => front/world=box is visible
+
+    // Show the clone only when its world-object has crossed the portal plane toward the camera
+    const crossThreshold = 0.05;
+    if (portalSide > 0) {
+      boxClone.visible = box.position.z > crossThreshold;
+      knotClone.visible = false;
+    } else {
+      knotClone.visible = knot.position.z > crossThreshold;
+      boxClone.visible = false;
+    }
+    // --- end added code ---
 
     // 1) Render BOX world into rtFront
     renderer.setRenderTarget(rtFront);

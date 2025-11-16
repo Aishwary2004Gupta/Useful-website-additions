@@ -32,11 +32,13 @@
 <script id="portal-vertex" type="x-shader/x-vertex">
   varying vec3 vWorldPos;
   varying vec3 vWorldNormal;
+  varying vec2 vUv;
 
   void main() {
     vec4 worldPos = modelMatrix * vec4(position, 1.0);
     vWorldPos = worldPos.xyz;
     vWorldNormal = normalize(mat3(modelMatrix) * normal);
+    vUv = uv;
     gl_Position = projectionMatrix * viewMatrix * worldPos;
   }
 </script>
@@ -47,11 +49,18 @@
   uniform sampler2D uTexBack;    // knot world
   uniform vec2 uResolution;
   uniform vec3 uCameraPosition;
+  uniform float uHoleRadius;     // 0..0.5, center transparent
+  uniform float uWhiteOpacity;   // 0..1, white fill blend strength
 
   varying vec3 vWorldPos;
   varying vec3 vWorldNormal;
+  varying vec2 vUv;
 
   void main() {
+    // center hole (transparent)
+    float d = distance(vUv, vec2(0.5));
+    if (d < uHoleRadius) discard;
+
     // Direction from fragment to camera
     vec3 viewDir = normalize(uCameraPosition - vWorldPos);
 
@@ -64,10 +73,19 @@
     vec4 frontColor = texture2D(uTexFront, uv);
     vec4 backColor  = texture2D(uTexBack,  uv);
 
-    // If side > 0 → see front (box), else back (knot)
-    vec4 color = (side > 0.0) ? frontColor : backColor;
+    // base portal color from correct world
+    vec3 base = (side > 0.0) ? frontColor.rgb : backColor.rgb;
 
-    gl_FragColor = color;
+    // rim factor ramps from inner hole -> outer edge
+    float rim = smoothstep(uHoleRadius, 0.5, d);
+
+    // blend base with white to make interior white & translucent
+    vec3 color = mix(base, vec3(1.0), uWhiteOpacity * rim);
+
+    // set alpha slightly reduced so the interior is translucent
+    float alpha = 1.0 - (uWhiteOpacity * 0.4 * rim);
+
+    gl_FragColor = vec4(color, alpha);
   }
 </script>
 
@@ -206,7 +224,9 @@
       uTexFront:      { value: rtFront.texture },
       uTexBack:       { value: rtBack.texture },
       uResolution:    { value: resolution },
-      uCameraPosition:{ value: camera.position.clone() }
+      uCameraPosition:{ value: camera.position.clone() },
+      uHoleRadius:    { value: 0.09 }, // inner transparent hole size (tweak)
+      uWhiteOpacity:  { value: 0.65 }  // strength of white/translucent interior
     },
     vertexShader: portalVertexShader,
     fragmentShader: portalFragmentShader,
@@ -256,29 +276,36 @@
 
     controls.update();
 
-    // --- Add: sync clones' transforms and visibility so object appears to come out of the ring ---
+    // --- sync clones' transforms so objects appear to come out of the ring on both sides ---
     boxClone.position.copy(box.position);
     boxClone.rotation.copy(box.rotation);
     knotClone.position.copy(knot.position);
     knotClone.rotation.copy(knot.rotation);
 
-    // Determine portal normal in world space and which side the camera is on
+    // Determine portal normal in world space and portal world position
     const portalNormal = new THREE.Vector3();
     portalMesh.getWorldDirection(portalNormal); // portal normal (world)
     const portalWorldPos = portalMesh.getWorldPosition(new THREE.Vector3());
-    const camToPortal = camera.position.clone().sub(portalWorldPos);
-    const portalSide = Math.sign(camToPortal.dot(portalNormal)); // >0 => front/world=box is visible
 
-    // Show the clone only when its world-object has crossed the portal plane toward the camera
-    const crossThreshold = 0.05;
-    if (portalSide > 0) {
-      boxClone.visible = box.position.z > crossThreshold;
-      knotClone.visible = false;
-    } else {
-      knotClone.visible = knot.position.z > crossThreshold;
-      boxClone.visible = false;
+    // Show both clones when their corresponding world-object is near the portal plane
+    const appearRange = 1.8; // how far from the portal plane objects will appear in main scene
+    const boxSigned = portalNormal.dot(box.position.clone().sub(portalWorldPos));
+    const knotSigned = portalNormal.dot(knot.position.clone().sub(portalWorldPos));
+
+    boxClone.visible = Math.abs(boxSigned) < appearRange;
+    knotClone.visible = Math.abs(knotSigned) < appearRange;
+
+    // Slightly nudge visible clones toward the camera so they read as "coming out"
+    const nudge = 0.06;
+    if (boxClone.visible) {
+      const sign = Math.sign(boxSigned) || 1;
+      boxClone.position.addScaledVector(portalNormal, -sign * nudge);
     }
-    // --- end added code ---
+    if (knotClone.visible) {
+      const sign = Math.sign(knotSigned) || 1;
+      knotClone.position.addScaledVector(portalNormal, -sign * nudge);
+    }
+    // --- end clone handling ---
 
     // 1) Render BOX world into rtFront
     renderer.setRenderTarget(rtFront);

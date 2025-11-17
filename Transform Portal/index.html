@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Ring Switch Animation</title>
+    <title>Ring Transform Portal</title>
 
     <script type="importmap">
       {
@@ -18,7 +18,7 @@
         margin: 0;
         padding: 0;
         overflow: hidden;
-        background: #dce7ff;
+        background: #0b1020;
       }
       canvas {
         display: block;
@@ -29,24 +29,51 @@
   <body>
     <canvas id="c"></canvas>
 
+    <!-- Vertex shader (same logic as your GLSL) -->
+    <script id="portal-vertex" type="x-shader/x-vertex">
+      void main() {
+        vec4 worldPos = modelMatrix * vec4(position, 1.0);
+        vec4 mvPosition = viewMatrix * worldPos;
+        gl_Position = projectionMatrix * mvPosition;
+      }
+    </script>
+
+    <!-- Fragment shader (screen-space sampling of FBO) -->
+    <script id="portal-fragment" type="x-shader/x-fragment">
+      uniform vec2 winResolution;
+      uniform sampler2D uTexture;
+
+      void main() {
+        vec2 uv = gl_FragCoord.xy / winResolution.xy;
+        vec4 color = texture2D(uTexture, uv);
+        gl_FragColor = color;
+        #include <tonemapping_fragment>
+        #include <colorspace_fragment>
+      }
+    </script>
+
     <script type="module">
       import * as THREE from "three";
       import { OrbitControls } from "https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js";
 
       /* ----------------------------------------------------------
-   Renderer
----------------------------------------------------------- */
+         Renderer
+      ---------------------------------------------------------- */
       const canvas = document.getElementById("c");
       const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+      const DPR = Math.min(devicePixelRatio, 2);
+      renderer.setPixelRatio(DPR);
       renderer.setSize(innerWidth, innerHeight);
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.0;
 
       /* ----------------------------------------------------------
-   Scene + Camera
----------------------------------------------------------- */
+         Scene + Camera
+      ---------------------------------------------------------- */
       const scene = new THREE.Scene();
-      scene.background = new THREE.Color("#e6f0ff");
-      scene.fog = new THREE.Fog("#e6f0ff", 12, 26);
+      scene.background = new THREE.Color("#020617");
+      scene.fog = new THREE.Fog("#020617", 12, 30);
 
       const camera = new THREE.PerspectiveCamera(
         40,
@@ -57,25 +84,29 @@
       camera.position.set(0, 0, 9);
 
       /* ----------------------------------------------------------
-   Lighting
----------------------------------------------------------- */
-      scene.add(new THREE.HemisphereLight(0xcddcff, 0xffffff, 1));
+         Lighting
+      ---------------------------------------------------------- */
+      scene.add(new THREE.HemisphereLight(0x1f2937, 0x020617, 1));
 
-      const sun = new THREE.DirectionalLight(0xffffff, 1.1);
+      const sun = new THREE.DirectionalLight(0xffffff, 1.2);
       sun.position.set(5, 7, 10);
       scene.add(sun);
 
+      const rim = new THREE.PointLight(0x1d4ed8, 0.9, 30);
+      rim.position.set(-6, -4, -8);
+      scene.add(rim);
+
       /* ----------------------------------------------------------
-   Controls
----------------------------------------------------------- */
+         Controls
+      ---------------------------------------------------------- */
       const controls = new OrbitControls(camera, canvas);
       controls.enableDamping = true;
       controls.autoRotate = true;
-      controls.autoRotateSpeed = 1.2;
+      controls.autoRotateSpeed = 1.5;
 
       /* ----------------------------------------------------------
-   Material (Dark Blue)
----------------------------------------------------------- */
+         Material (Dark Blue)
+      ---------------------------------------------------------- */
       const objectMat = new THREE.MeshPhysicalMaterial({
         color: 0x1e3a8a, // deep dark blue
         roughness: 0.18,
@@ -87,24 +118,24 @@
       });
 
       /* ----------------------------------------------------------
-   Ring
----------------------------------------------------------- */
+         Ring
+      ---------------------------------------------------------- */
       const ring = new THREE.Mesh(
         new THREE.TorusGeometry(3, 0.18, 40, 150),
         new THREE.MeshPhysicalMaterial({
-          color: 0xffffff,
-          roughness: 0.45,
-          transmission: 0.55,
-          thickness: 1,
+          color: 0xf9fafb,
+          roughness: 0.35,
+          transmission: 0.4,
+          thickness: 0.8,
           clearcoat: 1,
-          clearcoatRoughness: 0.3,
+          clearcoatRoughness: 0.25,
         })
       );
       scene.add(ring);
 
       /* ----------------------------------------------------------
-   Two Objects (we swap visibility)
----------------------------------------------------------- */
+         Two Objects (box + knot)
+      ---------------------------------------------------------- */
       const box = new THREE.Mesh(
         new THREE.BoxGeometry(1.2, 1.2, 1.2),
         objectMat
@@ -117,11 +148,67 @@
       scene.add(box);
       scene.add(knot);
 
+      // default: box visible, knot hidden
       knot.visible = false;
 
       /* ----------------------------------------------------------
-   Animation (Instant Swap)
----------------------------------------------------------- */
+         Render Targets (FBOs) for portal cylinders
+      ---------------------------------------------------------- */
+      let winWidth = innerWidth;
+      let winHeight = innerHeight;
+
+      const winResolution = new THREE.Vector2(
+        winWidth,
+        winHeight
+      ).multiplyScalar(DPR);
+
+      const rt1 = new THREE.WebGLRenderTarget(
+        winWidth * DPR,
+        winHeight * DPR,
+        { depthBuffer: true }
+      );
+      const rt2 = new THREE.WebGLRenderTarget(
+        winWidth * DPR,
+        winHeight * DPR,
+        { depthBuffer: true }
+      );
+
+      /* ----------------------------------------------------------
+         Portal Cylinders + ShaderMaterials
+      ---------------------------------------------------------- */
+      const vShader = document.getElementById("portal-vertex").textContent;
+      const fShader = document.getElementById("portal-fragment").textContent;
+
+      function createPortalMaterial(targetTexture) {
+        return new THREE.ShaderMaterial({
+          uniforms: {
+            uTexture: { value: targetTexture },
+            winResolution: { value: winResolution.clone() },
+          },
+          vertexShader: vShader,
+          fragmentShader: fShader,
+          side: THREE.DoubleSide,
+          transparent: false,
+        });
+      }
+
+      const cylGeo = new THREE.CylinderGeometry(3, 3, 8, 32, 1, true);
+
+      const cylMat1 = createPortalMaterial(rt1.texture);
+      const cyl1 = new THREE.Mesh(cylGeo, cylMat1);
+      cyl1.rotation.x = -Math.PI / 2;
+      cyl1.position.z = -4;
+      scene.add(cyl1);
+
+      const cylMat2 = createPortalMaterial(rt2.texture);
+      const cyl2 = new THREE.Mesh(cylGeo, cylMat2);
+      cyl2.rotation.x = -Math.PI / 2;
+      cyl2.position.z = 4;
+      scene.add(cyl2);
+
+      /* ----------------------------------------------------------
+         Animation (FBO passes + instant box/knot switch)
+      ---------------------------------------------------------- */
       const clock = new THREE.Clock();
 
       function animate() {
@@ -133,7 +220,30 @@
         const z = Math.sin(t) * 3.5;
         box.position.z = knot.position.z = z;
 
-        // Perfect instant swap at center (no morph, no fade)
+        // Rotate object
+        const r = t * 0.6;
+        box.rotation.set(r, r * 1.3, r * 0.7);
+        knot.rotation.copy(box.rotation);
+
+        // Rotate ring
+        ring.rotation.z = t * 0.15;
+
+        // ---------------- FBO PASS 1: box world ----------------
+        knot.visible = false;
+        box.visible = true;
+        renderer.setRenderTarget(rt1);
+        renderer.render(scene, camera);
+
+        // ---------------- FBO PASS 2: knot world ----------------
+        knot.visible = true;
+        box.visible = false;
+        renderer.setRenderTarget(rt2);
+        renderer.render(scene, camera);
+
+        // Reset render target to screen
+        renderer.setRenderTarget(null);
+
+        // For the final view: instant swap (like your original)
         if (z > 0) {
           box.visible = true;
           knot.visible = false;
@@ -142,14 +252,6 @@
           knot.visible = true;
         }
 
-        // rotation match
-        const r = t * 0.6;
-        box.rotation.set(r, r * 1.3, r * 0.7);
-        knot.rotation.copy(box.rotation);
-
-        // rotate ring
-        ring.rotation.z = t * 0.15;
-
         controls.update();
         renderer.render(scene, camera);
       }
@@ -157,12 +259,25 @@
       animate();
 
       /* ----------------------------------------------------------
-   Resize
----------------------------------------------------------- */
+         Resize
+      ---------------------------------------------------------- */
       window.addEventListener("resize", () => {
-        renderer.setSize(innerWidth, innerHeight);
-        camera.aspect = innerWidth / innerHeight;
+        winWidth = innerWidth;
+        winHeight = innerHeight;
+
+        renderer.setSize(winWidth, winHeight);
+        camera.aspect = winWidth / winHeight;
         camera.updateProjectionMatrix();
+
+        const newDPR = Math.min(window.devicePixelRatio, 2);
+        renderer.setPixelRatio(newDPR);
+
+        winResolution.set(winWidth, winHeight).multiplyScalar(newDPR);
+        rt1.setSize(winWidth * newDPR, winHeight * newDPR);
+        rt2.setSize(winWidth * newDPR, winHeight * newDPR);
+
+        cylMat1.uniforms.winResolution.value.copy(winResolution);
+        cylMat2.uniforms.winResolution.value.copy(winResolution);
       });
     </script>
   </body>

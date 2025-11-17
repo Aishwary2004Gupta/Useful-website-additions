@@ -1,284 +1,348 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Ring Transform Portal</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transform Portal - Three.js</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
 
     <script type="importmap">
-      {
-        "imports": {
-          "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
         }
-      }
-    </script>
-
-    <style>
-      body,
-      html {
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-        background: #0b1020;
-      }
-      canvas {
-        display: block;
-      }
-    </style>
-  </head>
-
-  <body>
-    <canvas id="c"></canvas>
-
-    <!-- Vertex shader (same logic as your GLSL) -->
-    <script id="portal-vertex" type="x-shader/x-vertex">
-      void main() {
-        vec4 worldPos = modelMatrix * vec4(position, 1.0);
-        vec4 mvPosition = viewMatrix * worldPos;
-        gl_Position = projectionMatrix * mvPosition;
-      }
-    </script>
-
-    <!-- Fragment shader (screen-space sampling of FBO) -->
-    <script id="portal-fragment" type="x-shader/x-fragment">
-      uniform vec2 winResolution;
-      uniform sampler2D uTexture;
-
-      void main() {
-        vec2 uv = gl_FragCoord.xy / winResolution.xy;
-        vec4 color = texture2D(uTexture, uv);
-        gl_FragColor = color;
-        #include <tonemapping_fragment>
-        #include <colorspace_fragment>
-      }
     </script>
 
     <script type="module">
-      import * as THREE from "three";
-      import { OrbitControls } from "https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js";
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 
-      /* ----------------------------------------------------------
-         Renderer
-      ---------------------------------------------------------- */
-      const canvas = document.getElementById("c");
-      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-      const DPR = Math.min(devicePixelRatio, 2);
-      renderer.setPixelRatio(DPR);
-      renderer.setSize(innerWidth, innerHeight);
-      renderer.outputColorSpace = THREE.SRGBColorSpace;
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.0;
+        // Vertex Shader
+        const vertexShader = `
+            void main() {
+                vec4 worldPos = modelMatrix * vec4(position, 1.0);
+                vec4 mvPosition = viewMatrix * worldPos;
+                gl_Position = projectionMatrix * mvPosition;
+            }
+        `;
 
-      /* ----------------------------------------------------------
-         Scene + Camera
-      ---------------------------------------------------------- */
-      const scene = new THREE.Scene();
-      scene.background = new THREE.Color("#020617");
-      scene.fog = new THREE.Fog("#020617", 12, 30);
+        // Fragment Shader
+        const fragmentShader = `
+            uniform vec2 winResolution;
+            uniform sampler2D uTexture;
 
-      const camera = new THREE.PerspectiveCamera(
-        40,
-        innerWidth / innerHeight,
-        0.1,
-        100
-      );
-      camera.position.set(0, 0, 9);
+            void main() {
+                vec2 uv = gl_FragCoord.xy / winResolution.xy;
+                vec4 color = texture2D(uTexture, uv);
+                gl_FragColor = color;
+            }
+        `;
 
-      /* ----------------------------------------------------------
-         Lighting
-      ---------------------------------------------------------- */
-      scene.add(new THREE.HemisphereLight(0x1f2937, 0x020617, 1));
+        class TransformPortal {
+            constructor() {
+                this.init();
+                this.createScene();
+                this.createLights();
+                this.createObjects();
+                this.createRenderTargets();
+                this.setupControls();
+                this.animate();
+                this.handleResize();
+            }
 
-      const sun = new THREE.DirectionalLight(0xffffff, 1.2);
-      sun.position.set(5, 7, 10);
-      scene.add(sun);
+            init() {
+                // Setup renderer
+                this.renderer = new THREE.WebGLRenderer({ antialias: true });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                this.renderer.toneMappingExposure = 1;
+                document.getElementById('canvas-container').appendChild(this.renderer.domElement);
 
-      const rim = new THREE.PointLight(0x1d4ed8, 0.9, 30);
-      rim.position.set(-6, -4, -8);
-      scene.add(rim);
+                // Setup scene
+                this.scene = new THREE.Scene();
+                this.scene.background = new THREE.Color(0x87CEEB);
 
-      /* ----------------------------------------------------------
-         Controls
-      ---------------------------------------------------------- */
-      const controls = new OrbitControls(camera, canvas);
-      controls.enableDamping = true;
-      controls.autoRotate = true;
-      controls.autoRotateSpeed = 1.5;
+                // Setup camera
+                this.camera = new THREE.PerspectiveCamera(
+                    75,
+                    window.innerWidth / window.innerHeight,
+                    0.1,
+                    1000
+                );
+                this.camera.position.set(0, 0, 9);
 
-      /* ----------------------------------------------------------
-         Material (Dark Blue)
-      ---------------------------------------------------------- */
-      const objectMat = new THREE.MeshPhysicalMaterial({
-        color: 0x1e3a8a, // deep dark blue
-        roughness: 0.18,
-        metalness: 0.1,
-        clearcoat: 1,
-        clearcoatRoughness: 0.1,
-        transmission: 0.05,
-        thickness: 1,
-      });
+                // Clock for animations
+                this.clock = new THREE.Clock();
+            }
 
-      /* ----------------------------------------------------------
-         Ring
-      ---------------------------------------------------------- */
-      const ring = new THREE.Mesh(
-        new THREE.TorusGeometry(3, 0.18, 40, 150),
-        new THREE.MeshPhysicalMaterial({
-          color: 0xf9fafb,
-          roughness: 0.35,
-          transmission: 0.4,
-          thickness: 0.8,
-          clearcoat: 1,
-          clearcoatRoughness: 0.25,
-        })
-      );
-      scene.add(ring);
+            createScene() {
+                // Add fog for atmosphere
+                this.scene.fog = new THREE.Fog(0x87CEEB, 10, 100);
+            }
 
-      /* ----------------------------------------------------------
-         Two Objects (box + knot)
-      ---------------------------------------------------------- */
-      const box = new THREE.Mesh(
-        new THREE.BoxGeometry(1.2, 1.2, 1.2),
-        objectMat
-      );
-      const knot = new THREE.Mesh(
-        new THREE.TorusKnotGeometry(0.65, 0.27, 150, 22),
-        objectMat
-      );
+            createLights() {
+                // Directional light
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+                directionalLight.position.set(10, 10, 0);
+                directionalLight.castShadow = true;
+                this.scene.add(directionalLight);
 
-      scene.add(box);
-      scene.add(knot);
+                // Ambient light
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+                this.scene.add(ambientLight);
 
-      // default: box visible, knot hidden
-      knot.visible = false;
+                // Hemisphere light for sky effect
+                const hemisphereLight = new THREE.HemisphereLight(0x87CEEB, 0x545454, 0.4);
+                this.scene.add(hemisphereLight);
+            }
 
-      /* ----------------------------------------------------------
-         Render Targets (FBOs) for portal cylinders
-      ---------------------------------------------------------- */
-      let winWidth = innerWidth;
-      let winHeight = innerHeight;
+            createObjects() {
+                // Create uniforms for shaders
+                this.uniforms = {
+                    uTexture: { value: null },
+                    winResolution: {
+                        value: new THREE.Vector2(
+                            window.innerWidth,
+                            window.innerHeight
+                        ).multiplyScalar(Math.min(window.devicePixelRatio, 2))
+                    }
+                };
 
-      const winResolution = new THREE.Vector2(
-        winWidth,
-        winHeight
-      ).multiplyScalar(DPR);
+                // Create cylinder 1
+                const cylinderGeometry = new THREE.CylinderGeometry(3, 3, 8, 32);
+                this.cylinder1 = new THREE.Mesh(cylinderGeometry);
+                this.cylinder1.rotation.x = -Math.PI / 2;
+                this.cylinder1.position.set(0, 0, -4);
 
-      const rt1 = new THREE.WebGLRenderTarget(
-        winWidth * DPR,
-        winHeight * DPR,
-        { depthBuffer: true }
-      );
-      const rt2 = new THREE.WebGLRenderTarget(
-        winWidth * DPR,
-        winHeight * DPR,
-        { depthBuffer: true }
-      );
+                // Materials for cylinder 1
+                const shaderMaterial1 = new THREE.ShaderMaterial({
+                    vertexShader,
+                    fragmentShader,
+                    uniforms: {
+                        ...this.uniforms,
+                        uTexture: { value: null }
+                    }
+                });
 
-      /* ----------------------------------------------------------
-         Portal Cylinders + ShaderMaterials
-      ---------------------------------------------------------- */
-      const vShader = document.getElementById("portal-vertex").textContent;
-      const fShader = document.getElementById("portal-fragment").textContent;
+                const shaderMaterial2 = new THREE.ShaderMaterial({
+                    vertexShader,
+                    fragmentShader,
+                    uniforms: {
+                        ...this.uniforms,
+                        uTexture: { value: null }
+                    }
+                });
 
-      function createPortalMaterial(targetTexture) {
-        return new THREE.ShaderMaterial({
-          uniforms: {
-            uTexture: { value: targetTexture },
-            winResolution: { value: winResolution.clone() },
-          },
-          vertexShader: vShader,
-          fragmentShader: fShader,
-          side: THREE.DoubleSide,
-          transparent: false,
-        });
-      }
+                const transparentMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x00ff00,
+                    transparent: true,
+                    opacity: 0
+                });
 
-      const cylGeo = new THREE.CylinderGeometry(3, 3, 8, 32, 1, true);
+                this.cylinder1.material = [shaderMaterial1, shaderMaterial2, transparentMaterial];
+                this.scene.add(this.cylinder1);
 
-      const cylMat1 = createPortalMaterial(rt1.texture);
-      const cyl1 = new THREE.Mesh(cylGeo, cylMat1);
-      cyl1.rotation.x = -Math.PI / 2;
-      cyl1.position.z = -4;
-      scene.add(cyl1);
+                // Create cylinder 2
+                this.cylinder2 = new THREE.Mesh(cylinderGeometry);
+                this.cylinder2.rotation.x = -Math.PI / 2;
+                this.cylinder2.position.set(0, 0, 4);
 
-      const cylMat2 = createPortalMaterial(rt2.texture);
-      const cyl2 = new THREE.Mesh(cylGeo, cylMat2);
-      cyl2.rotation.x = -Math.PI / 2;
-      cyl2.position.z = 4;
-      scene.add(cyl2);
+                // Materials for cylinder 2
+                const shaderMaterial3 = new THREE.ShaderMaterial({
+                    vertexShader,
+                    fragmentShader,
+                    uniforms: {
+                        ...this.uniforms,
+                        uTexture: { value: null }
+                    }
+                });
 
-      /* ----------------------------------------------------------
-         Animation (FBO passes + instant box/knot switch)
-      ---------------------------------------------------------- */
-      const clock = new THREE.Clock();
+                const shaderMaterial4 = new THREE.ShaderMaterial({
+                    vertexShader,
+                    fragmentShader,
+                    uniforms: {
+                        ...this.uniforms,
+                        uTexture: { value: null }
+                    }
+                });
 
-      function animate() {
-        requestAnimationFrame(animate);
+                this.cylinder2.material = [shaderMaterial3, transparentMaterial.clone(), shaderMaterial4];
+                this.scene.add(this.cylinder2);
 
-        const t = clock.getElapsedTime();
+                // Create static torus (ring)
+                const torusGeometry = new THREE.TorusGeometry(3, 0.2, 16, 100);
+                const torusMaterial = new THREE.MeshStandardMaterial({ color: 0xF9F9F9 });
+                const staticTorus = new THREE.Mesh(torusGeometry, torusMaterial);
+                this.scene.add(staticTorus);
 
-        // Move object through the ring
-        const z = Math.sin(t) * 3.5;
-        box.position.z = knot.position.z = z;
+                // Create torus knot
+                const torusKnotGeometry = new THREE.TorusKnotGeometry(0.75, 0.3, 100, 16);
+                const torusKnotMaterial = new THREE.MeshPhysicalMaterial({
+                    roughness: 0,
+                    clearcoat: 1,
+                    clearcoatRoughness: 0,
+                    color: 0x73B9ED
+                });
+                this.torusKnot = new THREE.Mesh(torusKnotGeometry, torusKnotMaterial);
+                this.torusKnot.position.set(0, 0, 0);
+                this.scene.add(this.torusKnot);
 
-        // Rotate object
-        const r = t * 0.6;
-        box.rotation.set(r, r * 1.3, r * 0.7);
-        knot.rotation.copy(box.rotation);
+                // Create box
+                const boxGeometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+                const boxMaterial = new THREE.MeshPhysicalMaterial({
+                    roughness: 0,
+                    clearcoat: 1,
+                    clearcoatRoughness: 0,
+                    color: 0x73B9ED
+                });
+                this.box = new THREE.Mesh(boxGeometry, boxMaterial);
+                this.box.position.set(0, 0, 0);
+                this.scene.add(this.box);
+            }
 
-        // Rotate ring
-        ring.rotation.z = t * 0.15;
+            createRenderTargets() {
+                const renderTargetParameters = {
+                    minFilter: THREE.LinearFilter,
+                    magFilter: THREE.LinearFilter,
+                    format: THREE.RGBAFormat
+                };
 
-        // ---------------- FBO PASS 1: box world ----------------
-        knot.visible = false;
-        box.visible = true;
-        renderer.setRenderTarget(rt1);
-        renderer.render(scene, camera);
+                this.renderTarget1 = new THREE.WebGLRenderTarget(
+                    window.innerWidth * window.devicePixelRatio,
+                    window.innerHeight * window.devicePixelRatio,
+                    renderTargetParameters
+                );
 
-        // ---------------- FBO PASS 2: knot world ----------------
-        knot.visible = true;
-        box.visible = false;
-        renderer.setRenderTarget(rt2);
-        renderer.render(scene, camera);
+                this.renderTarget2 = new THREE.WebGLRenderTarget(
+                    window.innerWidth * window.devicePixelRatio,
+                    window.innerHeight * window.devicePixelRatio,
+                    renderTargetParameters
+                );
+            }
 
-        // Reset render target to screen
-        renderer.setRenderTarget(null);
+            setupControls() {
+                this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+                this.controls.enableZoom = false;
+                this.controls.autoRotate = true;
+                this.controls.autoRotateSpeed = 3;
+                this.controls.enableDamping = true;
+                this.controls.dampingFactor = 0.05;
+            }
 
-        // For the final view: instant swap (like your original)
-        if (z > 0) {
-          box.visible = true;
-          knot.visible = false;
-        } else {
-          box.visible = false;
-          knot.visible = true;
+            updateUniforms() {
+                const resolution = new THREE.Vector2(
+                    window.innerWidth,
+                    window.innerHeight
+                ).multiplyScalar(Math.min(window.devicePixelRatio, 2));
+
+                // Update cylinder 1 materials
+                this.cylinder1.material.forEach((material) => {
+                    if (material.type === 'ShaderMaterial') {
+                        material.uniforms.winResolution.value = resolution;
+                    }
+                });
+
+                // Update cylinder 2 materials
+                this.cylinder2.material.forEach((material) => {
+                    if (material.type === 'ShaderMaterial') {
+                        material.uniforms.winResolution.value = resolution;
+                    }
+                });
+            }
+
+            animate() {
+                requestAnimationFrame(() => this.animate());
+
+                const elapsedTime = this.clock.getElapsedTime();
+
+                // Update controls
+                this.controls.update();
+
+                // Update uniforms
+                this.updateUniforms();
+
+                // Render to texture 1 (box visible, torus knot hidden)
+                this.torusKnot.visible = false;
+                this.box.visible = true;
+                this.renderer.setRenderTarget(this.renderTarget1);
+                this.renderer.render(this.scene, this.camera);
+
+                // Render to texture 2 (torus knot visible, box hidden)
+                this.torusKnot.visible = true;
+                this.box.visible = false;
+                this.renderer.setRenderTarget(this.renderTarget2);
+                this.renderer.render(this.scene, this.camera);
+
+                // Reset render target
+                this.renderer.setRenderTarget(null);
+
+                // Update textures in materials
+                this.cylinder1.material[0].uniforms.uTexture.value = this.renderTarget1.texture;
+                this.cylinder1.material[1].uniforms.uTexture.value = this.renderTarget1.texture;
+                this.cylinder2.material[0].uniforms.uTexture.value = this.renderTarget2.texture;
+                this.cylinder2.material[2].uniforms.uTexture.value = this.renderTarget2.texture;
+
+                // Animate positions
+                const newPosZ = Math.sin(elapsedTime) * 3.5;
+                this.box.position.z = newPosZ;
+                this.torusKnot.position.z = newPosZ;
+
+                // Animate rotations
+                this.box.rotation.x = Math.cos(elapsedTime / 2);
+                this.box.rotation.y = Math.sin(elapsedTime / 2);
+                this.box.rotation.z = Math.sin(elapsedTime / 2);
+
+                this.torusKnot.rotation.x = Math.cos(elapsedTime / 2);
+                this.torusKnot.rotation.y = Math.sin(elapsedTime / 2);
+                this.torusKnot.rotation.z = Math.sin(elapsedTime / 2);
+
+                // Final render
+                this.renderer.render(this.scene, this.camera);
+            }
+
+            handleResize() {
+                window.addEventListener('resize', () => {
+                    // Update camera
+                    this.camera.aspect = window.innerWidth / window.innerHeight;
+                    this.camera.updateProjectionMatrix();
+
+                    // Update renderer
+                    this.renderer.setSize(window.innerWidth, window.innerHeight);
+                    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+                    // Update render targets
+                    this.renderTarget1.setSize(
+                        window.innerWidth * window.devicePixelRatio,
+                        window.innerHeight * window.devicePixelRatio
+                    );
+                    this.renderTarget2.setSize(
+                        window.innerWidth * window.devicePixelRatio,
+                        window.innerHeight * window.devicePixelRatio
+                    );
+                });
+            }
         }
 
-        controls.update();
-        renderer.render(scene, camera);
-      }
-
-      animate();
-
-      /* ----------------------------------------------------------
-         Resize
-      ---------------------------------------------------------- */
-      window.addEventListener("resize", () => {
-        winWidth = innerWidth;
-        winHeight = innerHeight;
-
-        renderer.setSize(winWidth, winHeight);
-        camera.aspect = winWidth / winHeight;
-        camera.updateProjectionMatrix();
-
-        const newDPR = Math.min(window.devicePixelRatio, 2);
-        renderer.setPixelRatio(newDPR);
-
-        winResolution.set(winWidth, winHeight).multiplyScalar(newDPR);
-        rt1.setSize(winWidth * newDPR, winHeight * newDPR);
-        rt2.setSize(winWidth * newDPR, winHeight * newDPR);
-
-        cylMat1.uniforms.winResolution.value.copy(winResolution);
-        cylMat2.uniforms.winResolution.value.copy(winResolution);
-      });
+        // Initialize the scene
+        new TransformPortal();
     </script>
-  </body>
+</body>
 </html>

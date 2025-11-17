@@ -1,41 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Transform Portal - Three.js</title>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            font-family: Arial, sans-serif;
-        }
-        #canvas-container {
-            width: 100vw;
-            height: 100vh;
-        }
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        font-family: Arial, sans-serif;
+      }
+      #canvas-container {
+        width: 100vw;
+        height: 100vh;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div id="canvas-container"></div>
 
     <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-            }
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
         }
+      }
     </script>
 
     <script type="module">
-        import * as THREE from 'three';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-        import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+      import * as THREE from "three";
+      import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+      import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 
-        // Vertex Shader
-        const vertexShader = `
+      // Vertex Shader
+      const vertexShader = `
             void main() {
                 vec4 worldPos = modelMatrix * vec4(position, 1.0);
                 vec4 mvPosition = viewMatrix * worldPos;
@@ -43,8 +43,8 @@
             }
         `;
 
-        // Fragment Shader
-        const fragmentShader = `
+      // Fragment Shader
+      const fragmentShader = `
             uniform vec2 winResolution;
             uniform sampler2D uTexture;
 
@@ -55,294 +55,322 @@
             }
         `;
 
-        class TransformPortal {
-            constructor() {
-                this.init();
-                this.createScene();
-                this.createLights();
-                this.createObjects();
-                this.createRenderTargets();
-                this.setupControls();
-                this.animate();
-                this.handleResize();
-            }
-
-            init() {
-                // Setup renderer
-                this.renderer = new THREE.WebGLRenderer({ antialias: true });
-                this.renderer.setSize(window.innerWidth, window.innerHeight);
-                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-                this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-                this.renderer.toneMappingExposure = 1;
-                document.getElementById('canvas-container').appendChild(this.renderer.domElement);
-
-                // Setup scene
-                this.scene = new THREE.Scene();
-                this.scene.background = new THREE.Color(0x87CEEB);
-
-                // Setup camera
-                this.camera = new THREE.PerspectiveCamera(
-                    75,
-                    window.innerWidth / window.innerHeight,
-                    0.1,
-                    1000
-                );
-                this.camera.position.set(0, 0, 9);
-
-                // Clock for animations
-                this.clock = new THREE.Clock();
-            }
-
-            createScene() {
-                // Add fog for atmosphere
-                this.scene.fog = new THREE.Fog(0x87CEEB, 10, 100);
-            }
-
-            createLights() {
-                // Directional light
-                const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-                directionalLight.position.set(10, 10, 0);
-                directionalLight.castShadow = true;
-                this.scene.add(directionalLight);
-
-                // Ambient light
-                const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-                this.scene.add(ambientLight);
-
-                // Hemisphere light for sky effect
-                const hemisphereLight = new THREE.HemisphereLight(0x87CEEB, 0x545454, 0.4);
-                this.scene.add(hemisphereLight);
-            }
-
-            createObjects() {
-                // Create uniforms for shaders
-                this.uniforms = {
-                    uTexture: { value: null },
-                    winResolution: {
-                        value: new THREE.Vector2(
-                            window.innerWidth,
-                            window.innerHeight
-                        ).multiplyScalar(Math.min(window.devicePixelRatio, 2))
-                    }
-                };
-
-                // Create cylinder 1
-                const cylinderGeometry = new THREE.CylinderGeometry(3, 3, 8, 32);
-                this.cylinder1 = new THREE.Mesh(cylinderGeometry);
-                this.cylinder1.rotation.x = -Math.PI / 2;
-                this.cylinder1.position.set(0, 0, -4);
-
-                // Materials for cylinder 1
-                const shaderMaterial1 = new THREE.ShaderMaterial({
-                    vertexShader,
-                    fragmentShader,
-                    uniforms: {
-                        ...this.uniforms,
-                        uTexture: { value: null }
-                    }
-                });
-
-                const shaderMaterial2 = new THREE.ShaderMaterial({
-                    vertexShader,
-                    fragmentShader,
-                    uniforms: {
-                        ...this.uniforms,
-                        uTexture: { value: null }
-                    }
-                });
-
-                const transparentMaterial = new THREE.MeshStandardMaterial({
-                    color: 0x00ff00,
-                    transparent: true,
-                    opacity: 0
-                });
-
-                this.cylinder1.material = [shaderMaterial1, shaderMaterial2, transparentMaterial];
-                this.scene.add(this.cylinder1);
-
-                // Create cylinder 2
-                this.cylinder2 = new THREE.Mesh(cylinderGeometry);
-                this.cylinder2.rotation.x = -Math.PI / 2;
-                this.cylinder2.position.set(0, 0, 4);
-
-                // Materials for cylinder 2
-                const shaderMaterial3 = new THREE.ShaderMaterial({
-                    vertexShader,
-                    fragmentShader,
-                    uniforms: {
-                        ...this.uniforms,
-                        uTexture: { value: null }
-                    }
-                });
-
-                const shaderMaterial4 = new THREE.ShaderMaterial({
-                    vertexShader,
-                    fragmentShader,
-                    uniforms: {
-                        ...this.uniforms,
-                        uTexture: { value: null }
-                    }
-                });
-
-                this.cylinder2.material = [shaderMaterial3, transparentMaterial.clone(), shaderMaterial4];
-                this.scene.add(this.cylinder2);
-
-                // Create static torus (ring)
-                const torusGeometry = new THREE.TorusGeometry(3, 0.2, 16, 100);
-                const torusMaterial = new THREE.MeshStandardMaterial({ color: 0xF9F9F9 });
-                const staticTorus = new THREE.Mesh(torusGeometry, torusMaterial);
-                this.scene.add(staticTorus);
-
-                // Create torus knot
-                const torusKnotGeometry = new THREE.TorusKnotGeometry(0.75, 0.3, 100, 16);
-                const torusKnotMaterial = new THREE.MeshPhysicalMaterial({
-                    roughness: 0,
-                    clearcoat: 1,
-                    clearcoatRoughness: 0,
-                    color: 0x73B9ED
-                });
-                this.torusKnot = new THREE.Mesh(torusKnotGeometry, torusKnotMaterial);
-                this.torusKnot.position.set(0, 0, 0);
-                this.scene.add(this.torusKnot);
-
-                // Create box
-                const boxGeometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);
-                const boxMaterial = new THREE.MeshPhysicalMaterial({
-                    roughness: 0,
-                    clearcoat: 1,
-                    clearcoatRoughness: 0,
-                    color: 0x73B9ED
-                });
-                this.box = new THREE.Mesh(boxGeometry, boxMaterial);
-                this.box.position.set(0, 0, 0);
-                this.scene.add(this.box);
-            }
-
-            createRenderTargets() {
-                const renderTargetParameters = {
-                    minFilter: THREE.LinearFilter,
-                    magFilter: THREE.LinearFilter,
-                    format: THREE.RGBAFormat
-                };
-
-                this.renderTarget1 = new THREE.WebGLRenderTarget(
-                    window.innerWidth * window.devicePixelRatio,
-                    window.innerHeight * window.devicePixelRatio,
-                    renderTargetParameters
-                );
-
-                this.renderTarget2 = new THREE.WebGLRenderTarget(
-                    window.innerWidth * window.devicePixelRatio,
-                    window.innerHeight * window.devicePixelRatio,
-                    renderTargetParameters
-                );
-            }
-
-            setupControls() {
-                this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-                this.controls.enableZoom = false;
-                this.controls.autoRotate = true;
-                this.controls.autoRotateSpeed = 3;
-                this.controls.enableDamping = true;
-                this.controls.dampingFactor = 0.05;
-            }
-
-            updateUniforms() {
-                const resolution = new THREE.Vector2(
-                    window.innerWidth,
-                    window.innerHeight
-                ).multiplyScalar(Math.min(window.devicePixelRatio, 2));
-
-                // Update cylinder 1 materials
-                this.cylinder1.material.forEach((material) => {
-                    if (material.type === 'ShaderMaterial') {
-                        material.uniforms.winResolution.value = resolution;
-                    }
-                });
-
-                // Update cylinder 2 materials
-                this.cylinder2.material.forEach((material) => {
-                    if (material.type === 'ShaderMaterial') {
-                        material.uniforms.winResolution.value = resolution;
-                    }
-                });
-            }
-
-            animate() {
-                requestAnimationFrame(() => this.animate());
-
-                const elapsedTime = this.clock.getElapsedTime();
-
-                // Update controls
-                this.controls.update();
-
-                // Update uniforms
-                this.updateUniforms();
-
-                // Render to texture 1 (box visible, torus knot hidden)
-                this.torusKnot.visible = false;
-                this.box.visible = true;
-                this.renderer.setRenderTarget(this.renderTarget1);
-                this.renderer.render(this.scene, this.camera);
-
-                // Render to texture 2 (torus knot visible, box hidden)
-                this.torusKnot.visible = true;
-                this.box.visible = false;
-                this.renderer.setRenderTarget(this.renderTarget2);
-                this.renderer.render(this.scene, this.camera);
-
-                // Reset render target
-                this.renderer.setRenderTarget(null);
-
-                // Update textures in materials
-                this.cylinder1.material[0].uniforms.uTexture.value = this.renderTarget1.texture;
-                this.cylinder1.material[1].uniforms.uTexture.value = this.renderTarget1.texture;
-                this.cylinder2.material[0].uniforms.uTexture.value = this.renderTarget2.texture;
-                this.cylinder2.material[2].uniforms.uTexture.value = this.renderTarget2.texture;
-
-                // Animate positions
-                const newPosZ = Math.sin(elapsedTime) * 3.5;
-                this.box.position.z = newPosZ;
-                this.torusKnot.position.z = newPosZ;
-
-                // Animate rotations
-                this.box.rotation.x = Math.cos(elapsedTime / 2);
-                this.box.rotation.y = Math.sin(elapsedTime / 2);
-                this.box.rotation.z = Math.sin(elapsedTime / 2);
-
-                this.torusKnot.rotation.x = Math.cos(elapsedTime / 2);
-                this.torusKnot.rotation.y = Math.sin(elapsedTime / 2);
-                this.torusKnot.rotation.z = Math.sin(elapsedTime / 2);
-
-                // Final render
-                this.renderer.render(this.scene, this.camera);
-            }
-
-            handleResize() {
-                window.addEventListener('resize', () => {
-                    // Update camera
-                    this.camera.aspect = window.innerWidth / window.innerHeight;
-                    this.camera.updateProjectionMatrix();
-
-                    // Update renderer
-                    this.renderer.setSize(window.innerWidth, window.innerHeight);
-                    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-                    // Update render targets
-                    this.renderTarget1.setSize(
-                        window.innerWidth * window.devicePixelRatio,
-                        window.innerHeight * window.devicePixelRatio
-                    );
-                    this.renderTarget2.setSize(
-                        window.innerWidth * window.devicePixelRatio,
-                        window.innerHeight * window.devicePixelRatio
-                    );
-                });
-            }
+      class TransformPortal {
+        constructor() {
+          this.init();
+          this.createScene();
+          this.createLights();
+          this.createObjects();
+          this.createRenderTargets();
+          this.setupControls();
+          this.animate();
+          this.handleResize();
         }
 
-        // Initialize the scene
-        new TransformPortal();
+        init() {
+          // Setup renderer
+          this.renderer = new THREE.WebGLRenderer({ antialias: true });
+          this.renderer.setSize(window.innerWidth, window.innerHeight);
+          this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+          this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+          this.renderer.toneMappingExposure = 1;
+          document
+            .getElementById("canvas-container")
+            .appendChild(this.renderer.domElement);
+
+          // Setup scene
+          this.scene = new THREE.Scene();
+          this.scene.background = new THREE.Color(0x87ceeb);
+
+          // Setup camera
+          this.camera = new THREE.PerspectiveCamera(
+            75,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            1000
+          );
+          this.camera.position.set(0, 0, 9);
+
+          // Clock for animations
+          this.clock = new THREE.Clock();
+        }
+
+        createScene() {
+          // Add fog for atmosphere
+          this.scene.fog = new THREE.Fog(0x87ceeb, 10, 100);
+        }
+
+        createLights() {
+          // Directional light
+          const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+          directionalLight.position.set(10, 10, 0);
+          directionalLight.castShadow = true;
+          this.scene.add(directionalLight);
+
+          // Ambient light
+          const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+          this.scene.add(ambientLight);
+
+          // Hemisphere light for sky effect
+          const hemisphereLight = new THREE.HemisphereLight(
+            0x87ceeb,
+            0x545454,
+            0.4
+          );
+          this.scene.add(hemisphereLight);
+        }
+
+        createObjects() {
+          // Create uniforms for shaders
+          this.uniforms = {
+            uTexture: { value: null },
+            winResolution: {
+              value: new THREE.Vector2(
+                window.innerWidth,
+                window.innerHeight
+              ).multiplyScalar(Math.min(window.devicePixelRatio, 2)),
+            },
+          };
+
+          // Create cylinder 1
+          const cylinderGeometry = new THREE.CylinderGeometry(3, 3, 8, 32);
+          this.cylinder1 = new THREE.Mesh(cylinderGeometry);
+          this.cylinder1.rotation.x = -Math.PI / 2;
+          this.cylinder1.position.set(0, 0, -4);
+
+          // Materials for cylinder 1
+          const shaderMaterial1 = new THREE.ShaderMaterial({
+            vertexShader,
+            fragmentShader,
+            uniforms: {
+              ...this.uniforms,
+              uTexture: { value: null },
+            },
+          });
+
+          const shaderMaterial2 = new THREE.ShaderMaterial({
+            vertexShader,
+            fragmentShader,
+            uniforms: {
+              ...this.uniforms,
+              uTexture: { value: null },
+            },
+          });
+
+          const transparentMaterial = new THREE.MeshStandardMaterial({
+            color: 0x00ff00,
+            transparent: true,
+            opacity: 0,
+          });
+
+          this.cylinder1.material = [
+            shaderMaterial1,
+            shaderMaterial2,
+            transparentMaterial,
+          ];
+          this.scene.add(this.cylinder1);
+
+          // Create cylinder 2
+          this.cylinder2 = new THREE.Mesh(cylinderGeometry);
+          this.cylinder2.rotation.x = -Math.PI / 2;
+          this.cylinder2.position.set(0, 0, 4);
+
+          // Materials for cylinder 2
+          const shaderMaterial3 = new THREE.ShaderMaterial({
+            vertexShader,
+            fragmentShader,
+            uniforms: {
+              ...this.uniforms,
+              uTexture: { value: null },
+            },
+          });
+
+          const shaderMaterial4 = new THREE.ShaderMaterial({
+            vertexShader,
+            fragmentShader,
+            uniforms: {
+              ...this.uniforms,
+              uTexture: { value: null },
+            },
+          });
+
+          this.cylinder2.material = [
+            shaderMaterial3,
+            transparentMaterial.clone(),
+            shaderMaterial4,
+          ];
+          this.scene.add(this.cylinder2);
+
+          // Create static torus (ring)
+          const torusGeometry = new THREE.TorusGeometry(3, 0.2, 16, 100);
+          const torusMaterial = new THREE.MeshStandardMaterial({
+            color: 0xf9f9f9,
+          });
+          const staticTorus = new THREE.Mesh(torusGeometry, torusMaterial);
+          this.scene.add(staticTorus);
+
+          // Create torus knot
+          const torusKnotGeometry = new THREE.TorusKnotGeometry(
+            0.75,
+            0.3,
+            100,
+            16
+          );
+          const torusKnotMaterial = new THREE.MeshPhysicalMaterial({
+            roughness: 0,
+            clearcoat: 1,
+            clearcoatRoughness: 0,
+            color: 0x73b9ed,
+          });
+          this.torusKnot = new THREE.Mesh(torusKnotGeometry, torusKnotMaterial);
+          this.torusKnot.position.set(0, 0, 0);
+          this.scene.add(this.torusKnot);
+
+          // Create box
+          const boxGeometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+          const boxMaterial = new THREE.MeshPhysicalMaterial({
+            roughness: 0,
+            clearcoat: 1,
+            clearcoatRoughness: 0,
+            color: 0x73b9ed,
+          });
+          this.box = new THREE.Mesh(boxGeometry, boxMaterial);
+          this.box.position.set(0, 0, 0);
+          this.scene.add(this.box);
+        }
+
+        createRenderTargets() {
+          const renderTargetParameters = {
+            minFilter: THREE.LinearFilter,
+            magFilter: THREE.LinearFilter,
+            format: THREE.RGBAFormat,
+          };
+
+          this.renderTarget1 = new THREE.WebGLRenderTarget(
+            window.innerWidth * window.devicePixelRatio,
+            window.innerHeight * window.devicePixelRatio,
+            renderTargetParameters
+          );
+
+          this.renderTarget2 = new THREE.WebGLRenderTarget(
+            window.innerWidth * window.devicePixelRatio,
+            window.innerHeight * window.devicePixelRatio,
+            renderTargetParameters
+          );
+        }
+
+        setupControls() {
+          this.controls = new OrbitControls(
+            this.camera,
+            this.renderer.domElement
+          );
+          this.controls.enableZoom = false;
+          this.controls.autoRotate = true;
+          this.controls.autoRotateSpeed = 3;
+          this.controls.enableDamping = true;
+          this.controls.dampingFactor = 0.05;
+        }
+
+        updateUniforms() {
+          const resolution = new THREE.Vector2(
+            window.innerWidth,
+            window.innerHeight
+          ).multiplyScalar(Math.min(window.devicePixelRatio, 2));
+
+          // Update cylinder 1 materials
+          this.cylinder1.material.forEach((material) => {
+            if (material.type === "ShaderMaterial") {
+              material.uniforms.winResolution.value = resolution;
+            }
+          });
+
+          // Update cylinder 2 materials
+          this.cylinder2.material.forEach((material) => {
+            if (material.type === "ShaderMaterial") {
+              material.uniforms.winResolution.value = resolution;
+            }
+          });
+        }
+
+        animate() {
+          requestAnimationFrame(() => this.animate());
+
+          const elapsedTime = this.clock.getElapsedTime();
+
+          // Update controls
+          this.controls.update();
+
+          // Update uniforms
+          this.updateUniforms();
+
+          // Render to texture 1 (box visible, torus knot hidden)
+          this.torusKnot.visible = false;
+          this.box.visible = true;
+          this.renderer.setRenderTarget(this.renderTarget1);
+          this.renderer.render(this.scene, this.camera);
+
+          // Render to texture 2 (torus knot visible, box hidden)
+          this.torusKnot.visible = true;
+          this.box.visible = false;
+          this.renderer.setRenderTarget(this.renderTarget2);
+          this.renderer.render(this.scene, this.camera);
+
+          // Reset render target
+          this.renderer.setRenderTarget(null);
+
+          // Update textures in materials
+          this.cylinder1.material[0].uniforms.uTexture.value =
+            this.renderTarget1.texture;
+          this.cylinder1.material[1].uniforms.uTexture.value =
+            this.renderTarget1.texture;
+          this.cylinder2.material[0].uniforms.uTexture.value =
+            this.renderTarget2.texture;
+          this.cylinder2.material[2].uniforms.uTexture.value =
+            this.renderTarget2.texture;
+
+          // Animate positions
+          const newPosZ = Math.sin(elapsedTime) * 3.5;
+          this.box.position.z = newPosZ;
+          this.torusKnot.position.z = newPosZ;
+
+          // Animate rotations
+          this.box.rotation.x = Math.cos(elapsedTime / 2);
+          this.box.rotation.y = Math.sin(elapsedTime / 2);
+          this.box.rotation.z = Math.sin(elapsedTime / 2);
+
+          this.torusKnot.rotation.x = Math.cos(elapsedTime / 2);
+          this.torusKnot.rotation.y = Math.sin(elapsedTime / 2);
+          this.torusKnot.rotation.z = Math.sin(elapsedTime / 2);
+
+          // Final render
+          this.renderer.render(this.scene, this.camera);
+        }
+
+        handleResize() {
+          window.addEventListener("resize", () => {
+            // Update camera
+            this.camera.aspect = window.innerWidth / window.innerHeight;
+            this.camera.updateProjectionMatrix();
+
+            // Update renderer
+            this.renderer.setSize(window.innerWidth, window.innerHeight);
+            this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+            // Update render targets
+            this.renderTarget1.setSize(
+              window.innerWidth * window.devicePixelRatio,
+              window.innerHeight * window.devicePixelRatio
+            );
+            this.renderTarget2.setSize(
+              window.innerWidth * window.devicePixelRatio,
+              window.innerHeight * window.devicePixelRatio
+            );
+          });
+        }
+      }
+
+      // Initialize the scene
+      new TransformPortal();
     </script>
-</body>
+  </body>
 </html>

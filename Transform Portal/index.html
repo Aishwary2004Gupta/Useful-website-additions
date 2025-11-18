@@ -162,7 +162,11 @@
         //     transparent: true,
         //     opacity: 0,
         //   });
-        
+        const capMaterial = new THREE.MeshStandardMaterial({
+            color: 0x87ceeb,
+            roughness: 1,
+            metalness: 0
+        });
 
           this.cylinder1.material = [
             shaderMaterial1,

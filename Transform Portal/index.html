@@ -157,21 +157,16 @@
             },
           });
 
-        //   const transparentMaterial = new THREE.MeshStandardMaterial({
-        //     color: 0x87ceeb,
-        //     transparent: true,
-        //     opacity: 0,
-        //   });
-        const capMaterial = new THREE.MeshStandardMaterial({
+          const transparentMaterial = new THREE.MeshStandardMaterial({
             color: 0x87ceeb,
-            roughness: 1,
-            metalness: 0
-        });
+            transparent: true,
+            opacity: 0,
+          });
 
           this.cylinder1.material = [
             shaderMaterial1,
             shaderMaterial2,
-            capMaterial,
+            transparentMaterial,
           ];
           this.scene.add(this.cylinder1);
 
@@ -201,7 +196,7 @@
 
           this.cylinder2.material = [
             shaderMaterial3,
-            capMaterial.clone(),
+            transparentMaterial.clone(),
             shaderMaterial4,
           ];
           this.scene.add(this.cylinder2);
@@ -269,8 +264,8 @@
             this.camera,
             this.renderer.domElement
           );
-          this.controls.enableZoom = true;
-        //   this.controls.autoRotate = true;
+          this.controls.enableZoom = false;
+          this.controls.autoRotate = true;
           this.controls.autoRotateSpeed = 3;
           this.controls.enableDamping = true;
           this.controls.dampingFactor = 0.05;

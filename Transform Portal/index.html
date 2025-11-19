@@ -209,62 +209,62 @@
           const staticTorus = new THREE.Mesh(torusGeometry, torusMaterial);
           this.scene.add(staticTorus);
 
-            // Create torus knot
-        //   const torusKnotGeometry = new THREE.TorusKnotGeometry(
-        //     0.75,
-        //     0.3,
-        //     100,
-        //     16
-        //   );
-        //   const torusKnotMaterial = new THREE.MeshPhysicalMaterial({
-        //     roughness: 0,
-        //     clearcoat: 1,
-        //     clearcoatRoughness: 0,
-        //     color: 0x73b9ed,
-        //   });
-        //   this.torusKnot = new THREE.Mesh(torusKnotGeometry, torusKnotMaterial);
-        //   this.torusKnot.position.set(0, 0, 0);
-        //   this.scene.add(this.torusKnot);
+          // Create torus knot
+          //   const torusKnotGeometry = new THREE.TorusKnotGeometry(
+          //     0.75,
+          //     0.3,
+          //     100,
+          //     16
+          //   );
+          //   const torusKnotMaterial = new THREE.MeshPhysicalMaterial({
+          //     roughness: 0,
+          //     clearcoat: 1,
+          //     clearcoatRoughness: 0,
+          //     color: 0x73b9ed,
+          //   });
+          //   this.torusKnot = new THREE.Mesh(torusKnotGeometry, torusKnotMaterial);
+          //   this.torusKnot.position.set(0, 0, 0);
+          //   this.scene.add(this.torusKnot);
 
-            // Create smooth torus (replacing torus knot)
-        const innerTorusGeometry = new THREE.TorusGeometry(
-            1.0,   // radius
-            0.35,  // tube
-            64,    // radial segments
-            128    // tubular segments
-        );
+          // Create smooth torus (replacing torus knot)
+          const innerTorusGeometry = new THREE.TorusGeometry(
+            1.0, // radius
+            0.35, // tube
+            64, // radial segments
+            128 // tubular segments
+          );
 
-        const innerTorusMaterial = new THREE.MeshPhysicalMaterial({
+          const innerTorusMaterial = new THREE.MeshPhysicalMaterial({
             roughness: 0,
             clearcoat: 1,
             clearcoatRoughness: 0,
             color: 0x73b9ed,
-        });
+          });
 
-        this.torusKnot = new THREE.Mesh(innerTorusGeometry, innerTorusMaterial);
-        this.torusKnot.position.set(0, 0, 0);
-        this.scene.add(this.torusKnot);
+          this.torusKnot = new THREE.Mesh(
+            innerTorusGeometry,
+            innerTorusMaterial
+          );
+          this.torusKnot.position.set(0, 0, 0);
+          this.scene.add(this.torusKnot);
 
+          // Create sphere
+          // const sphereGeometry = new THREE.SphereGeometry(
+          //     1.0,   // radius
+          //     60,    // width segments (smooth)
+          //     64     // height segments (smooth)
+          // );
 
+          // const sphereMaterial = new THREE.MeshPhysicalMaterial({
+          //     roughness: 0,
+          //     clearcoat: 1,
+          //     clearcoatRoughness: 0,
+          //     color: 0x73b9ed,   // same color as before
+          // });
 
-            // Create sphere
-        // const sphereGeometry = new THREE.SphereGeometry(
-        //     1.0,   // radius
-        //     60,    // width segments (smooth)
-        //     64     // height segments (smooth)
-        // );
-
-        // const sphereMaterial = new THREE.MeshPhysicalMaterial({
-        //     roughness: 0,
-        //     clearcoat: 1,
-        //     clearcoatRoughness: 0,
-        //     color: 0x73b9ed,   // same color as before
-        // });
-
-        // this.torusKnot = new THREE.Mesh(sphereGeometry, sphereMaterial);
-        // this.torusKnot.position.set(0, 0, 0);
-        // this.scene.add(this.torusKnot);
-
+          // this.torusKnot = new THREE.Mesh(sphereGeometry, sphereMaterial);
+          // this.torusKnot.position.set(0, 0, 0);
+          // this.scene.add(this.torusKnot);
 
           // Create box
           const boxGeometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);

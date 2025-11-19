@@ -228,17 +228,17 @@
 
             // Create smooth torus (replacing torus knot)
         const innerTorusGeometry = new THREE.TorusGeometry(
-        1.0,   // radius
-        0.35,  // tube
-        64,    // radial segments
-        128    // tubular segments
+            1.0,   // radius
+            0.35,  // tube
+            64,    // radial segments
+            128    // tubular segments
         );
 
         const innerTorusMaterial = new THREE.MeshPhysicalMaterial({
-        roughness: 0,
-        clearcoat: 1,
-        clearcoatRoughness: 0,
-        color: 0x73b9ed,
+            roughness: 0,
+            clearcoat: 1,
+            clearcoatRoughness: 0,
+            color: 0x73b9ed,
         });
 
         this.torusKnot = new THREE.Mesh(innerTorusGeometry, innerTorusMaterial);

@@ -209,22 +209,25 @@
           const staticTorus = new THREE.Mesh(torusGeometry, torusMaterial);
           this.scene.add(staticTorus);
 
-          // Create torus knot
-          const torusKnotGeometry = new THREE.TorusKnotGeometry(
-            0.75,
-            0.3,
-            100,
-            16
-          );
-          const torusKnotMaterial = new THREE.MeshPhysicalMaterial({
-            roughness: 0,
-            clearcoat: 1,
-            clearcoatRoughness: 0,
-            color: 0x73b9ed,
-          });
-          this.torusKnot = new THREE.Mesh(torusKnotGeometry, torusKnotMaterial);
-          this.torusKnot.position.set(0, 0, 0);
-          this.scene.add(this.torusKnot);
+            // Create torus knot
+        //   const torusKnotGeometry = new THREE.TorusKnotGeometry(
+        //     0.75,
+        //     0.3,
+        //     100,
+        //     16
+        //   );
+        //   const torusKnotMaterial = new THREE.MeshPhysicalMaterial({
+        //     roughness: 0,
+        //     clearcoat: 1,
+        //     clearcoatRoughness: 0,
+        //     color: 0x73b9ed,
+        //   });
+        //   this.torusKnot = new THREE.Mesh(torusKnotGeometry, torusKnotMaterial);
+        //   this.torusKnot.position.set(0, 0, 0);
+        //   this.scene.add(this.torusKnot);
+
+        
+
 
           // Create box
           const boxGeometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);

@@ -443,63 +443,86 @@
 
         // SwitchBehavior (audio skipped due to missing assets)
         class SwitchBehavior {
-            constructor() {
-                this.#toggled = false;
-                this.#pressed = false;
-                this.#progress = 0;
-                this.#velocity = 0;
-                this.#squashXSpring = new Spring(squashXProperties);
-                this.#squashZSpring = new Spring(squashZProperties);
-                this.#wiggleXSpring = new Spring(wiggleXProperties);
-                // Audio init skipped
-            }
-            update(dt) {
-                if (dt <= 0) return;
-                let acc = 0;
-                if (this.#toggled && this.#progress < 1) acc = SWITCH_ACCELERATION;
-                if (!this.#toggled && this.#progress > 0) acc = -SWITCH_ACCELERATION;
-                if (this.#pressed) {
-                    this.#squashXSpring.velocity = -2;
-                    this.#squashZSpring.velocity = 1;
-                    this.#wiggleXSpring.velocity = Math.sign(this.#progress - 0.5);
-                }
-                this.#velocity += acc * dt;
-                if (this.#progress > 0 && this.#progress < 1) {
-                    this.#wiggleXSpring.velocity = this.#velocity;
-                }
-                this.#progress += this.#velocity * dt;
-                if (this.#progress > 1) {
-                    this.#progress = 1;
-                    this.#velocity = 0;
-                    this.#squashXSpring.velocity = -5;
-                    this.#squashZSpring.velocity = 5;
-                    this.#wiggleXSpring.velocity = -10;
-                    // playSwitchOn();
-                }
-                if (this.#progress < 0) {
-                    this.#progress = 0;
-                    this.#velocity = 0;
-                    this.#squashXSpring.velocity = -5;
-                    this.#squashZSpring.velocity = 5;
-                    this.#wiggleXSpring.velocity = 10;
-                    // playSwitchOff();
-                }
-                this.#progress = Math.max(0, Math.min(1, this.#progress));
-                this.#squashXSpring.update(dt);
-                this.#squashZSpring.update(dt);
-                this.#wiggleXSpring.update(dt);
-                uniforms.u_switchState.value.set(
-                    this.#progress,
-                    this.#squashXSpring.value,
-                    this.#squashZSpring.value,
-                    this.#wiggleXSpring.value
-                );
-            }
-            get pressed() { return this.#pressed; }
-            set pressed(v) { this.#pressed = v; }
-            get toggled() { return this.#toggled; }
-            set toggled(v) { this.#toggled = v; }
+
+    // Declare private fields
+    #toggled;
+    #pressed;
+    #progress;
+    #velocity;
+    #squashXSpring;
+    #squashZSpring;
+    #wiggleXSpring;
+
+    constructor() {
+        this.#toggled = false;
+        this.#pressed = false;
+        this.#progress = 0;
+        this.#velocity = 0;
+
+        this.#squashXSpring = new Spring(squashXProperties);
+        this.#squashZSpring = new Spring(squashZProperties);
+        this.#wiggleXSpring = new Spring(wiggleXProperties);
+    }
+
+    update(dt) {
+        if (dt <= 0) return;
+
+        let acc = 0;
+
+        if (this.#toggled && this.#progress < 1) acc = SWITCH_ACCELERATION;
+        if (!this.#toggled && this.#progress > 0) acc = -SWITCH_ACCELERATION;
+
+        if (this.#pressed) {
+            this.#squashXSpring.velocity = -2;
+            this.#squashZSpring.velocity = 1;
+            this.#wiggleXSpring.velocity = Math.sign(this.#progress - 0.5);
         }
+
+        this.#velocity += acc * dt;
+
+        if (this.#progress > 0 && this.#progress < 1) {
+            this.#wiggleXSpring.velocity = this.#velocity;
+        }
+
+        this.#progress += this.#velocity * dt;
+
+        if (this.#progress > 1) {
+            this.#progress = 1;
+            this.#velocity = 0;
+            this.#squashXSpring.velocity = -5;
+            this.#squashZSpring.velocity = 5;
+            this.#wiggleXSpring.velocity = -10;
+        }
+
+        if (this.#progress < 0) {
+            this.#progress = 0;
+            this.#velocity = 0;
+            this.#squashXSpring.velocity = -5;
+            this.#squashZSpring.velocity = 5;
+            this.#wiggleXSpring.velocity = 10;
+        }
+
+        this.#squashXSpring.update(dt);
+        this.#squashZSpring.update(dt);
+        this.#wiggleXSpring.update(dt);
+
+        uniforms.u_switchState.value.set(
+            this.#progress,
+            this.#squashXSpring.value,
+            this.#squashZSpring.value,
+            this.#wiggleXSpring.value
+        );
+    }
+
+    get pressed() { return this.#pressed; }
+    set pressed(v) { this.#pressed = v; }
+
+    get toggled() { return this.#toggled; }
+    set toggled(v) { this.#toggled = v; }
+}
+
+
+
 
         const switchBehavior = new SwitchBehavior();
 

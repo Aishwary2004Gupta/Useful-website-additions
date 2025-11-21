@@ -1,68 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Jelly Slider Demo</title>
-  <style>
-    body { font-family: sans-serif; background: #222; color: #eee; text-align: center; }
-    canvas { display: block; margin: 24px auto; box-shadow: 0 4px 16px #000a; background: #333; }
-    #slider { width: 300px; margin-top: 32px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jelly Switch</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            background: #1a1a1a;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-  <h2>Jelly Slider Demo</h2>
-  <input type="range" min="0" max="100" value="50" id="slider">
-  <canvas id="jellyCanvas" width="500" height="180"></canvas>
-  <script>
-    const canvas = document.getElementById('jellyCanvas');
-    const ctx = canvas.getContext('2d');
-    const slider = document.getElementById('slider');
-    
-    let lastX = Number(slider.value);
-
-    function drawJelly(x) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Jelly color and shadow
-      ctx.save();
-      ctx.shadowColor = "#0ff";
-      ctx.shadowBlur = 24;
-      ctx.fillStyle = "#08f";
-
-      // Jelly shape with control points
-      ctx.beginPath();
-      ctx.moveTo(100, 90);
-      ctx.bezierCurveTo(150, 60, x, 60, 400, 90);
-      ctx.bezierCurveTo(415, 130, x, 140, 85, 120);
-      ctx.closePath();
-      ctx.fill();
-
-      ctx.restore();
-    }
-
-    function animateJelly(newX) {
-      const frames = 13;
-      let frame = 0;
-      const oldX = lastX;
-      function ani() {
-        frame++;
-        // Ease animation
-        const ease = (1 - Math.cos(frame * Math.PI / frames)) / 2;
-        const x = oldX + (newX - oldX) * ease;
-        drawJelly(x * 3.6 + 60);
-        if(frame < frames) requestAnimationFrame(ani);
-        else lastX = newX;
-      }
-      ani();
-    }
-
-    slider.addEventListener('input', e => {
-      const x = Number(slider.value);
-      animateJelly(x);
-    });
-
-    // Initial draw
-    drawJelly(Number(slider.value) * 3.6 + 60);
-  </script>
+    <canvas id="canvas"></canvas>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>

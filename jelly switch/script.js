@@ -103,15 +103,15 @@ const canvas = document.getElementById('canvas');
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x1a1a1a);
 
-// Camera setup (matching original position)
+// Camera setup (adjusted for better button view)
 const camera = new THREE.PerspectiveCamera(
     45,
     window.innerWidth / window.innerHeight,
     0.1,
     100
 );
-camera.position.set(0.024, 2.7, 1.9);
-camera.lookAt(0, 0, 0);
+camera.position.set(0.024, 1.8, 2.2);
+camera.lookAt(0, 0.3, 0);
 
 // Renderer
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -139,41 +139,147 @@ directionalLight.shadow.camera.top = 5;
 directionalLight.shadow.camera.bottom = -5;
 scene.add(directionalLight);
 
-// Ground plane with cutout
-const groundGroup = new THREE.Group();
-scene.add(groundGroup);
+// Button housing group
+const buttonHousing = new THREE.Group();
+scene.add(buttonHousing);
 
-// Main ground plane
+// Main base panel (the button housing)
+const baseSize = 1.2;
+const baseThickness = 0.15;
+const baseGeometry = new THREE.BoxGeometry(baseSize, baseThickness, baseSize * 0.6);
+const baseMaterial = new THREE.MeshStandardMaterial({
+    color: 0x2a2a2a,
+    roughness: 0.4,
+    metalness: 0.3,
+});
+const base = new THREE.Mesh(baseGeometry, baseMaterial);
+base.position.y = baseThickness / 2;
+base.castShadow = true;
+base.receiveShadow = true;
+buttonHousing.add(base);
+
+// Top panel (the surface where the button slides)
+const topPanelGeometry = new THREE.BoxGeometry(baseSize, 0.02, baseSize * 0.6);
+const topPanelMaterial = new THREE.MeshStandardMaterial({
+    color: 0xffffff,
+    roughness: 0.2,
+    metalness: 0.1,
+});
+const topPanel = new THREE.Mesh(topPanelGeometry, topPanelMaterial);
+topPanel.position.y = baseThickness + 0.01;
+topPanel.receiveShadow = true;
+buttonHousing.add(topPanel);
+
+// Rail track (the groove where the button slides)
+const railLength = SWITCH_RAIL_LENGTH + 0.2;
+const railWidth = 0.12;
+const railDepth = 0.03;
+const railGeometry = new THREE.BoxGeometry(railLength, railDepth, railWidth);
+const railMaterial = new THREE.MeshStandardMaterial({
+    color: 0x1a1a1a,
+    roughness: 0.8,
+    metalness: 0.0,
+});
+const rail = new THREE.Mesh(railGeometry, railMaterial);
+rail.position.y = baseThickness + 0.01 - railDepth / 2;
+rail.receiveShadow = true;
+buttonHousing.add(rail);
+
+// Rail edges (left and right walls of the track)
+const railEdgeHeight = 0.08;
+const railEdgeThickness = 0.01;
+const railEdgeGeometry = new THREE.BoxGeometry(railEdgeThickness, railEdgeHeight, railWidth + 0.02);
+
+// Left rail edge
+const leftEdge = new THREE.Mesh(railEdgeGeometry, baseMaterial);
+leftEdge.position.set(-railLength / 2, baseThickness + railEdgeHeight / 2, 0);
+leftEdge.castShadow = true;
+buttonHousing.add(leftEdge);
+
+// Right rail edge
+const rightEdge = new THREE.Mesh(railEdgeGeometry, baseMaterial);
+rightEdge.position.set(railLength / 2, baseThickness + railEdgeHeight / 2, 0);
+rightEdge.castShadow = true;
+buttonHousing.add(rightEdge);
+
+// End stops/indicators
+const endStopSize = 0.04;
+const endStopGeometry = new THREE.BoxGeometry(endStopSize, 0.02, railWidth);
+const endStopMaterial = new THREE.MeshStandardMaterial({
+    color: 0x444444,
+    roughness: 0.5,
+    metalness: 0.2,
+});
+
+// Left end stop (OFF position)
+const leftEndStop = new THREE.Mesh(endStopGeometry, endStopMaterial);
+leftEndStop.position.set(-railLength / 2, baseThickness + 0.02, 0);
+buttonHousing.add(leftEndStop);
+
+// Right end stop (ON position)
+const rightEndStop = new THREE.Mesh(endStopGeometry, endStopMaterial);
+rightEndStop.position.set(railLength / 2, baseThickness + 0.02, 0);
+buttonHousing.add(rightEndStop);
+
+// Add corner screws for realism
+const screwGeometry = new THREE.CylinderGeometry(0.015, 0.015, 0.02, 16);
+const screwMaterial = new THREE.MeshStandardMaterial({
+    color: 0x555555,
+    roughness: 0.3,
+    metalness: 0.8,
+});
+const screwPositions = [
+    [-baseSize / 2 + 0.05, baseThickness + 0.01, -baseSize * 0.3 + 0.05],
+    [baseSize / 2 - 0.05, baseThickness + 0.01, -baseSize * 0.3 + 0.05],
+    [-baseSize / 2 + 0.05, baseThickness + 0.01, baseSize * 0.3 - 0.05],
+    [baseSize / 2 - 0.05, baseThickness + 0.01, baseSize * 0.3 - 0.05],
+];
+screwPositions.forEach(([x, y, z]) => {
+    const screw = new THREE.Mesh(screwGeometry, screwMaterial);
+    screw.rotation.x = Math.PI / 2;
+    screw.position.set(x, y, z);
+    screw.castShadow = true;
+    buttonHousing.add(screw);
+});
+
+// Labels (ON/OFF text indicators)
+function createTextSprite(text, color = 0x888888) {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.width = 256;
+    canvas.height = 64;
+    context.fillStyle = `#${color.toString(16).padStart(6, '0')}`;
+    context.font = 'Bold 48px Arial';
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText(text, 128, 32);
+    const texture = new THREE.CanvasTexture(canvas);
+    const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+    const sprite = new THREE.Sprite(spriteMaterial);
+    sprite.scale.set(0.15, 0.05, 1);
+    return sprite;
+}
+
+const offLabel = createTextSprite('OFF', 0x666666);
+offLabel.position.set(-railLength / 2 - 0.15, baseThickness + 0.1, 0);
+buttonHousing.add(offLabel);
+
+const onLabel = createTextSprite('ON', 0x888888);
+onLabel.position.set(railLength / 2 + 0.15, baseThickness + 0.1, 0);
+buttonHousing.add(onLabel);
+
+// Ground plane (background)
 const groundGeometry = new THREE.PlaneGeometry(10, 10);
 const groundMaterial = new THREE.MeshStandardMaterial({
-    color: 0xffffff,
-    roughness: 0.3,
-    metalness: 0.1,
+    color: 0x1a1a1a,
+    roughness: 0.8,
+    metalness: 0.0,
 });
 const ground = new THREE.Mesh(groundGeometry, groundMaterial);
 ground.rotation.x = -Math.PI / 2;
-ground.position.y = 0.06;
+ground.position.y = -0.5;
 ground.receiveShadow = true;
-groundGroup.add(ground);
-
-// Create a darker area for the rail cutout effect
-// This simulates the shadow/cutout area
-const cutoutGeometry = new THREE.PlaneGeometry(
-    SWITCH_RAIL_LENGTH + 0.4,
-    0.1,
-    32,
-    32
-);
-const cutoutMaterial = new THREE.MeshStandardMaterial({
-    color: 0x333333,
-    roughness: 0.5,
-    metalness: 0.0,
-});
-const cutout = new THREE.Mesh(cutoutGeometry, cutoutMaterial);
-cutout.rotation.x = -Math.PI / 2;
-cutout.position.y = 0.055;
-cutout.receiveShadow = true;
-groundGroup.add(cutout);
+scene.add(ground);
 
 // Jelly switch
 const switchBehavior = new SwitchBehavior();
@@ -274,7 +380,8 @@ function animate() {
     // Update jelly position and transform
     const switchX = (state.progress - 0.5) * SWITCH_RAIL_LENGTH;
     const jellyX = switchX - state.squashX * (state.progress - 0.5) * 0.2;
-    const jellyY = JELLY_HALFSIZE.y * 0.5;
+    // Position button so it sits in the rail track, slightly above the top panel
+    const jellyY = baseThickness + 0.02 + JELLY_HALFSIZE.y;
     
     jellyMesh.position.set(jellyX, jellyY, 0);
 
@@ -293,12 +400,24 @@ function animate() {
     const emission = Math.max(0.7, Math.smoothstep(0.7, 1, state.progress) * 2 + 0.7);
     jellyMaterial.emissiveIntensity = emission * 0.2;
 
-    // Update ground material based on bounce light
+    // Update ON/OFF label colors based on state
+    const labelColor = state.progress > 0.5 ? 0x00ff00 : 0x666666;
+    const offColor = state.progress < 0.5 ? 0xff0000 : 0x666666;
+    
+    // Update label materials
+    if (offLabel.material) {
+        offLabel.material.color.setHex(offColor);
+    }
+    if (onLabel.material) {
+        onLabel.material.color.setHex(labelColor);
+    }
+
+    // Update top panel bounce light
     const bounceLight = JELLY_COLOR.clone().multiplyScalar(
         1 / (jellyMesh.position.lengthSq() * 15 + 1) * 0.4 * emission
     );
-    groundMaterial.emissive.copy(bounceLight);
-    groundMaterial.emissiveIntensity = 0.3;
+    topPanelMaterial.emissive.copy(bounceLight);
+    topPanelMaterial.emissiveIntensity = 0.2;
 
     renderer.render(scene, camera);
     requestAnimationFrame(animate);

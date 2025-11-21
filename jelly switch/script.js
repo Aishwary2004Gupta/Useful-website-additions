@@ -5,7 +5,7 @@ const JELLY_HALFSIZE = new THREE.Vector3(0.35, 0.3, 0.3);
 const SWITCH_RAIL_LENGTH = 0.4;
 const SWITCH_ACCELERATION = 100;
 const JELLY_IOR = 1.42;
-const JELLY_COLOR = new THREE.Color(1.0, 0.45, 0.075);
+const JELLY_COLOR = new THREE.Color(0.3, 0.6, 0.95); // Translucent blue
 
 // Spring properties
 const squashXProperties = { mass: 1, stiffness: 1000, damping: 10 };
@@ -101,17 +101,17 @@ class SwitchBehavior {
 // Create scene
 const canvas = document.getElementById('canvas');
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x1a1a1a);
+scene.background = new THREE.Color(0xd0d0d0); // Light grey background
 
-// Camera setup (adjusted for better button view)
+// Camera setup (top-down view like the image)
 const camera = new THREE.PerspectiveCamera(
     45,
     window.innerWidth / window.innerHeight,
     0.1,
     100
 );
-camera.position.set(0.024, 1.8, 2.2);
-camera.lookAt(0, 0.3, 0);
+camera.position.set(0, 4, 0); // Perfect top-down view
+camera.lookAt(0, 0, 0);
 
 // Renderer
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -121,165 +121,73 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-// Lighting
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.6 * 0.6);
+// Soft, diffused lighting
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
 scene.add(ambientLight);
 
-const lightDir = new THREE.Vector3(0.19, -0.24, 0.75).normalize();
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-directionalLight.position.copy(lightDir.clone().multiplyScalar(-10));
+// Soft directional light from above
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+directionalLight.position.set(0, 5, 2);
 directionalLight.castShadow = true;
 directionalLight.shadow.mapSize.width = 2048;
 directionalLight.shadow.mapSize.height = 2048;
 directionalLight.shadow.camera.near = 0.1;
-directionalLight.shadow.camera.far = 50;
-directionalLight.shadow.camera.left = -5;
-directionalLight.shadow.camera.right = 5;
-directionalLight.shadow.camera.top = 5;
-directionalLight.shadow.camera.bottom = -5;
+directionalLight.shadow.camera.far = 10;
+directionalLight.shadow.camera.left = -2;
+directionalLight.shadow.camera.right = 2;
+directionalLight.shadow.camera.top = 2;
+directionalLight.shadow.camera.bottom = -2;
+directionalLight.shadow.radius = 8; // Soft shadows
 scene.add(directionalLight);
 
-// Button housing group
-const buttonHousing = new THREE.Group();
-scene.add(buttonHousing);
+// Additional fill light for softness
+const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
+fillLight.position.set(-2, 3, -1);
+scene.add(fillLight);
 
-// Main base panel (the button housing)
-const baseSize = 1.2;
-const baseThickness = 0.15;
-const baseGeometry = new THREE.BoxGeometry(baseSize, baseThickness, baseSize * 0.6);
-const baseMaterial = new THREE.MeshStandardMaterial({
-    color: 0x2a2a2a,
-    roughness: 0.4,
-    metalness: 0.3,
-});
-const base = new THREE.Mesh(baseGeometry, baseMaterial);
-base.position.y = baseThickness / 2;
-base.castShadow = true;
-base.receiveShadow = true;
-buttonHousing.add(base);
-
-// Top panel (the surface where the button slides)
-const topPanelGeometry = new THREE.BoxGeometry(baseSize, 0.02, baseSize * 0.6);
-const topPanelMaterial = new THREE.MeshStandardMaterial({
-    color: 0xffffff,
+// Minimalist surface - light grey panel
+const surfaceSize = 3;
+const surfaceThickness = 0.05;
+const surfaceGeometry = new THREE.BoxGeometry(surfaceSize, surfaceThickness, surfaceSize);
+const surfaceMaterial = new THREE.MeshStandardMaterial({
+    color: 0xe8e8e8, // Light grey (slightly lighter)
     roughness: 0.2,
-    metalness: 0.1,
+    metalness: 0.0,
 });
-const topPanel = new THREE.Mesh(topPanelGeometry, topPanelMaterial);
-topPanel.position.y = baseThickness + 0.01;
-topPanel.receiveShadow = true;
-buttonHousing.add(topPanel);
+const surface = new THREE.Mesh(surfaceGeometry, surfaceMaterial);
+surface.rotation.x = -Math.PI / 2;
+surface.position.y = 0;
+surface.receiveShadow = true;
+surface.castShadow = false;
+scene.add(surface);
 
-// Rail track (the groove where the button slides)
-const railLength = SWITCH_RAIL_LENGTH + 0.2;
-const railWidth = 0.12;
-const railDepth = 0.03;
+// Recessed rail slot (darker grey groove)
+const railLength = SWITCH_RAIL_LENGTH + 0.4;
+const railWidth = 0.18;
+const railDepth = 0.025;
 const railGeometry = new THREE.BoxGeometry(railLength, railDepth, railWidth);
 const railMaterial = new THREE.MeshStandardMaterial({
-    color: 0x1a1a1a,
-    roughness: 0.8,
+    color: 0x999999, // Darker grey for the recessed slot
+    roughness: 0.7,
     metalness: 0.0,
 });
 const rail = new THREE.Mesh(railGeometry, railMaterial);
-rail.position.y = baseThickness + 0.01 - railDepth / 2;
+rail.rotation.x = -Math.PI / 2;
+rail.position.y = -railDepth / 2 + 0.001; // Slightly recessed
 rail.receiveShadow = true;
-buttonHousing.add(rail);
+scene.add(rail);
 
-// Rail edges (left and right walls of the track)
-const railEdgeHeight = 0.08;
-const railEdgeThickness = 0.01;
-const railEdgeGeometry = new THREE.BoxGeometry(railEdgeThickness, railEdgeHeight, railWidth + 0.02);
-
-// Left rail edge
-const leftEdge = new THREE.Mesh(railEdgeGeometry, baseMaterial);
-leftEdge.position.set(-railLength / 2, baseThickness + railEdgeHeight / 2, 0);
-leftEdge.castShadow = true;
-buttonHousing.add(leftEdge);
-
-// Right rail edge
-const rightEdge = new THREE.Mesh(railEdgeGeometry, baseMaterial);
-rightEdge.position.set(railLength / 2, baseThickness + railEdgeHeight / 2, 0);
-rightEdge.castShadow = true;
-buttonHousing.add(rightEdge);
-
-// End stops/indicators
-const endStopSize = 0.04;
-const endStopGeometry = new THREE.BoxGeometry(endStopSize, 0.02, railWidth);
-const endStopMaterial = new THREE.MeshStandardMaterial({
-    color: 0x444444,
-    roughness: 0.5,
-    metalness: 0.2,
-});
-
-// Left end stop (OFF position)
-const leftEndStop = new THREE.Mesh(endStopGeometry, endStopMaterial);
-leftEndStop.position.set(-railLength / 2, baseThickness + 0.02, 0);
-buttonHousing.add(leftEndStop);
-
-// Right end stop (ON position)
-const rightEndStop = new THREE.Mesh(endStopGeometry, endStopMaterial);
-rightEndStop.position.set(railLength / 2, baseThickness + 0.02, 0);
-buttonHousing.add(rightEndStop);
-
-// Add corner screws for realism
-const screwGeometry = new THREE.CylinderGeometry(0.015, 0.015, 0.02, 16);
-const screwMaterial = new THREE.MeshStandardMaterial({
-    color: 0x555555,
-    roughness: 0.3,
-    metalness: 0.8,
-});
-const screwPositions = [
-    [-baseSize / 2 + 0.05, baseThickness + 0.01, -baseSize * 0.3 + 0.05],
-    [baseSize / 2 - 0.05, baseThickness + 0.01, -baseSize * 0.3 + 0.05],
-    [-baseSize / 2 + 0.05, baseThickness + 0.01, baseSize * 0.3 - 0.05],
-    [baseSize / 2 - 0.05, baseThickness + 0.01, baseSize * 0.3 - 0.05],
-];
-screwPositions.forEach(([x, y, z]) => {
-    const screw = new THREE.Mesh(screwGeometry, screwMaterial);
-    screw.rotation.x = Math.PI / 2;
-    screw.position.set(x, y, z);
-    screw.castShadow = true;
-    buttonHousing.add(screw);
-});
-
-// Labels (ON/OFF text indicators)
-function createTextSprite(text, color = 0x888888) {
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    canvas.width = 256;
-    canvas.height = 64;
-    context.fillStyle = `#${color.toString(16).padStart(6, '0')}`;
-    context.font = 'Bold 48px Arial';
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.fillText(text, 128, 32);
-    const texture = new THREE.CanvasTexture(canvas);
-    const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
-    const sprite = new THREE.Sprite(spriteMaterial);
-    sprite.scale.set(0.15, 0.05, 1);
-    return sprite;
-}
-
-const offLabel = createTextSprite('OFF', 0x666666);
-offLabel.position.set(-railLength / 2 - 0.15, baseThickness + 0.1, 0);
-buttonHousing.add(offLabel);
-
-const onLabel = createTextSprite('ON', 0x888888);
-onLabel.position.set(railLength / 2 + 0.15, baseThickness + 0.1, 0);
-buttonHousing.add(onLabel);
-
-// Ground plane (background)
-const groundGeometry = new THREE.PlaneGeometry(10, 10);
-const groundMaterial = new THREE.MeshStandardMaterial({
-    color: 0x1a1a1a,
+// Add subtle shadow/depth to the rail edges for better definition
+const railEdgeGeometry = new THREE.BoxGeometry(railLength, 0.005, railWidth + 0.01);
+const railEdgeMaterial = new THREE.MeshStandardMaterial({
+    color: 0x777777,
     roughness: 0.8,
     metalness: 0.0,
 });
-const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-ground.rotation.x = -Math.PI / 2;
-ground.position.y = -0.5;
-ground.receiveShadow = true;
-scene.add(ground);
+const railEdge = new THREE.Mesh(railEdgeGeometry, railEdgeMaterial);
+railEdge.rotation.x = -Math.PI / 2;
+railEdge.position.y = -railDepth / 2 - 0.002;
+scene.add(railEdge);
 
 // Jelly switch
 const switchBehavior = new SwitchBehavior();
@@ -331,39 +239,41 @@ const jellyGeometry = createRoundedBox(
     JELLY_HALFSIZE.x * 2,
     JELLY_HALFSIZE.y * 2,
     JELLY_HALFSIZE.z * 2,
-    0.1,
-    12
+    0.15, // Larger radius for smoother, more rounded appearance
+    16 // More segments for smoother curves
 );
 
-// Jelly material with transparency and refraction
+// Jelly material - highly translucent, glossy, refractive
 const jellyMaterial = new THREE.MeshPhysicalMaterial({
     color: JELLY_COLOR,
     transparent: true,
-    opacity: 0.9,
-    roughness: 0.1,
+    opacity: 0.4, // More translucent
+    roughness: 0.05, // Very glossy
     metalness: 0.0,
     ior: JELLY_IOR,
-    transmission: 0.95,
+    transmission: 0.98, // Highly transmissive
     thickness: 0.6,
     clearcoat: 1.0,
-    clearcoatRoughness: 0.1,
-    envMapIntensity: 1.5,
+    clearcoatRoughness: 0.05, // Very smooth clearcoat
+    envMapIntensity: 2.0, // Strong reflections
+    side: THREE.DoubleSide, // Render both sides for transparency
 });
 
 // Create environment map for reflections
-// Using a simple cube render target for environment
 const pmremGenerator = new THREE.PMREMGenerator(renderer);
-const envMap = pmremGenerator.fromScene(scene).texture;
+pmremGenerator.compileEquirectangularShader();
+
+// Create a simple environment from the scene
+const envMap = pmremGenerator.fromScene(scene, 0.04).texture;
 jellyMaterial.envMap = envMap;
+
+// Update environment map periodically for better reflections
+let envMapUpdateCounter = 0;
 
 const jellyMesh = new THREE.Mesh(jellyGeometry, jellyMaterial);
 jellyMesh.castShadow = true;
 jellyMesh.receiveShadow = true;
 scene.add(jellyMesh);
-
-// Add subtle emission based on progress
-jellyMaterial.emissive = JELLY_COLOR.clone();
-jellyMaterial.emissiveIntensity = 0.2;
 
 // Animation loop
 let lastTime = performance.now();
@@ -380,8 +290,8 @@ function animate() {
     // Update jelly position and transform
     const switchX = (state.progress - 0.5) * SWITCH_RAIL_LENGTH;
     const jellyX = switchX - state.squashX * (state.progress - 0.5) * 0.2;
-    // Position button so it sits in the rail track, slightly above the top panel
-    const jellyY = baseThickness + 0.02 + JELLY_HALFSIZE.y;
+    // Position button so it sits in the recessed rail, slightly above the surface
+    const jellyY = JELLY_HALFSIZE.y * 0.5 + 0.01;
     
     jellyMesh.position.set(jellyX, jellyY, 0);
 
@@ -396,28 +306,18 @@ function animate() {
     // Apply subtle bend effect (simplified)
     jellyMesh.rotation.x = Math.sin(jellyX * 0.8) * 0.1;
 
-    // Update emission based on progress
-    const emission = Math.max(0.7, Math.smoothstep(0.7, 1, state.progress) * 2 + 0.7);
-    jellyMaterial.emissiveIntensity = emission * 0.2;
+    // Subtle emission for glow effect
+    const emission = Math.max(0.3, Math.smoothstep(0.5, 1, state.progress) * 0.5);
+    jellyMaterial.emissive = JELLY_COLOR.clone();
+    jellyMaterial.emissiveIntensity = emission * 0.15;
 
-    // Update ON/OFF label colors based on state
-    const labelColor = state.progress > 0.5 ? 0x00ff00 : 0x666666;
-    const offColor = state.progress < 0.5 ? 0xff0000 : 0x666666;
-    
-    // Update label materials
-    if (offLabel.material) {
-        offLabel.material.color.setHex(offColor);
+    // Update environment map occasionally for dynamic reflections
+    envMapUpdateCounter++;
+    if (envMapUpdateCounter % 60 === 0) {
+        pmremGenerator.dispose();
+        const newEnvMap = pmremGenerator.fromScene(scene, 0.04).texture;
+        jellyMaterial.envMap = newEnvMap;
     }
-    if (onLabel.material) {
-        onLabel.material.color.setHex(labelColor);
-    }
-
-    // Update top panel bounce light
-    const bounceLight = JELLY_COLOR.clone().multiplyScalar(
-        1 / (jellyMesh.position.lengthSq() * 15 + 1) * 0.4 * emission
-    );
-    topPanelMaterial.emissive.copy(bounceLight);
-    topPanelMaterial.emissiveIntensity = 0.2;
 
     renderer.render(scene, camera);
     requestAnimationFrame(animate);

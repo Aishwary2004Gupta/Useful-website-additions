@@ -1,545 +1,338 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jelly Switch Demo</title>
-    <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background: #000;
-        }
-        canvas {
-            display: block;
-            cursor: pointer;
-        }
-    </style>
+  <meta charset="UTF-8"/>
+  <title>Jelly Switch – Three.js port</title>
+  <style>body{margin:0;background:#000;overflow:hidden}canvas{display:block}</style>
 </head>
 <body>
-    <canvas></canvas>
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.158.0/build/three.module.js"
-            }
-        }
-    </script>
-    <script type="module">
-        import * as THREE from 'three';
+<canvas></canvas>
 
-        const canvas = document.querySelector('canvas');
-        const renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
-        renderer.setPixelRatio(window.devicePixelRatio);
+<script type="importmap">
+{"imports":{"three":"https://unpkg.com/three@0.158.0/build/three.module.js"}}
+</script>
 
-        let qualityScale = 0.5;
-        let width = window.innerWidth * qualityScale;
-        let height = window.innerHeight * qualityScale;
-        renderer.setSize(width, height);
+<script type="module">
+import * as THREE from 'three';
 
-        const scene = new THREE.Scene();
-        const orthoCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-        const geometry = new THREE.PlaneGeometry(2, 2);
+const canvas = document.querySelector('canvas');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:false});
+let quality = 0.5;
+let w = innerWidth  * quality;
+let h = innerHeight * quality;
+renderer.setSize(w,h);
 
-        // Perspective camera for ray computation
-        const perspectiveCamera = new THREE.PerspectiveCamera(
-            45 * Math.PI / 180,
-            width / height,
-            0.1,
-            10
-        );
-        perspectiveCamera.position.set(0.024, 2.7, 1.9);
-        perspectiveCamera.lookAt(0, 0, 0);
+const scene  = new THREE.Scene();
+const camera = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
 
-        // Uniforms
-        const uniforms = {
-            u_time: { value: 0 },
-            u_resolution: { value: new THREE.Vector2(width, height) },
-            u_viewMatrix: { value: new THREE.Matrix4() },
-            u_projMatrix: { value: new THREE.Matrix4() },
-            u_viewInvMatrix: { value: new THREE.Matrix4() },
-            u_projInvMatrix: { value: new THREE.Matrix4() },
-            u_cameraPosition: { value: new THREE.Vector3() },
-            u_lightDir: { value: new THREE.Vector3(0.19, -0.24, 0.75).normalize() },
-            u_lightColor: { value: new THREE.Vector3(1, 1, 1) },
-            u_jellyColor: { value: new THREE.Vector3(1.0, 0.45, 0.075) },
-            u_darkMode: { value: 0.0 },
-            u_random: { value: new THREE.Vector2() },
-            u_switchState: { value: new THREE.Vector4(0.0, 0, 0, 0) }
-        };
+const persp = new THREE.PerspectiveCamera(45*Math.PI/180, w/h, .1, 10);
+persp.position.set(.024, 2.7, 1.9);
+persp.lookAt(0,0,0);
 
-        const material = new THREE.ShaderMaterial({
-            uniforms: uniforms,
-            vertexShader: `
-                varying vec2 vUv;
-                void main() {
-                    vUv = uv;
-                    gl_Position = vec4(position, 1.0);
-                }
-            `,
-            fragmentShader: `
-                varying vec2 vUv;
+const uniforms = {
+  u_time:        {value:0},
+  u_resolution:  {value:new THREE.Vector2(w,h)},
+  u_viewMatrix:  {value:new THREE.Matrix4()},
+  u_projMatrix:  {value:new THREE.Matrix4()},
+  u_viewInvMatrix:{value:new THREE.Matrix4()},
+  u_projInvMatrix:{value:new THREE.Matrix4()},
+  u_cameraPosition:{value:new THREE.Vector3()},
+  u_lightDir:    {value:new THREE.Vector3(.19,-.24,.75).normalize()},
+  u_lightColor:  {value:new THREE.Vector3(1,1,1)},
+  u_jellyColor:  {value:new THREE.Vector3(1,.45,.075)},
+  u_darkMode:    {value:0},
+  u_random:      {value:new THREE.Vector2()},
+  u_switchState: {value:new THREE.Vector4(0,0,0,0)}
+};
 
-                uniform vec2 u_resolution;
-                uniform mat4 u_viewMatrix;
-                uniform mat4 u_projMatrix;
-                uniform mat4 u_viewInvMatrix;
-                uniform mat4 u_projInvMatrix;
-                uniform vec3 u_cameraPosition;
-                uniform vec3 u_lightDir;
-                uniform vec3 u_lightColor;
-                uniform vec3 u_jellyColor;
-                uniform float u_darkMode;
-                uniform vec2 u_random;
-                uniform vec4 u_switchState;
+const mat = new THREE.ShaderMaterial({
+  uniforms,
+  vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position,1.);}`,
+  fragmentShader:`
+precision highp float;
+varying vec2 vUv;
+uniform vec2 u_resolution;
+uniform mat4 u_viewMatrix,u_projMatrix,u_viewInvMatrix,u_projInvMatrix;
+uniform vec3 u_cameraPosition,u_lightDir,u_lightColor,u_jellyColor;
+uniform float u_darkMode;
+uniform vec2 u_random;
+uniform vec4 u_switchState;
 
-                #define MAX_STEPS 64
-                #define MAX_DIST 10.0
-                #define SURF_DIST 0.001
-                #define JELLY_HALFSIZE vec3(0.35, 0.3, 0.3)
-                #define SWITCH_RAIL_LENGTH 0.4
-                #define JELLY_IOR 1.42
-                #define JELLY_SCATTER_STRENGTH 3.0
-                #define AO_STEPS 3
-                #define AO_RADIUS 0.1
-                #define AO_INTENSITY 0.5
-                #define AO_BIAS 0.005
-                #define AMBIENT_COLOR vec3(0.6)
-                #define AMBIENT_INTENSITY 0.6
-                #define SPECULAR_POWER 10.0
-                #define SPECULAR_INTENSITY 0.6
-                #define LIGHT_GROUND_ALBEDO vec3(1.0)
-                #define DARK_GROUND_ALBEDO vec3(0.2)
+#define MAX_STEPS 64
+#define MAX_DIST 10.
+#define SURF_DIST .001
+#define JELLY_HALFSIZE vec3(.35,.3,.3)
+#define SWITCH_RAIL_LENGTH .4
+#define JELLY_IOR 1.42
+#define JELLY_SCATTER_STRENGTH 3.
+#define AO_STEPS 3
+#define AO_RADIUS .1
+#define AO_INTENSITY .5
+#define AO_BIAS .005
+#define AMBIENT_COLOR vec3(.6)
+#define AMBIENT_INTENSITY .6
+#define SPECULAR_POWER 10.
+#define SPECULAR_INTENSITY .6
+#define LIGHT_GROUND vec3(1.)
+#define DARK_GROUND vec3(.2)
 
-                const float groundThickness = 0.03;
-                const float groundRadius = 0.05;
-                const float groundRoundness = 0.02;
+const float groundThick=.03,groundR=.05,groundRound=.02;
 
-                float sdPlane(vec3 p, vec3 n, float h) { return dot(p, n) + h; }
+float sdPlane(vec3 p,vec3 n,float h){return dot(p,n)+h;}
+float sdRoundBox2(vec2 p,vec2 b,float r){
+  vec2 q=abs(p)-b+r;
+  return min(max(q.x,q.y),0.)+length(max(q,0.))-r;
+}
+float sdRoundBox3(vec3 p,vec3 b,float r){
+  vec3 q=abs(p)-b+r;
+  return min(max(q.x,max(q.y,q.z)),0.)+length(max(q,0.))-r;
+}
+float opU(float a,float b){return min(a,b);}
+float opExtrudeY(vec3 p,float d,float h){
+  vec2 w=vec2(d,abs(p.y)-h);
+  return min(max(w.x,w.y),0.)+length(max(w,0.));
+}
+vec3 opCheapBend(vec3 p,float k){
+  float c=cos(k*p.x),s=sin(k*p.x);
+  return vec3(mat2(c,-s,s,c)*p.xy,p.z);
+}
+vec3 opRotAxis(vec3 p,vec3 axis,float ang){
+  float s=sin(ang),c=cos(ang),t=dot(axis,p);
+  return mix(axis*t,p,c)+cross(axis,p)*s;
+}
 
-                float sdRoundedBox2d(vec2 p, vec2 b, float r) {
-                    vec2 q = abs(p) - b + r;
-                    return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - r;
-                }
+float rectCut(vec2 p){
+  return sdRoundBox2(p,vec2(SWITCH_RAIL_LENGTH*.5+.2+groundRound,groundR+groundRound),groundR+groundRound);
+}
+float mainSD(vec3 p){
+  return opU(sdPlane(p,vec3(0,1,0),.06),
+             opExtrudeY(p,-rectCut(p.xz),groundThick-groundRound)-groundRound);
+}
+float jellySD(vec3 p){
+  vec4 st=u_switchState;
+  vec3 off=vec3((st.x-.5)*SWITCH_RAIL_LENGTH-st.y*(st.x-.5)*.2,
+                JELLY_HALFSIZE.y*.5,0.);
+  vec3 sc=vec3(1.-st.y,1.,1.-st.z);
+  vec3 local=opRotAxis((p-off)*sc,vec3(0,0,1),st.w);
+  return sdRoundBox3(opCheapBend(local,.8),JELLY_HALFSIZE-.1,.1);
+}
+vec2 map(vec3 p){
+  float m=mainSD(p),j=jellySD(p);
+  return j<m?vec2(j,1.):vec2(m,0.);
+}
+float mapAO(vec3 p){return min(mainSD(p),jellySD(p));}
 
-                float sdRoundedBox3d(vec3 p, vec3 b, float r) {
-                    vec3 q = abs(p) - b + r;
-                    return min(max(q.x, max(q.y, q.z)), 0.0) + length(max(q, 0.0)) - r;
-                }
+vec3 normal(vec3 p,float e){
+  float d=map(p).x;
+  return normalize(vec3(map(p+vec3(e,0,0)).x-d,
+                        map(p+vec3(0,e,0)).x-d,
+                        map(p+vec3(0,0,e)).x-d));
+}
+vec3 getNormal(vec3 p){
+  return (abs(p.z)>.5||abs(p.x)>1.02)?vec3(0,1,0):normal(p,.0001);
+}
 
-                float opUnion(float d1, float d2) { return min(d1, d2); }
+float sdShadow(vec3 p,vec3 ldir){
+  if(p.y<-groundThick){
+    float f=30.,inset=.02;
+    float cut=rectCut(p.xz)+inset;
+    float edge=clamp(1.-cut*f,0.,1.);
+    float grad=clamp(-p.z*4.*ldir.z+1.,0.,1.);
+    return edge*grad*.5;
+  }
+  return 1.;
+}
+float calcAO(vec3 p,vec3 n){
+  float occ=0.,w=1.;
+  float step=AO_RADIUS/float(AO_STEPS);
+  for(int i=1;i<=AO_STEPS;i++){
+    float h=step*float(i);
+    vec3 s=p+n*h;
+    float d=mapAO(s)-AO_BIAS;
+    occ+=max(0.,h-d)*w;
+    w*=.5;
+    if(occ>AO_RADIUS/AO_INTENSITY)break;
+  }
+  return clamp(1.-AO_INTENSITY*occ/AO_RADIUS,0.,1.);
+}
+vec3 lighting(vec3 p,vec3 n,vec3 ro){
+  vec3 ldir=-u_lightDir;
+  float diff=max(dot(n,ldir),0.);
+  vec3 v=normalize(ro-p);
+  vec3 r=reflect(-ldir,n);
+  float spec=pow(max(dot(v,r),0.),SPECULAR_POWER)*SPECULAR_INTENSITY;
+  vec3 base=vec3(.9);
+  vec3 col=base*u_lightColor*diff*sdShadow(p,ldir)+
+            base*AMBIENT_COLOR*AMBIENT_INTENSITY+
+            u_lightColor*spec*sdShadow(p,ldir);
+  return clamp(col,0.,1.);
+}
+vec4 applyAO(vec3 col,vec3 p,vec3 n){
+  return vec4(col*calcAO(p,n),1.);
+}
 
-                float opExtrudeY(vec3 p, float d, float h) {
-                    vec2 w = vec2(d, abs(p.y) - h);
-                    return min(max(w.x, w.y), 0.0) + length(max(w, 0.0));
-                }
+vec4 bg(vec3 ro,vec3 rd,float t){
+  vec4 st=u_switchState;
+  vec3 p=ro+rd*t;
+  vec3 n=getNormal(p);
+  vec3 base=mix(LIGHT_GROUND,DARK_GROUND,u_darkMode);
+  float sx=(st.x-.5)*SWITCH_RAIL_LENGTH;
+  float d2=length(p-vec3(sx,0,0));
+  vec3 bounce=u_jellyColor*(1./(d2*d2*15.+1.)*.4);
+  vec3 side=u_jellyColor*(1./(d2*d2*40.+1.)*.3*abs(n.z));
+  float e=smoothstep(.7,1.,st.x)*2.+.7;
+  vec3 lit=lighting(p,n,ro);
+  vec4 c=applyAO(base*lit,p,n);
+  c.xyz+=bounce*e+side*e;
+  return c;
+}
+vec3 marchNoJelly(vec3 ro,vec3 rd){
+  float t=0.;
+  for(int i=0;i<6;i++){
+    float d=mainSD(ro+rd*t);
+    t+=d;
+    if(t>MAX_DIST||d<SURF_DIST*10.)break;
+  }
+  return t<MAX_DIST?bg(ro,rd,t).xyz:vec3(0);
+}
+vec4 march(vec3 ro,vec3 rd){
+  float t=0.;
+  for(int i=0;i<MAX_STEPS;i++){
+    float d=mainSD(ro+rd*t);
+    t+=d;
+    if(d<SURF_DIST)break;
+  }
+  vec4 c=bg(ro,rd,t);
 
-                vec3 opCheapBend(vec3 p, float k) {
-                    float c = cos(k * p.x);
-                    float s = sin(k * p.x);
-                    mat2 m = mat2(c, -s, s, c);
-                    return vec3(m * p.xy, p.z);
-                }
+  vec3 bmin=vec3(-1),bmax=vec3(1);
+  vec3 inv=1./rd;
+  vec3 t1=(bmin-ro)*inv,t2=(bmax-ro)*inv;
+  vec3 mn=min(t1,t2),mx=max(t1,t2);
+  float tmin=max(max(mn.x,mn.y),mn.z);
+  float tmax=min(min(mx.x,mx.y),mx.z);
+  if(tmax<tmin||tmax<0.)return c;
 
-                vec3 opRotateAxisAngle(vec3 p, vec3 axis, float angle) {
-                    float s = sin(angle);
-                    float c = cos(angle);
-                    float t = dot(axis, p);
-                    return mix(axis * t, p, c) + cross(axis, p) * s;
-                }
+  t=max(0.,tmin);
+  for(int i=0;i<MAX_STEPS;i++){
+    vec2 h=map(ro+rd*t);
+    t+=h.x;
+    if(h.x<SURF_DIST){
+      if(h.y<.5)break;
+      vec3 p=ro+rd*t;
+      vec3 N=getNormal(p);
+      vec3 I=rd;
+      float cosi=min(1.,max(0.,dot(-I,N)));
+      float F=fresnelSchlick(cosi,1.,JELLY_IOR);
+      vec3 refl=clamp(vec3(p.y+.2),0.,1.);
+      float k=1.-(1./JELLY_IOR/JELLY_IOR)*(1.-cosi*cosi);
+      vec3 refrCol=vec3(0);
+      if(k>0.){
+        vec3 R=normalize(I/JELLY_IOR+N*(cosi/JELLY_IOR-sqrt(k)));
+        vec3 exit=p+R*SURF_DIST*4.;
+        vec3 env=marchNoJelly(exit,R);
+        vec3 absorb=(vec3(1.)-u_jellyColor)*20.;
+        float pr=clamp(mix(1.,.6,p.y/(JELLY_HALFSIZE.y*2.)+.25),0.,1.)*u_switchState.x;
+        vec3 T=beerLambert(absorb*(pr*pr),.08);
+        float fwd=max(0.,dot(-u_lightDir,R));
+        vec3 sc=u_jellyColor*1.5*JELLY_SCATTER_STRENGTH*fwd*pow(pr,3.);
+        refrCol=env*T+sc;
+      }
+      return vec4(mix(refrCol,refl,F),1.);
+    }
+    if(t>MAX_DIST)break;
+  }
+  return c;
+}
+vec3 getRayDir(vec2 ndc){
+  vec4 clip=vec4(ndc,-1.,1.);
+  vec4 view=u_projInvMatrix*clip;view/=view.w;
+  vec4 world=u_viewInvMatrix*view;
+  return normalize(world.xyz-u_cameraPosition);
+}
+void main(){
+  vec2 uv=vUv;
+  vec2 ndc=vec2(uv*2.-1.);ndc.y*=-1.;
+  vec3 ro=u_cameraPosition;
+  vec3 rd=getRayDir(ndc);
+  vec4 col=march(ro,rd);
+  float exposure=mix(1.5,2.,u_darkMode);
+  col.xyz=tanh(col.xyz*exposure);
+  gl_FragColor=col;
+}
+`
+});
 
-                float rectangleCutoutDist(vec2 position) {
-                    return sdRoundedBox2d(
-                        position,
-                        vec2(SWITCH_RAIL_LENGTH * 0.5 + 0.2 + groundRoundness, groundRadius + groundRoundness),
-                        groundRadius + groundRoundness
-                    );
-                }
+scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),mat));
 
-                float getMainSceneDist(vec3 position) {
-                    return opUnion(
-                        sdPlane(position, vec3(0, 1, 0), 0.06),
-                        opExtrudeY(
-                            position,
-                            -rectangleCutoutDist(position.xz),
-                            groundThickness - groundRoundness
-                        ) - groundRoundness
-                    );
-                }
+// ----------  simple spring + switch logic ----------
+class Spring{
+  constructor(cfg){Object.assign(this,{target:0,value:0,vel:0},cfg);}
+  update(dt){
+    const f=-this.stiff*(this.value-this.target)-this.damp*this.vel;
+    this.vel+=f/this.mass*dt;this.value+=this.vel*dt;
+  }
+}
+const SWITCH_ACC=100;
+const sprX=new Spring({mass:1,stiff:1000,damp:10});
+const sprZ=new Spring({mass:1,stiff:900,damp:12});
+const sprW=new Spring({mass:1,stiff:1000,damp:20});
 
-                float getJellyDist(vec3 position) {
-                    vec4 state = u_switchState;
-                    vec3 jellyOrigin = vec3(
-                        (state.x - 0.5) * SWITCH_RAIL_LENGTH - state.y * (state.x - 0.5) * 0.2,
-                        JELLY_HALFSIZE.y * 0.5,
-                        0.0
-                    );
-                    vec3 jellyInvScale = vec3(1.0 - state.y, 1.0, 1.0 - state.z);
-                    vec3 localPos = opRotateAxisAngle(
-                        (position - jellyOrigin) * jellyInvScale,
-                        vec3(0, 0, 1),
-                        state.w
-                    );
-                    return sdRoundedBox3d(
-                        opCheapBend(localPos, 0.8),
-                        JELLY_HALFSIZE - 0.1,
-                        0.1
-                    );
-                }
+class Switch{
+  _t=false;_p=0;_v=0;_prs=false;
+  update(dt){
+    if(dt<=0)return;
+    let acc=0;
+    if(this._t&&this._p<1)acc=SWITCH_ACC;
+    if(!this._t&&this._p>0)acc=-SWITCH_ACC;
+    if(this._prs){sprX.vel=-2;sprZ.vel=1;sprW.vel=Math.sign(this._p-.5);}
+    this._v+=acc*dt;
+    if(this._p>0&&this._p<1)sprW.vel=this._v;
+    this._p+=this._v*dt;
+    if(this._p>1){this._p=1;this._v=0;sprX.vel=-5;sprZ.vel=5;sprW.vel=-10;}
+    if(this._p<0){this._p=0;this._v=0;sprX.vel=-5;sprZ.vel=5;sprW.vel=10;}
+    this._p=clamp(this._p,0.,1.);
+    sprX.update(dt);sprZ.update(dt);sprW.update(dt);
+    uniforms.u_switchState.value.set(this._p,sprX.value,sprZ.value,sprW.value);
+  }
+  get pressed(){return this._prs;} set pressed(v){this._prs=v;}
+  get toggled(){return this._t;}  set toggled(v){this._t=v;}
+}
+const sw=new Switch();
 
-                vec2 getSceneDist(vec3 position) {
-                    float mainScene = getMainSceneDist(position);
-                    float jelly = getJellyDist(position);
-                    if (jelly < mainScene) { return vec2(jelly, 1.0); }
-                    else { return vec2(mainScene, 0.0); }
-                }
+// ----------  events ----------
+['mousedown','touchstart'].forEach(ev=>canvas.addEventListener(ev,e=>{
+  sw.pressed=true;e.preventDefault();
+}));
+['mouseup','touchend'].forEach(ev=>canvas.addEventListener(ev,e=>{
+  sw.pressed=false;sw.toggled=!sw.toggled;e.preventDefault();
+}));
+window.addEventListener('mouseup',()=>sw.pressed=false);
 
-                float getSceneDistForAO(vec3 position) {
-                    return min(getMainSceneDist(position), getJellyDist(position));
-                }
+// ----------  render loop ----------
+let last=0;
+function loop(t){
+  requestAnimationFrame(loop);
+  const dt=Math.min((t-last)*.001,.1);last=t;
+  uniforms.u_time.value=t*.001;
+  sw.update(dt);
+  uniforms.u_random.value.set(Math.random()-.5,Math.random()-.5);
+  persp.updateMatrixWorld();
+  uniforms.u_viewMatrix.value.copy(persp.matrixWorldInverse);
+  uniforms.u_projMatrix.value.copy(persp.projectionMatrix);
+  uniforms.u_viewInvMatrix.value.copy(persp.matrixWorld);
+  uniforms.u_projInvMatrix.value.copy(persp.projectionMatrix).invert();
+  uniforms.u_cameraPosition.value.copy(persp.position);
+  renderer.render(scene,camera);
+}
+loop(0);
 
-                vec3 getApproxNormal(vec3 p, float e) {
-                    float dist = getSceneDist(p).x;
-                    return normalize(vec3(
-                        getSceneDist(p + vec3(e, 0, 0)).x - dist,
-                        getSceneDist(p + vec3(0, e, 0)).x - dist,
-                        getSceneDist(p + vec3(0, 0, e)).x - dist
-                    ));
-                }
-
-                vec3 getNormal(vec3 position) {
-                    if (abs(position.z) > 0.5 || abs(position.x) > 1.02) {
-                        return vec3(0, 1, 0);
-                    }
-                    return getApproxNormal(position, 0.0001);
-                }
-
-                float sqLength(vec3 a) { return dot(a, a); }
-
-                vec3 getFakeShadow(vec3 position, vec3 lightDir) {
-                    if (position.y < -groundThickness) {
-                        float fadeSharpness = 30.0;
-                        float inset = 0.02;
-                        float cutout = rectangleCutoutDist(position.xz) + inset;
-                        float edgeDarkening = clamp(1.0 - cutout * fadeSharpness, 0.0, 1.0);
-                        float lightGradient = clamp(-position.z * 4.0 * lightDir.z + 1.0, 0.0, 1.0);
-                        return vec3(1.0) * edgeDarkening * (lightGradient * 0.5);
-                    }
-                    return vec3(1.0);
-                }
-
-                float calculateAO(vec3 position, vec3 normal) {
-                    float totalOcclusion = 0.0;
-                    float sampleWeight = 1.0;
-                    float stepDistance = AO_RADIUS / float(AO_STEPS);
-                    for (int i = 1; i <= AO_STEPS; i++) {
-                        float sampleHeight = stepDistance * float(i);
-                        vec3 samplePosition = position + normal * sampleHeight;
-                        float distanceToSurface = getSceneDistForAO(samplePosition) - AO_BIAS;
-                        float occlusionContribution = max(0.0, sampleHeight - distanceToSurface);
-                        totalOcclusion += occlusionContribution * sampleWeight;
-                        sampleWeight *= 0.5;
-                        if (totalOcclusion > AO_RADIUS / AO_INTENSITY) break;
-                    }
-                    float rawAO = 1.0 - (AO_INTENSITY * totalOcclusion) / AO_RADIUS;
-                    return clamp(rawAO, 0.0, 1.0);
-                }
-
-                vec3 calculateLighting(vec3 hitPosition, vec3 normal, vec3 rayOrigin) {
-                    vec3 lightDir = -u_lightDir;
-                    vec3 fakeShadow = getFakeShadow(hitPosition, lightDir);
-                    float diffuse = max(dot(normal, lightDir), 0.0);
-                    vec3 viewDir = normalize(rayOrigin - hitPosition);
-                    vec3 reflectDir = reflect(-lightDir, normal);
-                    float specularFactor = pow(max(dot(viewDir, reflectDir), 0.0), SPECULAR_POWER);
-                    vec3 specular = u_lightColor * (specularFactor * SPECULAR_INTENSITY);
-                    vec3 baseColor = vec3(0.9);
-                    vec3 directionalLight = baseColor * u_lightColor * diffuse * fakeShadow;
-                    vec3 ambientLight = baseColor * AMBIENT_COLOR * AMBIENT_INTENSITY;
-                    vec3 finalSpecular = specular * fakeShadow;
-                    return clamp(directionalLight + ambientLight + finalSpecular, 0.0, 1.0);
-                }
-
-                vec4 applyAO(vec3 litColor, vec3 hitPosition, vec3 normal) {
-                    float ao = calculateAO(hitPosition, normal);
-                    vec3 finalColor = litColor * ao;
-                    return vec4(finalColor, 1.0);
-                }
-
-                vec4 renderBackground(vec3 rayOrigin, vec3 rayDirection, float backgroundHitDist) {
-                    vec4 state = u_switchState;
-                    vec3 hitPosition = rayOrigin + rayDirection * backgroundHitDist;
-                    vec3 newNormal = getNormal(hitPosition);
-                    float switchX = (state.x - 0.5) * SWITCH_RAIL_LENGTH;
-                    vec3 jellyCol = u_jellyColor;
-                    float sqDist = sqLength(hitPosition - vec3(switchX, 0, 0));
-                    vec3 bounceLight = jellyCol * (1.0 / (sqDist * 15.0 + 1.0) * 0.4);
-                    vec3 sideBounceLight = jellyCol * (1.0 / (sqDist * 40.0 + 1.0) * 0.3) * abs(newNormal.z);
-                    float emission = smoothstep(0.7, 1.0, state.x) * 2.0 + 0.7;
-                    vec3 litColor = calculateLighting(hitPosition, newNormal, rayOrigin);
-                    vec3 groundAlbedo = mix(LIGHT_GROUND_ALBEDO, DARK_GROUND_ALBEDO, u_darkMode);
-                    vec4 backgroundColor = applyAO(groundAlbedo * litColor, hitPosition, newNormal);
-                    backgroundColor.xyz += bounceLight * emission;
-                    backgroundColor.xyz += sideBounceLight * emission;
-                    return backgroundColor;
-                }
-
-                vec3 rayMarchNoJelly(vec3 rayOrigin, vec3 rayDirection) {
-                    float distanceFromOrigin = 0.0;
-                    for (int i = 0; i < 6; i++) {
-                        vec3 p = rayOrigin + rayDirection * distanceFromOrigin;
-                        float hit = getMainSceneDist(p);
-                        distanceFromOrigin += hit;
-                        if (distanceFromOrigin > MAX_DIST || hit < SURF_DIST * 10.0) break;
-                    }
-                    if (distanceFromOrigin < MAX_DIST) {
-                        return renderBackground(rayOrigin, rayDirection, distanceFromOrigin).xyz;
-                    }
-                    return vec3(0.0);
-                }
-
-                vec4 rayMarch(vec3 rayOrigin, vec3 rayDirection, vec2 uv) {
-                    float backgroundDist = 0.0;
-                    for (int i = 0; i < MAX_STEPS; i++) {
-                        vec3 p = rayOrigin + rayDirection * backgroundDist;
-                        float hit = getMainSceneDist(p);
-                        backgroundDist += hit;
-                        if (hit < SURF_DIST) break;
-                    }
-                    vec4 background = renderBackground(rayOrigin, rayDirection, backgroundDist);
-
-                    vec3 bboxMin = vec3(-1, -1, -1);
-                    vec3 bboxMax = vec3(1, 1, 1);
-                    vec3 invDir = 1.0 / rayDirection;
-                    vec3 t1 = (bboxMin - rayOrigin) * invDir;
-                    vec3 t2 = (bboxMax - rayOrigin) * invDir;
-                    vec3 tMinVec = min(t1, t2);
-                    vec3 tMaxVec = max(t1, t2);
-                    float tMin = max(max(tMinVec.x, tMinVec.y), tMinVec.z);
-                    float tMax = min(min(tMaxVec.x, tMaxVec.y), tMaxVec.z);
-                    bool intersectionHit = (tMax >= tMin && tMax >= 0.0);
-                    if (!intersectionHit) return background;
-
-                    float distanceFromOrigin = max(0.0, tMin);
-                    for (int i = 0; i < MAX_STEPS; i++) {
-                        vec3 currentPosition = rayOrigin + rayDirection * distanceFromOrigin;
-                        vec2 hitInfo = getSceneDist(currentPosition);
-                        distanceFromOrigin += hitInfo.x;
-                        if (hitInfo.x < SURF_DIST) {
-                            vec3 hitPosition = rayOrigin + rayDirection * distanceFromOrigin;
-                            if (hitInfo.y < 0.5) break; // not SLIDER
-
-                            vec3 N = getNormal(hitPosition);
-                            vec3 I = rayDirection;
-                            float cosi = min(1.0, max(0.0, dot(-I, N)));
-                            float F = fresnelSchlick(cosi, 1.0, JELLY_IOR);
-                            vec3 reflection = clamp(vec3(hitPosition.y + 0.2), 0.0, 1.0);
-                            float eta = 1.0 / JELLY_IOR;
-                            float k = 1.0 - eta * eta * (1.0 - cosi * cosi);
-                            vec3 refractedColor = vec3(0.0);
-                            if (k > 0.0) {
-                                vec3 refrDir = normalize(I * eta + N * (eta * cosi - sqrt(k)));
-                                vec3 p = hitPosition + refrDir * SURF_DIST * 2.0;
-                                vec3 exitPos = p + refrDir * SURF_DIST * 2.0;
-                                vec3 env = rayMarchNoJelly(exitPos, refrDir);
-                                vec3 jellyCol = u_jellyColor;
-                                vec3 scatterTint = jellyCol * 1.5;
-                                float density = 20.0;
-                                vec3 absorb = (vec3(1.0) - jellyCol) * density;
-                                vec4 state = u_switchState;
-                                float progress = clamp(
-                                    mix(1.0, 0.6, hitPosition.y * (1.0 / (JELLY_HALFSIZE.y * 2.0)) + 0.25),
-                                    0.0, 1.0
-                                ) * state.x;
-                                vec3 T = beerLambert(absorb * (progress * progress), 0.08);
-                                vec3 lightDir = -u_lightDir;
-                                float forward = max(0.0, dot(lightDir, refrDir));
-                                vec3 scatter = scatterTint * (JELLY_SCATTER_STRENGTH * forward * pow(progress, 3.0));
-                                refractedColor = env * T + scatter;
-                            }
-                            vec3 jelly = reflection * F + refractedColor * (1.0 - F);
-                            return vec4(jelly, 1.0);
-                        }
-                        if (distanceFromOrigin > backgroundDist) break;
-                    }
-                    return background;
-                }
-
-                float fresnelSchlick(float cosTheta, float ior1, float ior2) {
-                    float r0 = pow((ior1 - ior2) / (ior1 + ior2), 2.0);
-                    return r0 + (1.0 - r0) * pow(1.0 - cosTheta, 5.0);
-                }
-
-                vec3 beerLambert(vec3 sigma, float dist) {
-                    return exp(sigma * -dist);
-                }
-
-                vec3 getRayDirection(vec2 ndc) {
-                    vec4 clipPos = vec4(ndc.x, ndc.y, -1.0, 1.0);
-                    vec4 viewPos = u_projInvMatrix * clipPos;
-                    viewPos /= viewPos.w;
-                    vec4 worldPos = u_viewInvMatrix * viewPos;
-                    vec3 rayDir = normalize(worldPos.xyz - u_cameraPosition);
-                    return rayDir;
-                }
-
-                void main() {
-                    vec2 uv = vUv;
-                    vec2 ndc = vec2(uv.x * 2.0 - 1.0, -(uv.y * 2.0 - 1.0));
-                    vec3 rayOrigin = u_cameraPosition;
-                    vec3 rayDir = getRayDirection(ndc);
-                    vec4 color = rayMarch(rayOrigin, rayDir, uv);
-                    float exposure = mix(1.5, 2.0, u_darkMode);
-                    color.xyz = tanh(color.xyz * exposure);
-                    gl_FragColor = color;
-                }
-            `
-        });
-
-        const mesh = new THREE.Mesh(geometry, material);
-        scene.add(mesh);
-
-        // Spring class
-        class Spring {
-            constructor(properties) {
-                this.target = 0;
-                this.value = 0;
-                this.properties = { ...properties };
-                this.velocity = 0;
-            }
-            update(dt) {
-                const F_spring = -this.properties.stiffness * (this.value - this.target);
-                const F_damp = -this.properties.damping * this.velocity;
-                const a = (F_spring + F_damp) / this.properties.mass;
-                this.velocity += a * dt;
-                this.value += this.velocity * dt;
-            }
-        }
-
-        // Constants
-        const SWITCH_ACCELERATION = 100;
-        const squashXProperties = { mass: 1, stiffness: 1000, damping: 10 };
-        const squashZProperties = { mass: 1, stiffness: 900, damping: 12 };
-        const wiggleXProperties = { mass: 1, stiffness: 1000, damping: 20 };
-
-        // SwitchBehavior with standard private fields
-        class SwitchBehavior {
-            constructor() {
-                this._toggled = false;
-                this._pressed = false;
-                this._progress = 0;
-                this._velocity = 0;
-                this._squashXSpring = new Spring(squashXProperties);
-                this._squashZSpring = new Spring(squashZProperties);
-                this._wiggleXSpring = new Spring(wiggleXProperties);
-            }
-            update(dt) {
-                if (dt <= 0) return;
-                let acc = 0;
-                if (this._toggled && this._progress < 1) acc = SWITCH_ACCELERATION;
-                if (!this._toggled && this._progress > 0) acc = -SWITCH_ACCELERATION;
-                if (this._pressed) {
-                    this._squashXSpring.velocity = -2;
-                    this._squashZSpring.velocity = 1;
-                    this._wiggleXSpring.velocity = Math.sign(this._progress - 0.5);
-                }
-                this._velocity += acc * dt;
-                if (this._progress > 0 && this._progress < 1) {
-                    this._wiggleXSpring.velocity = this._velocity;
-                }
-                this._progress += this._velocity * dt;
-                if (this._progress > 1) {
-                    this._progress = 1;
-                    this._velocity = 0;
-                    this._squashXSpring.velocity = -5;
-                    this._squashZSpring.velocity = 5;
-                    this._wiggleXSpring.velocity = -10;
-                }
-                if (this._progress < 0) {
-                    this._progress = 0;
-                    this._velocity = 0;
-                    this._squashXSpring.velocity = -5;
-                    this._squashZSpring.velocity = 5;
-                    this._wiggleXSpring.velocity = 10;
-                }
-                this._progress = Math.max(0, Math.min(1, this._progress));
-                this._squashXSpring.update(dt);
-                this._squashZSpring.update(dt);
-                this._wiggleXSpring.update(dt);
-                uniforms.u_switchState.value.set(
-                    this._progress,
-                    this._squashXSpring.value,
-                    this._squashZSpring.value,
-                    this._wiggleXSpring.value
-                );
-            }
-            get pressed() { return this._pressed; }
-            set pressed(v) { this._pressed = v; }
-            get toggled() { return this._toggled; }
-            set toggled(v) { this._toggled = v; }
-        }
-
-        const switchBehavior = new SwitchBehavior();
-
-        // Events
-        canvas.addEventListener('mousedown', (e) => {
-            switchBehavior.pressed = true;
-            e.preventDefault();
-        });
-        canvas.addEventListener('mouseup', (e) => {
-            switchBehavior.pressed = false;
-            switchBehavior.toggled = !switchBehavior.toggled;
-            e.preventDefault();
-        });
-        window.addEventListener('mouseup', () => { switchBehavior.pressed = false; });
-
-        canvas.addEventListener('touchstart', (e) => {
-            switchBehavior.pressed = true;
-            e.preventDefault();
-        });
-        canvas.addEventListener('touchend', (e) => {
-            switchBehavior.pressed = false;
-            switchBehavior.toggled = !switchBehavior.toggled;
-            e.preventDefault();
-        });
-
-        // Animation loop
-        let lastTime = 0;
-        function animate(time) {
-            requestAnimationFrame(animate);
-            const deltaTime = Math.min((time - lastTime) * 0.001, 0.1);
-            lastTime = time;
-
-            uniforms.u_time.value = time * 0.001;
-            switchBehavior.update(deltaTime);
-
-            uniforms.u_random.value.set(
-                (Math.random() - 0.5) * 2,
-                (Math.random() - 0.5) * 2
-            );
-
-            perspectiveCamera.updateMatrixWorld();
-            uniforms.u_viewMatrix.value.copy(perspectiveCamera.matrixWorldInverse);
-            uniforms.u_projMatrix.value.copy(perspectiveCamera.projectionMatrix);
-            uniforms.u_viewInvMatrix.value.copy(perspectiveCamera.matrixWorld);
-            uniforms.u_projInvMatrix.value.copy(perspectiveCamera.projectionMatrix).invert();
-            uniforms.u_cameraPosition.value.copy(perspectiveCamera.position);
-
-            renderer.render(scene, orthoCamera);
-        }
-        animate(0);
-
-        // Resize
-        window.addEventListener('resize', () => {
-            width = window.innerWidth * qualityScale;
-            height = window.innerHeight * qualityScale;
-            renderer.setSize(width, height);
-            perspectiveCamera.aspect = width / height;
-            perspectiveCamera.updateProjectionMatrix();
-            uniforms.u_resolution.value.set(width, height);
-        });
-
-        console.log('Jelly Switch Demo loaded. Click/tap to toggle.');
-    </script>
+// ----------  resize ----------
+window.addEventListener('resize',()=>{
+  w=innerWidth*quality;h=innerHeight*quality;
+  renderer.setSize(w,h);
+  persp.aspect=w/h;persp.updateProjectionMatrix();
+  uniforms.u_resolution.value.set(w,h);
+});
+</script>
 </body>
 </html>

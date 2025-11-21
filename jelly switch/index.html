@@ -1,22 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<title>Jelly Switch – Three.js version</title>
-<style>
-  body { margin:0; overflow:hidden; background:#000; touch-action:none; }
-  canvas { display:block; }
-  #info {
-    position:absolute; top:10px; left:10px; color:#fff; font-family:sans-serif;
-    background:rgba(0,0,0,0.4); padding:8px 12px; border-radius:4px;
-  }
-</style>
-</head>
-<body>
-<canvas id="c"></canvas>
-<div id="info">Click / touch & drag the jelly to toggle the switch</div>
+  <head>
+    <meta charset="utf-8" />
+    <title>Jelly Switch – Three.js version</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: #000;
+        touch-action: none;
+      }
+      canvas {
+        display: block;
+      }
+      #info {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        color: #fff;
+        font-family: sans-serif;
+        background: rgba(0, 0, 0, 0.4);
+        padding: 8px 12px;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="c"></canvas>
+    <div id="info">Click / touch & drag the jelly to toggle the switch</div>
 
-<script type="importmap">
+    <script type="importmap">
       {
         "imports": {
           "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
@@ -25,65 +38,74 @@
       }
     </script>
 
-<script type="module">
-import * as THREE from "three";
+    <script type="module">
+      import * as THREE from "three";
       import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-// ---------------------------------------------------------------
-// 1. Scene setup
-// ---------------------------------------------------------------
-const canvas = document.querySelector('#c');
-const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:false});
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.outputColorSpace = THREE.SRGBColorSpace;
+      // ---------------------------------------------------------------
+      // 1. Scene setup
+      // ---------------------------------------------------------------
+      const canvas = document.querySelector("#c");
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: true,
+        alpha: false,
+      });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x111118);
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x111118);
 
-const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 20);
-camera.position.set(0.024, 2.7, 1.9);
-const controls = new OrbitControls(camera, canvas);
-controls.enableDamping = true;
-controls.enablePan = false;
-controls.minDistance = 1;
-controls.maxDistance = 5;
+      const camera = new THREE.PerspectiveCamera(
+        45,
+        innerWidth / innerHeight,
+        0.1,
+        20
+      );
+      camera.position.set(0.024, 2.7, 1.9);
+      const controls = new OrbitControls(camera, canvas);
+      controls.enableDamping = true;
+      controls.enablePan = false;
+      controls.minDistance = 1;
+      controls.maxDistance = 5;
 
-// ---------------------------------------------------------------
-// 2. Lights
-// ---------------------------------------------------------------
-const dirLight = new THREE.DirectionalLight(0xffffff, 3);
-dirLight.position.set(0.19, -0.24, 0.75).normalize();
-scene.add(dirLight);
-scene.add(new THREE.AmbientLight(0x404060, 1.2));
+      // ---------------------------------------------------------------
+      // 2. Lights
+      // ---------------------------------------------------------------
+      const dirLight = new THREE.DirectionalLight(0xffffff, 3);
+      dirLight.position.set(0.19, -0.24, 0.75).normalize();
+      scene.add(dirLight);
+      scene.add(new THREE.AmbientLight(0x404060, 1.2));
 
-// ---------------------------------------------------------------
-// 3. Ground (a simple rounded box with a cut-out)
-// ---------------------------------------------------------------
-const groundGeo = new THREE.BoxGeometry(3, 0.06, 1.2);
-const groundMat = new THREE.MeshStandardMaterial({
-  color: 0xdddddd,
-  roughness: 0.8,
-  metalness: 0.0
-});
-const ground = new THREE.Mesh(groundGeo, groundMat);
-ground.position.y = -0.03;
-scene.add(ground);
+      // ---------------------------------------------------------------
+      // 3. Ground (a simple rounded box with a cut-out)
+      // ---------------------------------------------------------------
+      const groundGeo = new THREE.BoxGeometry(3, 0.06, 1.2);
+      const groundMat = new THREE.MeshStandardMaterial({
+        color: 0xdddddd,
+        roughness: 0.8,
+        metalness: 0.0,
+      });
+      const ground = new THREE.Mesh(groundGeo, groundMat);
+      ground.position.y = -0.03;
+      scene.add(ground);
 
-// ---------------------------------------------------------------
-// 4. Jelly material – a custom shader that does cheap refraction + fresnel
-// ---------------------------------------------------------------
-const jellyUniforms = {
-  uTime: { value: 0 },
-  uProgress: { value: 0.0 },      // 0 = left, 1 = right
-  uSquashX: { value: 0 },
-  uSquashZ: { value: 0 },
-  uWiggleX: { value: 0 },
-  uJellyColor: { value: new THREE.Color(1.0, 0.45, 0.075) },
-  uEnvMap: { value: null },
-  uLightDir: { value: dirLight.position.clone().normalize() }
-};
+      // ---------------------------------------------------------------
+      // 4. Jelly material – a custom shader that does cheap refraction + fresnel
+      // ---------------------------------------------------------------
+      const jellyUniforms = {
+        uTime: { value: 0 },
+        uProgress: { value: 0.0 }, // 0 = left, 1 = right
+        uSquashX: { value: 0 },
+        uSquashZ: { value: 0 },
+        uWiggleX: { value: 0 },
+        uJellyColor: { value: new THREE.Color(1.0, 0.45, 0.075) },
+        uEnvMap: { value: null },
+        uLightDir: { value: dirLight.position.clone().normalize() },
+      };
 
-const jellyVertexShader = `
+      const jellyVertexShader = `
   varying vec3 vWorldPos;
   varying vec3 vNormal;
   uniform float uSquashX;
@@ -111,7 +133,7 @@ const jellyVertexShader = `
   }
 `;
 
-const jellyFragmentShader = `
+      const jellyFragmentShader = `
   uniform vec3 uJellyColor;
   uniform vec3 uLightDir;
   uniform samplerCube uEnvMap;
@@ -151,125 +173,132 @@ const jellyFragmentShader = `
   }
 `;
 
-const jellyMat = new THREE.ShaderMaterial({
-  vertexShader: jellyVertexShader,
-  fragmentShader: jellyFragmentShader,
-  uniforms: jellyUniforms,
-  transparent: true,
-  depthWrite: false,
-  side: THREE.DoubleSide
-});
+      const jellyMat = new THREE.ShaderMaterial({
+        vertexShader: jellyVertexShader,
+        fragmentShader: jellyFragmentShader,
+        uniforms: jellyUniforms,
+        transparent: true,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      });
 
-// create a cube that will become our jelly
-const jellyGeo = new THREE.BoxGeometry(0.7, 0.6, 0.6, 32, 32, 32);
-const jelly = new THREE.Mesh(jellyGeo, jellyMat);
-jelly.position.y = 0.3;
-scene.add(jelly);
+      // create a cube that will become our jelly
+      const jellyGeo = new THREE.BoxGeometry(0.7, 0.6, 0.6, 32, 32, 32);
+      const jelly = new THREE.Mesh(jellyGeo, jellyMat);
+      jelly.position.y = 0.3;
+      scene.add(jelly);
 
-// ---------------------------------------------------------------
-// 5. Environment map for cheap reflections / refractions
-// ---------------------------------------------------------------
-const cubeRT = new THREE.WebGLCubeRenderTarget(256);
-cubeRT.texture.type = THREE.HalfFloatType;
-scene.environment = cubeRT.texture;
-jellyUniforms.uEnvMap.value = cubeRT.texture;
+      // ---------------------------------------------------------------
+      // 5. Environment map for cheap reflections / refractions
+      // ---------------------------------------------------------------
+      const cubeRT = new THREE.WebGLCubeRenderTarget(256);
+      cubeRT.texture.type = THREE.HalfFloatType;
+      scene.environment = cubeRT.texture;
+      jellyUniforms.uEnvMap.value = cubeRT.texture;
 
-// ---------------------------------------------------------------
-// 6. Interaction & spring physics (exactly the same as the original)
-// ---------------------------------------------------------------
-let pressed = false;
-let targetProgress = 0;
-let progress = 0;
-let velocity = 0;
-const ACC = 100;
-const springs = {
-  squashX: {value:0, vel:0, k:1000, d:10},
-  squashZ: {value:0, vel:0, k:900,  d:12},
-  wiggleX:{value:0, vel:0, k:1000, d:20}
-};
+      // ---------------------------------------------------------------
+      // 6. Interaction & spring physics (exactly the same as the original)
+      // ---------------------------------------------------------------
+      let pressed = false;
+      let targetProgress = 0;
+      let progress = 0;
+      let velocity = 0;
+      const ACC = 100;
+      const springs = {
+        squashX: { value: 0, vel: 0, k: 1000, d: 10 },
+        squashZ: { value: 0, vel: 0, k: 900, d: 12 },
+        wiggleX: { value: 0, vel: 0, k: 1000, d: 20 },
+      };
 
-function updateSpring(s, dt) {
-  const a = -s.k * s.value - s.d * s.vel;
-  s.vel += a * dt;
-  s.value += s.vel * dt;
-}
+      function updateSpring(s, dt) {
+        const a = -s.k * s.value - s.d * s.vel;
+        s.vel += a * dt;
+        s.value += s.vel * dt;
+      }
 
-function onPointerDown(e){ pressed = true; e.preventDefault(); }
-function onPointerUp(e){
-  if (!pressed) return;
-  pressed = false;
-  targetProgress = progress > 0.5 ? 1 : 0;
-}
-canvas.addEventListener('pointerdown', onPointerDown);
-canvas.addEventListener('pointerup', onPointerUp);
-canvas.addEventListener('pointerleave', onPointerUp);
-canvas.addEventListener('pointercancel', onPointerUp);
+      function onPointerDown(e) {
+        pressed = true;
+        e.preventDefault();
+      }
+      function onPointerUp(e) {
+        if (!pressed) return;
+        pressed = false;
+        targetProgress = progress > 0.5 ? 1 : 0;
+      }
+      canvas.addEventListener("pointerdown", onPointerDown);
+      canvas.addEventListener("pointerup", onPointerUp);
+      canvas.addEventListener("pointerleave", onPointerUp);
+      canvas.addEventListener("pointercancel", onPointerUp);
 
-// ---------------------------------------------------------------
-// 7. Animation loop
-// ---------------------------------------------------------------
-const clock = new THREE.Clock();
+      // ---------------------------------------------------------------
+      // 7. Animation loop
+      // ---------------------------------------------------------------
+      const clock = new THREE.Clock();
 
-function renderCubeEnv() {
-  const oldBg = scene.background;
-  scene.background = null;
-  renderer.setRenderTarget(cubeRT);
-  renderer.render(scene, camera);
-  renderer.setRenderTarget(null);
-  scene.background = oldBg;
-}
+      function renderCubeEnv() {
+        const oldBg = scene.background;
+        scene.background = null;
+        renderer.setRenderTarget(cubeRT);
+        renderer.render(scene, camera);
+        renderer.setRenderTarget(null);
+        scene.background = oldBg;
+      }
 
-function animate() {
-  const dt = Math.min(clock.getDelta(), 0.1);
+      function animate() {
+        const dt = Math.min(clock.getDelta(), 0.1);
 
-  // ----- physics -----
-  if (pressed) {
-    springs.squashX.vel = -2;
-    springs.squashZ.vel = 1;
-    springs.wiggleX.vel = 1 * Math.sign(progress - 0.5);
-  }
+        // ----- physics -----
+        if (pressed) {
+          springs.squashX.vel = -2;
+          springs.squashZ.vel = 1;
+          springs.wiggleX.vel = 1 * Math.sign(progress - 0.5);
+        }
 
-  // acceleration toward target
-  const acc = targetProgress > progress ? ACC : -ACC;
-  velocity += acc * dt;
-  progress += velocity * dt;
+        // acceleration toward target
+        const acc = targetProgress > progress ? ACC : -ACC;
+        velocity += acc * dt;
+        progress += velocity * dt;
 
-  // snap + overshoot → squish
-  if ((targetProgress === 1 && progress >= 1) || (targetProgress === 0 && progress <= 0)) {
-    progress = THREE.MathUtils.clamp(progress, 0, 1);
-    velocity = 0;
-    springs.squashX.vel = -5;
-    springs.squashZ.vel = 5;
-    springs.wiggleX.vel = targetProgress === 1 ? -10 : 10;
-  }
+        // snap + overshoot → squish
+        if (
+          (targetProgress === 1 && progress >= 1) ||
+          (targetProgress === 0 && progress <= 0)
+        ) {
+          progress = THREE.MathUtils.clamp(progress, 0, 1);
+          velocity = 0;
+          springs.squashX.vel = -5;
+          springs.squashZ.vel = 5;
+          springs.wiggleX.vel = targetProgress === 1 ? -10 : 10;
+        }
 
-  // spring updates
-  Object.values(springs).forEach(s => updateSpring(s, dt));
+        // spring updates
+        Object.values(springs).forEach((s) => updateSpring(s, dt));
 
-  // ----- feed uniforms -----
-  jellyUniforms.uProgress.value = progress;
-  jellyUniforms.uSquashX.value = springs.squashX.value;
-  jellyUniforms.uSquashZ.value = springs.squashZ.value;
-  jellyUniforms.uWiggleX.value = springs.wiggleX.value;
+        // ----- feed uniforms -----
+        jellyUniforms.uProgress.value = progress;
+        jellyUniforms.uSquashX.value = springs.squashX.value;
+        jellyUniforms.uSquashZ.value = springs.squashZ.value;
+        jellyUniforms.uWiggleX.value = springs.wiggleX.value;
 
-  // ----- render -----
-  controls.update();
-  renderCubeEnv();           // update env-map every frame (cheap enough)
-  renderer.render(scene, camera);
+        // ----- render -----
+        controls.update();
+        renderCubeEnv(); // update env-map every frame (cheap enough)
+        renderer.render(scene, camera);
 
-  requestAnimationFrame(animate);
-}
-animate();
+        requestAnimationFrame(animate);
+      }
+      animate();
 
-// ---------------------------------------------------------------
-// 8. Resize handling
-// ---------------------------------------------------------------
-window.addEventListener('resize', () => {
-  const w = innerWidth, h = innerHeight;
-  renderer.setSize(w, h);
-  camera.aspect = w/h;
-  camera.updateProjectionMatrix();
-});
-</script>
-</body>
+      // ---------------------------------------------------------------
+      // 8. Resize handling
+      // ---------------------------------------------------------------
+      window.addEventListener("resize", () => {
+        const w = innerWidth,
+          h = innerHeight;
+        renderer.setSize(w, h);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+      });
+    </script>
+  </body>
 </html>

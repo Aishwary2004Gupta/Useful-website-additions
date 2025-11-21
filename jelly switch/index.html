@@ -1,54 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <title>Jelly Switch – Three.js port</title>
-  <style>body{margin:0;background:#000;overflow:hidden}canvas{display:block}</style>
-</head>
-<body>
-<canvas></canvas>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Jelly Switch – Three.js port</title>
+    <style>
+      body {
+        margin: 0;
+        background: #000;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas></canvas>
 
-<script type="importmap">
-{"imports":{"three":"https://unpkg.com/three@0.158.0/build/three.module.js"}}
-</script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.158.0/build/three.module.js"
+        }
+      }
+    </script>
 
-<script type="module">
-import * as THREE from 'three';
+    <script type="module">
+      import * as THREE from "three";
 
-const canvas = document.querySelector('canvas');
-const renderer = new THREE.WebGLRenderer({canvas, antialias:false});
-let quality = 0.5;
-let w = innerWidth  * quality;
-let h = innerHeight * quality;
-renderer.setSize(w,h);
+      const canvas = document.querySelector("canvas");
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
+      let quality = 0.5;
+      let w = innerWidth * quality;
+      let h = innerHeight * quality;
+      renderer.setSize(w, h);
 
-const scene  = new THREE.Scene();
-const camera = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+      const scene = new THREE.Scene();
+      const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
-const persp = new THREE.PerspectiveCamera(45*Math.PI/180, w/h, .1, 10);
-persp.position.set(.024, 2.7, 1.9);
-persp.lookAt(0,0,0);
+      const persp = new THREE.PerspectiveCamera(
+        (45 * Math.PI) / 180,
+        w / h,
+        0.1,
+        10
+      );
+      persp.position.set(0.024, 2.7, 1.9);
+      persp.lookAt(0, 0, 0);
 
-const uniforms = {
-  u_time:        {value:0},
-  u_resolution:  {value:new THREE.Vector2(w,h)},
-  u_viewMatrix:  {value:new THREE.Matrix4()},
-  u_projMatrix:  {value:new THREE.Matrix4()},
-  u_viewInvMatrix:{value:new THREE.Matrix4()},
-  u_projInvMatrix:{value:new THREE.Matrix4()},
-  u_cameraPosition:{value:new THREE.Vector3()},
-  u_lightDir:    {value:new THREE.Vector3(.19,-.24,.75).normalize()},
-  u_lightColor:  {value:new THREE.Vector3(1,1,1)},
-  u_jellyColor:  {value:new THREE.Vector3(1,.45,.075)},
-  u_darkMode:    {value:0},
-  u_random:      {value:new THREE.Vector2()},
-  u_switchState: {value:new THREE.Vector4(0,0,0,0)}
-};
+      const uniforms = {
+        u_time: { value: 0 },
+        u_resolution: { value: new THREE.Vector2(w, h) },
+        u_viewMatrix: { value: new THREE.Matrix4() },
+        u_projMatrix: { value: new THREE.Matrix4() },
+        u_viewInvMatrix: { value: new THREE.Matrix4() },
+        u_projInvMatrix: { value: new THREE.Matrix4() },
+        u_cameraPosition: { value: new THREE.Vector3() },
+        u_lightDir: { value: new THREE.Vector3(0.19, -0.24, 0.75).normalize() },
+        u_lightColor: { value: new THREE.Vector3(1, 1, 1) },
+        u_jellyColor: { value: new THREE.Vector3(1, 0.45, 0.075) },
+        u_darkMode: { value: 0 },
+        u_random: { value: new THREE.Vector2() },
+        u_switchState: { value: new THREE.Vector4(0, 0, 0, 0) },
+      };
 
-const mat = new THREE.ShaderMaterial({
-  uniforms,
-  vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position,1.);}`,
-  fragmentShader:`
+      const mat = new THREE.ShaderMaterial({
+        uniforms,
+        vertexShader: `varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position,1.);}`,
+        fragmentShader: `
 precision highp float;
 varying vec2 vUv;
 uniform vec2 u_resolution;
@@ -259,80 +277,130 @@ void main(){
   col.xyz=tanh(col.xyz*exposure);
   gl_FragColor=col;
 }
-`
-});
+`,
+      });
 
-scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),mat));
+      scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), mat));
 
-// ----------  simple spring + switch logic ----------
-class Spring{
-  constructor(cfg){Object.assign(this,{target:0,value:0,vel:0},cfg);}
-  update(dt){
-    const f=-this.stiff*(this.value-this.target)-this.damp*this.vel;
-    this.vel+=f/this.mass*dt;this.value+=this.vel*dt;
-  }
-}
-const SWITCH_ACC=100;
-const sprX=new Spring({mass:1,stiff:1000,damp:10});
-const sprZ=new Spring({mass:1,stiff:900,damp:12});
-const sprW=new Spring({mass:1,stiff:1000,damp:20});
+      // ----------  simple spring + switch logic ----------
+      class Spring {
+        constructor(cfg) {
+          Object.assign(this, { target: 0, value: 0, vel: 0 }, cfg);
+        }
+        update(dt) {
+          const f =
+            -this.stiff * (this.value - this.target) - this.damp * this.vel;
+          this.vel += (f / this.mass) * dt;
+          this.value += this.vel * dt;
+        }
+      }
+      const SWITCH_ACC = 100;
+      const sprX = new Spring({ mass: 1, stiff: 1000, damp: 10 });
+      const sprZ = new Spring({ mass: 1, stiff: 900, damp: 12 });
+      const sprW = new Spring({ mass: 1, stiff: 1000, damp: 20 });
 
-class Switch{
-  _t=false;_p=0;_v=0;_prs=false;
-  update(dt){
-    if(dt<=0)return;
-    let acc=0;
-    if(this._t&&this._p<1)acc=SWITCH_ACC;
-    if(!this._t&&this._p>0)acc=-SWITCH_ACC;
-    if(this._prs){sprX.vel=-2;sprZ.vel=1;sprW.vel=Math.sign(this._p-.5);}
-    this._v+=acc*dt;
-    if(this._p>0&&this._p<1)sprW.vel=this._v;
-    this._p+=this._v*dt;
-    if(this._p>1){this._p=1;this._v=0;sprX.vel=-5;sprZ.vel=5;sprW.vel=-10;}
-    if(this._p<0){this._p=0;this._v=0;sprX.vel=-5;sprZ.vel=5;sprW.vel=10;}
-    this._p=clamp(this._p,0.,1.);
-    sprX.update(dt);sprZ.update(dt);sprW.update(dt);
-    uniforms.u_switchState.value.set(this._p,sprX.value,sprZ.value,sprW.value);
-  }
-  get pressed(){return this._prs;} set pressed(v){this._prs=v;}
-  get toggled(){return this._t;}  set toggled(v){this._t=v;}
-}
-const sw=new Switch();
+      class Switch {
+        _t = false;
+        _p = 0;
+        _v = 0;
+        _prs = false;
+        update(dt) {
+          if (dt <= 0) return;
+          let acc = 0;
+          if (this._t && this._p < 1) acc = SWITCH_ACC;
+          if (!this._t && this._p > 0) acc = -SWITCH_ACC;
+          if (this._prs) {
+            sprX.vel = -2;
+            sprZ.vel = 1;
+            sprW.vel = Math.sign(this._p - 0.5);
+          }
+          this._v += acc * dt;
+          if (this._p > 0 && this._p < 1) sprW.vel = this._v;
+          this._p += this._v * dt;
+          if (this._p > 1) {
+            this._p = 1;
+            this._v = 0;
+            sprX.vel = -5;
+            sprZ.vel = 5;
+            sprW.vel = -10;
+          }
+          if (this._p < 0) {
+            this._p = 0;
+            this._v = 0;
+            sprX.vel = -5;
+            sprZ.vel = 5;
+            sprW.vel = 10;
+          }
+          this._p = clamp(this._p, 0, 1);
+          sprX.update(dt);
+          sprZ.update(dt);
+          sprW.update(dt);
+          uniforms.u_switchState.value.set(
+            this._p,
+            sprX.value,
+            sprZ.value,
+            sprW.value
+          );
+        }
+        get pressed() {
+          return this._prs;
+        }
+        set pressed(v) {
+          this._prs = v;
+        }
+        get toggled() {
+          return this._t;
+        }
+        set toggled(v) {
+          this._t = v;
+        }
+      }
+      const sw = new Switch();
 
-// ----------  events ----------
-['mousedown','touchstart'].forEach(ev=>canvas.addEventListener(ev,e=>{
-  sw.pressed=true;e.preventDefault();
-}));
-['mouseup','touchend'].forEach(ev=>canvas.addEventListener(ev,e=>{
-  sw.pressed=false;sw.toggled=!sw.toggled;e.preventDefault();
-}));
-window.addEventListener('mouseup',()=>sw.pressed=false);
+      // ----------  events ----------
+      ["mousedown", "touchstart"].forEach((ev) =>
+        canvas.addEventListener(ev, (e) => {
+          sw.pressed = true;
+          e.preventDefault();
+        })
+      );
+      ["mouseup", "touchend"].forEach((ev) =>
+        canvas.addEventListener(ev, (e) => {
+          sw.pressed = false;
+          sw.toggled = !sw.toggled;
+          e.preventDefault();
+        })
+      );
+      window.addEventListener("mouseup", () => (sw.pressed = false));
 
-// ----------  render loop ----------
-let last=0;
-function loop(t){
-  requestAnimationFrame(loop);
-  const dt=Math.min((t-last)*.001,.1);last=t;
-  uniforms.u_time.value=t*.001;
-  sw.update(dt);
-  uniforms.u_random.value.set(Math.random()-.5,Math.random()-.5);
-  persp.updateMatrixWorld();
-  uniforms.u_viewMatrix.value.copy(persp.matrixWorldInverse);
-  uniforms.u_projMatrix.value.copy(persp.projectionMatrix);
-  uniforms.u_viewInvMatrix.value.copy(persp.matrixWorld);
-  uniforms.u_projInvMatrix.value.copy(persp.projectionMatrix).invert();
-  uniforms.u_cameraPosition.value.copy(persp.position);
-  renderer.render(scene,camera);
-}
-loop(0);
+      // ----------  render loop ----------
+      let last = 0;
+      function loop(t) {
+        requestAnimationFrame(loop);
+        const dt = Math.min((t - last) * 0.001, 0.1);
+        last = t;
+        uniforms.u_time.value = t * 0.001;
+        sw.update(dt);
+        uniforms.u_random.value.set(Math.random() - 0.5, Math.random() - 0.5);
+        persp.updateMatrixWorld();
+        uniforms.u_viewMatrix.value.copy(persp.matrixWorldInverse);
+        uniforms.u_projMatrix.value.copy(persp.projectionMatrix);
+        uniforms.u_viewInvMatrix.value.copy(persp.matrixWorld);
+        uniforms.u_projInvMatrix.value.copy(persp.projectionMatrix).invert();
+        uniforms.u_cameraPosition.value.copy(persp.position);
+        renderer.render(scene, camera);
+      }
+      loop(0);
 
-// ----------  resize ----------
-window.addEventListener('resize',()=>{
-  w=innerWidth*quality;h=innerHeight*quality;
-  renderer.setSize(w,h);
-  persp.aspect=w/h;persp.updateProjectionMatrix();
-  uniforms.u_resolution.value.set(w,h);
-});
-</script>
-</body>
+      // ----------  resize ----------
+      window.addEventListener("resize", () => {
+        w = innerWidth * quality;
+        h = innerHeight * quality;
+        renderer.setSize(w, h);
+        persp.aspect = w / h;
+        persp.updateProjectionMatrix();
+        uniforms.u_resolution.value.set(w, h);
+      });
+    </script>
+  </body>
 </html>

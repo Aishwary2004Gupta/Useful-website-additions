@@ -1,304 +1,569 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>Jelly Switch – Three.js version</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jelly Switch Demo</title>
     <style>
-      body {
-        margin: 0;
-        overflow: hidden;
-        background: #000;
-        touch-action: none;
-      }
-      canvas {
-        display: block;
-      }
-      #info {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        color: #fff;
-        font-family: sans-serif;
-        background: rgba(0, 0, 0, 0.4);
-        padding: 8px 12px;
-        border-radius: 4px;
-      }
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+        }
+        canvas {
+            display: block;
+            cursor: pointer;
+        }
     </style>
-  </head>
-  <body>
-    <canvas id="c"></canvas>
-    <div id="info">Click / touch & drag the jelly to toggle the switch</div>
-
+</head>
+<body>
+    <canvas></canvas>
     <script type="importmap">
-      {
-        "imports": {
-          "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-          "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.158.0/build/three.module.js"
+            }
         }
-      }
     </script>
-
     <script type="module">
-      import * as THREE from "three";
-      import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-      // ---------------------------------------------------------------
-      // 1. Scene setup
-      // ---------------------------------------------------------------
-      const canvas = document.querySelector("#c");
-      const renderer = new THREE.WebGLRenderer({
-        canvas,
-        antialias: true,
-        alpha: false,
-      });
-      renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.outputColorSpace = THREE.SRGBColorSpace;
+        import * as THREE from 'three';
 
-      const scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x111118);
+        const canvas = document.querySelector('canvas');
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
+        renderer.setPixelRatio(window.devicePixelRatio); // Basic AA via device pixel, but TAA is custom (skipped for simplicity)
 
-      const camera = new THREE.PerspectiveCamera(
-        45,
-        innerWidth / innerHeight,
-        0.1,
-        20
-      );
-      camera.position.set(0.024, 2.7, 1.9);
-      const controls = new OrbitControls(camera, canvas);
-      controls.enableDamping = true;
-      controls.enablePan = false;
-      controls.minDistance = 1;
-      controls.maxDistance = 5;
+        let qualityScale = 0.5; // Start with medium quality
+        let width = window.innerWidth * qualityScale;
+        let height = window.innerHeight * qualityScale;
+        renderer.setSize(width, height);
 
-      // ---------------------------------------------------------------
-      // 2. Lights
-      // ---------------------------------------------------------------
-      const dirLight = new THREE.DirectionalLight(0xffffff, 3);
-      dirLight.position.set(0.19, -0.24, 0.75).normalize();
-      scene.add(dirLight);
-      scene.add(new THREE.AmbientLight(0x404060, 1.2));
+        const scene = new THREE.Scene();
+        const orthoCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
-      // ---------------------------------------------------------------
-      // 3. Ground (a simple rounded box with a cut-out)
-      // ---------------------------------------------------------------
-      const groundGeo = new THREE.BoxGeometry(3, 0.06, 1.2);
-      const groundMat = new THREE.MeshStandardMaterial({
-        color: 0xdddddd,
-        roughness: 0.8,
-        metalness: 0.0,
-      });
-      const ground = new THREE.Mesh(groundGeo, groundMat);
-      ground.position.y = -0.03;
-      scene.add(ground);
+        const geometry = new THREE.PlaneGeometry(2, 2);
 
-      // ---------------------------------------------------------------
-      // 4. Jelly material – a custom shader that does cheap refraction + fresnel
-      // ---------------------------------------------------------------
-      const jellyUniforms = {
-        uTime: { value: 0 },
-        uProgress: { value: 0.0 }, // 0 = left, 1 = right
-        uSquashX: { value: 0 },
-        uSquashZ: { value: 0 },
-        uWiggleX: { value: 0 },
-        uJellyColor: { value: new THREE.Color(1.0, 0.45, 0.075) },
-        uEnvMap: { value: null },
-        uLightDir: { value: dirLight.position.clone().normalize() },
-      };
+        // Perspective camera for ray computation (not used for rendering)
+        const perspectiveCamera = new THREE.PerspectiveCamera(Math.PI / 4, width / height, 0.1, 10);
+        perspectiveCamera.position.set(0.024, 2.7, 1.9);
+        perspectiveCamera.lookAt(0, 0, 0);
 
-      const jellyVertexShader = `
-  varying vec3 vWorldPos;
-  varying vec3 vNormal;
-  uniform float uSquashX;
-  uniform float uSquashZ;
-  uniform float uWiggleX;
-  uniform float uProgress;
+        // Uniforms
+        const uniforms = {
+            u_time: { value: 0 },
+            u_resolution: { value: new THREE.Vector2(width, height) },
+            u_viewMatrix: { value: new THREE.Matrix4() },
+            u_projMatrix: { value: new THREE.Matrix4() },
+            u_viewInvMatrix: { value: new THREE.Matrix4() },
+            u_projInvMatrix: { value: new THREE.Matrix4() },
+            u_cameraPosition: { value: new THREE.Vector3() },
+            u_lightDir: { value: new THREE.Vector3(0.19, -0.24, 0.75).normalize() },
+            u_lightColor: { value: new THREE.Vector3(1, 1, 1) },
+            u_jellyColor: { value: new THREE.Vector3(1.0, 0.45, 0.075) },
+            u_darkMode: { value: 0.0 },
+            u_random: { value: new THREE.Vector2() },
+            u_switchState: { value: new THREE.Vector4(0.5, 0, 0, 0) } // progress, squashX, squashZ, wiggleX
+        };
 
-  void main() {
-    vec3 p = position;
-    // cheap bend
-    float bend = 0.8 * p.x;
-    p.xz = p.xz * cos(bend) + vec2(-p.z, p.x) * sin(bend);
+        const material = new THREE.ShaderMaterial({
+            uniforms: uniforms,
+            vertexShader: `
+                varying vec2 vUv;
+                void main() {
+                    vUv = uv;
+                    gl_Position = vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                varying vec2 vUv;
 
-    // squish & wiggle
-    p.x *= 1.0 - uSquashX * 0.4;
-    p.z *= 1.0 - uSquashZ * 0.4;
-    p.x += sin(uWiggleX * 8.0) * 0.02;
+                uniform vec2 u_resolution;
+                uniform mat4 u_viewMatrix;
+                uniform mat4 u_projMatrix;
+                uniform mat4 u_viewInvMatrix;
+                uniform mat4 u_projInvMatrix;
+                uniform vec3 u_cameraPosition;
+                uniform vec3 u_lightDir;
+                uniform vec3 u_lightColor;
+                uniform vec3 u_jellyColor;
+                uniform float u_darkMode;
+                uniform vec2 u_random;
+                uniform vec4 u_switchState;
 
-    // move along the rail
-    p.x += (uProgress - 0.5) * 0.8; // rail length = 0.8 (2*0.4)
+                #define MAX_STEPS 64
+                #define MAX_DIST 10.0
+                #define SURF_DIST 0.001
+                #define JELLY_HALFSIZE vec3(0.35, 0.3, 0.3)
+                #define SWITCH_RAIL_LENGTH 0.4
+                #define JELLY_IOR 1.42
+                #define JELLY_SCATTER_STRENGTH 3.0
+                #define AO_STEPS 3
+                #define AO_RADIUS 0.1
+                #define AO_INTENSITY 0.5
+                #define AO_BIAS 0.005
+                #define AMBIENT_COLOR vec3(0.6)
+                #define AMBIENT_INTENSITY 0.6
+                #define SPECULAR_POWER 10.0
+                #define SPECULAR_INTENSITY 0.6
+                #define LIGHT_GROUND_ALBEDO vec3(1.0)
+                #define DARK_GROUND_ALBEDO vec3(0.2)
 
-    vNormal = normalize(normalMatrix * normal);
-    vWorldPos = (modelMatrix * vec4(p, 1.0)).xyz;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
-  }
-`;
+                const float groundThickness = 0.03;
+                const float groundRadius = 0.05;
+                const float groundRoundness = 0.02;
 
-      const jellyFragmentShader = `
-  uniform vec3 uJellyColor;
-  uniform vec3 uLightDir;
-  uniform samplerCube uEnvMap;
-  varying vec3 vWorldPos;
-  varying vec3 vNormal;
+                float sdPlane(vec3 p, vec3 n, float h) {
+                    return dot(p, n) + h;
+                }
 
-  vec3 fresnelSchlick(float cosTheta, float f0) {
-    return vec3(f0) + (1.0 - vec3(f0)) * pow(1.0 - cosTheta, 5.0);
-  }
+                float sdRoundedBox2d(vec2 p, vec2 b, float r) {
+                    vec2 q = abs(p) - b + r;
+                    return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - r;
+                }
 
-  void main() {
-    vec3 N = normalize(vNormal);
-    vec3 V = normalize(cameraPosition - vWorldPos);
-    vec3 L = uLightDir;
-    vec3 R = reflect(-V, N);
+                float sdRoundedBox3d(vec3 p, vec3 b, float r) {
+                    vec3 q = abs(p) - b + r;
+                    return min(max(q.x, max(q.y, q.z)), 0.0) + length(max(q, 0.0)) - r;
+                }
 
-    // simple refraction (just offset the view direction)
-    vec3 refractDir = refract(-V, N, 1.0/1.42);
-    vec3 env = textureCube(uEnvMap, refractDir).rgb;
+                float opUnion(float d1, float d2) {
+                    return min(d1, d2);
+                }
 
-    // fresnel
-    float f = pow(1.0 - max(dot(V, N), 0.0), 4.0);
-    f = mix(0.02, 1.0, f);
+                float opExtrudeY(vec3 p, float d, float h) {
+                    vec2 w = vec2(d, abs(p.y) - h);
+                    return min(max(w.x, w.y), 0.0) + length(max(w, 0.0));
+                }
 
-    // cheap subsurface tint
-    vec3 subsurface = uJellyColor * 1.5;
+                vec3 opCheapBend(vec3 p, float k) {
+                    float c = cos(k * p.x);
+                    float s = sin(k * p.x);
+                    mat2 m = mat2(c, -s, s, c);
+                    return vec3(m * p.xy, p.z);
+                }
 
-    // combine
-    vec3 col = env * (1.0 - f) + subsurface * f;
-    col += pow(max(dot(N, L), 0.0), 2.0) * 0.8; // soft specular
+                vec3 opRotateAxisAngle(vec3 p, vec3 axis, float angle) {
+                    float s = sin(angle);
+                    float c = cos(angle);
+                    float t = dot(axis, p);
+                    return mix(axis * t, p, c) + cross(axis, p) * s;
+                }
 
-    // tone-mapping
-    col = col / (col + vec3(1.0));
-    col = pow(col, vec3(0.8));
+                float rectangleCutoutDist(vec2 position) {
+                    return sdRoundedBox2d(
+                        position,
+                        vec2(SWITCH_RAIL_LENGTH * 0.5 + 0.2 + groundRoundness, groundRadius + groundRoundness),
+                        groundRadius + groundRoundness
+                    );
+                }
 
-    gl_FragColor = vec4(col, 0.96);
-  }
-`;
+                float getMainSceneDist(vec3 position) {
+                    return opUnion(
+                        sdPlane(position, vec3(0, 1, 0), 0.06),
+                        opExtrudeY(
+                            position,
+                            -rectangleCutoutDist(position.xz),
+                            groundThickness - groundRoundness
+                        ) - groundRoundness
+                    );
+                }
 
-      const jellyMat = new THREE.ShaderMaterial({
-        vertexShader: jellyVertexShader,
-        fragmentShader: jellyFragmentShader,
-        uniforms: jellyUniforms,
-        transparent: true,
-        depthWrite: false,
-        side: THREE.DoubleSide,
-      });
+                float getJellyDist(vec3 position) {
+                    vec4 state = u_switchState;
+                    vec3 jellyOrigin = vec3(
+                        (state.x - 0.5) * SWITCH_RAIL_LENGTH - state.y * (state.x - 0.5) * 0.2,
+                        JELLY_HALFSIZE.y * 0.5,
+                        0.0
+                    );
+                    vec3 jellyInvScale = vec3(1.0 - state.y, 1.0, 1.0 - state.z);
+                    vec3 localPos = opRotateAxisAngle(
+                        (position - jellyOrigin) * jellyInvScale,
+                        vec3(0, 0, 1),
+                        state.w
+                    );
+                    return sdRoundedBox3d(
+                        opCheapBend(localPos, 0.8),
+                        JELLY_HALFSIZE - 0.1,
+                        0.1
+                    );
+                }
 
-      // create a cube that will become our jelly
-      const jellyGeo = new THREE.BoxGeometry(0.7, 0.6, 0.6, 32, 32, 32);
-      const jelly = new THREE.Mesh(jellyGeo, jellyMat);
-      jelly.position.y = 0.3;
-      scene.add(jelly);
+                vec2 getSceneDist(vec3 position) {
+                    float mainScene = getMainSceneDist(position);
+                    float jelly = getJellyDist(position);
+                    if (jelly < mainScene) {
+                        return vec2(jelly, 1.0); // SLIDER
+                    } else {
+                        return vec2(mainScene, 0.0); // BACKGROUND
+                    }
+                }
 
-      // ---------------------------------------------------------------
-      // 5. Environment map for cheap reflections / refractions
-      // ---------------------------------------------------------------
-      const cubeRT = new THREE.WebGLCubeRenderTarget(256);
-      cubeRT.texture.type = THREE.HalfFloatType;
-      scene.environment = cubeRT.texture;
-      jellyUniforms.uEnvMap.value = cubeRT.texture;
+                float getSceneDistForAO(vec3 position) {
+                    return min(getMainSceneDist(position), getJellyDist(position));
+                }
 
-      // ---------------------------------------------------------------
-      // 6. Interaction & spring physics (exactly the same as the original)
-      // ---------------------------------------------------------------
-      let pressed = false;
-      let targetProgress = 0;
-      let progress = 0;
-      let velocity = 0;
-      const ACC = 100;
-      const springs = {
-        squashX: { value: 0, vel: 0, k: 1000, d: 10 },
-        squashZ: { value: 0, vel: 0, k: 900, d: 12 },
-        wiggleX: { value: 0, vel: 0, k: 1000, d: 20 },
-      };
+                vec3 getApproxNormal(vec3 p, float e) {
+                    float dist = getSceneDist(p).x;
+                    return normalize(vec3(
+                        getSceneDist(p + vec3(e, 0, 0)).x - dist,
+                        getSceneDist(p + vec3(0, e, 0)).x - dist,
+                        getSceneDist(p + vec3(0, 0, e)).x - dist
+                    ));
+                }
 
-      function updateSpring(s, dt) {
-        const a = -s.k * s.value - s.d * s.vel;
-        s.vel += a * dt;
-        s.value += s.vel * dt;
-      }
+                vec3 getNormal(vec3 position) {
+                    if (abs(position.z) > 0.5 || abs(position.x) > 1.02) {
+                        return vec3(0, 1, 0);
+                    }
+                    return getApproxNormal(position, 0.0001);
+                }
 
-      function onPointerDown(e) {
-        pressed = true;
-        e.preventDefault();
-      }
-      function onPointerUp(e) {
-        if (!pressed) return;
-        pressed = false;
-        targetProgress = progress > 0.5 ? 1 : 0;
-      }
-      canvas.addEventListener("pointerdown", onPointerDown);
-      canvas.addEventListener("pointerup", onPointerUp);
-      canvas.addEventListener("pointerleave", onPointerUp);
-      canvas.addEventListener("pointercancel", onPointerUp);
+                float sqLength(vec3 a) {
+                    return dot(a, a);
+                }
 
-      // ---------------------------------------------------------------
-      // 7. Animation loop
-      // ---------------------------------------------------------------
-      const clock = new THREE.Clock();
+                vec3 getFakeShadow(vec3 position, vec3 lightDir) {
+                    if (position.y < -groundThickness) {
+                        float fadeSharpness = 30.0;
+                        float inset = 0.02;
+                        float cutout = rectangleCutoutDist(position.xz) + inset;
+                        float edgeDarkening = clamp(1.0 - cutout * fadeSharpness, 0.0, 1.0);
+                        float lightGradient = clamp(-position.z * 4.0 * lightDir.z + 1.0, 0.0, 1.0);
+                        return vec3(1.0) * edgeDarkening * (lightGradient * 0.5);
+                    }
+                    return vec3(1.0);
+                }
 
-      function renderCubeEnv() {
-        const oldBg = scene.background;
-        scene.background = null;
-        renderer.setRenderTarget(cubeRT);
-        renderer.render(scene, camera);
-        renderer.setRenderTarget(null);
-        scene.background = oldBg;
-      }
+                float calculateAO(vec3 position, vec3 normal) {
+                    float totalOcclusion = 0.0;
+                    float sampleWeight = 1.0;
+                    float stepDistance = AO_RADIUS / float(AO_STEPS);
+                    for (int i = 1; i <= AO_STEPS; i++) {
+                        float sampleHeight = stepDistance * float(i);
+                        vec3 samplePosition = position + normal * sampleHeight;
+                        float distanceToSurface = getSceneDistForAO(samplePosition) - AO_BIAS;
+                        float occlusionContribution = max(0.0, sampleHeight - distanceToSurface);
+                        totalOcclusion += occlusionContribution * sampleWeight;
+                        sampleWeight *= 0.5;
+                        if (totalOcclusion > AO_RADIUS / AO_INTENSITY) break;
+                    }
+                    float rawAO = 1.0 - (AO_INTENSITY * totalOcclusion) / AO_RADIUS;
+                    return clamp(rawAO, 0.0, 1.0);
+                }
 
-      function animate() {
-        const dt = Math.min(clock.getDelta(), 0.1);
+                vec3 calculateLighting(vec3 hitPosition, vec3 normal, vec3 rayOrigin) {
+                    vec3 lightDir = -u_lightDir;
+                    vec3 fakeShadow = getFakeShadow(hitPosition, lightDir);
+                    float diffuse = max(dot(normal, lightDir), 0.0);
+                    vec3 viewDir = normalize(rayOrigin - hitPosition);
+                    vec3 reflectDir = reflect(-lightDir, normal);
+                    float specularFactor = pow(max(dot(viewDir, reflectDir), 0.0), SPECULAR_POWER);
+                    vec3 specular = u_lightColor * (specularFactor * SPECULAR_INTENSITY);
+                    vec3 baseColor = vec3(0.9);
+                    vec3 directionalLight = baseColor * u_lightColor * diffuse * fakeShadow;
+                    vec3 ambientLight = baseColor * AMBIENT_COLOR * AMBIENT_INTENSITY;
+                    vec3 finalSpecular = specular * fakeShadow;
+                    return clamp(directionalLight + ambientLight + finalSpecular, 0.0, 1.0);
+                }
 
-        // ----- physics -----
-        if (pressed) {
-          springs.squashX.vel = -2;
-          springs.squashZ.vel = 1;
-          springs.wiggleX.vel = 1 * Math.sign(progress - 0.5);
+                vec4 applyAO(vec3 litColor, vec3 hitPosition, vec3 normal) {
+                    float ao = calculateAO(hitPosition, normal);
+                    vec3 finalColor = litColor * ao;
+                    return vec4(finalColor, 1.0);
+                }
+
+                vec4 renderBackground(vec3 rayOrigin, vec3 rayDirection, float backgroundHitDist) {
+                    vec4 state = u_switchState;
+                    vec3 hitPosition = rayOrigin + rayDirection * backgroundHitDist;
+                    float offsetX = 0.0;
+                    float offsetZ = 0.05;
+                    vec3 lightDir = u_lightDir;
+                    float causticScale = 0.2;
+                    offsetX -= lightDir.x * causticScale;
+                    offsetZ += lightDir.z * causticScale;
+                    vec3 newNormal = getNormal(hitPosition);
+                    float switchX = (state.x - 0.5) * SWITCH_RAIL_LENGTH;
+                    vec3 jellyCol = u_jellyColor;
+                    float sqDist = sqLength(hitPosition - vec3(switchX, 0, 0));
+                    vec3 bounceLight = jellyCol * (1.0 / (sqDist * 15.0 + 1.0) * 0.4);
+                    vec3 sideBounceLight = jellyCol * (1.0 / (sqDist * 40.0 + 1.0) * 0.3) * abs(newNormal.z);
+                    float emission = smoothstep(0.7, 1.0, state.x) * 2.0 + 0.7;
+                    vec3 litColor = calculateLighting(hitPosition, newNormal, rayOrigin);
+                    vec3 groundAlbedo = mix(LIGHT_GROUND_ALBEDO, DARK_GROUND_ALBEDO, u_darkMode);
+                    vec4 backgroundColor = applyAO(groundAlbedo * litColor, hitPosition, newNormal);
+                    backgroundColor.xyz += bounceLight * emission;
+                    backgroundColor.xyz += sideBounceLight * emission;
+                    return backgroundColor;
+                }
+
+                vec3 rayMarchNoJelly(vec3 rayOrigin, vec3 rayDirection) {
+                    float distanceFromOrigin = 0.0;
+                    for (int i = 0; i < 6; i++) {
+                        vec3 p = rayOrigin + rayDirection * distanceFromOrigin;
+                        float hit = getMainSceneDist(p);
+                        distanceFromOrigin += hit;
+                        if (distanceFromOrigin > MAX_DIST || hit < SURF_DIST * 10.0) break;
+                    }
+                    if (distanceFromOrigin < MAX_DIST) {
+                        return renderBackground(rayOrigin, rayDirection, distanceFromOrigin).xyz;
+                    }
+                    return vec3(0.0);
+                }
+
+                vec4 rayMarch(vec3 rayOrigin, vec3 rayDirection, vec2 uv) {
+                    float backgroundDist = 0.0;
+                    for (int i = 0; i < MAX_STEPS; i++) {
+                        vec3 p = rayOrigin + rayDirection * backgroundDist;
+                        float hit = getMainSceneDist(p);
+                        backgroundDist += hit;
+                        if (hit < SURF_DIST) break;
+                    }
+                    vec4 background = renderBackground(rayOrigin, rayDirection, backgroundDist);
+
+                    vec3 bboxMin = vec3(-1, -1, -1);
+                    vec3 bboxMax = vec3(1, 1, 1);
+                    vec3 invDir = 1.0 / rayDirection;
+                    vec3 t1 = (bboxMin - rayOrigin) * invDir;
+                    vec3 t2 = (bboxMax - rayOrigin) * invDir;
+                    vec3 tMinVec = min(t1, t2);
+                    vec3 tMaxVec = max(t1, t2);
+                    float tMin = max(max(tMinVec.x, tMinVec.y), tMinVec.z);
+                    float tMax = min(min(tMaxVec.x, tMaxVec.y), tMaxVec.z);
+                    bool intersectionHit = (tMax >= tMin && tMax >= 0.0);
+                    if (!intersectionHit) {
+                        return background;
+                    }
+
+                    float distanceFromOrigin = max(0.0, tMin);
+                    int totalSteps = 0;
+                    for (int i = 0; i < MAX_STEPS; i++) {
+                        if (totalSteps >= MAX_STEPS) break;
+                        vec3 currentPosition = rayOrigin + rayDirection * distanceFromOrigin;
+                        vec2 hitInfo = getSceneDist(currentPosition);
+                        distanceFromOrigin += hitInfo.x;
+                        totalSteps++;
+                        if (hitInfo.x < SURF_DIST) {
+                            vec3 hitPosition = rayOrigin + rayDirection * distanceFromOrigin;
+                            if (hitInfo.y < 0.5) { // not SLIDER
+                                break;
+                            }
+                            vec3 N = getNormal(hitPosition);
+                            vec3 I = rayDirection;
+                            float cosi = min(1.0, max(0.0, dot(-I, N)));
+                            float F = fresnelSchlick(cosi, 1.0, JELLY_IOR);
+                            vec3 reflection = clamp(vec3(hitPosition.y + 0.2), 0.0, 1.0);
+                            float eta = 1.0 / JELLY_IOR;
+                            float k = 1.0 - eta * eta * (1.0 - cosi * cosi);
+                            vec3 refractedColor = vec3(0.0);
+                            if (k > 0.0) {
+                                vec3 refrDir = normalize(I * eta + N * (eta * cosi - sqrt(k)));
+                                vec3 p = hitPosition + refrDir * SURF_DIST * 2.0;
+                                vec3 exitPos = p + refrDir * SURF_DIST * 2.0;
+                                vec3 env = rayMarchNoJelly(exitPos, refrDir);
+                                vec3 jellyCol = u_jellyColor;
+                                vec3 scatterTint = jellyCol * 1.5;
+                                float density = 20.0;
+                                vec3 absorb = (vec3(1.0) - jellyCol) * density;
+                                vec4 state = u_switchState;
+                                float progress = clamp(
+                                    mix(1.0, 0.6, hitPosition.y * (1.0 / (JELLY_HALFSIZE.y * 2.0)) + 0.25),
+                                    0.0, 1.0
+                                ) * state.x;
+                                vec3 T = beerLambert(absorb * (progress * progress), 0.08);
+                                vec3 lightDir = -u_lightDir;
+                                float forward = max(0.0, dot(lightDir, refrDir));
+                                vec3 scatter = scatterTint * (JELLY_SCATTER_STRENGTH * forward * pow(progress, 3.0));
+                                refractedColor = env * T + scatter;
+                            }
+                            vec3 jelly = reflection * F + refractedColor * (1.0 - F);
+                            return vec4(jelly, 1.0);
+                        }
+                        if (distanceFromOrigin > backgroundDist) {
+                            break;
+                        }
+                    }
+                    return background;
+                }
+
+                float fresnelSchlick(float cosTheta, float ior1, float ior2) {
+                    float r0 = pow((ior1 - ior2) / (ior1 + ior2), 2.0);
+                    return r0 + (1.0 - r0) * pow(1.0 - cosTheta, 5.0);
+                }
+
+                vec3 beerLambert(vec3 sigma, float dist) {
+                    return exp(sigma * -dist);
+                }
+
+                vec3 getRayDirection(vec2 ndc) {
+                    vec4 clipPos = vec4(ndc.x, ndc.y, -1.0, 1.0);
+                    vec4 viewPos = u_projInvMatrix * clipPos;
+                    viewPos /= viewPos.w;
+                    vec4 worldPos = u_viewInvMatrix * viewPos;
+                    vec3 rayDir = normalize(worldPos.xyz - u_cameraPosition);
+                    return rayDir;
+                }
+
+                void main() {
+                    vec2 uv = vUv;
+                    vec2 ndc = vec2(uv.x * 2.0 - 1.0, -(uv.y * 2.0 - 1.0));
+                    vec3 rayOrigin = u_cameraPosition;
+                    vec3 rayDir = getRayDirection(ndc);
+                    vec4 color = rayMarch(rayOrigin, rayDir, uv);
+                    float exposure = mix(1.5, 2.0, u_darkMode);
+                    color.xyz = tanh(color.xyz * exposure);
+                    gl_FragColor = color;
+                }
+            `
+        });
+
+        const mesh = new THREE.Mesh(geometry, material);
+        scene.add(mesh);
+
+        // Spring class
+        class Spring {
+            constructor(properties) {
+                this.target = 0;
+                this.value = 0;
+                this.properties = { ...properties };
+                this.velocity = 0;
+            }
+            update(dt) {
+                const F_spring = -this.properties.stiffness * (this.value - this.target);
+                const F_damp = -this.properties.damping * this.velocity;
+                const a = (F_spring + F_damp) / this.properties.mass;
+                this.velocity += a * dt;
+                this.value += this.velocity * dt;
+            }
         }
 
-        // acceleration toward target
-        const acc = targetProgress > progress ? ACC : -ACC;
-        velocity += acc * dt;
-        progress += velocity * dt;
+        // Constants
+        const SWITCH_ACCELERATION = 100;
+        const squashXProperties = { mass: 1, stiffness: 1000, damping: 10 };
+        const squashZProperties = { mass: 1, stiffness: 900, damping: 12 };
+        const wiggleXProperties = { mass: 1, stiffness: 1000, damping: 20 };
 
-        // snap + overshoot → squish
-        if (
-          (targetProgress === 1 && progress >= 1) ||
-          (targetProgress === 0 && progress <= 0)
-        ) {
-          progress = THREE.MathUtils.clamp(progress, 0, 1);
-          velocity = 0;
-          springs.squashX.vel = -5;
-          springs.squashZ.vel = 5;
-          springs.wiggleX.vel = targetProgress === 1 ? -10 : 10;
+        // SwitchBehavior (audio skipped due to missing assets)
+        class SwitchBehavior {
+            constructor() {
+                this.#toggled = false;
+                this.#pressed = false;
+                this.#progress = 0;
+                this.#velocity = 0;
+                this.#squashXSpring = new Spring(squashXProperties);
+                this.#squashZSpring = new Spring(squashZProperties);
+                this.#wiggleXSpring = new Spring(wiggleXProperties);
+                // Audio init skipped
+            }
+            update(dt) {
+                if (dt <= 0) return;
+                let acc = 0;
+                if (this.#toggled && this.#progress < 1) acc = SWITCH_ACCELERATION;
+                if (!this.#toggled && this.#progress > 0) acc = -SWITCH_ACCELERATION;
+                if (this.#pressed) {
+                    this.#squashXSpring.velocity = -2;
+                    this.#squashZSpring.velocity = 1;
+                    this.#wiggleXSpring.velocity = Math.sign(this.#progress - 0.5);
+                }
+                this.#velocity += acc * dt;
+                if (this.#progress > 0 && this.#progress < 1) {
+                    this.#wiggleXSpring.velocity = this.#velocity;
+                }
+                this.#progress += this.#velocity * dt;
+                if (this.#progress > 1) {
+                    this.#progress = 1;
+                    this.#velocity = 0;
+                    this.#squashXSpring.velocity = -5;
+                    this.#squashZSpring.velocity = 5;
+                    this.#wiggleXSpring.velocity = -10;
+                    // playSwitchOn();
+                }
+                if (this.#progress < 0) {
+                    this.#progress = 0;
+                    this.#velocity = 0;
+                    this.#squashXSpring.velocity = -5;
+                    this.#squashZSpring.velocity = 5;
+                    this.#wiggleXSpring.velocity = 10;
+                    // playSwitchOff();
+                }
+                this.#progress = Math.max(0, Math.min(1, this.#progress));
+                this.#squashXSpring.update(dt);
+                this.#squashZSpring.update(dt);
+                this.#wiggleXSpring.update(dt);
+                uniforms.u_switchState.value.set(
+                    this.#progress,
+                    this.#squashXSpring.value,
+                    this.#squashZSpring.value,
+                    this.#wiggleXSpring.value
+                );
+            }
+            get pressed() { return this.#pressed; }
+            set pressed(v) { this.#pressed = v; }
+            get toggled() { return this.#toggled; }
+            set toggled(v) { this.#toggled = v; }
         }
 
-        // spring updates
-        Object.values(springs).forEach((s) => updateSpring(s, dt));
+        const switchBehavior = new SwitchBehavior();
 
-        // ----- feed uniforms -----
-        jellyUniforms.uProgress.value = progress;
-        jellyUniforms.uSquashX.value = springs.squashX.value;
-        jellyUniforms.uSquashZ.value = springs.squashZ.value;
-        jellyUniforms.uWiggleX.value = springs.wiggleX.value;
+        // Events
+        canvas.addEventListener('mousedown', (e) => {
+            switchBehavior.pressed = true;
+            e.preventDefault();
+        });
+        canvas.addEventListener('mouseup', (e) => {
+            switchBehavior.pressed = false;
+            switchBehavior.toggled = !switchBehavior.toggled;
+            e.preventDefault();
+        });
+        window.addEventListener('mouseup', () => { switchBehavior.pressed = false; });
 
-        // ----- render -----
-        controls.update();
-        renderCubeEnv(); // update env-map every frame (cheap enough)
-        renderer.render(scene, camera);
+        canvas.addEventListener('touchstart', (e) => {
+            switchBehavior.pressed = true;
+            e.preventDefault();
+        });
+        canvas.addEventListener('touchend', (e) => {
+            switchBehavior.pressed = false;
+            switchBehavior.toggled = !switchBehavior.toggled;
+            e.preventDefault();
+        });
 
-        requestAnimationFrame(animate);
-      }
-      animate();
+        // Animation loop
+        let lastTime = 0;
+        function animate(time) {
+            requestAnimationFrame(animate);
+            const deltaTime = Math.min((time - lastTime) * 0.001, 0.1);
+            lastTime = time;
 
-      // ---------------------------------------------------------------
-      // 8. Resize handling
-      // ---------------------------------------------------------------
-      window.addEventListener("resize", () => {
-        const w = innerWidth,
-          h = innerHeight;
-        renderer.setSize(w, h);
-        camera.aspect = w / h;
-        camera.updateProjectionMatrix();
-      });
+            uniforms.u_time.value = time * 0.001;
+            switchBehavior.update(deltaTime);
+
+            // Update random
+            uniforms.u_random.value.set((Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2);
+
+            // Update camera matrices
+            perspectiveCamera.updateMatrixWorld();
+            uniforms.u_viewMatrix.value.copy(perspectiveCamera.matrixWorldInverse);
+            uniforms.u_projMatrix.value.copy(perspectiveCamera.projectionMatrix);
+            uniforms.u_viewInvMatrix.value.copy(perspectiveCamera.matrixWorld);
+            uniforms.u_projInvMatrix.value.copy(perspectiveCamera.projectionMatrix).invert();
+            uniforms.u_cameraPosition.value.copy(perspectiveCamera.position);
+
+            renderer.render(scene, orthoCamera);
+        }
+        animate(0);
+
+        // Resize
+        window.addEventListener('resize', () => {
+            width = window.innerWidth * qualityScale;
+            height = window.innerHeight * qualityScale;
+            renderer.setSize(width, height);
+            perspectiveCamera.aspect = width / height;
+            perspectiveCamera.updateProjectionMatrix();
+            uniforms.u_resolution.value.set(width, height);
+        });
+
+        // Basic controls (console or extend with dat.GUI for full controls)
+        console.log('Jelly Switch Demo loaded. Click/tap to toggle. Audio skipped due to missing assets.');
+        // Example: Toggle dark mode via console
+        // uniforms.u_darkMode.value = 1.0;
     </script>
-  </body>
+</body>
 </html>

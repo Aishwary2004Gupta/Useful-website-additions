@@ -1,84 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jelly Switch Demo</title>
     <style>
-      body {
-        margin: 0;
-        overflow: hidden;
-        background: #000;
-      }
-      canvas {
-        display: block;
-        cursor: pointer;
-      }
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+        }
+        canvas {
+            display: block;
+            cursor: pointer;
+        }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <canvas></canvas>
     <script type="importmap">
-      {
-        "imports": {
-          "three": "https://unpkg.com/three@0.158.0/build/three.module.js"
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.158.0/build/three.module.js"
+            }
         }
-      }
     </script>
     <script type="module">
-      import * as THREE from "three";
+        import * as THREE from 'three';
 
-      const canvas = document.querySelector("canvas");
-      const renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
-      renderer.setPixelRatio(window.devicePixelRatio); // Basic AA via device pixel, but TAA is custom (skipped for simplicity)
+        const canvas = document.querySelector('canvas');
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
+        renderer.setPixelRatio(window.devicePixelRatio);
 
-      let qualityScale = 0.5; // Start with medium quality
-      let width = window.innerWidth * qualityScale;
-      let height = window.innerHeight * qualityScale;
-      renderer.setSize(width, height);
+        let qualityScale = 0.5;
+        let width = window.innerWidth * qualityScale;
+        let height = window.innerHeight * qualityScale;
+        renderer.setSize(width, height);
 
-      const scene = new THREE.Scene();
-      const orthoCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+        const scene = new THREE.Scene();
+        const orthoCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+        const geometry = new THREE.PlaneGeometry(2, 2);
 
-      const geometry = new THREE.PlaneGeometry(2, 2);
+        // Perspective camera for ray computation
+        const perspectiveCamera = new THREE.PerspectiveCamera(
+            45 * Math.PI / 180,
+            width / height,
+            0.1,
+            10
+        );
+        perspectiveCamera.position.set(0.024, 2.7, 1.9);
+        perspectiveCamera.lookAt(0, 0, 0);
 
-      // Perspective camera for ray computation (not used for rendering)
-      const perspectiveCamera = new THREE.PerspectiveCamera(
-        Math.PI / 4,
-        width / height,
-        0.1,
-        10
-      );
-      perspectiveCamera.position.set(0.024, 2.7, 1.9);
-      perspectiveCamera.lookAt(0, 0, 0);
+        // Uniforms
+        const uniforms = {
+            u_time: { value: 0 },
+            u_resolution: { value: new THREE.Vector2(width, height) },
+            u_viewMatrix: { value: new THREE.Matrix4() },
+            u_projMatrix: { value: new THREE.Matrix4() },
+            u_viewInvMatrix: { value: new THREE.Matrix4() },
+            u_projInvMatrix: { value: new THREE.Matrix4() },
+            u_cameraPosition: { value: new THREE.Vector3() },
+            u_lightDir: { value: new THREE.Vector3(0.19, -0.24, 0.75).normalize() },
+            u_lightColor: { value: new THREE.Vector3(1, 1, 1) },
+            u_jellyColor: { value: new THREE.Vector3(1.0, 0.45, 0.075) },
+            u_darkMode: { value: 0.0 },
+            u_random: { value: new THREE.Vector2() },
+            u_switchState: { value: new THREE.Vector4(0.0, 0, 0, 0) }
+        };
 
-      // Uniforms
-      const uniforms = {
-        u_time: { value: 0 },
-        u_resolution: { value: new THREE.Vector2(width, height) },
-        u_viewMatrix: { value: new THREE.Matrix4() },
-        u_projMatrix: { value: new THREE.Matrix4() },
-        u_viewInvMatrix: { value: new THREE.Matrix4() },
-        u_projInvMatrix: { value: new THREE.Matrix4() },
-        u_cameraPosition: { value: new THREE.Vector3() },
-        u_lightDir: { value: new THREE.Vector3(0.19, -0.24, 0.75).normalize() },
-        u_lightColor: { value: new THREE.Vector3(1, 1, 1) },
-        u_jellyColor: { value: new THREE.Vector3(1.0, 0.45, 0.075) },
-        u_darkMode: { value: 0.0 },
-        u_random: { value: new THREE.Vector2() },
-        u_switchState: { value: new THREE.Vector4(0.5, 0, 0, 0) }, // progress, squashX, squashZ, wiggleX
-      };
-
-      const material = new THREE.ShaderMaterial({
-        uniforms: uniforms,
-        vertexShader: `
+        const material = new THREE.ShaderMaterial({
+            uniforms: uniforms,
+            vertexShader: `
                 varying vec2 vUv;
                 void main() {
                     vUv = uv;
                     gl_Position = vec4(position, 1.0);
                 }
             `,
-        fragmentShader: `
+            fragmentShader: `
                 varying vec2 vUv;
 
                 uniform vec2 u_resolution;
@@ -116,9 +115,7 @@
                 const float groundRadius = 0.05;
                 const float groundRoundness = 0.02;
 
-                float sdPlane(vec3 p, vec3 n, float h) {
-                    return dot(p, n) + h;
-                }
+                float sdPlane(vec3 p, vec3 n, float h) { return dot(p, n) + h; }
 
                 float sdRoundedBox2d(vec2 p, vec2 b, float r) {
                     vec2 q = abs(p) - b + r;
@@ -130,9 +127,7 @@
                     return min(max(q.x, max(q.y, q.z)), 0.0) + length(max(q, 0.0)) - r;
                 }
 
-                float opUnion(float d1, float d2) {
-                    return min(d1, d2);
-                }
+                float opUnion(float d1, float d2) { return min(d1, d2); }
 
                 float opExtrudeY(vec3 p, float d, float h) {
                     vec2 w = vec2(d, abs(p.y) - h);
@@ -195,11 +190,8 @@
                 vec2 getSceneDist(vec3 position) {
                     float mainScene = getMainSceneDist(position);
                     float jelly = getJellyDist(position);
-                    if (jelly < mainScene) {
-                        return vec2(jelly, 1.0); // SLIDER
-                    } else {
-                        return vec2(mainScene, 0.0); // BACKGROUND
-                    }
+                    if (jelly < mainScene) { return vec2(jelly, 1.0); }
+                    else { return vec2(mainScene, 0.0); }
                 }
 
                 float getSceneDistForAO(vec3 position) {
@@ -222,9 +214,7 @@
                     return getApproxNormal(position, 0.0001);
                 }
 
-                float sqLength(vec3 a) {
-                    return dot(a, a);
-                }
+                float sqLength(vec3 a) { return dot(a, a); }
 
                 vec3 getFakeShadow(vec3 position, vec3 lightDir) {
                     if (position.y < -groundThickness) {
@@ -279,12 +269,6 @@
                 vec4 renderBackground(vec3 rayOrigin, vec3 rayDirection, float backgroundHitDist) {
                     vec4 state = u_switchState;
                     vec3 hitPosition = rayOrigin + rayDirection * backgroundHitDist;
-                    float offsetX = 0.0;
-                    float offsetZ = 0.05;
-                    vec3 lightDir = u_lightDir;
-                    float causticScale = 0.2;
-                    offsetX -= lightDir.x * causticScale;
-                    offsetZ += lightDir.z * causticScale;
                     vec3 newNormal = getNormal(hitPosition);
                     float switchX = (state.x - 0.5) * SWITCH_RAIL_LENGTH;
                     vec3 jellyCol = u_jellyColor;
@@ -334,23 +318,17 @@
                     float tMin = max(max(tMinVec.x, tMinVec.y), tMinVec.z);
                     float tMax = min(min(tMaxVec.x, tMaxVec.y), tMaxVec.z);
                     bool intersectionHit = (tMax >= tMin && tMax >= 0.0);
-                    if (!intersectionHit) {
-                        return background;
-                    }
+                    if (!intersectionHit) return background;
 
                     float distanceFromOrigin = max(0.0, tMin);
-                    int totalSteps = 0;
                     for (int i = 0; i < MAX_STEPS; i++) {
-                        if (totalSteps >= MAX_STEPS) break;
                         vec3 currentPosition = rayOrigin + rayDirection * distanceFromOrigin;
                         vec2 hitInfo = getSceneDist(currentPosition);
                         distanceFromOrigin += hitInfo.x;
-                        totalSteps++;
                         if (hitInfo.x < SURF_DIST) {
                             vec3 hitPosition = rayOrigin + rayDirection * distanceFromOrigin;
-                            if (hitInfo.y < 0.5) { // not SLIDER
-                                break;
-                            }
+                            if (hitInfo.y < 0.5) break; // not SLIDER
+
                             vec3 N = getNormal(hitPosition);
                             vec3 I = rayDirection;
                             float cosi = min(1.0, max(0.0, dot(-I, N)));
@@ -382,9 +360,7 @@
                             vec3 jelly = reflection * F + refractedColor * (1.0 - F);
                             return vec4(jelly, 1.0);
                         }
-                        if (distanceFromOrigin > backgroundDist) {
-                            break;
-                        }
+                        if (distanceFromOrigin > backgroundDist) break;
                     }
                     return background;
                 }
@@ -417,195 +393,153 @@
                     color.xyz = tanh(color.xyz * exposure);
                     gl_FragColor = color;
                 }
-            `,
-      });
+            `
+        });
 
-      const mesh = new THREE.Mesh(geometry, material);
-      scene.add(mesh);
+        const mesh = new THREE.Mesh(geometry, material);
+        scene.add(mesh);
 
-      // Spring class
-      class Spring {
-        constructor(properties) {
-          this.target = 0;
-          this.value = 0;
-          this.properties = { ...properties };
-          this.velocity = 0;
-        }
-        update(dt) {
-          const F_spring =
-            -this.properties.stiffness * (this.value - this.target);
-          const F_damp = -this.properties.damping * this.velocity;
-          const a = (F_spring + F_damp) / this.properties.mass;
-          this.velocity += a * dt;
-          this.value += this.velocity * dt;
-        }
-      }
-
-      // Constants
-      const SWITCH_ACCELERATION = 100;
-      const squashXProperties = { mass: 1, stiffness: 1000, damping: 10 };
-      const squashZProperties = { mass: 1, stiffness: 900, damping: 12 };
-      const wiggleXProperties = { mass: 1, stiffness: 1000, damping: 20 };
-
-      // SwitchBehavior (audio skipped due to missing assets)
-      class SwitchBehavior {
-        // Declare private fields
-        #toggled;
-        #pressed;
-        #progress;
-        #velocity;
-        #squashXSpring;
-        #squashZSpring;
-        #wiggleXSpring;
-
-        constructor() {
-          this.#toggled = false;
-          this.#pressed = false;
-          this.#progress = 0;
-          this.#velocity = 0;
-
-          this.#squashXSpring = new Spring(squashXProperties);
-          this.#squashZSpring = new Spring(squashZProperties);
-          this.#wiggleXSpring = new Spring(wiggleXProperties);
+        // Spring class
+        class Spring {
+            constructor(properties) {
+                this.target = 0;
+                this.value = 0;
+                this.properties = { ...properties };
+                this.velocity = 0;
+            }
+            update(dt) {
+                const F_spring = -this.properties.stiffness * (this.value - this.target);
+                const F_damp = -this.properties.damping * this.velocity;
+                const a = (F_spring + F_damp) / this.properties.mass;
+                this.velocity += a * dt;
+                this.value += this.velocity * dt;
+            }
         }
 
-        update(dt) {
-          if (dt <= 0) return;
+        // Constants
+        const SWITCH_ACCELERATION = 100;
+        const squashXProperties = { mass: 1, stiffness: 1000, damping: 10 };
+        const squashZProperties = { mass: 1, stiffness: 900, damping: 12 };
+        const wiggleXProperties = { mass: 1, stiffness: 1000, damping: 20 };
 
-          let acc = 0;
-
-          if (this.#toggled && this.#progress < 1) acc = SWITCH_ACCELERATION;
-          if (!this.#toggled && this.#progress > 0) acc = -SWITCH_ACCELERATION;
-
-          if (this.#pressed) {
-            this.#squashXSpring.velocity = -2;
-            this.#squashZSpring.velocity = 1;
-            this.#wiggleXSpring.velocity = Math.sign(this.#progress - 0.5);
-          }
-
-          this.#velocity += acc * dt;
-
-          if (this.#progress > 0 && this.#progress < 1) {
-            this.#wiggleXSpring.velocity = this.#velocity;
-          }
-
-          this.#progress += this.#velocity * dt;
-
-          if (this.#progress > 1) {
-            this.#progress = 1;
-            this.#velocity = 0;
-            this.#squashXSpring.velocity = -5;
-            this.#squashZSpring.velocity = 5;
-            this.#wiggleXSpring.velocity = -10;
-          }
-
-          if (this.#progress < 0) {
-            this.#progress = 0;
-            this.#velocity = 0;
-            this.#squashXSpring.velocity = -5;
-            this.#squashZSpring.velocity = 5;
-            this.#wiggleXSpring.velocity = 10;
-          }
-
-          this.#squashXSpring.update(dt);
-          this.#squashZSpring.update(dt);
-          this.#wiggleXSpring.update(dt);
-
-          uniforms.u_switchState.value.set(
-            this.#progress,
-            this.#squashXSpring.value,
-            this.#squashZSpring.value,
-            this.#wiggleXSpring.value
-          );
+        // SwitchBehavior with standard private fields
+        class SwitchBehavior {
+            constructor() {
+                this._toggled = false;
+                this._pressed = false;
+                this._progress = 0;
+                this._velocity = 0;
+                this._squashXSpring = new Spring(squashXProperties);
+                this._squashZSpring = new Spring(squashZProperties);
+                this._wiggleXSpring = new Spring(wiggleXProperties);
+            }
+            update(dt) {
+                if (dt <= 0) return;
+                let acc = 0;
+                if (this._toggled && this._progress < 1) acc = SWITCH_ACCELERATION;
+                if (!this._toggled && this._progress > 0) acc = -SWITCH_ACCELERATION;
+                if (this._pressed) {
+                    this._squashXSpring.velocity = -2;
+                    this._squashZSpring.velocity = 1;
+                    this._wiggleXSpring.velocity = Math.sign(this._progress - 0.5);
+                }
+                this._velocity += acc * dt;
+                if (this._progress > 0 && this._progress < 1) {
+                    this._wiggleXSpring.velocity = this._velocity;
+                }
+                this._progress += this._velocity * dt;
+                if (this._progress > 1) {
+                    this._progress = 1;
+                    this._velocity = 0;
+                    this._squashXSpring.velocity = -5;
+                    this._squashZSpring.velocity = 5;
+                    this._wiggleXSpring.velocity = -10;
+                }
+                if (this._progress < 0) {
+                    this._progress = 0;
+                    this._velocity = 0;
+                    this._squashXSpring.velocity = -5;
+                    this._squashZSpring.velocity = 5;
+                    this._wiggleXSpring.velocity = 10;
+                }
+                this._progress = Math.max(0, Math.min(1, this._progress));
+                this._squashXSpring.update(dt);
+                this._squashZSpring.update(dt);
+                this._wiggleXSpring.update(dt);
+                uniforms.u_switchState.value.set(
+                    this._progress,
+                    this._squashXSpring.value,
+                    this._squashZSpring.value,
+                    this._wiggleXSpring.value
+                );
+            }
+            get pressed() { return this._pressed; }
+            set pressed(v) { this._pressed = v; }
+            get toggled() { return this._toggled; }
+            set toggled(v) { this._toggled = v; }
         }
 
-        get pressed() {
-          return this.#pressed;
+        const switchBehavior = new SwitchBehavior();
+
+        // Events
+        canvas.addEventListener('mousedown', (e) => {
+            switchBehavior.pressed = true;
+            e.preventDefault();
+        });
+        canvas.addEventListener('mouseup', (e) => {
+            switchBehavior.pressed = false;
+            switchBehavior.toggled = !switchBehavior.toggled;
+            e.preventDefault();
+        });
+        window.addEventListener('mouseup', () => { switchBehavior.pressed = false; });
+
+        canvas.addEventListener('touchstart', (e) => {
+            switchBehavior.pressed = true;
+            e.preventDefault();
+        });
+        canvas.addEventListener('touchend', (e) => {
+            switchBehavior.pressed = false;
+            switchBehavior.toggled = !switchBehavior.toggled;
+            e.preventDefault();
+        });
+
+        // Animation loop
+        let lastTime = 0;
+        function animate(time) {
+            requestAnimationFrame(animate);
+            const deltaTime = Math.min((time - lastTime) * 0.001, 0.1);
+            lastTime = time;
+
+            uniforms.u_time.value = time * 0.001;
+            switchBehavior.update(deltaTime);
+
+            uniforms.u_random.value.set(
+                (Math.random() - 0.5) * 2,
+                (Math.random() - 0.5) * 2
+            );
+
+            perspectiveCamera.updateMatrixWorld();
+            uniforms.u_viewMatrix.value.copy(perspectiveCamera.matrixWorldInverse);
+            uniforms.u_projMatrix.value.copy(perspectiveCamera.projectionMatrix);
+            uniforms.u_viewInvMatrix.value.copy(perspectiveCamera.matrixWorld);
+            uniforms.u_projInvMatrix.value.copy(perspectiveCamera.projectionMatrix).invert();
+            uniforms.u_cameraPosition.value.copy(perspectiveCamera.position);
+
+            renderer.render(scene, orthoCamera);
         }
-        set pressed(v) {
-          this.#pressed = v;
-        }
+        animate(0);
 
-        get toggled() {
-          return this.#toggled;
-        }
-        set toggled(v) {
-          this.#toggled = v;
-        }
-      }
+        // Resize
+        window.addEventListener('resize', () => {
+            width = window.innerWidth * qualityScale;
+            height = window.innerHeight * qualityScale;
+            renderer.setSize(width, height);
+            perspectiveCamera.aspect = width / height;
+            perspectiveCamera.updateProjectionMatrix();
+            uniforms.u_resolution.value.set(width, height);
+        });
 
-      const switchBehavior = new SwitchBehavior();
-
-      // Events
-      canvas.addEventListener("mousedown", (e) => {
-        switchBehavior.pressed = true;
-        e.preventDefault();
-      });
-      canvas.addEventListener("mouseup", (e) => {
-        switchBehavior.pressed = false;
-        switchBehavior.toggled = !switchBehavior.toggled;
-        e.preventDefault();
-      });
-      window.addEventListener("mouseup", () => {
-        switchBehavior.pressed = false;
-      });
-
-      canvas.addEventListener("touchstart", (e) => {
-        switchBehavior.pressed = true;
-        e.preventDefault();
-      });
-      canvas.addEventListener("touchend", (e) => {
-        switchBehavior.pressed = false;
-        switchBehavior.toggled = !switchBehavior.toggled;
-        e.preventDefault();
-      });
-
-      // Animation loop
-      let lastTime = 0;
-      function animate(time) {
-        requestAnimationFrame(animate);
-        const deltaTime = Math.min((time - lastTime) * 0.001, 0.1);
-        lastTime = time;
-
-        uniforms.u_time.value = time * 0.001;
-        switchBehavior.update(deltaTime);
-
-        // Update random
-        uniforms.u_random.value.set(
-          (Math.random() - 0.5) * 2,
-          (Math.random() - 0.5) * 2
-        );
-
-        // Update camera matrices
-        perspectiveCamera.updateMatrixWorld();
-        uniforms.u_viewMatrix.value.copy(perspectiveCamera.matrixWorldInverse);
-        uniforms.u_projMatrix.value.copy(perspectiveCamera.projectionMatrix);
-        uniforms.u_viewInvMatrix.value.copy(perspectiveCamera.matrixWorld);
-        uniforms.u_projInvMatrix.value
-          .copy(perspectiveCamera.projectionMatrix)
-          .invert();
-        uniforms.u_cameraPosition.value.copy(perspectiveCamera.position);
-
-        renderer.render(scene, orthoCamera);
-      }
-      animate(0);
-
-      // Resize
-      window.addEventListener("resize", () => {
-        width = window.innerWidth * qualityScale;
-        height = window.innerHeight * qualityScale;
-        renderer.setSize(width, height);
-        perspectiveCamera.aspect = width / height;
-        perspectiveCamera.updateProjectionMatrix();
-        uniforms.u_resolution.value.set(width, height);
-      });
-
-      // Basic controls (console or extend with dat.GUI for full controls)
-      console.log(
-        "Jelly Switch Demo loaded. Click/tap to toggle. Audio skipped due to missing assets."
-      );
-      // Example: Toggle dark mode via console
-      // uniforms.u_darkMode.value = 1.0;
+        console.log('Jelly Switch Demo loaded. Click/tap to toggle.');
     </script>
-  </body>
+</body>
 </html>

@@ -49,6 +49,9 @@ class SwitchBehavior {
         this.squashZSpring.velocity = 3;
         this.wiggleXSpring.velocity = (Math.random() - 0.5) * 8; // Random wiggle
         this.pressYSpring.velocity = -2; // Press down
+        
+        // Toggle dark mode
+        return this.toggled;
     }
 
     update(dt) {
@@ -82,7 +85,10 @@ class SwitchBehavior {
 // Create scene
 const canvas = document.getElementById('canvas');
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xd0d0d0); // Light grey background
+let isDarkMode = false;
+const lightBackground = new THREE.Color(0xd0d0d0); // Light grey background
+const darkBackground = new THREE.Color(0x1a1a1a); // Dark background
+scene.background = lightBackground;
 
 // Camera setup
 const camera = new THREE.PerspectiveCamera(
@@ -120,11 +126,11 @@ controls.enableZoom = true; // Allow zooming with scroll
 controls.autoRotate = false; // Disable auto-rotation
 controls.target.set(0, 0, 0); // Focus on the center
 
-// Use right mouse button for orbit controls, leaving left mouse for button clicks
+// Enable orbital controls with left mouse button
 controls.mouseButtons = {
-    LEFT: null, // Disable left mouse for orbit controls
+    LEFT: THREE.MOUSE.ROTATE, // Left mouse for rotation
     MIDDLE: THREE.MOUSE.DOLLY, // Middle mouse for zoom
-    RIGHT: THREE.MOUSE.ROTATE // Right mouse for rotation
+    RIGHT: null // Disable right mouse
 };
 
 controls.update();
@@ -244,6 +250,10 @@ jellyMesh.castShadow = true;
 jellyMesh.receiveShadow = false; // Disable receive shadow for performance
 scene.add(jellyMesh);
 
+// Raycaster for detecting clicks on the button
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
 // Animation loop - optimized
 let lastTime = performance.now();
 
@@ -285,19 +295,37 @@ function animate(currentTime) {
     requestAnimationFrame(animate);
 }
 
-// Event handlers - work with orbit controls
+// Event handlers - raycasting to detect clicks on button only
 let isPressed = false;
 let mouseDownPos = { x: 0, y: 0 };
 let hasDragged = false;
 
+function updateMousePosition(event) {
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+}
+
+function isClickOnButton(event) {
+    updateMousePosition(event);
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObject(jellyMesh);
+    return intersects.length > 0;
+}
+
 canvas.addEventListener('mousedown', (e) => {
-    // Only handle left mouse button for button toggle
+    // Only handle left mouse button
     if (e.button === 0) {
         mouseDownPos.x = e.clientX;
         mouseDownPos.y = e.clientY;
         hasDragged = false;
-        switchBehavior.pressed = true;
-        isPressed = true;
+        
+        // Check if click is on the button
+        if (isClickOnButton(e)) {
+            switchBehavior.pressed = true;
+            isPressed = true;
+            // Temporarily disable orbit controls
+            controls.enabled = false;
+        }
     }
 });
 
@@ -308,39 +336,66 @@ canvas.addEventListener('mousemove', (e) => {
         const dy = Math.abs(e.clientY - mouseDownPos.y);
         if (dx > 5 || dy > 5) {
             hasDragged = true;
+            // Re-enable orbit controls if dragging
+            controls.enabled = true;
         }
     }
 });
 
 canvas.addEventListener('mouseup', (e) => {
     if (e.button === 0) {
-        switchBehavior.pressed = false;
-        // Only trigger click if it was a click (not a drag)
+        // Re-enable orbit controls
+        controls.enabled = true;
+        
         if (isPressed && !hasDragged) {
-            switchBehavior.click(); // Trigger satisfying click animation
+            // Check again if click is on button
+            if (isClickOnButton(e)) {
+                const newDarkMode = switchBehavior.click();
+                toggleDarkMode(newDarkMode);
+            }
         }
+        
+        switchBehavior.pressed = false;
         isPressed = false;
         hasDragged = false;
     }
 });
 
 canvas.addEventListener('mouseleave', () => {
+    controls.enabled = true;
     switchBehavior.pressed = false;
     isPressed = false;
     hasDragged = false;
 });
 
-// Touch handlers - simplified for mobile
+// Touch handlers - with raycasting
 let touchStartPos = { x: 0, y: 0 };
 let touchHasDragged = false;
 
+function updateTouchPosition(touch) {
+    mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
+}
+
+function isTouchOnButton(touch) {
+    updateTouchPosition(touch);
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObject(jellyMesh);
+    return intersects.length > 0;
+}
+
 canvas.addEventListener('touchstart', (e) => {
     if (e.touches.length === 1) {
-        touchStartPos.x = e.touches[0].clientX;
-        touchStartPos.y = e.touches[0].clientY;
+        const touch = e.touches[0];
+        touchStartPos.x = touch.clientX;
+        touchStartPos.y = touch.clientY;
         touchHasDragged = false;
-        switchBehavior.pressed = true;
-        isPressed = true;
+        
+        if (isTouchOnButton(touch)) {
+            switchBehavior.pressed = true;
+            isPressed = true;
+            controls.enabled = false;
+        }
     }
 });
 
@@ -350,15 +405,21 @@ canvas.addEventListener('touchmove', (e) => {
         const dy = Math.abs(e.touches[0].clientY - touchStartPos.y);
         if (dx > 10 || dy > 10) {
             touchHasDragged = true;
+            controls.enabled = true;
         }
     }
 });
 
 canvas.addEventListener('touchend', (e) => {
-    switchBehavior.pressed = false;
-    if (isPressed && !touchHasDragged) {
-        switchBehavior.click(); // Trigger satisfying click animation
+    controls.enabled = true;
+    if (isPressed && !touchHasDragged && e.changedTouches.length > 0) {
+        const touch = e.changedTouches[0];
+        if (isTouchOnButton(touch)) {
+            const newDarkMode = switchBehavior.click();
+            toggleDarkMode(newDarkMode);
+        }
     }
+    switchBehavior.pressed = false;
     isPressed = false;
     touchHasDragged = false;
 });
@@ -369,6 +430,42 @@ window.addEventListener('resize', () => {
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
+
+// Toggle dark mode function
+function toggleDarkMode(darkMode) {
+    isDarkMode = darkMode;
+    
+    // Smoothly transition background color
+    const targetColor = darkMode ? darkBackground : lightBackground;
+    const startColor = scene.background.clone();
+    
+    let progress = 0;
+    const duration = 500; // 500ms transition
+    const startTime = performance.now();
+    
+    function updateBackground() {
+        const elapsed = performance.now() - startTime;
+        progress = Math.min(elapsed / duration, 1);
+        
+        // Smooth interpolation
+        const smoothProgress = progress * progress * (3 - 2 * progress);
+        scene.background.lerpColors(startColor, targetColor, smoothProgress);
+        
+        // Also update body background to match
+        const hexColor = scene.background.getHexString();
+        document.body.style.background = `#${hexColor}`;
+        
+        if (progress < 1) {
+            requestAnimationFrame(updateBackground);
+        } else {
+            // Ensure final color is set
+            scene.background.copy(targetColor);
+            document.body.style.background = `#${targetColor.getHexString()}`;
+        }
+    }
+    
+    updateBackground();
+}
 
 // Smoothstep helper
 Math.smoothstep = function(edge0, edge1, x) {

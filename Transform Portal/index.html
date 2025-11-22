@@ -115,7 +115,7 @@
           const hemisphereLight = new THREE.HemisphereLight(
             0x87ceeb,
             0x545454,
-            0.4
+            0
           );
           this.scene.add(hemisphereLight);
         }
@@ -133,10 +133,10 @@
           };
 
           // Create cylinder 1
-          const cylinderGeometry = new THREE.CylinderGeometry(3, 3, 8, 32);
-          this.cylinder1 = new THREE.Mesh(cylinderGeometry);
-          this.cylinder1.rotation.x = -Math.PI / 2;
-          this.cylinder1.position.set(0, 0, -4);
+          // const cylinderGeometry = new THREE.CylinderGeometry(3, 3, 8, 32);
+          // this.cylinder1 = new THREE.Mesh(cylinderGeometry);
+          // this.cylinder1.rotation.x = -Math.PI / 2;
+          // this.cylinder1.position.set(0, 0, -4);
 
           // Materials for cylinder 1
           const shaderMaterial1 = new THREE.ShaderMaterial({

@@ -80,7 +80,7 @@
 
           // Setup scene
           this.scene = new THREE.Scene();
-          this.scene.background = new THREE.Color(0x87ceeb);
+          this.scene.background = new THREE.Color(0x000000);
 
           // Setup camera
           this.camera = new THREE.PerspectiveCamera(
@@ -137,6 +137,17 @@
           // this.cylinder1 = new THREE.Mesh(cylinderGeometry);
           // this.cylinder1.rotation.x = -Math.PI / 2;
           // this.cylinder1.position.set(0, 0, -4);
+          const cylinderGeometry = new THREE.CylinderGeometry(3, 3, 8, 32);
+          const bgMat = new THREE.MeshBasicMaterial({
+            color: 0x87ceeb,   // same as scene.background
+            transparent: true,
+            opacity: 1,
+            depthWrite: false, // let the background be visible
+          });
+          this.cylinder1 = new THREE.Mesh(cylinderGeometry, bgMat);
+          this.cylinder1.rotation.x = -Math.PI / 2;
+          this.cylinder1.position.set(0, 0, -4);
+          this.scene.add(this.cylinder1);
 
           // Materials for cylinder 1
           const shaderMaterial1 = new THREE.ShaderMaterial({

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 // Constants matching the original
 const JELLY_HALFSIZE = new THREE.Vector3(0.35, 0.3, 0.3);
@@ -103,14 +104,14 @@ const canvas = document.getElementById('canvas');
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xd0d0d0); // Light grey background
 
-// Camera setup (top-down view like the image)
+// Camera setup
 const camera = new THREE.PerspectiveCamera(
     45,
     window.innerWidth / window.innerHeight,
     0.1,
     100
 );
-camera.position.set(0, 4, 0); // Perfect top-down view
+camera.position.set(0, 3, 3); // Initial position for orbit controls
 camera.lookAt(0, 0, 0);
 
 // Renderer - optimized for performance
@@ -125,6 +126,20 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // Limit pixel r
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFShadowMap; // Faster than PCFSoft
 renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+// Orbit Controls
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true; // Smooth camera movement
+controls.dampingFactor = 0.05;
+controls.minDistance = 2;
+controls.maxDistance = 8;
+controls.maxPolarAngle = Math.PI / 1.5; // Prevent going below the ground
+controls.minPolarAngle = Math.PI / 3; // Prevent going too high
+controls.enablePan = false; // Disable panning to keep focus on the button
+controls.enableZoom = true; // Allow zooming with scroll
+controls.autoRotate = false; // Disable auto-rotation
+controls.target.set(0, 0, 0); // Focus on the center
+controls.update();
 
 // Soft, diffused lighting
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
@@ -318,46 +333,89 @@ function animate(currentTime) {
     jellyMaterial.emissive = JELLY_COLOR.clone();
     jellyMaterial.emissiveIntensity = emission * 0.15;
 
+    // Update orbit controls
+    controls.update();
+
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
 }
 
-// Event handlers
+// Event handlers - work with orbit controls
 let isPressed = false;
+let mouseDownPos = { x: 0, y: 0 };
+let hasDragged = false;
 
 canvas.addEventListener('mousedown', (e) => {
-    switchBehavior.pressed = true;
-    isPressed = true;
-    e.preventDefault();
+    // Only handle left mouse button for button toggle
+    if (e.button === 0) {
+        mouseDownPos.x = e.clientX;
+        mouseDownPos.y = e.clientY;
+        hasDragged = false;
+        switchBehavior.pressed = true;
+        isPressed = true;
+    }
+});
+
+canvas.addEventListener('mousemove', (e) => {
+    if (isPressed) {
+        // Check if mouse moved significantly (dragging)
+        const dx = Math.abs(e.clientX - mouseDownPos.x);
+        const dy = Math.abs(e.clientY - mouseDownPos.y);
+        if (dx > 5 || dy > 5) {
+            hasDragged = true;
+        }
+    }
 });
 
 canvas.addEventListener('mouseup', (e) => {
-    switchBehavior.pressed = false;
-    if (isPressed) {
-        switchBehavior.toggled = !switchBehavior.toggled;
+    if (e.button === 0) {
+        switchBehavior.pressed = false;
+        // Only toggle if it was a click (not a drag)
+        if (isPressed && !hasDragged) {
+            switchBehavior.toggled = !switchBehavior.toggled;
+        }
+        isPressed = false;
+        hasDragged = false;
     }
-    isPressed = false;
-    e.preventDefault();
 });
 
 canvas.addEventListener('mouseleave', () => {
     switchBehavior.pressed = false;
     isPressed = false;
+    hasDragged = false;
 });
 
+// Touch handlers - simplified for mobile
+let touchStartPos = { x: 0, y: 0 };
+let touchHasDragged = false;
+
 canvas.addEventListener('touchstart', (e) => {
-    switchBehavior.pressed = true;
-    isPressed = true;
-    e.preventDefault();
+    if (e.touches.length === 1) {
+        touchStartPos.x = e.touches[0].clientX;
+        touchStartPos.y = e.touches[0].clientY;
+        touchHasDragged = false;
+        switchBehavior.pressed = true;
+        isPressed = true;
+    }
+});
+
+canvas.addEventListener('touchmove', (e) => {
+    if (isPressed && e.touches.length === 1) {
+        const dx = Math.abs(e.touches[0].clientX - touchStartPos.x);
+        const dy = Math.abs(e.touches[0].clientY - touchStartPos.y);
+        if (dx > 10 || dy > 10) {
+            touchHasDragged = true;
+        }
+    }
 });
 
 canvas.addEventListener('touchend', (e) => {
     switchBehavior.pressed = false;
-    if (isPressed) {
+    if (isPressed && !touchHasDragged) {
         switchBehavior.toggled = !switchBehavior.toggled;
     }
     isPressed = false;
-    e.preventDefault();
+    touchHasDragged = false;
 });
 
 // Handle window resize

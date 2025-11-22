@@ -42,6 +42,7 @@ class SwitchBehavior {
 
     // Trigger click animation
     click() {
+        // Toggle the state
         this.toggled = !this.toggled;
         
         // Satisfying jelly bounce on click
@@ -50,7 +51,7 @@ class SwitchBehavior {
         this.wiggleXSpring.velocity = (Math.random() - 0.5) * 8; // Random wiggle
         this.pressYSpring.velocity = -2; // Press down
         
-        // Toggle dark mode
+        // Return the new state: true = dark mode, false = light mode
         return this.toggled;
     }
 
@@ -353,7 +354,9 @@ canvas.addEventListener('mouseup', (e) => {
         if (isPressed && !hasDragged) {
             // Check again if click is on button
             if (isClickOnButton(e)) {
+                // Toggle the state and get new state
                 const newDarkMode = switchBehavior.click();
+                // Apply the toggle (true = dark mode, false = light mode)
                 toggleDarkMode(newDarkMode);
             }
         }
@@ -418,7 +421,9 @@ canvas.addEventListener('touchend', (e) => {
     if (isPressed && !touchHasDragged && e.changedTouches.length > 0) {
         const touch = e.changedTouches[0];
         if (isTouchOnButton(touch)) {
+            // Toggle the state and get new state
             const newDarkMode = switchBehavior.click();
+            // Apply the toggle (true = dark mode, false = light mode)
             toggleDarkMode(newDarkMode);
         }
     }
@@ -434,18 +439,38 @@ window.addEventListener('resize', () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// Toggle dark mode function
+// Toggle dark mode function - ensure only one transition at a time
+let isTransitioning = false;
+let currentTransitionFrame = null;
+
 function toggleDarkMode(darkMode) {
+    // Cancel any ongoing transition
+    if (currentTransitionFrame) {
+        cancelAnimationFrame(currentTransitionFrame);
+        currentTransitionFrame = null;
+    }
+    
     isDarkMode = darkMode;
     
     // Smoothly transition background color
     // darkMode = true means dark background, darkMode = false means light background
-    const targetColor = darkMode ? darkBackground : lightBackground;
+    const targetColor = darkMode ? darkBackground.clone() : lightBackground.clone();
     const startColor = scene.background.clone();
+    
+    // Ensure we start from the current actual background color
+    const currentBodyBg = document.body.style.background;
+    if (currentBodyBg && currentBodyBg !== 'transparent') {
+        // Try to parse current body background if it exists
+        const bodyColorMatch = currentBodyBg.match(/#([0-9a-f]{6})/i);
+        if (bodyColorMatch) {
+            startColor.setHex(parseInt(bodyColorMatch[1], 16));
+        }
+    }
     
     let progress = 0;
     const duration = 500; // 500ms transition
     const startTime = performance.now();
+    isTransitioning = true;
     
     function updateBackground() {
         const elapsed = performance.now() - startTime;
@@ -460,12 +485,14 @@ function toggleDarkMode(darkMode) {
         document.body.style.background = `#${hexColor}`;
         
         if (progress < 1) {
-            requestAnimationFrame(updateBackground);
+            currentTransitionFrame = requestAnimationFrame(updateBackground);
         } else {
             // Ensure final color is set correctly
             scene.background.copy(targetColor);
             const finalHex = targetColor.getHexString();
             document.body.style.background = `#${finalHex}`;
+            isTransitioning = false;
+            currentTransitionFrame = null;
         }
     }
     

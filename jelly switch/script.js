@@ -111,7 +111,7 @@ const camera = new THREE.PerspectiveCamera(
     0.1,
     100
 );
-camera.position.set(0, 3, 3); // Initial position for orbit controls
+camera.position.set(1, 0, 0); // Initial position for orbit controls
 camera.lookAt(0, 0, 0);
 
 // Renderer - optimized for performance

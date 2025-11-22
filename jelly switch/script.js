@@ -34,67 +34,47 @@ class SwitchBehavior {
     constructor() {
         this.toggled = false;
         this.pressed = false;
-        this.progress = 0;
-        this.velocity = 0;
         this.squashXSpring = new Spring(squashXProperties);
         this.squashZSpring = new Spring(squashZProperties);
         this.wiggleXSpring = new Spring(wiggleXProperties);
+        this.pressYSpring = new Spring({ mass: 1, stiffness: 1200, damping: 15 }); // Vertical press animation
+    }
+
+    // Trigger click animation
+    click() {
+        this.toggled = !this.toggled;
+        
+        // Satisfying jelly bounce on click
+        this.squashXSpring.velocity = -4;
+        this.squashZSpring.velocity = 3;
+        this.wiggleXSpring.velocity = (Math.random() - 0.5) * 8; // Random wiggle
+        this.pressYSpring.velocity = -2; // Press down
     }
 
     update(dt) {
         if (dt <= 0) return;
 
-        let acc = 0;
-        if (this.toggled && this.progress < 1) {
-            acc = SWITCH_ACCELERATION;
-        }
-        if (!this.toggled && this.progress > 0) {
-            acc = -SWITCH_ACCELERATION;
-        }
-
-        // Anticipating movement
+        // Anticipating movement when pressed (before click)
         if (this.pressed) {
-            this.squashXSpring.velocity = -2;
-            this.squashZSpring.velocity = 1;
-            this.wiggleXSpring.velocity = 1 * Math.sign(this.progress - 0.5);
+            this.squashXSpring.velocity = -1.5;
+            this.squashZSpring.velocity = 0.8;
+            this.pressYSpring.velocity = -0.5; // Slight press down
         }
-
-        this.velocity += acc * dt;
-        if (this.progress > 0 && this.progress < 1) {
-            this.wiggleXSpring.velocity = this.velocity;
-        }
-
-        this.progress += this.velocity * dt;
-
-        // Overshoot handling
-        if (this.progress > 1) {
-            this.progress = 1;
-            this.velocity = 0;
-            this.squashXSpring.velocity = -5;
-            this.squashZSpring.velocity = 5;
-            this.wiggleXSpring.velocity = -10;
-        }
-        if (this.progress < 0) {
-            this.progress = 0;
-            this.velocity = 0;
-            this.squashXSpring.velocity = -5;
-            this.squashZSpring.velocity = 5;
-            this.wiggleXSpring.velocity = 10;
-        }
-        this.progress = Math.max(0, Math.min(1, this.progress));
 
         // Spring dynamics
         this.squashXSpring.update(dt);
         this.squashZSpring.update(dt);
         this.wiggleXSpring.update(dt);
+        this.pressYSpring.update(dt);
     }
 
     getState() {
         return {
-            progress: this.progress,
+            toggled: this.toggled,
             squashX: this.squashXSpring.value,
             squashZ: this.squashZSpring.value,
             wiggleX: this.wiggleXSpring.value,
+            pressY: this.pressYSpring.value,
         };
     }
 }
@@ -127,7 +107,7 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFShadowMap; // Faster than PCFSoft
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-// Orbit Controls
+// Orbit Controls - use right mouse for rotation to allow left-click for button
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true; // Smooth camera movement
 controls.dampingFactor = 0.05;
@@ -139,6 +119,14 @@ controls.enablePan = false; // Disable panning to keep focus on the button
 controls.enableZoom = true; // Allow zooming with scroll
 controls.autoRotate = false; // Disable auto-rotation
 controls.target.set(0, 0, 0); // Focus on the center
+
+// Use right mouse button for orbit controls, leaving left mouse for button clicks
+controls.mouseButtons = {
+    LEFT: null, // Disable left mouse for orbit controls
+    MIDDLE: THREE.MOUSE.DOLLY, // Middle mouse for zoom
+    RIGHT: THREE.MOUSE.ROTATE // Right mouse for rotation
+};
+
 controls.update();
 
 // Soft, diffused lighting
@@ -309,29 +297,28 @@ function animate(currentTime) {
     switchBehavior.update(deltaTime);
     const state = switchBehavior.getState();
 
-    // Update jelly position and transform
-    const switchX = (state.progress - 0.5) * SWITCH_RAIL_LENGTH;
-    const jellyX = switchX - state.squashX * (state.progress - 0.5) * 0.2;
-    // Position button so it sits in the recessed rail, slightly above the surface
-    const jellyY = JELLY_HALFSIZE.y * 0.5 + 0.01;
+    // Update jelly position and transform - button stays centered
+    const jellyX = 0; // Always centered
+    // Position button with vertical press animation
+    const baseY = JELLY_HALFSIZE.y * 0.5 + 0.01;
+    const jellyY = baseY + state.pressY * 0.05; // Press down effect
     
     jellyMesh.position.set(jellyX, jellyY, 0);
 
-    // Apply squash and stretch
+    // Apply squash and stretch for satisfying click feedback
     const scaleX = 1 - state.squashX;
     const scaleZ = 1 - state.squashZ;
-    jellyMesh.scale.set(scaleX, 1, scaleZ);
+    const scaleY = 1 + state.squashZ * 0.3; // Slight vertical stretch when squashed
+    jellyMesh.scale.set(scaleX, scaleY, scaleZ);
 
-    // Apply wiggle rotation
-    jellyMesh.rotation.z = state.wiggleX;
+    // Apply wiggle rotation for playful bounce
+    jellyMesh.rotation.z = state.wiggleX * 0.3;
+    jellyMesh.rotation.x = state.wiggleX * 0.1;
 
-    // Apply subtle bend effect (simplified)
-    jellyMesh.rotation.x = Math.sin(jellyX * 0.8) * 0.1;
-
-    // Subtle emission for glow effect
-    const emission = Math.max(0.3, Math.smoothstep(0.5, 1, state.progress) * 0.5);
+    // Emission based on toggle state
+    const emission = state.toggled ? 0.8 : 0.3;
     jellyMaterial.emissive = JELLY_COLOR.clone();
-    jellyMaterial.emissiveIntensity = emission * 0.15;
+    jellyMaterial.emissiveIntensity = emission * 0.2;
 
     // Update orbit controls
     controls.update();
@@ -370,9 +357,9 @@ canvas.addEventListener('mousemove', (e) => {
 canvas.addEventListener('mouseup', (e) => {
     if (e.button === 0) {
         switchBehavior.pressed = false;
-        // Only toggle if it was a click (not a drag)
+        // Only trigger click if it was a click (not a drag)
         if (isPressed && !hasDragged) {
-            switchBehavior.toggled = !switchBehavior.toggled;
+            switchBehavior.click(); // Trigger satisfying click animation
         }
         isPressed = false;
         hasDragged = false;
@@ -412,7 +399,7 @@ canvas.addEventListener('touchmove', (e) => {
 canvas.addEventListener('touchend', (e) => {
     switchBehavior.pressed = false;
     if (isPressed && !touchHasDragged) {
-        switchBehavior.toggled = !switchBehavior.toggled;
+        switchBehavior.click(); // Trigger satisfying click animation
     }
     isPressed = false;
     touchHasDragged = false;

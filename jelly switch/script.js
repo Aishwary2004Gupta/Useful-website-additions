@@ -113,36 +113,43 @@ const camera = new THREE.PerspectiveCamera(
 camera.position.set(0, 4, 0); // Perfect top-down view
 camera.lookAt(0, 0, 0);
 
-// Renderer
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+// Renderer - optimized for performance
+const renderer = new THREE.WebGLRenderer({ 
+    canvas, 
+    antialias: true, // Keep for visual quality
+    alpha: true,
+    powerPreference: "high-performance"
+});
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // Limit pixel ratio
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.type = THREE.PCFShadowMap; // Faster than PCFSoft
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 
 // Soft, diffused lighting
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
 scene.add(ambientLight);
 
-// Soft directional light from above
+// Soft directional light from above - optimized shadows
 const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
 directionalLight.position.set(0, 5, 2);
 directionalLight.castShadow = true;
-directionalLight.shadow.mapSize.width = 2048;
-directionalLight.shadow.mapSize.height = 2048;
+directionalLight.shadow.mapSize.width = 1024; // Reduced from 2048
+directionalLight.shadow.mapSize.height = 1024;
 directionalLight.shadow.camera.near = 0.1;
 directionalLight.shadow.camera.far = 10;
 directionalLight.shadow.camera.left = -2;
 directionalLight.shadow.camera.right = 2;
 directionalLight.shadow.camera.top = 2;
 directionalLight.shadow.camera.bottom = -2;
-directionalLight.shadow.radius = 8; // Soft shadows
+directionalLight.shadow.radius = 4; // Reduced for better performance
+directionalLight.shadow.bias = -0.0001;
 scene.add(directionalLight);
 
-// Additional fill light for softness
+// Additional fill light for softness (no shadows for performance)
 const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
 fillLight.position.set(-2, 3, -1);
+fillLight.castShadow = false; // No shadows for fill light
 scene.add(fillLight);
 
 // Minimalist surface - light grey panel
@@ -174,7 +181,7 @@ const railMaterial = new THREE.MeshStandardMaterial({
 const rail = new THREE.Mesh(railGeometry, railMaterial);
 rail.rotation.x = -Math.PI / 2;
 rail.position.y = -railDepth / 2 + 0.001; // Slightly recessed
-rail.receiveShadow = true;
+rail.receiveShadow = false; // Disable for performance
 scene.add(rail);
 
 // Add subtle shadow/depth to the rail edges for better definition
@@ -213,10 +220,14 @@ function createRoundedBox(width, height, depth, radius, segments) {
         const ny = Math.abs(y) / halfHeight;
         const nz = Math.abs(z) / halfDepth;
         
-        // Check if we're near a corner
+        // Check if we're near a corner (optimized)
         if (nx > 0.7 && ny > 0.7 && nz > 0.7) {
-            const dist = Math.sqrt((nx - 1) ** 2 + (ny - 1) ** 2 + (nz - 1) ** 2);
-            if (dist < 0.3) {
+            const dx = nx - 1;
+            const dy = ny - 1;
+            const dz = nz - 1;
+            const distSq = dx * dx + dy * dy + dz * dz;
+            if (distSq < 0.09) { // 0.3^2 = 0.09 (avoid sqrt)
+                const dist = Math.sqrt(distSq);
                 const factor = Math.max(0, 1 - dist / 0.3);
                 const r = radius * factor;
                 const signX = Math.sign(x);
@@ -240,10 +251,10 @@ const jellyGeometry = createRoundedBox(
     JELLY_HALFSIZE.y * 2,
     JELLY_HALFSIZE.z * 2,
     0.15, // Larger radius for smoother, more rounded appearance
-    16 // More segments for smoother curves
+    10 // Reduced segments for better performance (still looks smooth)
 );
 
-// Jelly material - highly translucent, glossy, refractive
+// Jelly material - highly translucent, glossy, refractive (optimized)
 const jellyMaterial = new THREE.MeshPhysicalMaterial({
     color: JELLY_COLOR,
     transparent: true,
@@ -251,35 +262,31 @@ const jellyMaterial = new THREE.MeshPhysicalMaterial({
     roughness: 0.05, // Very glossy
     metalness: 0.0,
     ior: JELLY_IOR,
-    transmission: 0.98, // Highly transmissive
+    transmission: 0.95, // Slightly reduced for performance
     thickness: 0.6,
     clearcoat: 1.0,
     clearcoatRoughness: 0.05, // Very smooth clearcoat
-    envMapIntensity: 2.0, // Strong reflections
-    side: THREE.DoubleSide, // Render both sides for transparency
+    envMapIntensity: 1.8, // Slightly reduced
+    side: THREE.FrontSide, // Render only front side for better performance
 });
 
-// Create environment map for reflections
+// Create environment map for reflections - generate once
 const pmremGenerator = new THREE.PMREMGenerator(renderer);
 pmremGenerator.compileEquirectangularShader();
 
-// Create a simple environment from the scene
+// Create environment map once (not updating for performance)
 const envMap = pmremGenerator.fromScene(scene, 0.04).texture;
 jellyMaterial.envMap = envMap;
 
-// Update environment map periodically for better reflections
-let envMapUpdateCounter = 0;
-
 const jellyMesh = new THREE.Mesh(jellyGeometry, jellyMaterial);
 jellyMesh.castShadow = true;
-jellyMesh.receiveShadow = true;
+jellyMesh.receiveShadow = false; // Disable receive shadow for performance
 scene.add(jellyMesh);
 
-// Animation loop
+// Animation loop - optimized
 let lastTime = performance.now();
 
-function animate() {
-    const currentTime = performance.now();
+function animate(currentTime) {
     const deltaTime = Math.min((currentTime - lastTime) * 0.001, 0.1);
     lastTime = currentTime;
 
@@ -310,14 +317,6 @@ function animate() {
     const emission = Math.max(0.3, Math.smoothstep(0.5, 1, state.progress) * 0.5);
     jellyMaterial.emissive = JELLY_COLOR.clone();
     jellyMaterial.emissiveIntensity = emission * 0.15;
-
-    // Update environment map occasionally for dynamic reflections
-    envMapUpdateCounter++;
-    if (envMapUpdateCounter % 60 === 0) {
-        pmremGenerator.dispose();
-        const newEnvMap = pmremGenerator.fromScene(scene, 0.04).texture;
-        jellyMaterial.envMap = newEnvMap;
-    }
 
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
@@ -375,4 +374,4 @@ Math.smoothstep = function(edge0, edge1, x) {
 };
 
 // Start animation
-animate();
+animate(performance.now());

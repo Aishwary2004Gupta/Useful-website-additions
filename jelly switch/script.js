@@ -90,6 +90,9 @@ const lightBackground = new THREE.Color(0xd0d0d0); // Light grey background
 const darkBackground = new THREE.Color(0x1a1a1a); // Dark background
 scene.background = lightBackground;
 
+// Initialize body background to match
+document.body.style.background = '#d0d0d0';
+
 // Camera setup
 const camera = new THREE.PerspectiveCamera(
     45,
@@ -436,6 +439,7 @@ function toggleDarkMode(darkMode) {
     isDarkMode = darkMode;
     
     // Smoothly transition background color
+    // darkMode = true means dark background, darkMode = false means light background
     const targetColor = darkMode ? darkBackground : lightBackground;
     const startColor = scene.background.clone();
     
@@ -458,9 +462,10 @@ function toggleDarkMode(darkMode) {
         if (progress < 1) {
             requestAnimationFrame(updateBackground);
         } else {
-            // Ensure final color is set
+            // Ensure final color is set correctly
             scene.background.copy(targetColor);
-            document.body.style.background = `#${targetColor.getHexString()}`;
+            const finalHex = targetColor.getHexString();
+            document.body.style.background = `#${finalHex}`;
         }
     }
     

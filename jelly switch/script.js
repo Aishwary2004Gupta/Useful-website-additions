@@ -155,49 +155,7 @@ fillLight.position.set(-2, 3, -1);
 fillLight.castShadow = false; // No shadows for fill light
 scene.add(fillLight);
 
-// Minimalist surface - light grey panel
-const surfaceSize = 3;
-const surfaceThickness = 0.05;
-const surfaceGeometry = new THREE.BoxGeometry(surfaceSize, surfaceThickness, surfaceSize);
-const surfaceMaterial = new THREE.MeshStandardMaterial({
-    color: 0xe8e8e8, // Light grey (slightly lighter)
-    roughness: 0.2,
-    metalness: 0.0,
-});
-const surface = new THREE.Mesh(surfaceGeometry, surfaceMaterial);
-surface.rotation.x = -Math.PI / 2;
-surface.position.y = 0;
-surface.receiveShadow = true;
-surface.castShadow = false;
-scene.add(surface);
-
-// Recessed rail slot (darker grey groove)
-const railLength = SWITCH_RAIL_LENGTH + 0.4;
-const railWidth = 0.18;
-const railDepth = 0.025;
-const railGeometry = new THREE.BoxGeometry(railLength, railDepth, railWidth);
-const railMaterial = new THREE.MeshStandardMaterial({
-    color: 0x999999, // Darker grey for the recessed slot
-    roughness: 0.7,
-    metalness: 0.0,
-});
-const rail = new THREE.Mesh(railGeometry, railMaterial);
-rail.rotation.x = -Math.PI / 2;
-rail.position.y = -railDepth / 2 + 0.001; // Slightly recessed
-rail.receiveShadow = false; // Disable for performance
-scene.add(rail);
-
-// Add subtle shadow/depth to the rail edges for better definition
-const railEdgeGeometry = new THREE.BoxGeometry(railLength, 0.005, railWidth + 0.01);
-const railEdgeMaterial = new THREE.MeshStandardMaterial({
-    color: 0x777777,
-    roughness: 0.8,
-    metalness: 0.0,
-});
-const railEdge = new THREE.Mesh(railEdgeGeometry, railEdgeMaterial);
-railEdge.rotation.x = -Math.PI / 2;
-railEdge.position.y = -railDepth / 2 - 0.002;
-scene.add(railEdge);
+// Surface and rail removed - just the floating jelly button
 
 // Jelly switch
 const switchBehavior = new SwitchBehavior();

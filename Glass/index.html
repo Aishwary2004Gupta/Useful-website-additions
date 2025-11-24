@@ -1,95 +1,221 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Framer Glass Effect</title>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Interactable Water Sphere Ripples</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: #000;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Three.js & OrbitControls -->
+    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
 
-<style>
-  body {
-    margin: 0;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #0a0a0a;
-    font-family: system-ui, sans-serif;
-  }
+    <script>
+      // ---------------------------------------------
+      // BASIC SCENE SETUP
+      // ---------------------------------------------
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+      camera.position.z = -2.5;
+      camera.position.x = -5;
 
-  /* Main glass container */
-  .glass {
-    position: relative;
-    width: 320px;
-    padding: 30px;
-    border-radius: 30px;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(25px);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    box-shadow: 0 4px 40px rgba(0, 0, 0, 0.3);
-    overflow: hidden;
-    color: white;
-    transition: transform 0.35s ease, opacity 0.3s ease;
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeInUp 0.6s ease forwards;
-  }
+      const ambient = new THREE.AmbientLight(0xffffff, 1);
+      scene.add(ambient);
 
-  /* entrance animation */
-  @keyframes fadeInUp {
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
 
-  /* Hover animation */
-  .glass:hover {
-    transform: scale(1.03);
-  }
+      // ---------------------------------------------
+      // ENVIRONMENT
+      // ---------------------------------------------
+      let tooLazyToHandleLoadingProperly = 0;
+      const loadingLol = () => tooLazyToHandleLoadingProperly++;
 
-  /* Stripes layer */
-  .glass::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.15) 0%,
-      rgba(255, 255, 255, 0.0) 45%
-    );
-    opacity: 0.25;
-    pointer-events: none;
-  }
+      const ENV_URL = "https://s.halvves.com/gregzaal-venicedawn.jpg";
+      const loader = new THREE.TextureLoader();
+      const reflectionCube = loader.load(ENV_URL, loadingLol);
+      const refractionCube = loader.load(ENV_URL, loadingLol);
 
-  /* Gloss highlight */
-  .glass::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 30%;
-    background: rgba(255, 255, 255, 0.2);
-    filter: blur(25px);
-    opacity: 0.5;
-    pointer-events: none;
-  }
+      reflectionCube.mapping = THREE.EquirectangularReflectionMapping;
+      refractionCube.mapping = THREE.EquirectangularRefractionMapping;
 
-  .content {
-    position: relative;
-    z-index: 2;
-  }
-</style>
+      scene.background = reflectionCube;
+      scene.environment = reflectionCube;
 
-</head>
-<body>
+      // ---------------------------------------------
+      // GEOMETRY + MATERIALS
+      // ---------------------------------------------
+      const geometry = new THREE.SphereGeometry(2, 128, 128);
+      const base = geometry.attributes.position.array.slice();
 
-<div class="glass">
-  <div class="content">
-    <h2 style="margin-top:0;">Glass Effect</h2>
-    <p>This is a pure HTML & CSS recreation of the Framer Glass component.</p>
-  </div>
-</div>
+      const refractionMaterial = new THREE.MeshPhysicalMaterial({
+        color: 0xc3e4f9,
+        envMap: refractionCube,
+        metalness: 1,
+        reflectivity: 0,
+        refractionRatio: 0.1,
+        roughness: 0,
+        side: THREE.DoubleSide,
+      });
 
-</body>
+      const reflectionMaterial = new THREE.MeshPhysicalMaterial({
+        color: 0xc3e4f9,
+        envMap: reflectionCube,
+        envMapIntensity: 1,
+        metalness: 0.35,
+        reflectivity: 0.9,
+        roughness: 0,
+        side: THREE.DoubleSide,
+        transmission: 1,
+        transparent: true,
+      });
+
+      const refractionSphere = new THREE.Mesh(geometry, refractionMaterial);
+      const reflectionSphere = new THREE.Mesh(geometry, reflectionMaterial);
+
+      const sphere = new THREE.Object3D();
+      sphere.add(refractionSphere);
+      sphere.add(reflectionSphere);
+      scene.add(sphere);
+
+      sphere.lookAt(camera.position);
+      camera.lookAt(sphere.position);
+
+      const controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+
+      // ---------------------------------------------
+      // INTERACTABLE WATER RIPPLE SYSTEM
+      // ---------------------------------------------
+      const vertexCount = geometry.attributes.position.count;
+      const rippleStrength = new Float32Array(vertexCount).fill(0);
+      const rippleVelocity = new Float32Array(vertexCount).fill(0);
+
+      const RIPPLE_DAMPING = 0.975;
+      const RIPPLE_SPEED = 0.03;
+      const RIPPLE_FORCE = 0.6;
+
+      const raycaster = new THREE.Raycaster();
+      const pointer = new THREE.Vector2();
+
+      function addRipple(point) {
+        const pos = geometry.attributes.position;
+
+        let closestIndex = 0;
+        let closestDist = Infinity;
+        const temp = new THREE.Vector3();
+
+        for (let i = 0; i < vertexCount; i++) {
+          temp.set(pos.getX(i), pos.getY(i), pos.getZ(i));
+          const d = temp.distanceTo(point);
+          if (d < closestDist) {
+            closestDist = d;
+            closestIndex = i;
+          }
+        }
+
+        rippleVelocity[closestIndex] += RIPPLE_FORCE;
+      }
+
+      function handlePointerEvent(event) {
+        const rect = renderer.domElement.getBoundingClientRect();
+        pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        raycaster.setFromCamera(pointer, camera);
+        const hit = raycaster.intersectObject(reflectionSphere)[0];
+        if (hit) addRipple(hit.point);
+      }
+
+      window.addEventListener("pointermove", handlePointerEvent);
+      window.addEventListener("pointerdown", handlePointerEvent);
+
+      // ---------------------------------------------
+      // ANIMATION LOOP
+      // ---------------------------------------------
+      function animate(dt) {
+        requestAnimationFrame(animate);
+        controls.update();
+
+        if (tooLazyToHandleLoadingProperly !== 2) return;
+
+        const pos = geometry.attributes.position;
+
+        // 1. Original auto-wave motion
+        pos.array.forEach((val, i, arr) => {
+          const place = i % 3;
+
+          if (place === 0) {
+            // x
+            arr[i] = base[i] + Math.sin(base[i + 1] * 3 + dt * 0.002) * 0.1;
+          }
+
+          if (place === 1) {
+            // y
+            arr[i] = base[i] + Math.cos(base[i - 1] * 5 + dt * 0.003) * 0.08;
+          }
+
+          if (place === 2) {
+            // z
+            arr[i] = base[i] + Math.sin(base[i - 2] * 25 + dt * 0.01) * 0.03;
+          }
+        });
+
+        // 2. Ripple simulation (spring-like)
+        for (let i = 0; i < vertexCount; i++) {
+          rippleVelocity[i] += -rippleStrength[i] * RIPPLE_SPEED;
+          rippleStrength[i] += rippleVelocity[i];
+          rippleVelocity[i] *= RIPPLE_DAMPING;
+        }
+
+        // 3. Apply ripple displacement on top of auto waves
+        for (let i = 0; i < vertexCount; i++) {
+          const extra = rippleStrength[i] * 0.15;
+          pos.setXYZ(
+            i,
+            pos.getX(i),
+            pos.getY(i) + extra,
+            pos.getZ(i)
+          );
+        }
+
+        geometry.computeVertexNormals();
+        geometry.attributes.position.needsUpdate = true;
+
+        // Resize handling
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        renderer.setSize(w, h);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+
+        renderer.render(scene, camera);
+      }
+
+      animate();
+
+      // ---------------------------------------------
+      // HANDLE RESIZE
+      // ---------------------------------------------
+      window.addEventListener("resize", () => {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        renderer.setSize(w, h);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+      });
+    </script>
+  </body>
 </html>

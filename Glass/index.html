@@ -47,7 +47,8 @@
       // ENVIRONMENT MAP
       // ------------------------------------------------
       const textureLoader = new THREE.TextureLoader();
-      const envURL = "https://st4.depositphotos.com/14115292/20922/i/600/depositphotos_209222988-stock-photo-lviv-summer-2018-spherical-panorama.jpg";
+      const envURL =
+        "https://st4.depositphotos.com/14115292/20922/i/600/depositphotos_209222988-stock-photo-lviv-summer-2018-spherical-panorama.jpg";
       const reflectionTex = textureLoader.load(envURL);
       const refractionTex = textureLoader.load(envURL);
 
@@ -142,12 +143,7 @@
 
         // Reset sphere vertices to base positions
         for (let i = 0; i < vertexCount; i++) {
-          pos.setXYZ(
-            i,
-            base[i * 3],
-            base[i * 3 + 1],
-            base[i * 3 + 2]
-          );
+          pos.setXYZ(i, base[i * 3], base[i * 3 + 1], base[i * 3 + 2]);
         }
 
         // Update ripple lifetime
@@ -161,11 +157,7 @@
           const time = rippleTimes[r];
 
           for (let i = 0; i < vertexCount; i++) {
-            tmpVec.set(
-              pos.getX(i),
-              pos.getY(i),
-              pos.getZ(i)
-            );
+            tmpVec.set(pos.getX(i), pos.getY(i), pos.getZ(i));
 
             const dist = tmpVec.distanceTo(center);
 
@@ -177,8 +169,7 @@
               dist < time * 2.0 + RIPPLE_RADIUS &&
               dist > time * 2.0 - RIPPLE_RADIUS
             ) {
-              const intensity =
-                wave * Math.exp(-dist * RIPPLE_DECAY) * 0.05;
+              const intensity = wave * Math.exp(-dist * RIPPLE_DECAY) * 0.05;
 
               // Push outward for 3D ripple effect
               pos.setXYZ(

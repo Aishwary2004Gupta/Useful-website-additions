@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Framer Glass Effect</title>
+
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #0a0a0a;
+    font-family: system-ui, sans-serif;
+  }
+
+  /* Main glass container */
+  .glass {
+    position: relative;
+    width: 320px;
+    padding: 30px;
+    border-radius: 30px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 4px 40px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    color: white;
+    transition: transform 0.35s ease, opacity 0.3s ease;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease forwards;
+  }
+
+  /* entrance animation */
+  @keyframes fadeInUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Hover animation */
+  .glass:hover {
+    transform: scale(1.03);
+  }
+
+  /* Stripes layer */
+  .glass::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.15) 0%,
+      rgba(255, 255, 255, 0.0) 45%
+    );
+    opacity: 0.25;
+    pointer-events: none;
+  }
+
+  /* Gloss highlight */
+  .glass::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 30%;
+    background: rgba(255, 255, 255, 0.2);
+    filter: blur(25px);
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .content {
+    position: relative;
+    z-index: 2;
+  }
+</style>
+
+</head>
+<body>
+
+<div class="glass">
+  <div class="content">
+    <h2 style="margin-top:0;">Glass Effect</h2>
+    <p>This is a pure HTML & CSS recreation of the Framer Glass component.</p>
+  </div>
+</div>
+
+</body>
+</html>

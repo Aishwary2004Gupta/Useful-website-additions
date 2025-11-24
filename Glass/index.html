@@ -12,10 +12,20 @@
     </style>
   </head>
   <body>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script>
     <!-- 100% Working Three.js ES Module Import -->
     <script type="module">
-      import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
-      import { OrbitControls } from "https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js";
+      import * as THREE from "three";
+      import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+      import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 
       // ---------------------------------------------
       // SCENE SETUP

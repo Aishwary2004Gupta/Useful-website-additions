@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Liquid Effect With Movable Ball</title>
+    <title>Liquid Effect Animation</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link
       href="https://fonts.googleapis.com/css?family=Montserrat:400,700&display=swap"
@@ -16,72 +16,51 @@
         margin: 0;
         padding: 0;
         overflow: hidden;
-        background: #101014;
         font-family: "Montserrat", serif;
+        background: #101014;
       }
-
       #main-container {
         position: fixed;
         inset: 0;
         width: 100vw;
         height: 100vh;
+        touch-action: none;
         overflow: hidden;
         z-index: 0;
       }
-
       #liquid-canvas {
         position: fixed;
         inset: 0;
         width: 100vw;
         height: 100vh;
         display: block;
+        outline: none;
+        border: none;
         z-index: 1;
       }
-
-      /* White movable ball */
-      #cursor-ball {
-        position: fixed;
-        width: 40px;
-        height: 40px;
-        background: white;
-        border-radius: 50%;
-        pointer-events: none;
-        mix-blend-mode: difference;
-        transform: translate(-50%, -50%);
-        z-index: 3;
+      ::-webkit-scrollbar {
+        display: none;
       }
     </style>
   </head>
-
   <body>
     <div id="main-container">
       <canvas id="liquid-canvas"></canvas>
     </div>
 
-    <!-- White ball -->
-    <div id="cursor-ball"></div>
-
     <script type="module">
       import LiquidBackground from "https://cdn.jsdelivr.net/npm/threejs-components@0.0.22/build/backgrounds/liquid1.min.js";
 
       const canvas = document.getElementById("liquid-canvas");
-      const ball = document.getElementById("cursor-ball");
-
-      let mouseX = window.innerWidth / 2;
-      let mouseY = window.innerHeight / 2;
-
-      let ballX = mouseX;
-      let ballY = mouseY;
-
-      /* ----- Initialize Liquid Background ----- */
-      let app;
+      let autoClickInterval;
+      let userMoved = false;
 
       if (canvas) {
-        app = LiquidBackground(canvas);
+        const app = LiquidBackground(canvas);
         app.loadImage(
-          "https://images.unsplash.com/photo-1644056368311-c8054df845d0?auto=format&fit=crop&q=80&w=1074"
+          "https://images.unsplash.com/photo-1644056368311-c8054df845d0?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1074"
         );
-
+        // app.loadImage('https://plus.unsplash.com/premium_photo-1682778015002-fa5b916a34db?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1332');
         app.liquidPlane.material.metalness = 0.75;
         app.liquidPlane.material.roughness = 0.25;
         app.liquidPlane.uniforms.displacementScale.value = 5;
@@ -90,43 +69,25 @@
         window.__liquidApp = app;
       }
 
-      /* ----- Follow Mouse ----- */
-      window.addEventListener("mousemove", (e) => {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-
-        dispatchLiquidEvent(mouseX, mouseY);
-      });
-
-      /* ----- Smooth Ball Animation ----- */
-      function animateBall() {
-        ballX += (mouseX - ballX) * 0.15;
-        ballY += (mouseY - ballY) * 0.15;
-
-        ball.style.left = `${ballX}px`;
-        ball.style.top = `${ballY}px`;
-
-        requestAnimationFrame(animateBall);
-      }
-      animateBall();
-
-      /* ----- Trigger Liquid Canvas Effect ----- */
-      function dispatchLiquidEvent(x, y) {
-        const event = new PointerEvent("pointermove", {
+      function autoClickCenter() {
+        const x = window.innerWidth / 2;
+        const y = window.innerHeight / 2;
+        const event = new MouseEvent("click", {
           bubbles: true,
+          cancelable: true,
           clientX: x,
           clientY: y,
         });
         canvas.dispatchEvent(event);
       }
 
-      /* Mobile touch support */
-      window.addEventListener("touchmove", (e) => {
-        const t = e.touches[0];
-        mouseX = t.clientX;
-        mouseY = t.clientY;
+      autoClickInterval = setInterval(() => {
+        if (!userMoved) autoClickCenter();
+      }, 1000);
 
-        dispatchLiquidEvent(mouseX, mouseY);
+      window.addEventListener("mousemove", () => {
+        userMoved = true;
+        clearInterval(autoClickInterval);
       });
     </script>
   </body>

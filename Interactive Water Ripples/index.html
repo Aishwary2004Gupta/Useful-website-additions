@@ -48,7 +48,12 @@
       // SCENE + CAMERA
       // ------------------------------------------------
       const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      const camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
       camera.position.set(1, 1, 1);
 
       const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -61,7 +66,8 @@
       // ENV MAP (your background)
       // ------------------------------------------------
       const textureLoader = new THREE.TextureLoader();
-      const envURL = "https://i.postimg.cc/DZTfk0vf/D10451C5-EB9F-4364-B668-83F91FC4B26C.jpg";
+      const envURL =
+        "https://i.postimg.cc/DZTfk0vf/D10451C5-EB9F-4364-B668-83F91FC4B26C.jpg";
 
       const reflectionTex = textureLoader.load(envURL);
       reflectionTex.mapping = THREE.EquirectangularReflectionMapping;
@@ -84,7 +90,7 @@
         transmission: 1,
         transparent: true,
         ior: 1.12,
-        side: THREE.DoubleSide
+        side: THREE.DoubleSide,
       });
 
       const matRefraction = new THREE.MeshPhysicalMaterial({
@@ -94,7 +100,7 @@
         metalness: 0.1,
         transmission: 0.5,
         ior: 1.12,
-        side: THREE.DoubleSide
+        side: THREE.DoubleSide,
       });
 
       const sphereObj = new THREE.Object3D();
@@ -177,7 +183,10 @@
             const dist = tmpVec.distanceTo(center);
             const wave = Math.sin((dist - time * 2.0) * 6.0);
 
-            if (dist < time * 2.0 + RIPPLE_RADIUS && dist > time * 2.0 - RIPPLE_RADIUS) {
+            if (
+              dist < time * 2.0 + RIPPLE_RADIUS &&
+              dist > time * 2.0 - RIPPLE_RADIUS
+            ) {
               const intensity = wave * Math.exp(-dist * RIPPLE_DECAY) * 0.05;
 
               pos.setXYZ(

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Interactive Water Ripples</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: #000;
+        font-family: sans-serif;
+      }
+
+      /* Instruction text */
+      #instruction {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: white;
+        font-size: 18px;
+        z-index: 20;
+        text-shadow: 0 0 10px #000;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="instruction">
+      Click and drag on the water shape to create ripples.
+    </div>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script>
+
+    <script type="module">
+      import * as THREE from "three";
+      import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+      // ------------------------------------------------
+      // SCENE + CAMERA
+      // ------------------------------------------------
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.set(1, 1, 1);
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      scene.add(new THREE.AmbientLight(0xffffff, 1));
+
+      // ------------------------------------------------
+      // ENV MAP (your background)
+      // ------------------------------------------------
+      const textureLoader = new THREE.TextureLoader();
+      const envURL = "https://i.postimg.cc/DZTfk0vf/D10451C5-EB9F-4364-B668-83F91FC4B26C.jpg";
+
+      const reflectionTex = textureLoader.load(envURL);
+      reflectionTex.mapping = THREE.EquirectangularReflectionMapping;
+      reflectionTex.colorSpace = THREE.SRGBColorSpace;
+
+      scene.background = reflectionTex;
+      scene.environment = reflectionTex;
+
+      // ------------------------------------------------
+      // WATER SPHERE
+      // ------------------------------------------------
+      const geometry = new THREE.SphereGeometry(2, 128, 128);
+      const base = geometry.attributes.position.array.slice();
+
+      const matReflection = new THREE.MeshPhysicalMaterial({
+        color: 0x76b6c4,
+        envMap: reflectionTex,
+        metalness: 0.3,
+        roughness: 0,
+        transmission: 1,
+        transparent: true,
+        ior: 1.12,
+        side: THREE.DoubleSide
+      });
+
+      const matRefraction = new THREE.MeshPhysicalMaterial({
+        color: 0xc3e4f9,
+        envMap: reflectionTex,
+        roughness: 0,
+        metalness: 0.1,
+        transmission: 0.5,
+        ior: 1.12,
+        side: THREE.DoubleSide
+      });
+
+      const sphereObj = new THREE.Object3D();
+      sphereObj.add(new THREE.Mesh(geometry, matRefraction));
+      sphereObj.add(new THREE.Mesh(geometry, matReflection));
+      scene.add(sphereObj);
+
+      // ------------------------------------------------
+      // CONTROLS
+      // ------------------------------------------------
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+
+      // ------------------------------------------------
+      // RIPPLE SYSTEM
+      // ------------------------------------------------
+      const vertexCount = geometry.attributes.position.count;
+      const rippleCenters = [];
+      const rippleTimes = [];
+
+      const RIPPLE_RADIUS = 1.3;
+      const RIPPLE_DECAY = 2.2;
+
+      const raycaster = new THREE.Raycaster();
+      const pointer = new THREE.Vector2();
+      const tmpVec = new THREE.Vector3();
+
+      let isMouseDown = false;
+
+      window.addEventListener("pointerdown", () => (isMouseDown = true));
+      window.addEventListener("pointerup", () => (isMouseDown = false));
+
+      function onPointer(e) {
+        if (!isMouseDown) return; // ONLY ripples while clicking
+
+        const r = renderer.domElement.getBoundingClientRect();
+        pointer.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+        pointer.y = -((e.clientY - r.top) / r.height) * 2 + 1;
+
+        raycaster.setFromCamera(pointer, camera);
+        const hit = raycaster.intersectObject(sphereObj.children[0])[0];
+        if (hit) {
+          triggerRipple(hit.point);
+        }
+      }
+
+      function triggerRipple(pt) {
+        rippleCenters.push(pt.clone());
+        rippleTimes.push(0);
+      }
+
+      window.addEventListener("pointermove", onPointer);
+
+      // ------------------------------------------------
+      // ANIMATION LOOP
+      // ------------------------------------------------
+      function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+
+        const pos = geometry.attributes.position;
+
+        // Reset all vertices
+        for (let i = 0; i < vertexCount; i++) {
+          pos.setXYZ(i, base[i * 3], base[i * 3 + 1], base[i * 3 + 2]);
+        }
+
+        // Update ripples
+        for (let r = 0; r < rippleTimes.length; r++) {
+          rippleTimes[r] += 0.02;
+        }
+
+        for (let r = 0; r < rippleCenters.length; r++) {
+          const center = rippleCenters[r];
+          const time = rippleTimes[r];
+
+          for (let i = 0; i < vertexCount; i++) {
+            tmpVec.set(pos.getX(i), pos.getY(i), pos.getZ(i));
+
+            const dist = tmpVec.distanceTo(center);
+            const wave = Math.sin((dist - time * 2.0) * 6.0);
+
+            if (dist < time * 2.0 + RIPPLE_RADIUS && dist > time * 2.0 - RIPPLE_RADIUS) {
+              const intensity = wave * Math.exp(-dist * RIPPLE_DECAY) * 0.05;
+
+              pos.setXYZ(
+                i,
+                tmpVec.x + tmpVec.x * intensity,
+                tmpVec.y + tmpVec.y * intensity,
+                tmpVec.z + tmpVec.z * intensity
+              );
+            }
+          }
+        }
+
+        geometry.computeVertexNormals();
+        pos.needsUpdate = true;
+
+        renderer.render(scene, camera);
+      }
+
+      animate();
+
+      // RESIZE
+      window.addEventListener("resize", () => {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+      });
+    </script>
+  </body>
+</html>

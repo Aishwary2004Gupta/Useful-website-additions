@@ -1,565 +1,499 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-// Constants matching the original
-const JELLY_HALFSIZE = new THREE.Vector3(0.25, 0.2, 0.25);
-const SWITCH_RAIL_LENGTH = 0.4;
-const SWITCH_ACCELERATION = 100;
-const JELLY_IOR = 1.42;
-const JELLY_COLOR = new THREE.Color(0.2, 0.7, 0.95); // Vibrant translucent blue
-const PLATE_SIZE = 1.0;
-const PLATE_THICKNESS = 0.08;
+// Configuration
+const CONFIG = {
+    JELLY_RADIUS: 0.3,
+    JELLY_HEIGHT: 0.25,
+    PLATE_RADIUS: 0.8,
+    PLATE_HEIGHT: 0.06,
+    SPRING_STIFFNESS: 800,
+    SPRING_DAMPING: 25,
+    SPRING_MASS: 1,
+};
 
-// Spring properties
-const squashXProperties = { mass: 1, stiffness: 1000, damping: 10 };
-const squashZProperties = { mass: 1, stiffness: 900, damping: 12 };
-const wiggleXProperties = { mass: 1, stiffness: 1000, damping: 20 };
+// Global state
+let isDarkMode = false;
+let isAnimating = false;
+const lightBg = new THREE.Color(0xf5f5f5);
+const darkBg = new THREE.Color(0x0f0f0f);
 
+// Spring system
 class Spring {
-    constructor(properties) {
-        this.target = 0;
+    constructor(stiffness, damping, mass) {
+        this.stiffness = stiffness;
+        this.damping = damping;
+        this.mass = mass;
         this.value = 0;
         this.velocity = 0;
-        this.properties = properties;
+        this.target = 0;
     }
 
     update(dt) {
-        const F_spring = -this.properties.stiffness * (this.value - this.target);
-        const F_damp = -this.properties.damping * this.velocity;
-        const a = (F_spring + F_damp) / this.properties.mass;
-        this.velocity += a * dt;
+        if (dt <= 0 || dt > 0.05) return;
+        
+        const force = -this.stiffness * (this.value - this.target) - this.damping * this.velocity;
+        const acceleration = force / this.mass;
+        
+        this.velocity += acceleration * dt;
         this.value += this.velocity * dt;
+        
+        // Dampen to rest when very close
+        if (Math.abs(this.value - this.target) < 0.001 && Math.abs(this.velocity) < 0.01) {
+            this.value = this.target;
+            this.velocity = 0;
+        }
+    }
+
+    setTarget(target) {
+        this.target = target;
+    }
+
+    reset() {
+        this.value = 0;
+        this.velocity = 0;
+        this.target = 0;
     }
 }
 
-class SwitchBehavior {
+// Jelly controller
+class JellyController {
     constructor() {
-        this.toggled = false;
-        this.pressed = false;
-        this.squashXSpring = new Spring(squashXProperties);
-        this.squashZSpring = new Spring(squashZProperties);
-        this.wiggleXSpring = new Spring(wiggleXProperties);
-        this.pressYSpring = new Spring({ mass: 1, stiffness: 1200, damping: 15 }); // Vertical press animation
+        this.isPressed = false;
+        this.isDark = false;
+        
+        this.squashX = new Spring(CONFIG.SPRING_STIFFNESS, CONFIG.SPRING_DAMPING, CONFIG.SPRING_MASS);
+        this.squashY = new Spring(CONFIG.SPRING_STIFFNESS * 1.2, CONFIG.SPRING_DAMPING * 1.5, CONFIG.SPRING_MASS);
+        this.squashZ = new Spring(CONFIG.SPRING_STIFFNESS, CONFIG.SPRING_DAMPING, CONFIG.SPRING_MASS);
+        this.wiggle = new Spring(CONFIG.SPRING_STIFFNESS * 0.6, CONFIG.SPRING_DAMPING * 0.8, CONFIG.SPRING_MASS);
     }
 
-    // Trigger click animation
+    press() {
+        if (this.isPressed) return;
+        this.isPressed = true;
+        this.squashY.velocity = -3;
+        this.squashX.velocity = (Math.random() - 0.5) * 2;
+        this.squashZ.velocity = (Math.random() - 0.5) * 2;
+    }
+
+    release() {
+        if (!this.isPressed) return;
+        this.isPressed = false;
+        this.squashY.velocity = 2.5;
+        this.squashX.velocity = 0;
+        this.squashZ.velocity = 0;
+    }
+
     click() {
-        // Toggle the state
-        this.toggled = !this.toggled;
-        
-        // Satisfying jelly bounce on click
-        this.squashXSpring.velocity = -4;
-        this.squashZSpring.velocity = 3;
-        this.wiggleXSpring.velocity = (Math.random() - 0.5) * 8; // Random wiggle
-        this.pressYSpring.velocity = -2; // Press down
-        
-        // Return the new state: true = dark mode, false = light mode
-        return this.toggled;
+        this.isDark = !this.isDark;
+        this.squashY.velocity = -4;
+        this.squashX.velocity = (Math.random() - 0.5) * 6;
+        this.squashZ.velocity = (Math.random() - 0.5) * 6;
+        this.wiggle.velocity = (Math.random() - 0.5) * 8;
+        return this.isDark;
     }
 
     update(dt) {
-        if (dt <= 0) return;
-
-        // Anticipating movement when pressed (before click)
-        if (this.pressed) {
-            this.squashXSpring.velocity = -1.5;
-            this.squashZSpring.velocity = 0.8;
-            this.pressYSpring.velocity = -0.5; // Slight press down
-        } else {
-            // When not pressed, gradually dampen to rest state
-            if (Math.abs(this.squashXSpring.value) < 0.01 && Math.abs(this.squashXSpring.velocity) < 0.1) {
-                this.squashXSpring.value = 0;
-                this.squashXSpring.velocity = 0;
-            }
-            if (Math.abs(this.squashZSpring.value) < 0.01 && Math.abs(this.squashZSpring.velocity) < 0.1) {
-                this.squashZSpring.value = 0;
-                this.squashZSpring.velocity = 0;
-            }
-            if (Math.abs(this.wiggleXSpring.value) < 0.01 && Math.abs(this.wiggleXSpring.velocity) < 0.1) {
-                this.wiggleXSpring.value = 0;
-                this.wiggleXSpring.velocity = 0;
-            }
-            if (Math.abs(this.pressYSpring.value) < 0.01 && Math.abs(this.pressYSpring.velocity) < 0.1) {
-                this.pressYSpring.value = 0;
-                this.pressYSpring.velocity = 0;
-            }
-        }
-
-        // Spring dynamics
-        this.squashXSpring.update(dt);
-        this.squashZSpring.update(dt);
-        this.wiggleXSpring.update(dt);
-        this.pressYSpring.update(dt);
+        this.squashX.update(dt);
+        this.squashY.update(dt);
+        this.squashZ.update(dt);
+        this.wiggle.update(dt);
     }
 
     getState() {
         return {
-            toggled: this.toggled,
-            squashX: this.squashXSpring.value,
-            squashZ: this.squashZSpring.value,
-            wiggleX: this.wiggleXSpring.value,
-            pressY: this.pressYSpring.value,
+            squashX: this.squashX.value,
+            squashY: this.squashY.value,
+            squashZ: this.squashZ.value,
+            wiggle: this.wiggle.value,
+            isDark: this.isDark,
         };
     }
 }
 
-// Create scene
+// Scene setup
 const canvas = document.getElementById('canvas');
 const scene = new THREE.Scene();
-let isDarkMode = false;
-const lightBackground = new THREE.Color(0xf5f5f5); // Light background
-const darkBackground = new THREE.Color(0x0f0f0f); // Dark background
-scene.background = lightBackground;
-
-// Initialize body background to match
+scene.background = lightBg;
 document.body.style.background = '#f5f5f5';
 
-// Camera setup
+// Camera
 const camera = new THREE.PerspectiveCamera(
     45,
     window.innerWidth / window.innerHeight,
     0.1,
     100
 );
-camera.position.set(1, 0, 0); // Initial position for orbit controls
-camera.lookAt(0, 0, 0);
+camera.position.set(0, 0.3, 1.2);
+camera.lookAt(0, 0.2, 0);
 
-// Renderer - optimized for performance
-const renderer = new THREE.WebGLRenderer({ 
-    canvas, 
-    antialias: true, // Keep for visual quality
-    alpha: true,
-    powerPreference: "high-performance"
-});
+// Renderer
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // Limit pixel ratio
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFShadowMap; // Faster than PCFSoft
+renderer.shadowMap.type = THREE.PCFShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-// Orbit Controls - use right mouse for rotation to allow left-click for button
+// Controls
 const controls = new OrbitControls(camera, canvas);
-controls.enableDamping = true; // Smooth camera movement
+controls.enableDamping = true;
 controls.dampingFactor = 0.05;
-controls.minDistance = 2;
-controls.maxDistance = 8;
-controls.maxPolarAngle = Math.PI / 1.5; // Prevent going below the ground
-controls.minPolarAngle = Math.PI / 3; // Prevent going too high
-controls.enablePan = false; // Disable panning to keep focus on the button
-controls.enableZoom = true; // Allow zooming with scroll
-controls.autoRotate = false; // Disable auto-rotation
-controls.target.set(0, 0, 0); // Focus on the center
+controls.minDistance = 1.5;
+controls.maxDistance = 3;
+controls.maxPolarAngle = Math.PI * 0.6;
+controls.minPolarAngle = Math.PI * 0.3;
+controls.enablePan = false;
+controls.enableZoom = true;
+controls.autoRotate = false;
+controls.target.set(0, 0.2, 0);
 
-// Enable orbital controls with left mouse button
-controls.mouseButtons = {
-    LEFT: THREE.MOUSE.ROTATE, // Left mouse for rotation
-    MIDDLE: THREE.MOUSE.DOLLY, // Middle mouse for zoom
-    RIGHT: null // Disable right mouse
-};
-
-controls.update();
-
-// Soft, diffused lighting
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+// Lighting
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
 scene.add(ambientLight);
 
-// Soft directional light from above - optimized shadows
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-directionalLight.position.set(2, 4, 3);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.9);
+directionalLight.position.set(3, 4, 3);
 directionalLight.castShadow = true;
-directionalLight.shadow.mapSize.width = 1024;
-directionalLight.shadow.mapSize.height = 1024;
+directionalLight.shadow.mapSize.set(1024, 1024);
 directionalLight.shadow.camera.near = 0.1;
 directionalLight.shadow.camera.far = 15;
-directionalLight.shadow.camera.left = -3;
-directionalLight.shadow.camera.right = 3;
-directionalLight.shadow.camera.top = 3;
-directionalLight.shadow.camera.bottom = -3;
-directionalLight.shadow.radius = 4;
-directionalLight.shadow.bias = -0.0001;
+directionalLight.shadow.camera.left = -2;
+directionalLight.shadow.camera.right = 2;
+directionalLight.shadow.camera.top = 2;
+directionalLight.shadow.camera.bottom = -2;
+directionalLight.shadow.bias = -0.0005;
 scene.add(directionalLight);
 
-// Additional fill light for softness (no shadows for performance)
-const fillLight = new THREE.DirectionalLight(0xffffff, 0.4);
-fillLight.position.set(-3, 2, -2);
-fillLight.castShadow = false;
+const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
+fillLight.position.set(-2, 2, -2);
 scene.add(fillLight);
 
-// Rim light for jelly glow effect
-const rimLight = new THREE.DirectionalLight(0xffffff, 0.3);
-rimLight.position.set(0, 1, -3);
-rimLight.castShadow = false;
-scene.add(rimLight);
+// Create jelly mold shape (dome with ridges)
+function createJellyGeometry() {
+    const group = new THREE.Group();
+    
+    // Main dome
+    const domeGeometry = new THREE.IcosahedronGeometry(CONFIG.JELLY_RADIUS, 5);
+    
+    // Scale to make it more dome-like
+    const positions = domeGeometry.attributes.position;
+    for (let i = 0; i < positions.count; i++) {
+        const y = positions.getY(i);
+        if (y < 0) {
+            positions.setY(i, -0.05);
+        } else {
+            positions.setY(i, y * 0.7);
+        }
+    }
+    positions.needsUpdate = true;
+    domeGeometry.computeVertexNormals();
+    
+    // Add vertical ridges using lathe geometry
+    const points = [];
+    points.push(new THREE.Vector2(0, 0));
+    for (let i = 0; i <= 8; i++) {
+        const t = i / 8;
+        const x = Math.sin(t * Math.PI) * (CONFIG.JELLY_RADIUS - 0.02);
+        const y = Math.cos(t * Math.PI) * (CONFIG.JELLY_RADIUS - 0.02) * 0.5;
+        points.push(new THREE.Vector2(x, y));
+    }
+    points.push(new THREE.Vector2(0, CONFIG.JELLY_RADIUS * 0.5));
+    
+    const latheGeometry = new THREE.LatheGeometry(points, 12, 0, Math.PI * 2);
+    
+    // Combine geometries
+    const combinedGeometry = new THREE.BufferGeometry();
+    
+    // Merge dome and lathe
+    const domePositions = domeGeometry.attributes.position.array;
+    const lathePositions = latheGeometry.attributes.position.array;
+    
+    const totalLength = domePositions.length + lathePositions.length;
+    const positions_combined = new Float32Array(totalLength);
+    positions_combined.set(domePositions);
+    positions_combined.set(lathePositions, domePositions.length);
+    
+    combinedGeometry.setAttribute('position', new THREE.BufferAttribute(positions_combined, 3));
+    combinedGeometry.computeVertexNormals();
+    
+    return latheGeometry;
+}
 
-// Surface and rail removed - just the floating jelly button
+// Jelly material
+const jellyMaterialLight = new THREE.MeshPhysicalMaterial({
+    color: new THREE.Color(0x2e8fc9),
+    transparent: true,
+    opacity: 0.7,
+    roughness: 0.08,
+    metalness: 0,
+    ior: 1.42,
+    transmission: 0.9,
+    thickness: 0.4,
+    clearcoat: 0.8,
+    clearcoatRoughness: 0.1,
+    envMapIntensity: 1.2,
+    side: THREE.FrontSide,
+});
+
+const jellyMaterialDark = new THREE.MeshPhysicalMaterial({
+    color: new THREE.Color(0xff5722),
+    transparent: true,
+    opacity: 0.7,
+    roughness: 0.08,
+    metalness: 0,
+    ior: 1.42,
+    transmission: 0.9,
+    thickness: 0.4,
+    clearcoat: 0.8,
+    clearcoatRoughness: 0.1,
+    envMapIntensity: 1.2,
+    side: THREE.FrontSide,
+});
+
+const jellyGeometry = createJellyGeometry();
+const jellyMesh = new THREE.Mesh(jellyGeometry, jellyMaterialLight);
+jellyMesh.castShadow = true;
+jellyMesh.receiveShadow = false;
+jellyMesh.position.y = 0.3;
+scene.add(jellyMesh);
 
 // Create plate
+const plateGeometry = new THREE.CylinderGeometry(CONFIG.PLATE_RADIUS, CONFIG.PLATE_RADIUS, CONFIG.PLATE_HEIGHT, 64);
 const plateMaterial = new THREE.MeshStandardMaterial({
     color: 0xffffff,
     metalness: 0.1,
     roughness: 0.3,
-    side: THREE.DoubleSide
+    side: THREE.DoubleSide,
 });
-
-// Rounded plate geometry
-const plateGeometry = new THREE.CylinderGeometry(PLATE_SIZE / 2, PLATE_SIZE / 2, PLATE_THICKNESS, 64);
 const plateMesh = new THREE.Mesh(plateGeometry, plateMaterial);
-plateMesh.position.y = -0.05;
 plateMesh.castShadow = true;
 plateMesh.receiveShadow = true;
+plateMesh.position.y = 0;
 scene.add(plateMesh);
 
-// Plate rim for depth
-const rimGeometry = new THREE.TorusGeometry(PLATE_SIZE / 2, 0.04, 16, 100);
+// Plate rim
+const rimGeometry = new THREE.TorusGeometry(CONFIG.PLATE_RADIUS, 0.03, 16, 100);
 const rimMaterial = new THREE.MeshStandardMaterial({
-    color: 0xe8e8e8,
+    color: 0xe0e0e0,
     metalness: 0.15,
-    roughness: 0.25
+    roughness: 0.2,
 });
 const rimMesh = new THREE.Mesh(rimGeometry, rimMaterial);
-rimMesh.position.y = PLATE_THICKNESS / 2 - 0.01;
+rimMesh.position.y = CONFIG.PLATE_HEIGHT / 2;
 rimMesh.rotation.x = Math.PI / 2;
 rimMesh.castShadow = true;
 rimMesh.receiveShadow = true;
 scene.add(rimMesh);
 
-// Jelly switch
-const switchBehavior = new SwitchBehavior();
+// Jelly controller
+const jellyCtrl = new JellyController();
 
-// Create rounded box geometry for jelly
-// Using a subdivided box with smooth normals for rounded appearance
-function createRoundedBox(width, height, depth, radius, segments) {
-    const geometry = new THREE.BoxGeometry(width, height, depth, segments, segments, segments);
-    const position = geometry.attributes.position;
-    const vertices = position.array;
-    const halfWidth = width / 2;
-    const halfHeight = height / 2;
-    const halfDepth = depth / 2;
-    
-    // Round the corners
-    for (let i = 0; i < vertices.length; i += 3) {
-        const x = vertices[i];
-        const y = vertices[i + 1];
-        const z = vertices[i + 2];
-        
-        // Normalize to corner distance
-        const nx = Math.abs(x) / halfWidth;
-        const ny = Math.abs(y) / halfHeight;
-        const nz = Math.abs(z) / halfDepth;
-        
-        // Check if we're near a corner (optimized)
-        if (nx > 0.7 && ny > 0.7 && nz > 0.7) {
-            const dx = nx - 1;
-            const dy = ny - 1;
-            const dz = nz - 1;
-            const distSq = dx * dx + dy * dy + dz * dz;
-            if (distSq < 0.09) { // 0.3^2 = 0.09 (avoid sqrt)
-                const dist = Math.sqrt(distSq);
-                const factor = Math.max(0, 1 - dist / 0.3);
-                const r = radius * factor;
-                const signX = Math.sign(x);
-                const signY = Math.sign(y);
-                const signZ = Math.sign(z);
-                
-                vertices[i] = signX * (halfWidth - r);
-                vertices[i + 1] = signY * (halfHeight - r);
-                vertices[i + 2] = signZ * (halfDepth - r);
-            }
-        }
-    }
-    
-    position.needsUpdate = true;
-    geometry.computeVertexNormals();
-    return geometry;
-}
-
-const jellyGeometry = createRoundedBox(
-    JELLY_HALFSIZE.x * 2,
-    JELLY_HALFSIZE.y * 2,
-    JELLY_HALFSIZE.z * 2,
-    0.15, // Larger radius for smoother, more rounded appearance
-    10 // Reduced segments for better performance (still looks smooth)
-);
-
-// Jelly material - highly translucent, glossy, refractive (optimized)
-const jellyMaterial = new THREE.MeshPhysicalMaterial({
-    color: JELLY_COLOR,
-    transparent: true,
-    opacity: 0.5,
-    roughness: 0.04, // Very glossy
-    metalness: 0.0,
-    ior: JELLY_IOR,
-    transmission: 0.95,
-    thickness: 0.5,
-    clearcoat: 1.0,
-    clearcoatRoughness: 0.04,
-    envMapIntensity: 1.5,
-    side: THREE.DoubleSide,
-    emissive: new THREE.Color(0x1166ff),
-    emissiveIntensity: 0.1
-});
-
-// Create environment map for reflections - generate once
-const pmremGenerator = new THREE.PMREMGenerator(renderer);
-pmremGenerator.compileEquirectangularShader();
-
-// Create environment map once (not updating for performance)
-const envMap = pmremGenerator.fromScene(scene, 0.04).texture;
-jellyMaterial.envMap = envMap;
-
-const jellyMesh = new THREE.Mesh(jellyGeometry, jellyMaterial);
-jellyMesh.castShadow = true;
-jellyMesh.receiveShadow = false; // Disable receive shadow for performance
-scene.add(jellyMesh);
-
-// Raycaster for detecting clicks on the button
+// Raycaster for clicks
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
-// Animation loop - optimized
-let lastTime = performance.now();
-
-function animate(currentTime) {
-    const deltaTime = Math.min((currentTime - lastTime) * 0.001, 0.1);
-    lastTime = currentTime;
-
-    // Update switch behavior
-    switchBehavior.update(deltaTime);
-    const state = switchBehavior.getState();
-
-    // Update jelly position and transform - button stays centered
-    const jellyX = 0; // Always centered
-    // Position button sitting on plate with vertical press animation
-    const baseY = PLATE_THICKNESS / 2 + JELLY_HALFSIZE.y + 0.02;
-    const jellyY = baseY + state.pressY * 0.05; // Press down effect
-    
-    jellyMesh.position.set(jellyX, jellyY, 0);
-
-    // Apply squash and stretch for satisfying click feedback
-    const scaleX = 1 - state.squashX;
-    const scaleZ = 1 - state.squashZ;
-    const scaleY = 1 + state.squashZ * 0.3; // Slight vertical stretch when squashed
-    jellyMesh.scale.set(scaleX, scaleY, scaleZ);
-
-    // Apply wiggle rotation for playful bounce
-    jellyMesh.rotation.z = state.wiggleX * 0.3;
-    jellyMesh.rotation.x = state.wiggleX * 0.1;
-
-    // Color shift and emission based on toggle state
-    if (state.toggled) {
-        // Dark mode - warmer, orange/red jelly
-        jellyMaterial.color.setHex(0xff6b35);
-        jellyMaterial.emissive.setHex(0xff6b35);
-        jellyMaterial.emissiveIntensity = 0.15;
-    } else {
-        // Light mode - cool blue jelly
-        jellyMaterial.color.copy(JELLY_COLOR);
-        jellyMaterial.emissive.setHex(0x1166ff);
-        jellyMaterial.emissiveIntensity = 0.1;
-    }
-
-    // Update orbit controls
-    controls.update();
-
-    renderer.render(scene, camera);
-    requestAnimationFrame(animate);
-}
-
-// Event handlers - raycasting to detect clicks on button only
-let isPressed = false;
-let mouseDownPos = { x: 0, y: 0 };
-let hasDragged = false;
-
-function updateMousePosition(event) {
+function updateMouse(event) {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 }
 
-function isClickOnButton(event) {
-    updateMousePosition(event);
+function isJellyClicked(event) {
+    updateMouse(event);
     raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObject(jellyMesh);
-    return intersects.length > 0;
+    return raycaster.intersectObject(jellyMesh).length > 0;
 }
 
+// Event listeners
+let mousePressed = false;
+let mouseStartPos = { x: 0, y: 0 };
+let mouseDragged = false;
+
 canvas.addEventListener('mousedown', (e) => {
-    // Only handle left mouse button
-    if (e.button === 0) {
-        mouseDownPos.x = e.clientX;
-        mouseDownPos.y = e.clientY;
-        hasDragged = false;
-        
-        // Check if click is on the button
-        if (isClickOnButton(e)) {
-            switchBehavior.pressed = true;
-            isPressed = true;
-            // Temporarily disable orbit controls
-            controls.enabled = false;
-        }
+    if (e.button !== 0) return;
+    
+    mouseStartPos = { x: e.clientX, y: e.clientY };
+    mouseDragged = false;
+    
+    if (isJellyClicked(e)) {
+        mousePressed = true;
+        jellyCtrl.press();
+        controls.enabled = false;
     }
 });
 
 canvas.addEventListener('mousemove', (e) => {
-    if (isPressed) {
-        // Check if mouse moved significantly (dragging)
-        const dx = Math.abs(e.clientX - mouseDownPos.x);
-        const dy = Math.abs(e.clientY - mouseDownPos.y);
-        if (dx > 5 || dy > 5) {
-            hasDragged = true;
-            // Re-enable orbit controls if dragging
-            controls.enabled = true;
-        }
+    if (!mousePressed) return;
+    
+    const dx = Math.abs(e.clientX - mouseStartPos.x);
+    const dy = Math.abs(e.clientY - mouseStartPos.y);
+    
+    if (dx > 5 || dy > 5) {
+        mouseDragged = true;
+        jellyCtrl.release();
+        controls.enabled = true;
     }
 });
 
 canvas.addEventListener('mouseup', (e) => {
-    if (e.button === 0) {
-        // Re-enable orbit controls
-        controls.enabled = true;
-        
-        if (isPressed && !hasDragged) {
-            // Check again if click is on button
-            if (isClickOnButton(e)) {
-                // Toggle the state and get new state
-                const newDarkMode = switchBehavior.click();
-                // Apply the toggle (true = dark mode, false = light mode)
-                toggleDarkMode(newDarkMode);
-            }
-        }
-        
-        switchBehavior.pressed = false;
-        isPressed = false;
-        hasDragged = false;
+    if (e.button !== 0) return;
+    
+    controls.enabled = true;
+    
+    if (mousePressed && !mouseDragged && isJellyClicked(e)) {
+        const newMode = jellyCtrl.click();
+        toggleDarkMode(newMode);
     }
+    
+    jellyCtrl.release();
+    mousePressed = false;
+    mouseDragged = false;
 });
 
 canvas.addEventListener('mouseleave', () => {
     controls.enabled = true;
-    switchBehavior.pressed = false;
-    isPressed = false;
-    hasDragged = false;
+    jellyCtrl.release();
+    mousePressed = false;
+    mouseDragged = false;
 });
 
-// Touch handlers - with raycasting
+// Touch events
 let touchStartPos = { x: 0, y: 0 };
-let touchHasDragged = false;
-
-function updateTouchPosition(touch) {
-    mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
-}
-
-function isTouchOnButton(touch) {
-    updateTouchPosition(touch);
-    raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObject(jellyMesh);
-    return intersects.length > 0;
-}
+let touchDragged = false;
+let touchPressed = false;
 
 canvas.addEventListener('touchstart', (e) => {
-    if (e.touches.length === 1) {
-        const touch = e.touches[0];
-        touchStartPos.x = touch.clientX;
-        touchStartPos.y = touch.clientY;
-        touchHasDragged = false;
-        
-        if (isTouchOnButton(touch)) {
-            switchBehavior.pressed = true;
-            isPressed = true;
-            controls.enabled = false;
-        }
+    if (e.touches.length !== 1) return;
+    
+    const touch = e.touches[0];
+    touchStartPos = { x: touch.clientX, y: touch.clientY };
+    touchDragged = false;
+    
+    if (isTouchOnJelly(touch)) {
+        touchPressed = true;
+        jellyCtrl.press();
+        controls.enabled = false;
     }
 });
 
 canvas.addEventListener('touchmove', (e) => {
-    if (isPressed && e.touches.length === 1) {
-        const dx = Math.abs(e.touches[0].clientX - touchStartPos.x);
-        const dy = Math.abs(e.touches[0].clientY - touchStartPos.y);
-        if (dx > 10 || dy > 10) {
-            touchHasDragged = true;
-            controls.enabled = true;
-        }
+    if (!touchPressed || e.touches.length !== 1) return;
+    
+    const dx = Math.abs(e.touches[0].clientX - touchStartPos.x);
+    const dy = Math.abs(e.touches[0].clientY - touchStartPos.y);
+    
+    if (dx > 10 || dy > 10) {
+        touchDragged = true;
+        jellyCtrl.release();
+        controls.enabled = true;
     }
 });
 
 canvas.addEventListener('touchend', (e) => {
+    if (!touchPressed) return;
+    
     controls.enabled = true;
-    if (isPressed && !touchHasDragged && e.changedTouches.length > 0) {
-        const touch = e.changedTouches[0];
-        if (isTouchOnButton(touch)) {
-            // Toggle the state and get new state
-            const newDarkMode = switchBehavior.click();
-            // Apply the toggle (true = dark mode, false = light mode)
-            toggleDarkMode(newDarkMode);
+    
+    if (!touchDragged && e.changedTouches.length > 0) {
+        if (isTouchOnJelly(e.changedTouches[0])) {
+            const newMode = jellyCtrl.click();
+            toggleDarkMode(newMode);
         }
     }
-    switchBehavior.pressed = false;
-    isPressed = false;
-    touchHasDragged = false;
+    
+    jellyCtrl.release();
+    touchPressed = false;
+    touchDragged = false;
 });
 
-// Handle window resize
+function isTouchOnJelly(touch) {
+    mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    return raycaster.intersectObject(jellyMesh).length > 0;
+}
+
+// Toggle dark mode
+function toggleDarkMode(darkMode) {
+    isDarkMode = darkMode;
+    
+    const targetBg = darkMode ? darkBg : lightBg;
+    const targetPlateColor = darkMode ? new THREE.Color(0x2a2a2a) : new THREE.Color(0xffffff);
+    const targetRimColor = darkMode ? new THREE.Color(0x404040) : new THREE.Color(0xe0e0e0);
+    
+    const startBg = scene.background.clone();
+    const startPlateColor = plateMaterial.color.clone();
+    const startRimColor = rimMaterial.color.clone();
+    
+    let progress = 0;
+    const duration = 600;
+    const startTime = performance.now();
+    
+    function updateColors() {
+        const elapsed = performance.now() - startTime;
+        progress = Math.min(elapsed / duration, 1);
+        
+        // Ease in-out cubic
+        const t = progress < 0.5 
+            ? 4 * progress * progress * progress 
+            : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+        
+        scene.background.lerpColors(startBg, targetBg, t);
+        plateMaterial.color.lerpColors(startPlateColor, targetPlateColor, t);
+        rimMaterial.color.lerpColors(startRimColor, targetRimColor, t);
+        
+        // Update jelly material
+        if (darkMode) {
+            jellyMesh.material = jellyMaterialDark;
+        } else {
+            jellyMesh.material = jellyMaterialLight;
+        }
+        
+        const hexColor = scene.background.getHexString();
+        document.body.style.background = `#${hexColor}`;
+        
+        if (progress < 1) {
+            requestAnimationFrame(updateColors);
+        }
+    }
+    
+    updateColors();
+}
+
+// Animation loop
+let lastTime = performance.now();
+
+function animate(currentTime) {
+    const deltaTime = Math.min((currentTime - lastTime) * 0.001, 0.016);
+    lastTime = currentTime;
+    
+    // Update jelly
+    jellyCtrl.update(deltaTime);
+    const state = jellyCtrl.getState();
+    
+    // Apply deformations
+    const scaleX = 1 + state.squashX * 0.15;
+    const scaleY = Math.max(0.7, 1 + state.squashY * 0.2);
+    const scaleZ = 1 + state.squashZ * 0.15;
+    
+    jellyMesh.scale.set(scaleX, scaleY, scaleZ);
+    jellyMesh.rotation.z = state.wiggle * 0.08;
+    jellyMesh.rotation.x = state.wiggle * 0.05;
+    
+    // Update controls
+    controls.update();
+    
+    // Render
+    renderer.render(scene, camera);
+    requestAnimationFrame(animate);
+}
+
+// Handle resize
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// Toggle dark mode function - ensure only one transition at a time
-let isTransitioning = false;
-let currentTransitionFrame = null;
-
-function toggleDarkMode(darkMode) {
-    // Cancel any ongoing transition
-    if (currentTransitionFrame) {
-        cancelAnimationFrame(currentTransitionFrame);
-        currentTransitionFrame = null;
-    }
-    
-    isDarkMode = darkMode;
-    
-    // Smoothly transition background color only
-    // darkMode = true means dark background, darkMode = false means light background
-    const targetColor = darkMode ? darkBackground.clone() : lightBackground.clone();
-    const startColor = scene.background.clone();
-    
-    let progress = 0;
-    const duration = 500; // 500ms transition
-    const startTime = performance.now();
-    isTransitioning = true;
-    
-    function updateBackground() {
-        const elapsed = performance.now() - startTime;
-        progress = Math.min(elapsed / duration, 1);
-        
-        // Smooth interpolation
-        const smoothProgress = progress * progress * (3 - 2 * progress);
-        scene.background.lerpColors(startColor, targetColor, smoothProgress);
-        
-        // Also update body background to match
-        const hexColor = scene.background.getHexString();
-        document.body.style.background = `#${hexColor}`;
-        
-        if (progress < 1) {
-            currentTransitionFrame = requestAnimationFrame(updateBackground);
-        } else {
-            // Ensure final colors are set correctly
-            scene.background.copy(targetColor);
-            const finalHex = targetColor.getHexString();
-            document.body.style.background = `#${finalHex}`;
-            isTransitioning = false;
-            currentTransitionFrame = null;
-        }
-    }
-    
-    updateBackground();
-}
-
-// Smoothstep helper
-Math.smoothstep = function(edge0, edge1, x) {
-    const t = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0)));
-    return t * t * (3 - 2 * t);
-};
-
-// Start animation
+// Start
 animate(performance.now());

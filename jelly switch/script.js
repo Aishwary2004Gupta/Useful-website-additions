@@ -65,6 +65,24 @@ class SwitchBehavior {
             this.squashXSpring.velocity = -1.5;
             this.squashZSpring.velocity = 0.8;
             this.pressYSpring.velocity = -0.5; // Slight press down
+        } else {
+            // When not pressed, gradually dampen to rest state
+            if (Math.abs(this.squashXSpring.value) < 0.01 && Math.abs(this.squashXSpring.velocity) < 0.1) {
+                this.squashXSpring.value = 0;
+                this.squashXSpring.velocity = 0;
+            }
+            if (Math.abs(this.squashZSpring.value) < 0.01 && Math.abs(this.squashZSpring.velocity) < 0.1) {
+                this.squashZSpring.value = 0;
+                this.squashZSpring.velocity = 0;
+            }
+            if (Math.abs(this.wiggleXSpring.value) < 0.01 && Math.abs(this.wiggleXSpring.velocity) < 0.1) {
+                this.wiggleXSpring.value = 0;
+                this.wiggleXSpring.velocity = 0;
+            }
+            if (Math.abs(this.pressYSpring.value) < 0.01 && Math.abs(this.pressYSpring.velocity) < 0.1) {
+                this.pressYSpring.value = 0;
+                this.pressYSpring.velocity = 0;
+            }
         }
 
         // Spring dynamics
@@ -500,16 +518,10 @@ function toggleDarkMode(darkMode) {
     
     isDarkMode = darkMode;
     
-    // Smoothly transition background color
+    // Smoothly transition background color only
     // darkMode = true means dark background, darkMode = false means light background
     const targetColor = darkMode ? darkBackground.clone() : lightBackground.clone();
     const startColor = scene.background.clone();
-    
-    // Update plate material based on mode
-    const targetPlateColor = darkMode ? new THREE.Color(0x2a2a2a) : new THREE.Color(0xffffff);
-    const targetRimColor = darkMode ? new THREE.Color(0x404040) : new THREE.Color(0xe8e8e8);
-    const startPlateColor = plateMaterial.color.clone();
-    const startRimColor = rimMaterial.color.clone();
     
     let progress = 0;
     const duration = 500; // 500ms transition
@@ -524,10 +536,6 @@ function toggleDarkMode(darkMode) {
         const smoothProgress = progress * progress * (3 - 2 * progress);
         scene.background.lerpColors(startColor, targetColor, smoothProgress);
         
-        // Update plate colors
-        plateMaterial.color.lerpColors(startPlateColor, targetPlateColor, smoothProgress);
-        rimMaterial.color.lerpColors(startRimColor, targetRimColor, smoothProgress);
-        
         // Also update body background to match
         const hexColor = scene.background.getHexString();
         document.body.style.background = `#${hexColor}`;
@@ -537,8 +545,6 @@ function toggleDarkMode(darkMode) {
         } else {
             // Ensure final colors are set correctly
             scene.background.copy(targetColor);
-            plateMaterial.color.copy(targetPlateColor);
-            rimMaterial.color.copy(targetRimColor);
             const finalHex = targetColor.getHexString();
             document.body.style.background = `#${finalHex}`;
             isTransitioning = false;

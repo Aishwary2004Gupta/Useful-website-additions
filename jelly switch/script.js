@@ -2,11 +2,13 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 // Constants matching the original
-const JELLY_HALFSIZE = new THREE.Vector3(0.35, 0.3, 0.3);
+const JELLY_HALFSIZE = new THREE.Vector3(0.25, 0.2, 0.25);
 const SWITCH_RAIL_LENGTH = 0.4;
 const SWITCH_ACCELERATION = 100;
 const JELLY_IOR = 1.42;
-const JELLY_COLOR = new THREE.Color(0.3, 0.6, 0.95); // Translucent blue
+const JELLY_COLOR = new THREE.Color(0.2, 0.7, 0.95); // Vibrant translucent blue
+const PLATE_SIZE = 1.0;
+const PLATE_THICKNESS = 0.08;
 
 // Spring properties
 const squashXProperties = { mass: 1, stiffness: 1000, damping: 10 };
@@ -87,12 +89,12 @@ class SwitchBehavior {
 const canvas = document.getElementById('canvas');
 const scene = new THREE.Scene();
 let isDarkMode = false;
-const lightBackground = new THREE.Color(0xd0d0d0); // Light grey background
-const darkBackground = new THREE.Color(0x1a1a1a); // Dark background
+const lightBackground = new THREE.Color(0xf5f5f5); // Light background
+const darkBackground = new THREE.Color(0x0f0f0f); // Dark background
 scene.background = lightBackground;
 
 // Initialize body background to match
-document.body.style.background = '#d0d0d0';
+document.body.style.background = '#f5f5f5';
 
 // Camera setup
 const camera = new THREE.PerspectiveCamera(
@@ -140,32 +142,68 @@ controls.mouseButtons = {
 controls.update();
 
 // Soft, diffused lighting
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
 scene.add(ambientLight);
 
 // Soft directional light from above - optimized shadows
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
-directionalLight.position.set(0, 5, 2);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+directionalLight.position.set(2, 4, 3);
 directionalLight.castShadow = true;
-directionalLight.shadow.mapSize.width = 1024; // Reduced from 2048
+directionalLight.shadow.mapSize.width = 1024;
 directionalLight.shadow.mapSize.height = 1024;
 directionalLight.shadow.camera.near = 0.1;
-directionalLight.shadow.camera.far = 10;
-directionalLight.shadow.camera.left = -2;
-directionalLight.shadow.camera.right = 2;
-directionalLight.shadow.camera.top = 2;
-directionalLight.shadow.camera.bottom = -2;
-directionalLight.shadow.radius = 4; // Reduced for better performance
+directionalLight.shadow.camera.far = 15;
+directionalLight.shadow.camera.left = -3;
+directionalLight.shadow.camera.right = 3;
+directionalLight.shadow.camera.top = 3;
+directionalLight.shadow.camera.bottom = -3;
+directionalLight.shadow.radius = 4;
 directionalLight.shadow.bias = -0.0001;
 scene.add(directionalLight);
 
 // Additional fill light for softness (no shadows for performance)
-const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
-fillLight.position.set(-2, 3, -1);
-fillLight.castShadow = false; // No shadows for fill light
+const fillLight = new THREE.DirectionalLight(0xffffff, 0.4);
+fillLight.position.set(-3, 2, -2);
+fillLight.castShadow = false;
 scene.add(fillLight);
 
+// Rim light for jelly glow effect
+const rimLight = new THREE.DirectionalLight(0xffffff, 0.3);
+rimLight.position.set(0, 1, -3);
+rimLight.castShadow = false;
+scene.add(rimLight);
+
 // Surface and rail removed - just the floating jelly button
+
+// Create plate
+const plateMaterial = new THREE.MeshStandardMaterial({
+    color: 0xffffff,
+    metalness: 0.1,
+    roughness: 0.3,
+    side: THREE.DoubleSide
+});
+
+// Rounded plate geometry
+const plateGeometry = new THREE.CylinderGeometry(PLATE_SIZE / 2, PLATE_SIZE / 2, PLATE_THICKNESS, 64);
+const plateMesh = new THREE.Mesh(plateGeometry, plateMaterial);
+plateMesh.position.y = -0.05;
+plateMesh.castShadow = true;
+plateMesh.receiveShadow = true;
+scene.add(plateMesh);
+
+// Plate rim for depth
+const rimGeometry = new THREE.TorusGeometry(PLATE_SIZE / 2, 0.04, 16, 100);
+const rimMaterial = new THREE.MeshStandardMaterial({
+    color: 0xe8e8e8,
+    metalness: 0.15,
+    roughness: 0.25
+});
+const rimMesh = new THREE.Mesh(rimGeometry, rimMaterial);
+rimMesh.position.y = PLATE_THICKNESS / 2 - 0.01;
+rimMesh.rotation.x = Math.PI / 2;
+rimMesh.castShadow = true;
+rimMesh.receiveShadow = true;
+scene.add(rimMesh);
 
 // Jelly switch
 const switchBehavior = new SwitchBehavior();
@@ -229,16 +267,18 @@ const jellyGeometry = createRoundedBox(
 const jellyMaterial = new THREE.MeshPhysicalMaterial({
     color: JELLY_COLOR,
     transparent: true,
-    opacity: 0.4, // More translucent
-    roughness: 0.05, // Very glossy
+    opacity: 0.5,
+    roughness: 0.04, // Very glossy
     metalness: 0.0,
     ior: JELLY_IOR,
-    transmission: 0.95, // Slightly reduced for performance
-    thickness: 0.6,
+    transmission: 0.95,
+    thickness: 0.5,
     clearcoat: 1.0,
-    clearcoatRoughness: 0.05, // Very smooth clearcoat
-    envMapIntensity: 1.8, // Slightly reduced
-    side: THREE.FrontSide, // Render only front side for better performance
+    clearcoatRoughness: 0.04,
+    envMapIntensity: 1.5,
+    side: THREE.DoubleSide,
+    emissive: new THREE.Color(0x1166ff),
+    emissiveIntensity: 0.1
 });
 
 // Create environment map for reflections - generate once
@@ -271,8 +311,8 @@ function animate(currentTime) {
 
     // Update jelly position and transform - button stays centered
     const jellyX = 0; // Always centered
-    // Position button with vertical press animation
-    const baseY = JELLY_HALFSIZE.y * 0.5 + 0.01;
+    // Position button sitting on plate with vertical press animation
+    const baseY = PLATE_THICKNESS / 2 + JELLY_HALFSIZE.y + 0.02;
     const jellyY = baseY + state.pressY * 0.05; // Press down effect
     
     jellyMesh.position.set(jellyX, jellyY, 0);
@@ -287,10 +327,18 @@ function animate(currentTime) {
     jellyMesh.rotation.z = state.wiggleX * 0.3;
     jellyMesh.rotation.x = state.wiggleX * 0.1;
 
-    // Emission based on toggle state
-    const emission = state.toggled ? 0.8 : 0.3;
-    jellyMaterial.emissive = JELLY_COLOR.clone();
-    jellyMaterial.emissiveIntensity = emission * 0.2;
+    // Color shift and emission based on toggle state
+    if (state.toggled) {
+        // Dark mode - warmer, orange/red jelly
+        jellyMaterial.color.setHex(0xff6b35);
+        jellyMaterial.emissive.setHex(0xff6b35);
+        jellyMaterial.emissiveIntensity = 0.15;
+    } else {
+        // Light mode - cool blue jelly
+        jellyMaterial.color.copy(JELLY_COLOR);
+        jellyMaterial.emissive.setHex(0x1166ff);
+        jellyMaterial.emissiveIntensity = 0.1;
+    }
 
     // Update orbit controls
     controls.update();
@@ -457,15 +505,11 @@ function toggleDarkMode(darkMode) {
     const targetColor = darkMode ? darkBackground.clone() : lightBackground.clone();
     const startColor = scene.background.clone();
     
-    // Ensure we start from the current actual background color
-    const currentBodyBg = document.body.style.background;
-    if (currentBodyBg && currentBodyBg !== 'transparent') {
-        // Try to parse current body background if it exists
-        const bodyColorMatch = currentBodyBg.match(/#([0-9a-f]{6})/i);
-        if (bodyColorMatch) {
-            startColor.setHex(parseInt(bodyColorMatch[1], 16));
-        }
-    }
+    // Update plate material based on mode
+    const targetPlateColor = darkMode ? new THREE.Color(0x2a2a2a) : new THREE.Color(0xffffff);
+    const targetRimColor = darkMode ? new THREE.Color(0x404040) : new THREE.Color(0xe8e8e8);
+    const startPlateColor = plateMaterial.color.clone();
+    const startRimColor = rimMaterial.color.clone();
     
     let progress = 0;
     const duration = 500; // 500ms transition
@@ -480,6 +524,10 @@ function toggleDarkMode(darkMode) {
         const smoothProgress = progress * progress * (3 - 2 * progress);
         scene.background.lerpColors(startColor, targetColor, smoothProgress);
         
+        // Update plate colors
+        plateMaterial.color.lerpColors(startPlateColor, targetPlateColor, smoothProgress);
+        rimMaterial.color.lerpColors(startRimColor, targetRimColor, smoothProgress);
+        
         // Also update body background to match
         const hexColor = scene.background.getHexString();
         document.body.style.background = `#${hexColor}`;
@@ -487,8 +535,10 @@ function toggleDarkMode(darkMode) {
         if (progress < 1) {
             currentTransitionFrame = requestAnimationFrame(updateBackground);
         } else {
-            // Ensure final color is set correctly
+            // Ensure final colors are set correctly
             scene.background.copy(targetColor);
+            plateMaterial.color.copy(targetPlateColor);
+            rimMaterial.color.copy(targetRimColor);
             const finalHex = targetColor.getHexString();
             document.body.style.background = `#${finalHex}`;
             isTransitioning = false;

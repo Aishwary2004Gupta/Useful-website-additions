@@ -418,12 +418,8 @@ function toggleDarkMode(darkMode) {
     isDarkMode = darkMode;
     
     const targetBg = darkMode ? darkBg : lightBg;
-    const targetPlateColor = darkMode ? new THREE.Color(0x2a2a2a) : new THREE.Color(0xffffff);
-    const targetRimColor = darkMode ? new THREE.Color(0x404040) : new THREE.Color(0xe0e0e0);
     
     const startBg = scene.background.clone();
-    const startPlateColor = plateMaterial.color.clone();
-    const startRimColor = rimMaterial.color.clone();
     
     let progress = 0;
     const duration = 600;
@@ -439,15 +435,6 @@ function toggleDarkMode(darkMode) {
             : 1 - Math.pow(-2 * progress + 2, 3) / 2;
         
         scene.background.lerpColors(startBg, targetBg, t);
-        plateMaterial.color.lerpColors(startPlateColor, targetPlateColor, t);
-        rimMaterial.color.lerpColors(startRimColor, targetRimColor, t);
-        
-        // Update jelly material
-        if (darkMode) {
-            jellyMesh.material = jellyMaterialDark;
-        } else {
-            jellyMesh.material = jellyMaterialLight;
-        }
         
         const hexColor = scene.background.getHexString();
         document.body.style.background = `#${hexColor}`;
@@ -471,14 +458,17 @@ function animate(currentTime) {
     jellyCtrl.update(deltaTime);
     const state = jellyCtrl.getState();
     
-    // Apply deformations
+    // Apply deformations with bouncy effect
     const scaleX = 1 + state.squashX * 0.15;
-    const scaleY = Math.max(0.7, 1 + state.squashY * 0.2);
+    const scaleY = Math.max(0.6, 1 + state.squashY * 0.25);
     const scaleZ = 1 + state.squashZ * 0.15;
     
     jellyMesh.scale.set(scaleX, scaleY, scaleZ);
-    jellyMesh.rotation.z = state.wiggle * 0.08;
-    jellyMesh.rotation.x = state.wiggle * 0.05;
+    jellyMesh.rotation.z = state.wiggle * 0.12;
+    jellyMesh.rotation.x = state.wiggle * 0.08;
+    
+    // Add vertical bounce
+    jellyMesh.position.y = 0.3 - state.squashY * 0.08;
     
     // Update controls
     controls.update();

@@ -1,332 +1,508 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Moebius Post-Processing Scene</title>
   <style>
-    body { margin: 0; overflow: hidden; background: #000; }
+    body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
     canvas { display: block; }
+    #error { position: fixed; top: 10px; left: 10px; color: red; z-index: 100; }
   </style>
 </head>
 <body>
-
-<script type="module">
-  import * as THREE from 'https://cdn.skypack.dev/three@0.164.1';
-  import { render, createRoot } from 'https://cdn.skypack.dev/react-three-fiber';
-  import React, { Suspense, useRef, useMemo, forwardRef, useEffect } from 'https://cdn.skypack.dev/react@18';
-  import { OrbitControls, PerspectiveCamera, useGLTF, useFBO, Effects } from 'https://cdn.skypack.dev/@react-three/drei';
-  import { FullScreenQuad } from 'https://cdn.skypack.dev/three-stdlib';
-
-  // === Shaders (inlined) ===
-  const MoebiusVertexShader = `
-    varying vec2 vUv;
-    void main() {
-      vUv = uv;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  <div id="error"></div>
+  <script type="module">
+    // Error logging helper
+    function logError(msg) {
+      document.getElementById('error').textContent += msg + '\n';
+      console.error(msg);
     }
-  `;
 
-  const MoebiusFragmentShader = `
-// MoebiusFragmentShader.glsl
-#include <packing>
-varying vec2 vUv;
-uniform sampler2D tDiffuse;
-uniform sampler2D tDepth;
-uniform sampler2D tNormal;
-uniform float cameraNear;
-uniform float cameraFar;
-uniform vec2 resolution;
-uniform float shadowType;
+    try {
+      // Imports via unpkg (more stable than Skypack)
+      const THREE = await import('https://unpkg.com/three@0.164.1/build/three.module.js?module');
+      const { createRoot } = await import('https://unpkg.com/react-dom@18.3.1/client?module');
+      const React = await import('https://unpkg.com/react@18.3.1?module');
+      const { Canvas, useFrame, useThree, extend, useLoader } = await import('https://unpkg.com/@react-three/fiber@8.16.8?module');
+      const { OrbitControls, PerspectiveCamera, useGLTF, useFBO, EffectComposer, ShaderPass } = await import('https://unpkg.com/@react-three/drei@9.109.2?module');
+      const { FullScreenQuad } = await import('https://unpkg.com/three@0.164.1/examples/jsm/postprocessing/EffectComposer.js?module');
+      const { GLTFLoader } = await import('https://unpkg.com/three@0.164.1/examples/jsm/loaders/GLTFLoader.js?module');
 
-const mat3 Sx = mat3( -1, -2, -1, 0, 0, 0, 1, 2, 1 );
-const mat3 Sy = mat3( -1, 0, 1, -2, 0, 2, -1, 0, 1 );
-
-float hash(vec2 p) {
-  vec3 p3 = fract(vec3(p.xyx) * .1031);
-  p3 += dot(p3, p3.yzx + 33.33);
-  return fract((p3.x + p3.y) * p3.z);
-}
-
-float readDepth(sampler2D depthTexture, vec2 coord) {
-  float fragCoordZ = texture2D(depthTexture, coord).x;
-  float viewZ = perspectiveDepthToViewZ(fragCoordZ, cameraNear, cameraFar);
-  return viewZToOrthographicDepth(viewZ, cameraNear, cameraFar);
-}
-
-float luma(vec3 color) {
-  return dot(color, vec3(0.2125, 0.7154, 0.0721));
-}
-
-void main() {
-  vec2 uv = vUv;
-  vec2 texel = 1.0 / resolution;
-  float outlineThickness = 1.5;
-  vec4 outlineColor = vec4(0.0, 0.0, 0.0, 1.0);
-  vec2 displacement = vec2(
-    (hash(gl_FragCoord.xy) * sin(gl_FragCoord.y * 0.05)),
-    (hash(gl_FragCoord.xy) * cos(gl_FragCoord.x * 0.05))
-  ) * 2.0 / resolution;
-
-  float depth = readDepth(tDepth, uv);
-  vec4 normal = texture2D(tNormal, uv);
-  vec4 pixelColor = texture2D(tDiffuse, uv);
-
-  // Sobel depth
-  float d[9];
-  for(int i = -1; i <= 1; i++) for(int j = -1; j <= 1; j++) {
-    vec2 offset = vec2(float(i), float(j)) * outlineThickness * texel;
-    d[(i+1)*3 + (j+1)] = readDepth(tDepth, uv + displacement + offset);
-  }
-  float xSobelDepth = dot(Sx[0], vec3(d[0],d[1],d[2])) + dot(Sx[1], vec3(d[3],d[4],d[5])) + dot(Sx[2], vec3(d[6],d[7],d[8]));
-  float ySobelDepth = dot(Sy[0], vec3(d[0],d[1],d[2])) + dot(Sy[1], vec3(d[3],d[4],d[5])) + dot(Sy[2], vec3(d[6],d[7],d[8]));
-  float gradientDepth = sqrt(xSobelDepth*xSobelDepth + ySobelDepth*ySobelDepth);
-
-  // Sobel normal (luma)
-  float n[9];
-  for(int i = -1; i <= 1; i++) for(int j = -1; j <= 1; j++) {
-    vec2 offset = vec2(float(i), float(j)) * outlineThickness * texel;
-    n[(i+1)*3 + (j+1)] = luma(texture2D(tNormal, uv + displacement + offset).rgb);
-  }
-  float xSobelNormal = dot(Sx[0], vec3(n[0],n[1],n[2])) + dot(Sx[1], vec3(n[3],n[4],n[5])) + dot(Sx[2], vec3(n[6],n[7],n[8]));
-  float ySobelNormal = dot(Sy[0], vec3(n[0],n[1],n[2])) + dot(Sy[1], vec3(n[3],n[4],n[5])) + dot(Sy[2], vec3(n[6],n[7],n[8]));
-  float gradientNormal = sqrt(xSobelNormal*xSobelNormal + ySobelNormal*ySobelNormal);
-
-  float outline = gradientDepth * 25.0 + gradientNormal;
-  float diffuseLight = normal.a;
-  float pixelLuma = luma(pixelColor.rgb + diffuseLight * 0.65);
-
-  // Shadow type 3 (hatch)
-  float modVal = 11.0;
-  if(shadowType == 3.0) {
-    if (pixelLuma <= 0.35 && depth <= 0.99) {
-      if (mod((uv.y + displacement.y) * resolution.y, modVal) < outlineThickness) pixelColor = outlineColor;
-    }
-    if (pixelLuma <= 0.55 && depth <= 0.99) {
-      if (mod((uv.x + displacement.x) * resolution.x, modVal) < outlineThickness) pixelColor = outlineColor;
-    }
-    if (pixelLuma <= 0.80 && depth <= 0.99) {
-      if (mod((uv.x + displacement.x) * resolution.y + (uv.y + displacement.y) * resolution.x, modVal) <= outlineThickness) pixelColor = outlineColor;
-    }
-  }
-
-  if (normal.r >= 1.0 && normal.g >= 1.0 && normal.b >= 1.0) {
-    pixelColor = vec4(1.0);
-  }
-
-  vec4 color = mix(pixelColor, outlineColor, outline);
-  gl_FragColor = color;
-}
-`;
-
-  const GroundNormalVertexShader = `...`; // (same as your original, omitted for brevity — see full file below)
-  const CustomNormalFragmentShader = `...`; // (same)
-  const CustomNormalVertexShader = `...`;
-
-  // === Custom Materials ===
-  const GroundNormalMaterial = new THREE.ShaderMaterial({
-    uniforms: {
-      uTime: { value: 0 },
-      lightPosition: { value: new THREE.Vector3(-50, 50, 15) },
-    },
-    vertexShader: GroundNormalVertexShader,
-    fragmentShader: CustomNormalFragmentShader,
-  });
-
-  const CustomNormalMaterial = new THREE.ShaderMaterial({
-    uniforms: {
-      lightPosition: { value: new THREE.Vector3(-50, 50, 15) },
-    },
-    vertexShader: CustomNormalVertexShader,
-    fragmentShader: CustomNormalFragmentShader,
-  });
-
-  // === Ground Material (displacement) ===
-  class GroundMaterial extends THREE.MeshStandardMaterial {
-    constructor() {
-      super({ color: "#FF6457" });
-      this.uniforms = { uTime: { value: 0 } };
-      this.onBeforeCompile = (shader) => {
-        shader.uniforms.uTime = this.uniforms.uTime;
-        shader.vertexShader = shader.vertexShader.replace(
-          '#include <begin_vertex>',
-          `
-          uniform float uTime;
-          // Classic Perlin 3D Noise 
-          // ... (full cnoise function from your file)
-          vec3 displacedPosition = position + normal * (cnoise(position * 0.05 - vec3(0.0, uTime * 2.5, 0.0)) * 2.5);
-          vec3 transformed = displacedPosition;
-          `
-        );
-        // Also compute displaced normal
-        shader.vertexShader = shader.vertexShader.replace(
-          '#include <defaultnormal_vertex>',
-          `
-          vec3 objectNormal = normal;
-          #ifdef USE_TANGENT
-            vec3 objectTangent = tangent.xyz;
-          #endif
-          // Displaced normal computation (simplified)
-          vec3 displacedNormal = normalize(normal + vec3(cnoise((position + vec3(0.01,0,0)) * 0.05 - vec3(0.0, uTime * 2.5, 0.0)), cnoise((position + vec3(0,0,0.01)) * 0.05 - vec3(0.0, uTime * 2.5, 0.0)), 0.0) * 2.5);
-          objectNormal = displacedNormal;
-          `
-        );
-      };
-    }
-  }
-
-  // === Moebius Pass ===
-  class MoebiusPass extends THREE.EventDispatcher {
-    constructor({ depthRenderTarget, normalRenderTarget, camera }) {
-      super();
-      this.material = new THREE.ShaderMaterial({
-        uniforms: {
-          tDiffuse: { value: null },
-          tDepth: { value: null },
-          tNormal: { value: null },
-          cameraNear: { value: camera.near },
-          cameraFar: { value: camera.far },
-          resolution: { value: new THREE.Vector2() },
-          shadowType: { value: 3.0 },
-        },
-        vertexShader: MoebiusVertexShader,
-        fragmentShader: MoebiusFragmentShader,
-      });
-      this.fsQuad = new FullScreenQuad(this.material);
-      this.depthRenderTarget = depthRenderTarget;
-      this.normalRenderTarget = normalRenderTarget;
-      this.camera = camera;
-    }
-    render(renderer, writeBuffer, readBuffer) {
-      const { material } = this;
-      material.uniforms.tDiffuse.value = readBuffer.texture;
-      material.uniforms.tDepth.value = this.depthRenderTarget.depthTexture;
-      material.uniforms.tNormal.value = this.normalRenderTarget.texture;
-      material.uniforms.cameraNear.value = this.camera.near;
-      material.uniforms.cameraFar.value = this.camera.far;
-      material.uniforms.resolution.value.set(
-        renderer.domElement.width * renderer.getPixelRatio(),
-        renderer.domElement.height * renderer.getPixelRatio()
-      );
-      renderer.setRenderTarget(this.renderToScreen ? null : writeBuffer);
-      if (this.clear) renderer.clear();
-      this.fsQuad.render(renderer);
-    }
-    setSize(width, height) {}
-    dispose() {
-      this.material.dispose();
-      this.fsQuad.dispose();
-    }
-  }
-
-  // === Spaceship Component ===
-  const Spaceship = forwardRef((props, ref) => {
-    const gltf = useGLTF("https://cdn.maximeheckel.com/models/spaceship-optimized.glb");
-    useEffect(() => {
-      if (gltf.materials) {
-        Object.values(gltf.materials).forEach(mat => {
-          mat.transparent = true;
-          mat.alphaToCoverage = true;
-          mat.depthFunc = THREE.LessEqualDepth;
-        });
-      }
-    }, [gltf]);
-    return <primitive ref={ref} object={gltf.scene} scale={0.005} rotation={[0, -Math.PI * 0.5, 0]} position={[1.583, 0, -3.725]} />;
-  });
-
-  // === Main Scene ===
-  function Moebius() {
-    const meshRef = useRef();
-    const spaceshipRef = useRef();
-    const groundRef = useRef();
-    const { camera, gl, scene, clock } = useThree();
-    const lightPosition = new THREE.Vector3(-50, 50, 15);
-
-    const depthRenderTarget = useFBO(window.innerWidth, window.innerHeight, {
-      depthTexture: new THREE.DepthTexture(window.innerWidth, window.innerHeight),
-      depthBuffer: true,
-    });
-    const normalRenderTarget = useFBO();
-
-    useFrame(() => {
-      camera.lookAt(0, 0, 0);
-    });
-
-    useFrame(() => {
-      gl.setRenderTarget(depthRenderTarget);
-      gl.render(scene, camera);
-
-      const savedMaterials = [];
-      scene.traverse((obj) => {
-        if (obj.isMesh) {
-          savedMaterials.push({ obj, mat: obj.material });
-          obj.material = obj.name === "ground" ? GroundNormalMaterial : CustomNormalMaterial;
-          obj.material.uniforms.lightPosition.value.copy(lightPosition);
-          if (obj.name === "ground") {
-            obj.material.uniforms.uTime.value = clock.getElapsedTime();
-          }
+      // Full inlined shaders
+      const MoebiusVertexShader = `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         }
+      `;
+
+      const MoebiusFragmentShader = `
+        #include <packing>
+        varying vec2 vUv;
+        uniform sampler2D tDiffuse;
+        uniform sampler2D tDepth;
+        uniform sampler2D tNormal;
+        uniform float cameraNear;
+        uniform float cameraFar;
+        uniform vec2 resolution;
+        uniform float shadowType;
+        const mat3 Sx = mat3( -1.0, -2.0, -1.0, 0.0, 0.0, 0.0, 1.0, 2.0, 1.0 );
+        const mat3 Sy = mat3( -1.0, 0.0, 1.0, -2.0, 0.0, 2.0, -1.0, 0.0, 1.0 );
+        float hash(vec2 p) {
+          vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+          p3 += dot(p3, p3.yzx + 33.33);
+          return fract((p3.x + p3.y) * p3.z);
+        }
+        float readDepth( sampler2D depthTexture, vec2 coord ) {
+          float fragCoordZ = texture2D( depthTexture, coord ).x;
+          float viewZ = perspectiveDepthToViewZ( fragCoordZ, cameraNear, cameraFar );
+          return viewZToOrthographicDepth( viewZ, cameraNear, cameraFar );
+        }
+        float luma(vec3 color) {
+          const vec3 magic = vec3(0.2125, 0.7154, 0.0721);
+          return dot(magic, color);
+        }
+        void main() {
+          vec2 uv = vUv;
+          vec2 texel = vec2( 1.0 / resolution.x, 1.0 / resolution.y );
+          float outlineThickness = 1.5;
+          vec4 outlineColor = vec4(0.0, 0.0, 0.0, 1.0);
+          vec2 displacement = vec2(
+            (hash(gl_FragCoord.xy) * sin(gl_FragCoord.y * 0.05)) ,
+            (hash(gl_FragCoord.xy) * cos(gl_FragCoord.x * 0.05))
+          ) * 2.0 /resolution;
+          float depth = readDepth(tDepth, vUv);
+          vec4 normal = texture2D(tNormal, vUv);
+          vec4 pixelColor = texture2D(tDiffuse, vUv);
+          float depth00 = readDepth(tDepth, vUv + displacement + outlineThickness * texel * vec2(-1, 1));
+          float depth01 = readDepth(tDepth, vUv + displacement + outlineThickness * texel * vec2(-1, 0));
+          float depth02 = readDepth(tDepth, vUv + displacement + outlineThickness * texel * vec2(-1, -1));
+          float depth10 = readDepth(tDepth, vUv + displacement + outlineThickness * texel * vec2(0, -1));
+          float depth11 = readDepth(tDepth, vUv + displacement + outlineThickness * texel * vec2(0, 0));
+          float depth12 = readDepth(tDepth, vUv + displacement + outlineThickness * texel * vec2(0, 1));
+          float depth20 = readDepth(tDepth, vUv + displacement + outlineThickness * texel * vec2(1, -1));
+          float depth21 = readDepth(tDepth, vUv + displacement + outlineThickness * texel * vec2(1, 0));
+          float depth22 = readDepth(tDepth, vUv + displacement + outlineThickness * texel * vec2(1, 1));
+          float xSobelValueDepth =
+            Sx[0][0] * depth00 + Sx[1][0] * depth01 + Sx[2][0] * depth02 +
+            Sx[0][1] * depth10 + Sx[1][1] * depth11 + Sx[2][1] * depth12 +
+            Sx[0][2] * depth20 + Sx[1][2] * depth21 + Sx[2][2] * depth22;
+          float ySobelValueDepth =
+            Sy[0][0] * depth00 + Sy[1][0] * depth01 + Sy[2][0] * depth02 +
+            Sy[0][1] * depth10 + Sy[1][1] * depth11 + Sy[2][1] * depth12 +
+            Sy[0][2] * depth20 + Sy[1][2] * depth21 + Sy[2][2] * depth22;
+          float gradientDepth = sqrt(pow(xSobelValueDepth, 2.0) + pow(ySobelValueDepth, 2.0));
+          float normal00 = luma(texture2D(tNormal, vUv + displacement + outlineThickness * texel * vec2(-1, -1)).rgb);
+          float normal01 = luma(texture2D(tNormal, vUv + displacement + outlineThickness * texel * vec2(-1, 0)).rgb);
+          float normal02 = luma(texture2D(tNormal, vUv + displacement + outlineThickness * texel * vec2(-1, 1)).rgb);
+          float normal10 = luma(texture2D(tNormal, vUv + displacement + outlineThickness * texel * vec2(0, -1)).rgb);
+          float normal11 = luma(texture2D(tNormal, vUv + displacement + outlineThickness * texel * vec2(0, 0)).rgb);
+          float normal12 = luma(texture2D(tNormal, vUv + displacement + outlineThickness * texel * vec2(0, 1)).rgb);
+          float normal20 = luma(texture2D(tNormal, vUv + displacement + outlineThickness * texel * vec2(1, -1)).rgb);
+          float normal21 = luma(texture2D(tNormal, vUv + displacement + outlineThickness * texel * vec2(1, 0)).rgb);
+          float normal22 = luma(texture2D(tNormal, vUv + displacement + outlineThickness * texel * vec2(1, 1)).rgb);
+          float xSobelNormal =
+            Sx[0][0] * normal00 + Sx[1][0] * normal10 + Sx[2][0] * normal20 +
+            Sx[0][1] * normal01 + Sx[1][1] * normal11 + Sx[2][1] * normal21 +
+            Sx[0][2] * normal02 + Sx[1][2] * normal12 + Sx[2][2] * normal22;
+          float ySobelNormal =
+            Sy[0][0] * normal00 + Sy[1][0] * normal10 + Sy[2][0] * normal20 +
+            Sy[0][1] * normal01 + Sy[1][1] * normal11 + Sy[2][1] * normal21 +
+            Sy[0][2] * normal02 + Sy[1][2] * normal12 + Sy[2][2] * normal22;
+          float gradientNormal = sqrt(pow(xSobelNormal, 2.0) + pow(ySobelNormal, 2.0));
+          float outline = gradientDepth * 25.0 + gradientNormal;
+          float diffuseLight = normal.a;
+          float pixelLuma = luma(pixelColor.rgb + diffuseLight * 0.65);
+          if (shadowType == 1.0) {
+            if(pixelLuma <= 0.35 && depth <= 0.99) {
+              pixelColor = vec4(0.0, 0.0, 0.0, 1.0);
+            }
+            if (pixelLuma <= 0.45 && depth <= 0.99) {
+              pixelColor = pixelColor * vec4(0.25, 0.25, 0.25, 1.0);
+            }
+            if (pixelLuma <= 0.6 && depth <= 0.99) {
+              pixelColor = pixelColor * vec4(0.5, 0.5, 0.5, 1.0);
+            }
+            if (pixelLuma <= 0.75 && depth <= 0.99) {
+              pixelColor = pixelColor * vec4(0.7, 0.7, 0.7, 1.0);
+            }
+          }
+          if(shadowType == 2.0) {
+            const float rasterSize = 6.0;
+            float raster = length(mod(vUv * resolution.xy, vec2(rasterSize)) / rasterSize - vec2(0.5));
+            if(pixelLuma <= raster * 1.25 && depth <= 0.99) {
+              pixelColor = vec4(0.0, 0.0, 0.0, 1.0);
+            }
+          }
+          float modVal = 11.0;
+          if(shadowType == 3.0) {
+            if (pixelLuma <= 0.35 && depth <= 0.99) {
+              if (mod((vUv.y + displacement.y) * resolution.y , modVal) < outlineThickness) {
+                pixelColor = outlineColor;
+              };
+            }
+            if (pixelLuma <= 0.55 && depth <= 0.99) {
+              if (mod((vUv.x + displacement.x) * resolution.x , modVal) < outlineThickness) {
+                pixelColor = outlineColor;
+              };
+            }
+            if (pixelLuma <= 0.80 && depth <= 0.99) {
+              if (mod((vUv.x + displacement.x) * resolution.y + (vUv.y + displacement.y) * resolution.x, modVal) <= outlineThickness) {
+                pixelColor = outlineColor;
+              };
+            }
+          }
+          if(normal.r >= 1.0 && normal.g >= 1.0 && normal.b >= 1.0) {
+            pixelColor = vec4(1.0, 1.0, 1.0, 1.0);
+          }
+          vec4 color = mix(pixelColor, outlineColor, outline);
+          gl_FragColor = color;
+        }
+      `;
+
+      const CustomNormalVertexShader = `
+        varying vec3 vNormal;
+        varying vec3 eyeVector;
+        void main() {
+          vec4 worldPos = modelMatrix * vec4(position, 1.0);
+          vec4 mvPosition = viewMatrix * worldPos;
+          gl_Position = projectionMatrix * mvPosition;
+          vec3 transformedNormal = normalMatrix * normal;
+          vNormal = normalize(transformedNormal);
+          eyeVector = normalize(worldPos.xyz - cameraPosition);
+        }
+      `;
+
+      const CustomNormalFragmentShader = `
+        varying vec3 vNormal;
+        varying vec3 eyeVector;
+        uniform vec3 lightPosition;
+        const float shininess = 600.0;
+        const float diffuseness = 0.5;
+        vec2 phong() {
+          vec3 normal = normalize(vNormal);
+          vec3 lightDirection = normalize(lightPosition);
+          vec3 halfVector = normalize(eyeVector - lightDirection);
+          float NdotL = dot(normal, lightDirection);
+          float NdotH = dot(normal, halfVector);
+          float NdotH2 = NdotH * NdotH;
+          float kDiffuse = max(0.0, NdotL) * diffuseness;
+          float kSpecular = pow(NdotH2, shininess);
+          return vec2(kSpecular, kDiffuse);
+        }
+        void main() {
+          vec3 color = vec3(vNormal);
+          vec2 phongLighting = phong();
+          float specularLight = phongLighting.x;
+          float diffuseLight = phongLighting.y;
+          if(specularLight >= 0.25) {
+            color = vec3(1.0, 1.0, 1.0);
+          }
+          gl_FragColor = vec4(color, diffuseLight);
+        }
+      `;
+
+      const GroundNormalVertexShader = `
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 eyeVector;
+        uniform float uTime;
+        uniform vec3 lightPosition;
+        vec4 permute(vec4 x) {
+          return mod(((x*34.0)+1.0)*x, 289.0);
+        }
+        vec4 taylorInvSqrt(vec4 r) {
+          return 1.79284291400159 - 0.85373472095314 * r;
+        }
+        vec3 fade(vec3 t) {
+          return t*t*t*(t*(t*6.0-15.0)+10.0);
+        }
+        float cnoise(vec3 P) {
+          vec3 Pi0 = floor(P);
+          vec3 Pi1 = Pi0 + vec3(1.0);
+          Pi0 = mod(Pi0, 289.0);
+          Pi1 = mod(Pi1, 289.0);
+          vec3 Pf0 = fract(P);
+          vec3 Pf1 = Pf0 - vec3(1.0);
+          vec4 ix = vec4(Pi0.x, Pi1.x, Pi0.x, Pi1.x);
+          vec4 iy = vec4(Pi0.yy, Pi1.yy);
+          vec4 iz0 = Pi0.zzzz;
+          vec4 iz1 = Pi1.zzzz;
+          vec4 ixy = permute(permute(ix) + iy);
+          vec4 ixy0 = permute(ixy + iz0);
+          vec4 ixy1 = permute(ixy + iz1);
+          vec4 gx0 = ixy0 / 7.0;
+          vec4 gy0 = fract(floor(gx0) / 7.0) - 0.5;
+          gx0 = fract(gx0);
+          vec4 gz0 = vec4(0.5) - abs(gx0) - abs(gy0);
+          vec4 sz0 = step(gz0, vec4(0.0));
+          gx0 -= sz0 * (step(0.0, gx0) - 0.5);
+          gy0 -= sz0 * (step(0.0, gy0) - 0.5);
+          vec4 gx1 = ixy1 / 7.0;
+          vec4 gy1 = fract(floor(gx1) / 7.0) - 0.5;
+          gx1 = fract(gx1);
+          vec4 gz1 = vec4(0.5) - abs(gx1) - abs(gy1);
+          vec4 sz1 = step(gz1, vec4(0.0));
+          gx1 -= sz1 * (step(0.0, gx1) - 0.5);
+          gy1 -= sz1 * (step(0.0, gy1) - 0.5);
+          vec3 g000 = vec3(gx0.x,gy0.x,gz0.x);
+          vec3 g100 = vec3(gx0.y,gy0.y,gz0.y);
+          vec3 g010 = vec3(gx0.z,gy0.z,gz0.z);
+          vec3 g110 = vec3(gx0.w,gy0.w,gz0.w);
+          vec3 g001 = vec3(gx1.x,gy1.x,gz1.x);
+          vec3 g101 = vec3(gx1.y,gy1.y,gz1.y);
+          vec3 g011 = vec3(gx1.z,gy1.z,gz1.z);
+          vec3 g111 = vec3(gx1.w,gy1.w,gz1.w);
+          vec4 norm0 = taylorInvSqrt(vec4(dot(g000, g000), dot(g010, g010), dot(g100, g100), dot(g110, g110)));
+          g000 *= norm0.x;
+          g010 *= norm0.y;
+          g100 *= norm0.z;
+          g110 *= norm0.w;
+          vec4 norm1 = taylorInvSqrt(vec4(dot(g001, g001), dot(g011, g011), dot(g101, g101), dot(g111, g111)));
+          g001 *= norm1.x;
+          g011 *= norm1.y;
+          g101 *= norm1.z;
+          g111 *= norm1.w;
+          float n000 = dot(g000, Pf0);
+          float n100 = dot(g100, vec3(Pf1.x, Pf0.yz));
+          float n010 = dot(g010, vec3(Pf0.x, Pf1.y, Pf0.z));
+          float n110 = dot(g110, vec3(Pf1.xy, Pf0.z));
+          float n001 = dot(g001, vec3(Pf0.xy, Pf1.z));
+          float n101 = dot(g101, vec3(Pf1.x, Pf0.y, Pf1.z));
+          float n011 = dot(g011, vec3(Pf0.x, Pf1.yz));
+          float n111 = dot(g111, Pf1);
+          vec3 fade_xyz = fade(Pf0);
+          vec4 n_z = mix(vec4(n000, n100, n010, n110), vec4(n001, n101, n011, n111), fade_xyz.z);
+          vec2 n_yz = mix(n_z.xy, n_z.zw, fade_xyz.y);
+          float n_xyz = mix(n_yz.x, n_yz.y, fade_xyz.x);
+          return 2.2 * n_xyz;
+        }
+        vec3 orthogonal(vec3 v) {
+          return normalize(abs(v.x) > abs(v.z) ? vec3(-v.y, v.x, 0.0) : vec3(0.0, -v.z, v.y));
+        }
+        float displace(vec3 point) {
+          return cnoise(point * 0.05 - vec3(0.0, uTime * 2.5, 0.0)) * 2.5;
+        }
+        void main() {
+          vUv = uv;
+          vec3 displacedPosition = position + normal * displace(position);
+          vec4 modelPosition = modelMatrix * vec4(displacedPosition, 1.0);
+          vec4 viewPosition = viewMatrix * modelPosition;
+          vec4 projectedPosition = projectionMatrix * viewPosition;
+          gl_Position = projectedPosition;
+          eyeVector = normalize(modelPosition.xyz - cameraPosition);
+          float offset = 0.01;
+          vec3 tangent = orthogonal(normal);
+          vec3 bitangent = normalize(cross(normal, tangent));
+          vec3 neighbour1 = position + tangent * offset;
+          vec3 neighbour2 = position + bitangent * offset;
+          vec3 displacedNeighbour1 = neighbour1 + normal * displace(neighbour1);
+          vec3 displacedNeighbour2 = neighbour2 + normal * displace(neighbour2);
+          vec3 displacedTangent = displacedNeighbour1 - displacedPosition;
+          vec3 displacedBitangent = displacedNeighbour2 - displacedPosition;
+          vec3 displacedNormal = normalize(cross(displacedTangent, displacedBitangent));
+          vNormal = displacedNormal * normalMatrix;
+        }
+      `;
+
+      // Custom Materials
+      const CustomNormalMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+          lightPosition: { value: new THREE.Vector3(-50, 50, 15) },
+        },
+        vertexShader: CustomNormalVertexShader,
+        fragmentShader: CustomNormalFragmentShader,
       });
 
-      gl.setRenderTarget(normalRenderTarget);
-      gl.render(scene, camera);
+      const GroundNormalMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 0 },
+          lightPosition: { value: new THREE.Vector3(-50, 50, 15) },
+        },
+        vertexShader: GroundNormalVertexShader,
+        fragmentShader: CustomNormalFragmentShader,
+      });
 
-      savedMaterials.forEach(({ obj, mat }) => obj.material = mat);
-      gl.setRenderTarget(null);
-    });
-
-    useFrame(() => {
-      if (spaceshipRef.current) {
-        spaceshipRef.current.rotation.x = Math.cos(clock.getElapsedTime() * 2) * Math.cos(clock.getElapsedTime()) * 0.15;
-        spaceshipRef.current.position.y = Math.sin(clock.getElapsedTime() * 2) + 1.0;
+      // GroundMaterial (extends MeshStandardMaterial with displacement)
+      class GroundMaterial extends THREE.MeshStandardMaterial {
+        constructor(color) {
+          super({ color });
+          this.uniforms = { uTime: { value: 0 } };
+          this.onBeforeCompile = (shader) => {
+            shader.uniforms.uTime = this.uniforms.uTime;
+            // Insert Perlin noise and displacement (same as GroundNormalVertexShader's cnoise and displace)
+            shader.vertexShader = `
+              uniform float uTime;
+              ${GroundNormalVertexShader.split('void main()')[0]}  // Insert noise functions
+              vec3 displacedPosition = position + normal * displace(position);
+              vec4 mvPosition = viewMatrix * modelMatrix * vec4( displacedPosition, 1.0 );
+              gl_Position = projectionMatrix * mvPosition;
+            ` + shader.vertexShader.split('gl_Position =')[1];
+            // Simplified normal perturbation for standard material
+            shader.vertexShader = shader.vertexShader.replace(
+              '#include <normal_vertex>',
+              'objectNormal = normalize(normal + vec3(0.01 * sin(uTime), displace(position + vec3(0.01,0,0)), 0.0));'
+            );
+          };
+        }
       }
-      if (groundRef.current) {
-        groundRef.current.material.uniforms.uTime.value = clock.getElapsedTime();
+
+      // MoebiusPass (simplified using ShaderPass)
+      class MoebiusPass {
+        constructor({ depthRenderTarget, normalRenderTarget, camera }) {
+          this.uniforms = THREE.UniformsUtils.merge([
+            {
+              tDiffuse: { value: null },
+              tDepth: { value: depthRenderTarget.depthTexture },
+              tNormal: { value: normalRenderTarget.texture },
+              cameraNear: { value: camera.near },
+              cameraFar: { value: camera.far },
+              resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+              shadowType: { value: 3.0 },
+            }
+          ]);
+          this.material = new THREE.ShaderMaterial({
+            uniforms: this.uniforms,
+            vertexShader: MoebiusVertexShader,
+            fragmentShader: MoebiusFragmentShader,
+          });
+          this.fsQuad = new FullScreenQuad(this.material);
+        }
+        render(renderer, writeBuffer, readBuffer, deltaTime, maskActive) {
+          this.uniforms.tDiffuse.value = readBuffer.texture;
+          this.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
+          renderer.setRenderTarget(writeBuffer);
+          this.fsQuad.render(renderer);
+        }
       }
-    });
 
-    return (
-      <>
-        <directionalLight position={lightPosition} intensity={4.5} color="#fff" castShadow />
-        <mesh position={[80, 30, 140]} scale={10}>
-          <sphereGeometry args={[2, 32, 32]} />
-          <meshStandardMaterial color="darkorange" />
-        </mesh>
-        <mesh position={[50, 35, 120]} scale={3}>
-          <sphereGeometry args={[2, 32, 32]} />
-          <meshStandardMaterial color="cyan" />
-        </mesh>
+      extend({ MoebiusPass });
 
-        <group rotation={[0, Math.PI / 2, 0]} position={[0, 2, 0]}>
-          <Spaceship ref={spaceshipRef} />
-        </group>
+      // Spaceship Component
+      const Spaceship = React.forwardRef((props, ref) => {
+        const gltf = useGLTF('https://cdn.maximeheckel.com/models/spaceship-optimized.glb');
+        React.useEffect(() => {
+          if (gltf.materials) {
+            Object.values(gltf.materials).forEach(material => {
+              material.transparent = true;
+              material.alphaToCoverage = true;
+              material.depthFunc = THREE.LessEqualDepth;
+              material.depthWrite = true;
+            });
+          }
+        }, [gltf]);
+        return (
+          <primitive
+            ref={ref}
+            object={gltf.scene}
+            scale={0.005}
+            rotation={[0, -Math.PI * 0.5, 0]}
+            position={[1.583, 0, -3.725]}
+            castShadow
+            receiveShadow
+          />
+        );
+      });
 
-        <mesh ref={groundRef} name="ground" rotation={[-Math.PI / 2, 0, 0]} position={[0, -1, 0]} receiveShadow castShadow>
-          <planeGeometry args={[300, 300, 100, 100]} />
-          <GroundMaterial />
-        </mesh>
+      // Moebius Scene Component
+      function Moebius() {
+        const spaceshipRef = React.useRef();
+        const groundRef = React.useRef();
+        const composerRef = React.useRef();
+        const { camera, gl, scene, clock } = useThree();
+        const lightPosition = new THREE.Vector3(-50, 50, 15);
 
-        <Effects>
-          <moebiusPass args={[{ depthRenderTarget, normalRenderTarget, camera }]} />
-        </Effects>
-      </>
-    );
-  }
+        const depthTexture = new THREE.DepthTexture(window.innerWidth, window.innerHeight);
+        const depthRenderTarget = useFBO(window.innerWidth, window.innerHeight, { depthTexture, depthBuffer: true });
+        const normalRenderTarget = useFBO(window.innerWidth, window.innerHeight);
 
-  function Scene() {
-    return (
-      <Canvas shadows dpr={[1, 2]} camera={{ position: [-8, 4, -20], near: 0.01, far: 800 }}>
-        <Suspense fallback={null}>
-          <color attach="background" args={["#3386E0"]} />
-          <ambientLight intensity={0.2} />
-          <Moebius />
-          <PerspectiveCamera makeDefault position={[-8, 4, -20]} near={0.01} far={800} />
-        </Suspense>
-      </Canvas>
-    );
-  }
+        useFrame(() => {
+          camera.lookAt(0, 0, 0);
+        });
 
-  createRoot(document.body.appendChild(document.createElement('div'))).render(<Scene />);
-</script>
+        useFrame((state) => {
+          const { gl, scene, camera } = state;
+          // Render depth
+          gl.setRenderTarget(depthRenderTarget);
+          gl.render(scene, camera);
+          // Render normals
+          const originalMaterials = [];
+          scene.traverse((obj) => {
+            if (obj.isMesh) {
+              originalMaterials.push(obj.material);
+              obj.material = obj.name === 'ground' ? GroundNormalMaterial : CustomNormalMaterial;
+              if (obj.material.uniforms) {
+                obj.material.uniforms.lightPosition.value.copy(lightPosition);
+                if (obj.name === 'ground') obj.material.uniforms.uTime.value = clock.getElapsedTime();
+              }
+            }
+          });
+          gl.setRenderTarget(normalRenderTarget);
+          gl.render(scene, camera);
+          // Restore materials
+          scene.traverse((obj, i) => {
+            if (obj.isMesh) obj.material = originalMaterials[i] || originalMaterials.shift();
+          });
+          gl.setRenderTarget(null);
+        });
+
+        useFrame((state) => {
+          if (spaceshipRef.current) {
+            spaceshipRef.current.rotation.x = Math.cos(state.clock.getElapsedTime() * 2.0) * Math.cos(state.clock.getElapsedTime()) * 0.15;
+            spaceshipRef.current.position.y = Math.sin(state.clock.getElapsedTime() * 2.0) + 1.0;
+          }
+          if (groundRef.current && groundRef.current.material.uniforms) {
+            groundRef.current.material.uniforms.uTime.value = state.clock.getElapsedTime();
+          }
+        });
+
+        return (
+          <>
+            <directionalLight position={lightPosition} intensity={4.5} color="#fff" castShadow />
+            <mesh position={[80, 30, 140]} scale={10}>
+              <sphereGeometry args={[2, 32, 32]} />
+              <meshStandardMaterial color="darkorange" />
+            </mesh>
+            <mesh position={[50, 35, 120]} scale={3}>
+              <sphereGeometry args={[2, 32, 32]} />
+              <meshStandardMaterial color="cyan" />
+            </mesh>
+            <group rotation={[0, Math.PI / 2, 0]} position={[0, 2, 0]}>
+              <Spaceship ref={spaceshipRef} />
+            </group>
+            <mesh ref={groundRef} name="ground" rotation={[-Math.PI / 2, 0, 0]} position={[0, -1, 0]} castShadow receiveShadow>
+              <planeGeometry args={[300, 300, 100, 100]} />
+              <groundMaterial attach="material" args={['#FF6457']} />
+            </mesh>
+            <EffectComposer ref={composerRef}>
+              <ShaderPass args={[[{ depthRenderTarget, normalRenderTarget, camera }]]} />
+            </EffectComposer>
+          </>
+        );
+      }
+
+      // Main Scene
+      function Scene() {
+        return (
+          <Canvas shadows dpr={[1, 2]} camera={{ position: [-8, 4, -20], near: 0.01, far: 800 }}>
+            <Suspense fallback={null}>
+              <ambientLight intensity={0.2} color="#FFFFFF" />
+              <color attach="background" args={["#3386E0"]} />
+              <Moebius />
+              <PerspectiveCamera makeDefault position={[-8, 4, -20]} near={0.01} far={800} />
+            </Suspense>
+          </Canvas>
+        );
+      }
+
+      // Render
+      const root = createRoot(document.body.appendChild(document.createElement('div')));
+      root.render(React.createElement(Scene));
+    } catch (error) {
+      logError(`Import/Render Error: ${error.message}`);
+    }
+  </script>
 </body>
 </html>

@@ -22,11 +22,24 @@
             transform: translate(-50%, -50%);
             color: white;
             font-size: 24px;
+            z-index: 100;
+        }
+        #error {
+            position: absolute;
+            top: 60%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ff6b6b;
+            font-size: 16px;
+            text-align: center;
+            display: none;
+            z-index: 100;
         }
     </style>
 </head>
 <body>
     <div id="loading">Loading...</div>
+    <div id="error"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
@@ -34,24 +47,29 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/draco/gltf/draco_decoder.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
     <script>
+        // Global variables
+        let scene, camera, renderer, controls;
+        let spaceshipGroup, ground;
+        let clock, composer;
+        let depthRenderTarget, normalRenderTarget;
+        let groundMaterial, groundNormalMaterial, customNormalMaterial, moebiusMaterial;
+        let spaceshipLoaded = false;
+
         // Wait for the DOM to load
         document.addEventListener('DOMContentLoaded', function() {
-            // Remove loading message
-            const loadingElement = document.getElementById('loading');
-            loadingElement.style.display = 'none';
-            
-            // Initialize the scene
             init();
         });
 
         function init() {
             // Scene setup
-            const scene = new THREE.Scene();
+            scene = new THREE.Scene();
             scene.background = new THREE.Color(0x3386E0);
             
             // Camera setup
-            const camera = new THREE.PerspectiveCamera(
+            camera = new THREE.PerspectiveCamera(
                 75, 
                 window.innerWidth / window.innerHeight, 
                 0.01, 
@@ -60,7 +78,7 @@
             camera.position.set(-8, 4, -20);
             
             // Renderer setup
-            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.shadowMap.enabled = true;
@@ -68,7 +86,7 @@
             document.body.appendChild(renderer.domElement);
             
             // Controls
-            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
             
@@ -83,8 +101,25 @@
             directionalLight.shadow.mapSize.height = 2048;
             scene.add(directionalLight);
             
-            // Create depth and normal render targets
-            const depthRenderTarget = new THREE.WebGLRenderTarget(
+            // Create render targets
+            createRenderTargets();
+            
+            // Create materials
+            createMaterials();
+            
+            // Create scene objects
+            createSceneObjects();
+            
+            // Setup post-processing
+            setupPostProcessing();
+            
+            // Start animation
+            clock = new THREE.Clock();
+            animate();
+        }
+
+        function createRenderTargets() {
+            depthRenderTarget = new THREE.WebGLRenderTarget(
                 window.innerWidth, 
                 window.innerHeight,
                 {
@@ -96,56 +131,36 @@
                 }
             );
             
-            const normalRenderTarget = new THREE.WebGLRenderTarget(
+            normalRenderTarget = new THREE.WebGLRenderTarget(
                 window.innerWidth, 
                 window.innerHeight
             );
-            
-            // Create materials
-            const groundMaterial = createGroundMaterial();
-            const groundNormalMaterial = createGroundNormalMaterial();
-            const customNormalMaterial = createCustomNormalMaterial();
-            const moebiusMaterial = createMoebiusMaterial(
+        }
+
+        function createMaterials() {
+            groundMaterial = createGroundMaterial();
+            groundNormalMaterial = createGroundNormalMaterial();
+            customNormalMaterial = createCustomNormalMaterial();
+            moebiusMaterial = createMoebiusMaterial(
                 depthRenderTarget.depthTexture,
                 normalRenderTarget.texture,
                 camera
             );
-            
-            // Create objects
-            const spaceshipGroup = new THREE.Group();
+        }
+
+        function createSceneObjects() {
+            // Create spaceship group
+            spaceshipGroup = new THREE.Group();
             spaceshipGroup.rotation.y = Math.PI / 2;
             spaceshipGroup.position.y = 2;
+            scene.add(spaceshipGroup);
             
             // Load spaceship model
-            const loader = new THREE.GLTFLoader();
-            loader.load(
-                'https://cdn.maximeheckel.com/models/spaceship-optimized.glb',
-                function(gltf) {
-                    const model = gltf.scene;
-                    model.scale.set(0.5, 0.5, 0.5);
-                    model.rotation.y = -Math.PI * 0.5;
-                    model.position.set(1.583, 0, -3.725);
-                    
-                    // Fix materials for transparency
-                    model.traverse((child) => {
-                        if (child.isMesh) {
-                            child.material.transparent = true;
-                            child.material.alphaToCoverage = true;
-                            child.material.depthFunc = THREE.LessEqualDepth;
-                            child.material.depthTest = true;
-                            child.material.depthWrite = true;
-                        }
-                    });
-                    
-                    spaceshipGroup.add(model);
-                }
-            );
-            
-            scene.add(spaceshipGroup);
+            loadSpaceshipModel();
             
             // Create ground
             const groundGeometry = new THREE.PlaneGeometry(300, 300, 100, 100);
-            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground = new THREE.Mesh(groundGeometry, groundMaterial);
             ground.rotation.x = -Math.PI / 2;
             ground.position.y = -1;
             ground.castShadow = true;
@@ -155,6 +170,7 @@
             
             // Create decorative spheres
             const sphereGeometry = new THREE.SphereGeometry(2, 32, 32);
+            
             const sphereMaterial1 = new THREE.MeshStandardMaterial({ color: 0xFF8C00 });
             const sphere1 = new THREE.Mesh(sphereGeometry, sphereMaterial1);
             sphere1.position.set(80, 30, 140);
@@ -166,97 +182,261 @@
             sphere2.position.set(50, 35, 120);
             sphere2.scale.set(3, 3, 3);
             scene.add(sphere2);
+        }
+
+        function loadSpaceshipModel() {
+            const loader = new THREE.GLTFLoader();
             
-            // Post-processing setup
-            const composer = new THREE.EffectComposer(renderer);
+            // Add DRACO loader support
+            const dracoLoader = new THREE.DRACOLoader();
+            dracoLoader.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/draco/gltf/');
+            loader.setDRACOLoader(dracoLoader);
+            
+            const loadingElement = document.getElementById('loading');
+            const errorElement = document.getElementById('error');
+            
+            // Try multiple model URLs - some might work better than others
+            const modelUrls = [
+                'https://cdn.maximeheckel.com/models/spaceship-optimized.glb',
+                'https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf' // Fallback model
+            ];
+            
+            let currentUrlIndex = 0;
+            
+            function tryLoadModel() {
+                if (currentUrlIndex >= modelUrls.length) {
+                    // All URLs failed, create fallback
+                    console.error('All model URLs failed, creating fallback spaceship');
+                    loadingElement.style.display = 'none';
+                    errorElement.textContent = 'Failed to load spaceship models. Using fallback geometry.';
+                    errorElement.style.display = 'block';
+                    createFallbackSpaceship();
+                    spaceshipLoaded = true;
+                    return;
+                }
+                
+                const currentUrl = modelUrls[currentUrlIndex];
+                console.log('Attempting to load model from:', currentUrl);
+                
+                loader.load(
+                    currentUrl,
+                    function(gltf) {
+                        console.log('Spaceship model loaded successfully from:', currentUrl);
+                        
+                        const model = gltf.scene;
+                        
+                        // Adjust scale based on which model loaded
+                        if (currentUrlIndex === 0) {
+                            // Original spaceship model
+                            model.scale.set(0.5, 0.5, 0.5);
+                            model.rotation.y = -Math.PI * 0.5;
+                            model.position.set(1.583, 0, -3.725);
+                        } else {
+                            // Fallback helmet model
+                            model.scale.set(2, 2, 2);
+                            model.position.set(0, 0, 0);
+                        }
+                        
+                        // Fix materials for transparency
+                        model.traverse((child) => {
+                            if (child.isMesh) {
+                                child.material.transparent = true;
+                                child.material.alphaToCoverage = true;
+                                child.material.depthFunc = THREE.LessEqualDepth;
+                                child.material.depthTest = true;
+                                child.material.depthWrite = true;
+                                child.castShadow = true;
+                            }
+                        });
+                        
+                        spaceshipGroup.add(model);
+                        spaceshipLoaded = true;
+                        
+                        // Hide loading message
+                        loadingElement.style.display = 'none';
+                    },
+                    function(progress) {
+                        // Progress callback
+                        const percentLoaded = progress.lengthComputable 
+                            ? (progress.loaded / progress.total * 100).toFixed(2)
+                            : 'Loading...';
+                        loadingElement.textContent = `Loading... ${percentLoaded}%`;
+                    },
+                    function(error) {
+                        console.error('Error loading model from', currentUrl, ':', error);
+                        currentUrlIndex++;
+                        tryLoadModel(); // Try next URL
+                    }
+                );
+            }
+            
+            // Start loading process
+            tryLoadModel();
+        }
+
+        function createFallbackSpaceship() {
+            console.log('Creating fallback spaceship');
+            
+            // Create a simple rocket-like shape as fallback
+            const group = new THREE.Group();
+            
+            // Fuselage (body)
+            const fuselageGeometry = new THREE.CylinderGeometry(0.3, 0.1, 2, 8);
+            const fuselageMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x888888,
+                transparent: true,
+                alphaToCoverage: true
+            });
+            const fuselage = new THREE.Mesh(fuselageGeometry, fuselageMaterial);
+            fuselage.rotation.z = Math.PI / 2;
+            fuselage.castShadow = true;
+            group.add(fuselage);
+            
+            // Wings
+            const wingGeometry = new THREE.BoxGeometry(1.5, 0.1, 0.3);
+            const wingMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x666666,
+                transparent: true,
+                alphaToCoverage: true
+            });
+            
+            const leftWing = new THREE.Mesh(wingGeometry, wingMaterial);
+            leftWing.position.set(0, 0, 0.4);
+            leftWing.castShadow = true;
+            group.add(leftWing);
+            
+            const rightWing = new THREE.Mesh(wingGeometry, wingMaterial);
+            rightWing.position.set(0, 0, -0.4);
+            rightWing.castShadow = true;
+            group.add(rightWing);
+            
+            // Cockpit
+            const cockpitGeometry = new THREE.SphereGeometry(0.2, 8, 6);
+            const cockpitMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x00aaff,
+                transparent: true,
+                alphaToCoverage: true
+            });
+            const cockpit = new THREE.Mesh(cockpitGeometry, cockpitMaterial);
+            cockpit.position.set(-0.7, 0.1, 0);
+            cockpit.castShadow = true;
+            group.add(cockpit);
+            
+            // Engine exhaust
+            const exhaustGeometry = new THREE.CylinderGeometry(0.15, 0.3, 0.5, 8);
+            const exhaustMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xff4500,
+                transparent: true,
+                alphaToCoverage: true
+            });
+            const exhaust = new THREE.Mesh(exhaustGeometry, exhaustMaterial);
+            exhaust.position.set(0.8, 0, 0);
+            exhaust.rotation.z = Math.PI / 2;
+            exhaust.castShadow = true;
+            group.add(exhaust);
+            
+            group.scale.set(1.5, 1.5, 1.5);
+            spaceshipGroup.add(group);
+        }
+
+        function setupPostProcessing() {
+            composer = new THREE.EffectComposer(renderer);
             const renderPass = new THREE.RenderPass(scene, camera);
             composer.addPass(renderPass);
             
             const moebiusPass = new THREE.ShaderPass(moebiusMaterial);
             moebiusPass.renderToScreen = true;
             composer.addPass(moebiusPass);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
             
-            // Animation loop
-            const clock = new THREE.Clock();
+            const elapsedTime = clock.getElapsedTime();
             
-            function animate() {
-                requestAnimationFrame(animate);
-                
-                const elapsedTime = clock.getElapsedTime();
-                
-                // Update spaceship animation
-                if (spaceshipGroup.children.length > 0) {
-                    spaceshipGroup.rotation.x = 
-                        Math.cos(elapsedTime * 2.0) * 
-                        Math.cos(elapsedTime) * 0.15;
-                    spaceshipGroup.position.y = 
-                        Math.sin(elapsedTime * 2.0) + 1.0;
-                }
-                
-                // Update ground material
-                groundMaterial.uniforms.uTime.value = elapsedTime;
-                
-                // First pass: render depth
-                renderer.setRenderTarget(depthRenderTarget);
-                renderer.render(scene, camera);
-                
-                // Second pass: render normals
-                const originalMaterials = [];
-                
-                scene.traverse((obj) => {
-                    if (obj.isMesh) {
-                        originalMaterials.push(obj.material);
-                        if (obj.name === "ground") {
-                            obj.material = groundNormalMaterial;
-                            obj.material.uniforms.uTime.value = elapsedTime;
-                            obj.material.uniforms.lightPosition.value = directionalLight.position;
-                        } else {
-                            obj.material = customNormalMaterial;
-                            obj.material.uniforms.lightPosition.value = directionalLight.position;
-                        }
-                    }
-                });
-                
-                renderer.setRenderTarget(normalRenderTarget);
-                renderer.render(scene, camera);
-                
-                // Restore original materials
-                scene.traverse((obj) => {
-                    if (obj.isMesh) {
-                        obj.material = originalMaterials.shift();
-                    }
-                });
-                
-                // Final pass: render with post-processing
-                renderer.setRenderTarget(null);
-                composer.render();
-                
-                controls.update();
+            // Update spaceship animation if loaded
+            if (spaceshipLoaded && spaceshipGroup) {
+                spaceshipGroup.rotation.x = 
+                    Math.cos(elapsedTime * 2.0) * 
+                    Math.cos(elapsedTime) * 0.15;
+                spaceshipGroup.position.y = 
+                    Math.sin(elapsedTime * 2.0) + 1.0;
             }
             
-            // Handle window resize
-            window.addEventListener('resize', function() {
+            // Update ground material
+            if (ground && ground.material && ground.material.uniforms) {
+                ground.material.uniforms.uTime.value = elapsedTime;
+            }
+            
+            // First pass: render depth
+            renderer.setRenderTarget(depthRenderTarget);
+            renderer.render(scene, camera);
+            
+            // Second pass: render normals
+            const originalMaterials = [];
+            
+            scene.traverse((obj) => {
+                if (obj.isMesh && obj.material) {
+                    originalMaterials.push({
+                        object: obj,
+                        material: obj.material
+                    });
+                    
+                    if (obj.name === "ground") {
+                        obj.material = groundNormalMaterial;
+                        if (obj.material.uniforms) {
+                            obj.material.uniforms.uTime.value = elapsedTime;
+                            obj.material.uniforms.lightPosition.value = new THREE.Vector3(-50, 50, 15);
+                        }
+                    } else {
+                        obj.material = customNormalMaterial;
+                        if (obj.material.uniforms) {
+                            obj.material.uniforms.lightPosition.value = new THREE.Vector3(-50, 50, 15);
+                        }
+                    }
+                }
+            });
+            
+            renderer.setRenderTarget(normalRenderTarget);
+            renderer.render(scene, camera);
+            
+            // Restore original materials
+            originalMaterials.forEach(item => {
+                item.object.material = item.material;
+            });
+            
+            // Final pass: render with post-processing
+            renderer.setRenderTarget(null);
+            composer.render();
+            
+            controls.update();
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (camera && renderer && composer) {
                 camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
                 composer.setSize(window.innerWidth, window.innerHeight);
                 
                 // Update render targets
-                depthRenderTarget.setSize(window.innerWidth, window.innerHeight);
-                normalRenderTarget.setSize(window.innerWidth, window.innerHeight);
+                if (depthRenderTarget && normalRenderTarget) {
+                    depthRenderTarget.setSize(window.innerWidth, window.innerHeight);
+                    normalRenderTarget.setSize(window.innerWidth, window.innerHeight);
+                }
                 
                 // Update resolution uniforms
-                moebiusMaterial.uniforms.resolution.value.set(
-                    window.innerWidth * Math.min(window.devicePixelRatio, 2),
-                    window.innerHeight * Math.min(window.devicePixelRatio, 2)
-                );
-            });
-            
-            // Start animation
-            animate();
-        }
+                if (moebiusMaterial && moebiusMaterial.uniforms && moebiusMaterial.uniforms.resolution) {
+                    moebiusMaterial.uniforms.resolution.value.set(
+                        window.innerWidth * Math.min(window.devicePixelRatio, 2),
+                        window.innerHeight * Math.min(window.devicePixelRatio, 2)
+                    );
+                }
+            }
+        });
 
-        // Material creation functions
+        // Material creation functions (same as before)
         function createGroundMaterial() {
             const vertexShader = `
                 uniform float uTime;

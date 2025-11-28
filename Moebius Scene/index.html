@@ -33,19 +33,13 @@
     <script type="module">
       import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
       import { OrbitControls } from "https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js";
-      import {
-        EffectComposer,
-      } from "https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/EffectComposer.js";
-      import {
-        RenderPass,
-      } from "https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/RenderPass.js";
+      import { EffectComposer } from "https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/EffectComposer.js";
+      import { RenderPass } from "https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/RenderPass.js";
       import {
         Pass,
         FullScreenQuad,
       } from "https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/Pass.js";
-      import {
-        GLTFLoader,
-      } from "https://unpkg.com/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
+      import { GLTFLoader } from "https://unpkg.com/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
 
       // ==========================
       // SHADERS
@@ -606,7 +600,8 @@
           this.material.uniforms.tDiffuse.value = readBuffer.texture;
           this.material.uniforms.tDepth.value =
             this.depthRenderTarget.depthTexture;
-          this.material.uniforms.tNormal.value = this.normalRenderTarget.texture;
+          this.material.uniforms.tNormal.value =
+            this.normalRenderTarget.texture;
           this.material.uniforms.cameraNear.value = this.camera.near;
           this.material.uniforms.cameraFar.value = this.camera.far;
 
@@ -698,54 +693,54 @@
 
       directionalLight.target = ground;
 
-    import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
+      import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 
-    const draco = new DRACOLoader();
-    draco.setDecoderPath("https://www.gstatic.com/draco/v1/decoders/");
+      const draco = new DRACOLoader();
+      draco.setDecoderPath("https://www.gstatic.com/draco/v1/decoders/");
 
-    // Create loader
-    const gltfLoader = new GLTFLoader();
-    gltfLoader.setDRACOLoader(draco);
+      // Create loader
+      const gltfLoader = new GLTFLoader();
+      gltfLoader.setDRACOLoader(draco);
 
-    // Load spaceship
-    const SPACESHIP_GEOMETRY_URL =
-    "https://cdn.maximeheckel.com/models/spaceship-optimized.glb";
+      // Load spaceship
+      const SPACESHIP_GEOMETRY_URL =
+        "https://cdn.maximeheckel.com/models/spaceship-optimized.glb";
 
-    const spaceshipGroup = new THREE.Group();
-    spaceshipGroup.rotation.y = Math.PI / 2;
-    spaceshipGroup.position.set(0, 2, 0);
-    scene.add(spaceshipGroup);
+      const spaceshipGroup = new THREE.Group();
+      spaceshipGroup.rotation.y = Math.PI / 2;
+      spaceshipGroup.position.set(0, 2, 0);
+      scene.add(spaceshipGroup);
 
-    gltfLoader.load(
-    SPACESHIP_GEOMETRY_URL,
-    (gltf) => {
-        const root = gltf.scene;
-        root.traverse((child) => {
-        if (child.isMesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
+      gltfLoader.load(
+        SPACESHIP_GEOMETRY_URL,
+        (gltf) => {
+          const root = gltf.scene;
+          root.traverse((child) => {
+            if (child.isMesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
 
-            const mat = child.material;
-            if (mat) {
-            mat.transparent = true;
-            mat.alphaToCoverage = true;
-            mat.depthFunc = THREE.LessEqualDepth;
-            mat.depthTest = true;
-            mat.depthWrite = true;
+              const mat = child.material;
+              if (mat) {
+                mat.transparent = true;
+                mat.alphaToCoverage = true;
+                mat.depthFunc = THREE.LessEqualDepth;
+                mat.depthTest = true;
+                mat.depthWrite = true;
+              }
             }
-        }
-        });
+          });
 
-        //spaceship
-        root.scale.set(0.5, 0.5, 0.5);
-        root.rotation.y = -Math.PI * 0.5;
-        root.position.set(0, 0.5, -5);
+          //spaceship
+          root.scale.set(0.5, 0.5, 0.5);
+          root.rotation.y = -Math.PI * 0.5;
+          root.position.set(0, 0.5, -5);
 
-        spaceshipGroup.add(root);
-    },
-    undefined,
-    (err) => console.error("Error loading spaceship", err)
-    );
+          spaceshipGroup.add(root);
+        },
+        undefined,
+        (err) => console.error("Error loading spaceship", err)
+      );
 
       // Render targets
       const depthTexture = new THREE.DepthTexture(

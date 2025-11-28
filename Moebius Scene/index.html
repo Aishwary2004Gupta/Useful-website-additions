@@ -736,53 +736,54 @@
     //       console.error("Error loading spaceship", err);
     //     }
     //   );
+    
     import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 
-const draco = new DRACOLoader();
-draco.setDecoderPath("https://www.gstatic.com/draco/v1/decoders/");
+    const draco = new DRACOLoader();
+    draco.setDecoderPath("https://www.gstatic.com/draco/v1/decoders/");
 
-// Create loader
-const gltfLoader = new GLTFLoader();
-gltfLoader.setDRACOLoader(draco);
+    // Create loader
+    const gltfLoader = new GLTFLoader();
+    gltfLoader.setDRACOLoader(draco);
 
-// Load spaceship
-const SPACESHIP_GEOMETRY_URL =
-  "https://cdn.maximeheckel.com/models/spaceship-optimized.glb";
+    // Load spaceship
+    const SPACESHIP_GEOMETRY_URL =
+    "https://cdn.maximeheckel.com/models/spaceship-optimized.glb";
 
-const spaceshipGroup = new THREE.Group();
-spaceshipGroup.rotation.y = Math.PI / 2;
-spaceshipGroup.position.set(0, 2, 0);
-scene.add(spaceshipGroup);
+    const spaceshipGroup = new THREE.Group();
+    spaceshipGroup.rotation.y = Math.PI / 2;
+    spaceshipGroup.position.set(0, 2, 0);
+    scene.add(spaceshipGroup);
 
-gltfLoader.load(
-  SPACESHIP_GEOMETRY_URL,
-  (gltf) => {
-    const root = gltf.scene;
-    root.traverse((child) => {
-      if (child.isMesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
+    gltfLoader.load(
+    SPACESHIP_GEOMETRY_URL,
+    (gltf) => {
+        const root = gltf.scene;
+        root.traverse((child) => {
+        if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
 
-        const mat = child.material;
-        if (mat) {
-          mat.transparent = true;
-          mat.alphaToCoverage = true;
-          mat.depthFunc = THREE.LessEqualDepth;
-          mat.depthTest = true;
-          mat.depthWrite = true;
+            const mat = child.material;
+            if (mat) {
+            mat.transparent = true;
+            mat.alphaToCoverage = true;
+            mat.depthFunc = THREE.LessEqualDepth;
+            mat.depthTest = true;
+            mat.depthWrite = true;
+            }
         }
-      }
-    });
+        });
 
-    root.scale.set(0.005, 0.005, 0.005);
-    root.rotation.y = -Math.PI * 0.5;
-    root.position.set(1.583, 0, -3.725);
+        root.scale.set(0.005, 0.005, 0.005);
+        root.rotation.y = -Math.PI * 0.5;
+        root.position.set(1.583, 0, -3.725);
 
-    spaceshipGroup.add(root);
-  },
-  undefined,
-  (err) => console.error("Error loading spaceship", err)
-);
+        spaceshipGroup.add(root);
+    },
+    undefined,
+    (err) => console.error("Error loading spaceship", err)
+    );
 
       // Render targets
       const depthTexture = new THREE.DepthTexture(

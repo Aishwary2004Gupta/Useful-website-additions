@@ -775,7 +775,7 @@
 
       window.addEventListener("keydown", (e) => {
         if (e.key in keys) {
-          keys[e.key] = true;
+          keys[e.key] = false; //set true for arrow controls
         }
       });
 

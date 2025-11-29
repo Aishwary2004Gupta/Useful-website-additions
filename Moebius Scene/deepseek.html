@@ -58,6 +58,12 @@
         let groundMaterial, groundNormalMaterial, customNormalMaterial, moebiusMaterial;
         let spaceshipLoaded = false;
 
+        // --- ADDED: shadow receiver and base geometry data for CPU displacement ---
+        let shadowReceiver = null;
+        let baseGroundPositions = null;
+        let baseGroundNormals = null;
+        // --- end add ---
+
         // Wait for the DOM to load
         document.addEventListener('DOMContentLoaded', function() {
             init();
@@ -179,19 +185,26 @@
             ground.name = "ground";
             scene.add(ground);
 
-            // --- CHANGED: use a dedicated shadow receiver so custom shader ground remains visually untouched ---
-            // Disable shader-ground's receiveShadow to prevent double blending with the shadow plane
+            // --- CHANGED: disable shader-ground's receiveShadow and add a conforming shadow receiver ---
             ground.receiveShadow = false;
 
-            const shadowReceiver = new THREE.Mesh(
-                groundGeometry,
+            // store base positions & normals (copy arrays)
+            baseGroundPositions = new Float32Array(groundGeometry.attributes.position.array.length);
+            baseGroundPositions.set(groundGeometry.attributes.position.array);
+            baseGroundNormals = new Float32Array(groundGeometry.attributes.normal.array.length);
+            baseGroundNormals.set(groundGeometry.attributes.normal.array);
+
+            // clone geometry for the shadow receiver (we will modify its vertices on CPU to match the shader displacement)
+            const shadowGeometry = groundGeometry.clone();
+            shadowReceiver = new THREE.Mesh(
+                shadowGeometry,
                 new THREE.ShadowMaterial({ opacity: 0.5, transparent: true })
             );
             shadowReceiver.rotation.x = -Math.PI / 2;
-            // place it a hair above the shader ground to avoid z-fighting
-            shadowReceiver.position.y = ground.position.y + 0.001;
+            // place it exactly where ground is, no offset (we'll modify vertices)
+            shadowReceiver.position.y = ground.position.y;
             shadowReceiver.receiveShadow = true;
-            // optionally reduce visible shadow darkness by adjusting opacity above
+            shadowReceiver.castShadow = false;
             scene.add(shadowReceiver);
             // --- end change ---
 
@@ -394,7 +407,43 @@
             if (ground && ground.material && ground.material.uniforms) {
                 ground.material.uniforms.uTime.value = elapsedTime;
             }
-            
+
+            // --- ADDED: update shadowReceiver geometry each frame to follow the same displacement used in ground shader ---
+            if (shadowReceiver && shadowReceiver.geometry && baseGroundPositions && baseGroundNormals) {
+                const posAttr = shadowReceiver.geometry.attributes.position;
+                const nAttr = shadowReceiver.geometry.attributes.normal;
+                const positions = posAttr.array;
+                const normals = baseGroundNormals; // use base normals (they remain constant for plane)
+                const uTime = elapsedTime;
+
+                // shader displacement: cnoise(point * 0.05 - vec3(0.0, uTime * 2.5, 0.0)) * 2.5
+                // approximate with perlin3
+                for (let i = 0; i < positions.length; i += 3) {
+                    const bx = baseGroundPositions[i];
+                    const by = baseGroundPositions[i + 1];
+                    const bz = baseGroundPositions[i + 2];
+
+                    // sample the CPU noise with same scale and time offset (approximation)
+                    const sampleX = bx * 0.05;
+                    const sampleY = by * 0.05 - uTime * 2.5;
+                    const sampleZ = bz * 0.05;
+                    const displacement = perlin3(sampleX, sampleY, sampleZ) * 2.5;
+
+                    // apply displacement along the vertex normal
+                    const nx = normals[i];
+                    const ny = normals[i + 1];
+                    const nz = normals[i + 2];
+
+                    positions[i]     = bx + nx * displacement;
+                    positions[i + 1] = by + ny * displacement;
+                    positions[i + 2] = bz + nz * displacement;
+                }
+
+                posAttr.needsUpdate = true;
+                shadowReceiver.geometry.computeVertexNormals(); // keep lighting/shadowing consistent
+            }
+            // --- end add ---
+
             // First pass: render depth
             renderer.setRenderTarget(depthRenderTarget);
             renderer.render(scene, camera);
@@ -1039,6 +1088,61 @@
             
             return material;
         }
+
+        // --- ADDED: lightweight 3D Perlin-like noise (improved Perlin) for CPU displacement ---
+        // Implementation adapted for brevity; matches shader usage approximately.
+        const perm = (function() {
+            const p = new Uint8Array(512);
+            for (let i = 0; i < 256; i++) p[i] = i;
+            for (let i = 255; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                const t = p[i]; p[i] = p[j]; p[j] = t;
+            }
+            for (let i = 0; i < 256; i++) p[i + 256] = p[i];
+            return p;
+        })();
+
+        function fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
+        function lerp(a, b, t) { return a + t * (b - a); }
+        function grad(hash, x, y, z) {
+            const h = hash & 15;
+            const u = h < 8 ? x : y;
+            const v = h < 4 ? y : (h === 12 || h === 14 ? x : z);
+            return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+        }
+
+        function perlin3(x, y, z) {
+            const X = Math.floor(x) & 255;
+            const Y = Math.floor(y) & 255;
+            const Z = Math.floor(z) & 255;
+
+            x -= Math.floor(x);
+            y -= Math.floor(y);
+            z -= Math.floor(z);
+
+            const u = fade(x);
+            const v = fade(y);
+            const w = fade(z);
+
+            const A  = perm[X] + Y, AA = perm[A] + Z, AB = perm[A + 1] + Z;
+            const B  = perm[X + 1] + Y, BA = perm[B] + Z, BB = perm[B + 1] + Z;
+
+            const res = lerp(
+                lerp(
+                    lerp(grad(perm[AA], x, y, z), grad(perm[BA], x - 1, y, z), u),
+                    lerp(grad(perm[AB], x, y - 1, z), grad(perm[BB], x - 1, y - 1, z), u),
+                    v
+                ),
+                lerp(
+                    lerp(grad(perm[AA + 1], x, y, z - 1), grad(perm[BA + 1], x - 1, y, z - 1), u),
+                    lerp(grad(perm[AB + 1], x, y - 1, z - 1), grad(perm[BB + 1], x - 1, y - 1, z - 1), u),
+                    v
+                ),
+                w
+            );
+            return res;
+        }
+        // --- end add ---
     </script>
 </body>
 </html>

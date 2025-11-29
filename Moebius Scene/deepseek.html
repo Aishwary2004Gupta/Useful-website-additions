@@ -99,6 +99,17 @@
             directionalLight.castShadow = true;
             directionalLight.shadow.mapSize.width = 2048;
             directionalLight.shadow.mapSize.height = 2048;
+
+            // --- CHANGED: expand shadow camera bounds and add bias so large ground receives shadows ---
+            directionalLight.shadow.camera.left = -120;
+            directionalLight.shadow.camera.right = 120;
+            directionalLight.shadow.camera.top = 120;
+            directionalLight.shadow.camera.bottom = -120;
+            directionalLight.shadow.camera.near = 1;
+            directionalLight.shadow.camera.far = 400;
+            directionalLight.shadow.bias = -0.0005;
+            // --- end change ---
+
             scene.add(directionalLight);
             
             // Create render targets
@@ -167,7 +178,23 @@
             ground.receiveShadow = true;
             ground.name = "ground";
             scene.add(ground);
-            
+
+            // --- CHANGED: use a dedicated shadow receiver so custom shader ground remains visually untouched ---
+            // Disable shader-ground's receiveShadow to prevent double blending with the shadow plane
+            ground.receiveShadow = false;
+
+            const shadowReceiver = new THREE.Mesh(
+                groundGeometry,
+                new THREE.ShadowMaterial({ opacity: 0.5, transparent: true })
+            );
+            shadowReceiver.rotation.x = -Math.PI / 2;
+            // place it a hair above the shader ground to avoid z-fighting
+            shadowReceiver.position.y = ground.position.y + 0.001;
+            shadowReceiver.receiveShadow = true;
+            // optionally reduce visible shadow darkness by adjusting opacity above
+            scene.add(shadowReceiver);
+            // --- end change ---
+
             // Create decorative spheres
             const sphereGeometry = new THREE.SphereGeometry(2, 32, 32);
             

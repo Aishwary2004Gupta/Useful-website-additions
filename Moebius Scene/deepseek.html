@@ -99,6 +99,13 @@
             directionalLight.castShadow = true;
             directionalLight.shadow.mapSize.width = 2048;
             directionalLight.shadow.mapSize.height = 2048;
+            directionalLight.shadow.camera.left = -100;
+            directionalLight.shadow.camera.right = 100;
+            directionalLight.shadow.camera.top = 100;
+            directionalLight.shadow.camera.bottom = -100;
+            directionalLight.shadow.camera.near = 0.1;
+            directionalLight.shadow.camera.far = 300;
+            directionalLight.shadow.bias = -0.0001;
             scene.add(directionalLight);
             
             // Create render targets
@@ -153,6 +160,8 @@
             spaceshipGroup = new THREE.Group();
             spaceshipGroup.rotation.y = Math.PI / 2;
             spaceshipGroup.position.y = 2;
+            spaceshipGroup.castShadow = true;
+            spaceshipGroup.receiveShadow = true;
             scene.add(spaceshipGroup);
             
             // Load spaceship model

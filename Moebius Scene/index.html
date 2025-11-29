@@ -36,7 +36,10 @@
       import { OrbitControls } from "three/addons/controls/OrbitControls.js";
       import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
       import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
-      import { Pass, FullScreenQuad } from "three/addons/postprocessing/Pass.js";
+      import {
+        Pass,
+        FullScreenQuad,
+      } from "three/addons/postprocessing/Pass.js";
       import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
       import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 
@@ -593,7 +596,8 @@
           this.material.uniforms.tDiffuse.value = readBuffer.texture;
           this.material.uniforms.tDepth.value =
             this.depthRenderTarget.depthTexture;
-          this.material.uniforms.tNormal.value = this.normalRenderTarget.texture;
+          this.material.uniforms.tNormal.value =
+            this.normalRenderTarget.texture;
           this.material.uniforms.cameraNear.value = this.camera.near;
           this.material.uniforms.cameraFar.value = this.camera.far;
 
@@ -670,26 +674,25 @@
       scene.add(sphere2);
 
       // Saturn planet
-    const saturn = new THREE.Mesh(
-    new THREE.SphereGeometry(3, 48, 48),
-    new THREE.MeshStandardMaterial({ color: "#d6c088" })
-    );
-    saturn.position.set(20, 25, 100);
-    scene.add(saturn);
+      const saturn = new THREE.Mesh(
+        new THREE.SphereGeometry(3, 48, 48),
+        new THREE.MeshStandardMaterial({ color: "#d6c088" })
+      );
+      saturn.position.set(20, 25, 100);
+      scene.add(saturn);
 
-    // Saturn rings
-    const ringGeo = new THREE.RingGeometry(4, 7, 64);
-    const ringMat = new THREE.MeshStandardMaterial({
-    color: "#c7b28a",
-    side: THREE.DoubleSide,
-    transparent: true,
-    opacity: 0.8,
-    });
-    const rings = new THREE.Mesh(ringGeo, ringMat);
-    rings.rotation.x = Math.PI / 2.5;
-    rings.position.copy(saturn.position);
-    scene.add(rings);
-
+      // Saturn rings
+      const ringGeo = new THREE.RingGeometry(4, 7, 64);
+      const ringMat = new THREE.MeshStandardMaterial({
+        color: "#c7b28a",
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.8,
+      });
+      const rings = new THREE.Mesh(ringGeo, ringMat);
+      rings.rotation.x = Math.PI / 2.5;
+      rings.position.copy(saturn.position);
+      scene.add(rings);
 
       // Ground
       const groundMaterial = new GroundMaterial();

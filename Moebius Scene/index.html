@@ -669,6 +669,28 @@
       sphere2.scale.setScalar(3);
       scene.add(sphere2);
 
+      // Saturn planet
+    const saturn = new THREE.Mesh(
+    new THREE.SphereGeometry(3, 48, 48),
+    new THREE.MeshStandardMaterial({ color: "#d6c088" })
+    );
+    saturn.position.set(20, 25, 100);
+    scene.add(saturn);
+
+    // Saturn rings
+    const ringGeo = new THREE.RingGeometry(4, 7, 64);
+    const ringMat = new THREE.MeshStandardMaterial({
+    color: "#c7b28a",
+    side: THREE.DoubleSide,
+    transparent: true,
+    opacity: 0.8,
+    });
+    const rings = new THREE.Mesh(ringGeo, ringMat);
+    rings.rotation.x = Math.PI / 2.5;
+    rings.position.copy(saturn.position);
+    scene.add(rings);
+
+
       // Ground
       const groundMaterial = new GroundMaterial();
       groundMaterial.color = new THREE.Color("#ff8e7a"); // slightly brighter

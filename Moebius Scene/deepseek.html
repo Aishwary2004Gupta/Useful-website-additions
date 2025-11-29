@@ -171,34 +171,16 @@
             // Create decorative spheres
             const sphereGeometry = new THREE.SphereGeometry(2, 32, 32);
             
-            // Planet 1 - Purple/Magenta gas giant
-            const sphereMaterial1 = new THREE.MeshStandardMaterial({ 
-                color: 0xAB47BC,
-                emissive: 0x5E35B1,
-                emissiveIntensity: 0.3,
-                metalness: 0.3,
-                roughness: 0.6
-            });
+            const sphereMaterial1 = new THREE.MeshStandardMaterial({ color: 0xFF8C00 });
             const sphere1 = new THREE.Mesh(sphereGeometry, sphereMaterial1);
             sphere1.position.set(80, 30, 140);
             sphere1.scale.set(10, 10, 10);
-            sphere1.castShadow = true;
-            sphere1.receiveShadow = true;
             scene.add(sphere1);
             
-            // Planet 2 - Icy blue planet
-            const sphereMaterial2 = new THREE.MeshStandardMaterial({ 
-                color: 0x42A5F5,
-                emissive: 0x1E88E5,
-                emissiveIntensity: 0.2,
-                metalness: 0.4,
-                roughness: 0.4
-            });
+            const sphereMaterial2 = new THREE.MeshStandardMaterial({ color: 0x00FFFF });
             const sphere2 = new THREE.Mesh(sphereGeometry, sphereMaterial2);
             sphere2.position.set(50, 35, 120);
             sphere2.scale.set(3, 3, 3);
-            sphere2.castShadow = true;
-            sphere2.receiveShadow = true;
             scene.add(sphere2);
         }
 
@@ -386,9 +368,46 @@
                 ground.material.uniforms.uTime.value = elapsedTime;
             }
             
-            // Render scene with shadows enabled
-            renderer.setRenderTarget(null);
+            // First pass: render depth
+            renderer.setRenderTarget(depthRenderTarget);
             renderer.render(scene, camera);
+            
+            // Second pass: render normals
+            const originalMaterials = [];
+            
+            scene.traverse((obj) => {
+                if (obj.isMesh && obj.material) {
+                    originalMaterials.push({
+                        object: obj,
+                        material: obj.material
+                    });
+                    
+                    if (obj.name === "ground") {
+                        obj.material = groundNormalMaterial;
+                        if (obj.material.uniforms) {
+                            obj.material.uniforms.uTime.value = elapsedTime;
+                            obj.material.uniforms.lightPosition.value = new THREE.Vector3(-50, 50, 15);
+                        }
+                    } else {
+                        obj.material = customNormalMaterial;
+                        if (obj.material.uniforms) {
+                            obj.material.uniforms.lightPosition.value = new THREE.Vector3(-50, 50, 15);
+                        }
+                    }
+                }
+            });
+            
+            renderer.setRenderTarget(normalRenderTarget);
+            renderer.render(scene, camera);
+            
+            // Restore original materials
+            originalMaterials.forEach(item => {
+                item.object.material = item.material;
+            });
+            
+            // Final pass: render with post-processing
+            renderer.setRenderTarget(null);
+            composer.render();
             
             controls.update();
         }
@@ -547,21 +566,14 @@
                 void main() {
                     vec3 normal = normalize(vNormal);
                     float light = max(0.0, dot(normal, vec3(0.0, 1.0, 0.0)));
-                    
-                    // Add gradient and pattern
-                    vec3 baseColor = mix(color * 0.7, color * 1.2, vUv.y);
-                    
-                    // Add some specular highlight
-                    float specular = pow(light, 2.0) * 0.3;
-                    
-                    gl_FragColor = vec4(baseColor * (0.4 + 0.6 * light) + vec3(specular), 1.0);
+                    gl_FragColor = vec4(color * (0.5 + 0.5 * light), 1.0);
                 }
             `;
             
             const material = new THREE.ShaderMaterial({
                 uniforms: {
                     uTime: { value: 0.0 },
-                    color: { value: new THREE.Color(0x1A237E) }
+                    color: { value: new THREE.Color(0xFF6457) }
                 },
                 vertexShader: vertexShader,
                 fragmentShader: fragmentShader

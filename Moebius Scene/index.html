@@ -653,6 +653,18 @@
       const directionalLight = new THREE.DirectionalLight(0xffffff, 6.0); // brighter
       directionalLight.position.copy(lightPosition);
       directionalLight.castShadow = true;
+      
+      // Configure shadow map for spaceship
+      directionalLight.shadow.mapSize.width = 2048;
+      directionalLight.shadow.mapSize.height = 2048;
+      directionalLight.shadow.camera.left = -100;
+      directionalLight.shadow.camera.right = 100;
+      directionalLight.shadow.camera.top = 100;
+      directionalLight.shadow.camera.bottom = -100;
+      directionalLight.shadow.camera.near = 0.1;
+      directionalLight.shadow.camera.far = 300;
+      directionalLight.shadow.bias = -0.0001;
+      
       scene.add(directionalLight);
       scene.add(directionalLight.target);
 
@@ -713,6 +725,8 @@
       const spaceshipGroup = new THREE.Group();
       spaceshipGroup.rotation.y = Math.PI / 2;
       spaceshipGroup.position.set(0, 1.5, 0);
+      spaceshipGroup.castShadow = true;
+      spaceshipGroup.receiveShadow = true;
       scene.add(spaceshipGroup);
 
       // DRACO + GLTF loader

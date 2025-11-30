@@ -653,7 +653,7 @@
       const directionalLight = new THREE.DirectionalLight(0xffffff, 6.0); // brighter
       directionalLight.position.copy(lightPosition);
       directionalLight.castShadow = true;
-      
+
       // Configure shadow map for spaceship
       directionalLight.shadow.mapSize.width = 2048;
       directionalLight.shadow.mapSize.height = 2048;
@@ -664,7 +664,7 @@
       directionalLight.shadow.camera.near = 0.1;
       directionalLight.shadow.camera.far = 300;
       directionalLight.shadow.bias = -0.0001;
-      
+
       scene.add(directionalLight);
       scene.add(directionalLight.target);
 

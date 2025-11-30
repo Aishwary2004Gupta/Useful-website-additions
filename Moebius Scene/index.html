@@ -762,6 +762,9 @@
           root.rotation.y = -Math.PI * 0.5;
           root.position.set(10, 0.5, -15);
           spaceshipGroup.add(root);
+
+          // Start animation loop only after spaceship is loaded
+          animate();
         },
         undefined,
         (err) => console.error("Error loading spaceship", err)
@@ -921,7 +924,7 @@
         composer.render();
       }
 
-      animate();
+      // animate(); // Start animation only after spaceship is loaded
 
       // ==========================
       // RESIZE

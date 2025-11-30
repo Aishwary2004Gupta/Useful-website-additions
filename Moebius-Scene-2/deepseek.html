@@ -142,9 +142,9 @@
             // Setup post-processing
             setupPostProcessing();
             
-            // Start animation only after spaceship is loaded (see loadSpaceshipModel and createFallbackSpaceship)
+            // Start animation
             clock = new THREE.Clock();
-            // animate();
+            animate();
         }
 
         function createRenderTargets() {
@@ -264,7 +264,6 @@
                     errorElement.style.display = 'block';
                     createFallbackSpaceship();
                     spaceshipLoaded = true;
-                    animate(); // Start animation loop after fallback is created
                     return;
                 }
                 
@@ -307,7 +306,6 @@
                         
                         // Hide loading message
                         loadingElement.style.display = 'none';
-                        animate(); // Start animation loop after spaceship is loaded
                     },
                     function(progress) {
                         // Progress callback
@@ -391,10 +389,6 @@
             
             group.scale.set(1.5, 1.5, 1.5);
             spaceshipGroup.add(group);
-            // Start animation loop after fallback is created (if not already started)
-            if (!spaceshipLoaded) {
-                animate();
-            }
         }
 
         function setupPostProcessing() {

@@ -421,8 +421,7 @@
             
             // Update spaceship animation if loaded
             if (spaceshipLoaded && spaceshipGroup) {
-                // compute the original bobbing/pitch base
-                const baseBobbingX = Math.cos(elapsedTime * 2.0) * Math.cos(elapsedTime) * 0.15;
+                // remove pitch/bobbing-as-rotation; keep bobbing as vertical position only
                 const bobbingY = Math.sin(elapsedTime * 2.0) + 1.0;
 
                 // only update horizontal/roll target from pointer; do NOT use pointer.y for pitch
@@ -432,8 +431,8 @@
                 currentTilt.z += (targetTilt.z - currentTilt.z) * tiltDamping;
 
                 // apply combined rotation:
-                // - keep the original bobbing/pitch only (no user-controlled up/down tilt)
-                spaceshipGroup.rotation.x = baseBobbingX;
+                // - DO NOT change rotation.x (keep ship level)
+                spaceshipGroup.rotation.x = 0; // keep level; remove up/down tilt
                 // - apply roll (z) from pointer
                 spaceshipGroup.rotation.z = currentTilt.z * 0.7;
                 // update vertical position (bobbing)

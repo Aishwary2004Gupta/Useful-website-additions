@@ -1,43 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Moebius SpaceShip Scene</title>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            background-color: #3386E0;
-            font-family: Arial, sans-serif;
-        }
-        canvas {
-            display: block;
-        }
-        #loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-size: 24px;
-            z-index: 100;
-        }
-        #error {
-            position: absolute;
-            top: 60%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #ff6b6b;
-            font-size: 16px;
-            text-align: center;
-            display: none;
-            z-index: 100;
-        }
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background-color: #3386e0;
+        font-family: Arial, sans-serif;
+      }
+      canvas {
+        display: block;
+      }
+      #loading {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 24px;
+        z-index: 100;
+      }
+      #error {
+        position: absolute;
+        top: 60%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #ff6b6b;
+        font-size: 16px;
+        text-align: center;
+        display: none;
+        z-index: 100;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div id="loading">Loading...</div>
     <div id="error"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -50,507 +50,543 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/draco/gltf/draco_decoder.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
     <script>
-        // Global variables
-        let scene, camera, renderer, controls;
-        let spaceshipGroup, ground;
-        let clock, composer;
-        let depthRenderTarget, normalRenderTarget;
-        let groundMaterial, groundNormalMaterial, customNormalMaterial, moebiusMaterial;
-        let spaceshipLoaded = false;
+      // Global variables
+      let scene, camera, renderer, controls;
+      let spaceshipGroup, ground;
+      let clock, composer;
+      let depthRenderTarget, normalRenderTarget;
+      let groundMaterial,
+        groundNormalMaterial,
+        customNormalMaterial,
+        moebiusMaterial;
+      let spaceshipLoaded = false;
 
-        // --- ADDED: shadow receiver and base geometry data for CPU displacement ---
-        let shadowReceiver = null;
-        let baseGroundPositions = null;
-        let baseGroundNormals = null;
+      // --- ADDED: shadow receiver and base geometry data for CPU displacement ---
+      let shadowReceiver = null;
+      let baseGroundPositions = null;
+      let baseGroundNormals = null;
+      // --- end add ---
+
+      // --- ADDED: pointer/tilt state for smooth ship tilt ---
+      let pointer = { x: 0, y: 0 };
+      let targetTilt = { x: 0, z: 0 };
+      let currentTilt = { x: 0, z: 0 };
+      const tiltStrength = 0.35; // how much the ship tilts from cursor (-1..1)
+      const tiltDamping = 0.12; // interpolation speed (0..1)
+      // --- end add ---
+
+      // Wait for the DOM to load
+      document.addEventListener("DOMContentLoaded", function () {
+        init();
+      });
+
+      function init() {
+        // Scene setup
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x3386e0);
+
+        // Camera setup
+        camera = new THREE.PerspectiveCamera(
+          75,
+          window.innerWidth / window.innerHeight,
+          0.01,
+          800
+        );
+        camera.position.set(-8, 4, -20);
+
+        // Renderer setup
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.body.appendChild(renderer.domElement);
+
+        // Controls
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
+        // --- ADDED: listen for pointer moves to update ship target tilt ---
+        window.addEventListener("pointermove", onPointerMove, {
+          passive: true,
+        });
         // --- end add ---
 
-        // --- ADDED: pointer/tilt state for smooth ship tilt ---
-        let pointer = { x: 0, y: 0 };
-        let targetTilt = { x: 0, z: 0 };
-        let currentTilt = { x: 0, z: 0 };
-        const tiltStrength = 0.35; // how much the ship tilts from cursor (-1..1)
-        const tiltDamping = 0.12;  // interpolation speed (0..1)
-        // --- end add ---
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+        scene.add(ambientLight);
 
-        // Wait for the DOM to load
-        document.addEventListener('DOMContentLoaded', function() {
-            init();
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 4.5);
+        directionalLight.position.set(-50, 50, 15);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = 2048;
+        directionalLight.shadow.mapSize.height = 2048;
+
+        // --- CHANGED: expand shadow camera bounds and add bias so large ground receives shadows ---
+        directionalLight.shadow.camera.left = -120;
+        directionalLight.shadow.camera.right = 120;
+        directionalLight.shadow.camera.top = 120;
+        directionalLight.shadow.camera.bottom = -120;
+        directionalLight.shadow.camera.near = 1;
+        directionalLight.shadow.camera.far = 400;
+        directionalLight.shadow.bias = -0.0005;
+        // --- end change ---
+
+        scene.add(directionalLight);
+
+        // Create render targets
+        createRenderTargets();
+
+        // Create materials
+        createMaterials();
+
+        // Create scene objects
+        createSceneObjects();
+
+        // Setup post-processing
+        setupPostProcessing();
+
+        // Start animation
+        clock = new THREE.Clock();
+        animate();
+      }
+
+      function createRenderTargets() {
+        depthRenderTarget = new THREE.WebGLRenderTarget(
+          window.innerWidth,
+          window.innerHeight,
+          {
+            depthTexture: new THREE.DepthTexture(
+              window.innerWidth,
+              window.innerHeight
+            ),
+            depthBuffer: true,
+          }
+        );
+
+        normalRenderTarget = new THREE.WebGLRenderTarget(
+          window.innerWidth,
+          window.innerHeight
+        );
+      }
+
+      function createMaterials() {
+        groundMaterial = createGroundMaterial();
+        groundNormalMaterial = createGroundNormalMaterial();
+        customNormalMaterial = createCustomNormalMaterial();
+        moebiusMaterial = createMoebiusMaterial(
+          depthRenderTarget.depthTexture,
+          normalRenderTarget.texture,
+          camera
+        );
+      }
+
+      function createSceneObjects() {
+        // Create spaceship group
+        spaceshipGroup = new THREE.Group();
+        spaceshipGroup.rotation.y = Math.PI / 2;
+        spaceshipGroup.position.y = 2;
+        scene.add(spaceshipGroup);
+
+        // Load spaceship model
+        loadSpaceshipModel();
+
+        // Create ground
+        const groundGeometry = new THREE.PlaneGeometry(300, 300, 100, 100);
+        ground = new THREE.Mesh(groundGeometry, groundMaterial);
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.y = -1;
+        ground.castShadow = true;
+        ground.receiveShadow = true;
+        ground.name = "ground";
+        scene.add(ground);
+
+        // --- CHANGED: disable shader-ground's receiveShadow and add a conforming shadow receiver ---
+        ground.receiveShadow = false;
+
+        // store base positions & normals (copy arrays)
+        baseGroundPositions = new Float32Array(
+          groundGeometry.attributes.position.array.length
+        );
+        baseGroundPositions.set(groundGeometry.attributes.position.array);
+        baseGroundNormals = new Float32Array(
+          groundGeometry.attributes.normal.array.length
+        );
+        baseGroundNormals.set(groundGeometry.attributes.normal.array);
+
+        // clone geometry for the shadow receiver (we will modify its vertices on CPU to match the shader displacement)
+        const shadowGeometry = groundGeometry.clone();
+        shadowReceiver = new THREE.Mesh(
+          shadowGeometry,
+          new THREE.ShadowMaterial({ opacity: 0.5, transparent: true })
+        );
+        shadowReceiver.rotation.x = -Math.PI / 2;
+        // place it exactly where ground is, no offset (we'll modify vertices)
+        shadowReceiver.position.y = ground.position.y;
+        shadowReceiver.receiveShadow = true;
+        shadowReceiver.castShadow = false;
+        scene.add(shadowReceiver);
+        // --- end change ---
+
+        // Create decorative spheres
+        const sphereGeometry = new THREE.SphereGeometry(2, 32, 32);
+
+        const sphereMaterial1 = new THREE.MeshStandardMaterial({
+          color: 0xff8c00,
+        });
+        const sphere1 = new THREE.Mesh(sphereGeometry, sphereMaterial1);
+        sphere1.position.set(80, 30, 140);
+        sphere1.scale.set(10, 10, 10);
+        scene.add(sphere1);
+
+        const sphereMaterial2 = new THREE.MeshStandardMaterial({
+          color: 0x00ffff,
+        });
+        const sphere2 = new THREE.Mesh(sphereGeometry, sphereMaterial2);
+        sphere2.position.set(50, 35, 120);
+        sphere2.scale.set(3, 3, 3);
+        scene.add(sphere2);
+      }
+
+      function loadSpaceshipModel() {
+        const loader = new THREE.GLTFLoader();
+
+        // Add DRACO loader support
+        const dracoLoader = new THREE.DRACOLoader();
+        dracoLoader.setDecoderPath(
+          "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/draco/gltf/"
+        );
+        loader.setDRACOLoader(dracoLoader);
+
+        const loadingElement = document.getElementById("loading");
+        const errorElement = document.getElementById("error");
+
+        // Try multiple model URLs - some might work better than others
+        const modelUrls = [
+          "https://cdn.maximeheckel.com/models/spaceship-optimized.glb",
+          "https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf", // Fallback model
+        ];
+
+        let currentUrlIndex = 0;
+
+        function tryLoadModel() {
+          if (currentUrlIndex >= modelUrls.length) {
+            // All URLs failed, create fallback
+            console.error("All model URLs failed, creating fallback spaceship");
+            loadingElement.style.display = "none";
+            errorElement.textContent =
+              "Failed to load spaceship models. Using fallback geometry.";
+            errorElement.style.display = "block";
+            createFallbackSpaceship();
+            spaceshipLoaded = true;
+            return;
+          }
+
+          const currentUrl = modelUrls[currentUrlIndex];
+          console.log("Attempting to load model from:", currentUrl);
+
+          loader.load(
+            currentUrl,
+            function (gltf) {
+              console.log(
+                "Spaceship model loaded successfully from:",
+                currentUrl
+              );
+
+              const model = gltf.scene;
+
+              // Adjust scale based on which model loaded
+              if (currentUrlIndex === 0) {
+                // Original spaceship model
+                model.scale.set(0.5, 0.5, 0.5);
+                model.rotation.y = -Math.PI * 0.5;
+                model.position.set(10, 1.5, -5);
+              } else {
+                // Fallback helmet model
+                model.scale.set(2, 2, 2);
+                model.position.set(0, 0, 0);
+              }
+
+              // Fix materials for transparency
+              model.traverse((child) => {
+                if (child.isMesh) {
+                  child.material.transparent = true;
+                  child.material.alphaToCoverage = true;
+                  child.material.depthFunc = THREE.LessEqualDepth;
+                  child.material.depthTest = true;
+                  child.material.depthWrite = true;
+                  child.castShadow = true;
+                }
+              });
+
+              spaceshipGroup.add(model);
+              spaceshipLoaded = true;
+
+              // Hide loading message
+              loadingElement.style.display = "none";
+            },
+            function (progress) {
+              // Progress callback
+              const percentLoaded = progress.lengthComputable
+                ? ((progress.loaded / progress.total) * 100).toFixed(2)
+                : "Loading...";
+              loadingElement.textContent = `Loading... ${percentLoaded}%`;
+            },
+            function (error) {
+              console.error("Error loading model from", currentUrl, ":", error);
+              currentUrlIndex++;
+              tryLoadModel(); // Try next URL
+            }
+          );
+        }
+
+        // Start loading process
+        tryLoadModel();
+      }
+
+      function createFallbackSpaceship() {
+        console.log("Creating fallback spaceship");
+
+        // Create a simple rocket-like shape as fallback
+        const group = new THREE.Group();
+
+        // Fuselage (body)
+        const fuselageGeometry = new THREE.CylinderGeometry(0.3, 0.1, 2, 8);
+        const fuselageMaterial = new THREE.MeshStandardMaterial({
+          color: 0x888888,
+          transparent: true,
+          alphaToCoverage: true,
+        });
+        const fuselage = new THREE.Mesh(fuselageGeometry, fuselageMaterial);
+        fuselage.rotation.z = Math.PI / 2;
+        fuselage.castShadow = true;
+        group.add(fuselage);
+
+        // Wings
+        const wingGeometry = new THREE.BoxGeometry(1.5, 0.1, 0.3);
+        const wingMaterial = new THREE.MeshStandardMaterial({
+          color: 0x666666,
+          transparent: true,
+          alphaToCoverage: true,
         });
 
-        function init() {
-            // Scene setup
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x3386E0);
-            
-            // Camera setup
-            camera = new THREE.PerspectiveCamera(
-                75, 
-                window.innerWidth / window.innerHeight, 
-                0.01, 
-                800
-            );
-            camera.position.set(-8, 4, -20);
-            
-            // Renderer setup
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            document.body.appendChild(renderer.domElement);
-            
-            // Controls
-            controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.05;
+        const leftWing = new THREE.Mesh(wingGeometry, wingMaterial);
+        leftWing.position.set(0, 0, 0.4);
+        leftWing.castShadow = true;
+        group.add(leftWing);
 
-            // --- ADDED: listen for pointer moves to update ship target tilt ---
-            window.addEventListener('pointermove', onPointerMove, { passive: true });
-            // --- end add ---
-            
-            // Lighting
-            const ambientLight = new THREE.AmbientLight(0xFFFFFF, 0.2);
-            scene.add(ambientLight);
-            
-            const directionalLight = new THREE.DirectionalLight(0xFFFFFF, 4.5);
-            directionalLight.position.set(-50, 50, 15);
-            directionalLight.castShadow = true;
-            directionalLight.shadow.mapSize.width = 2048;
-            directionalLight.shadow.mapSize.height = 2048;
+        const rightWing = new THREE.Mesh(wingGeometry, wingMaterial);
+        rightWing.position.set(0, 0, -0.4);
+        rightWing.castShadow = true;
+        group.add(rightWing);
 
-            // --- CHANGED: expand shadow camera bounds and add bias so large ground receives shadows ---
-            directionalLight.shadow.camera.left = -120;
-            directionalLight.shadow.camera.right = 120;
-            directionalLight.shadow.camera.top = 120;
-            directionalLight.shadow.camera.bottom = -120;
-            directionalLight.shadow.camera.near = 1;
-            directionalLight.shadow.camera.far = 400;
-            directionalLight.shadow.bias = -0.0005;
-            // --- end change ---
+        // Cockpit
+        const cockpitGeometry = new THREE.SphereGeometry(0.2, 8, 6);
+        const cockpitMaterial = new THREE.MeshStandardMaterial({
+          color: 0x00aaff,
+          transparent: true,
+          alphaToCoverage: true,
+        });
+        const cockpit = new THREE.Mesh(cockpitGeometry, cockpitMaterial);
+        cockpit.position.set(-0.7, 0.1, 0);
+        cockpit.castShadow = true;
+        group.add(cockpit);
 
-            scene.add(directionalLight);
-            
-            // Create render targets
-            createRenderTargets();
-            
-            // Create materials
-            createMaterials();
-            
-            // Create scene objects
-            createSceneObjects();
-            
-            // Setup post-processing
-            setupPostProcessing();
-            
-            // Start animation
-            clock = new THREE.Clock();
-            animate();
+        // Engine exhaust
+        const exhaustGeometry = new THREE.CylinderGeometry(0.15, 0.3, 0.5, 8);
+        const exhaustMaterial = new THREE.MeshStandardMaterial({
+          color: 0xff4500,
+          transparent: true,
+          alphaToCoverage: true,
+        });
+        const exhaust = new THREE.Mesh(exhaustGeometry, exhaustMaterial);
+        exhaust.position.set(0.8, 0, 0);
+        exhaust.rotation.z = Math.PI / 2;
+        exhaust.castShadow = true;
+        group.add(exhaust);
+
+        group.scale.set(1.5, 1.5, 1.5);
+        spaceshipGroup.add(group);
+      }
+
+      function setupPostProcessing() {
+        composer = new THREE.EffectComposer(renderer);
+        const renderPass = new THREE.RenderPass(scene, camera);
+        composer.addPass(renderPass);
+
+        const moebiusPass = new THREE.ShaderPass(moebiusMaterial);
+        moebiusPass.renderToScreen = true;
+        composer.addPass(moebiusPass);
+      }
+
+      // --- ADDED: pointer handler updates normalized target tilt ---
+      function onPointerMove(event) {
+        // normalize to -1..1 (center = 0)
+        const nx = (event.clientX / window.innerWidth) * 2 - 1;
+        const ny = -(event.clientY / window.innerHeight) * 2 + 1;
+        pointer.x = nx;
+        pointer.y = ny;
+
+        // only horizontal pointer controls roll (left/right). do NOT change pitch.
+        targetTilt.z = -pointer.x * tiltStrength; // roll (left/right) (negate for natural feel)
+      }
+      // --- end add ---
+
+      function animate() {
+        requestAnimationFrame(animate);
+
+        const elapsedTime = clock.getElapsedTime();
+
+        // Update spaceship animation if loaded
+        if (spaceshipLoaded && spaceshipGroup) {
+          // remove pitch/bobbing-as-rotation; keep bobbing as vertical position only
+          const bobbingY = Math.sin(elapsedTime * 2.0) + 1.0;
+
+          // only update horizontal/roll target from pointer; do NOT use pointer.y for pitch
+          targetTilt.z = -pointer.x * tiltStrength;
+
+          // smooth interpolate current tilt toward target tilt (only z)
+          currentTilt.z += (targetTilt.z - currentTilt.z) * tiltDamping;
+
+          // apply combined rotation:
+          // - DO NOT change rotation.x (keep ship level)
+          spaceshipGroup.rotation.x = 0; // keep level; remove up/down tilt
+          // - apply roll (z) from pointer
+          spaceshipGroup.rotation.z = currentTilt.z * 0.7;
+          // update vertical position (bobbing)
+          spaceshipGroup.position.y = bobbingY;
         }
 
-        function createRenderTargets() {
-            depthRenderTarget = new THREE.WebGLRenderTarget(
-                window.innerWidth, 
-                window.innerHeight,
-                {
-                    depthTexture: new THREE.DepthTexture(
-                        window.innerWidth,
-                        window.innerHeight
-                    ),
-                    depthBuffer: true
-                }
-            );
-            
-            normalRenderTarget = new THREE.WebGLRenderTarget(
-                window.innerWidth, 
-                window.innerHeight
-            );
+        // Update ground material
+        if (ground && ground.material && ground.material.uniforms) {
+          ground.material.uniforms.uTime.value = elapsedTime;
         }
 
-        function createMaterials() {
-            groundMaterial = createGroundMaterial();
-            groundNormalMaterial = createGroundNormalMaterial();
-            customNormalMaterial = createCustomNormalMaterial();
-            moebiusMaterial = createMoebiusMaterial(
-                depthRenderTarget.depthTexture,
-                normalRenderTarget.texture,
-                camera
-            );
+        // --- ADDED: update shadowReceiver geometry each frame to follow the same displacement used in ground shader ---
+        if (
+          shadowReceiver &&
+          shadowReceiver.geometry &&
+          baseGroundPositions &&
+          baseGroundNormals
+        ) {
+          const posAttr = shadowReceiver.geometry.attributes.position;
+          const nAttr = shadowReceiver.geometry.attributes.normal;
+          const positions = posAttr.array;
+          const normals = baseGroundNormals; // use base normals (they remain constant for plane)
+          const uTime = elapsedTime;
+
+          // shader displacement: cnoise(point * 0.05 - vec3(0.0, uTime * 2.5, 0.0)) * 2.5
+          // approximate with perlin3
+          for (let i = 0; i < positions.length; i += 3) {
+            const bx = baseGroundPositions[i];
+            const by = baseGroundPositions[i + 1];
+            const bz = baseGroundPositions[i + 2];
+
+            // sample the CPU noise with same scale and time offset (approximation)
+            const sampleX = bx * 0.05;
+            const sampleY = by * 0.05 - uTime * 2.5;
+            const sampleZ = bz * 0.05;
+            const displacement = perlin3(sampleX, sampleY, sampleZ) * 2.5;
+
+            // apply displacement along the vertex normal
+            const nx = normals[i];
+            const ny = normals[i + 1];
+            const nz = normals[i + 2];
+
+            positions[i] = bx + nx * displacement;
+            positions[i + 1] = by + ny * displacement;
+            positions[i + 2] = bz + nz * displacement;
+          }
+
+          posAttr.needsUpdate = true;
+          shadowReceiver.geometry.computeVertexNormals(); // keep lighting/shadowing consistent
         }
+        // --- end add ---
 
-        function createSceneObjects() {
-            // Create spaceship group
-            spaceshipGroup = new THREE.Group();
-            spaceshipGroup.rotation.y = Math.PI / 2;
-            spaceshipGroup.position.y = 2;
-            scene.add(spaceshipGroup);
-            
-            // Load spaceship model
-            loadSpaceshipModel();
-            
-            // Create ground
-            const groundGeometry = new THREE.PlaneGeometry(300, 300, 100, 100);
-            ground = new THREE.Mesh(groundGeometry, groundMaterial);
-            ground.rotation.x = -Math.PI / 2;
-            ground.position.y = -1;
-            ground.castShadow = true;
-            ground.receiveShadow = true;
-            ground.name = "ground";
-            scene.add(ground);
+        // First pass: render depth
+        renderer.setRenderTarget(depthRenderTarget);
+        renderer.render(scene, camera);
 
-            // --- CHANGED: disable shader-ground's receiveShadow and add a conforming shadow receiver ---
-            ground.receiveShadow = false;
+        // Second pass: render normals
+        const originalMaterials = [];
 
-            // store base positions & normals (copy arrays)
-            baseGroundPositions = new Float32Array(groundGeometry.attributes.position.array.length);
-            baseGroundPositions.set(groundGeometry.attributes.position.array);
-            baseGroundNormals = new Float32Array(groundGeometry.attributes.normal.array.length);
-            baseGroundNormals.set(groundGeometry.attributes.normal.array);
+        scene.traverse((obj) => {
+          if (obj.isMesh && obj.material) {
+            originalMaterials.push({
+              object: obj,
+              material: obj.material,
+            });
 
-            // clone geometry for the shadow receiver (we will modify its vertices on CPU to match the shader displacement)
-            const shadowGeometry = groundGeometry.clone();
-            shadowReceiver = new THREE.Mesh(
-                shadowGeometry,
-                new THREE.ShadowMaterial({ opacity: 0.5, transparent: true })
-            );
-            shadowReceiver.rotation.x = -Math.PI / 2;
-            // place it exactly where ground is, no offset (we'll modify vertices)
-            shadowReceiver.position.y = ground.position.y;
-            shadowReceiver.receiveShadow = true;
-            shadowReceiver.castShadow = false;
-            scene.add(shadowReceiver);
-            // --- end change ---
-
-            // Create decorative spheres
-            const sphereGeometry = new THREE.SphereGeometry(2, 32, 32);
-            
-            const sphereMaterial1 = new THREE.MeshStandardMaterial({ color: 0xFF8C00 });
-            const sphere1 = new THREE.Mesh(sphereGeometry, sphereMaterial1);
-            sphere1.position.set(80, 30, 140);
-            sphere1.scale.set(10, 10, 10);
-            scene.add(sphere1);
-            
-            const sphereMaterial2 = new THREE.MeshStandardMaterial({ color: 0x00FFFF });
-            const sphere2 = new THREE.Mesh(sphereGeometry, sphereMaterial2);
-            sphere2.position.set(50, 35, 120);
-            sphere2.scale.set(3, 3, 3);
-            scene.add(sphere2);
-        }
-
-        function loadSpaceshipModel() {
-            const loader = new THREE.GLTFLoader();
-            
-            // Add DRACO loader support
-            const dracoLoader = new THREE.DRACOLoader();
-            dracoLoader.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/draco/gltf/');
-            loader.setDRACOLoader(dracoLoader);
-            
-            const loadingElement = document.getElementById('loading');
-            const errorElement = document.getElementById('error');
-            
-            // Try multiple model URLs - some might work better than others
-            const modelUrls = [
-                'https://cdn.maximeheckel.com/models/spaceship-optimized.glb',
-                'https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf' // Fallback model
-            ];
-            
-            let currentUrlIndex = 0;
-            
-            function tryLoadModel() {
-                if (currentUrlIndex >= modelUrls.length) {
-                    // All URLs failed, create fallback
-                    console.error('All model URLs failed, creating fallback spaceship');
-                    loadingElement.style.display = 'none';
-                    errorElement.textContent = 'Failed to load spaceship models. Using fallback geometry.';
-                    errorElement.style.display = 'block';
-                    createFallbackSpaceship();
-                    spaceshipLoaded = true;
-                    return;
-                }
-                
-                const currentUrl = modelUrls[currentUrlIndex];
-                console.log('Attempting to load model from:', currentUrl);
-                
-                loader.load(
-                    currentUrl,
-                    function(gltf) {
-                        console.log('Spaceship model loaded successfully from:', currentUrl);
-                        
-                        const model = gltf.scene;
-                        
-                        // Adjust scale based on which model loaded
-                        if (currentUrlIndex === 0) {
-                            // Original spaceship model
-                            model.scale.set(0.5, 0.5, 0.5);
-                            model.rotation.y = -Math.PI * 0.5;
-                            model.position.set(10, 1.5, -5);
-                        } else {
-                            // Fallback helmet model
-                            model.scale.set(2, 2, 2);
-                            model.position.set(0, 0, 0);
-                        }
-                        
-                        // Fix materials for transparency
-                        model.traverse((child) => {
-                            if (child.isMesh) {
-                                child.material.transparent = true;
-                                child.material.alphaToCoverage = true;
-                                child.material.depthFunc = THREE.LessEqualDepth;
-                                child.material.depthTest = true;
-                                child.material.depthWrite = true;
-                                child.castShadow = true;
-                            }
-                        });
-                        
-                        spaceshipGroup.add(model);
-                        spaceshipLoaded = true;
-                        
-                        // Hide loading message
-                        loadingElement.style.display = 'none';
-                    },
-                    function(progress) {
-                        // Progress callback
-                        const percentLoaded = progress.lengthComputable 
-                            ? (progress.loaded / progress.total * 100).toFixed(2)
-                            : 'Loading...';
-                        loadingElement.textContent = `Loading... ${percentLoaded}%`;
-                    },
-                    function(error) {
-                        console.error('Error loading model from', currentUrl, ':', error);
-                        currentUrlIndex++;
-                        tryLoadModel(); // Try next URL
-                    }
+            if (obj.name === "ground") {
+              obj.material = groundNormalMaterial;
+              if (obj.material.uniforms) {
+                obj.material.uniforms.uTime.value = elapsedTime;
+                obj.material.uniforms.lightPosition.value = new THREE.Vector3(
+                  -50,
+                  50,
+                  15
                 );
+              }
+            } else {
+              obj.material = customNormalMaterial;
+              if (obj.material.uniforms) {
+                obj.material.uniforms.lightPosition.value = new THREE.Vector3(
+                  -50,
+                  50,
+                  15
+                );
+              }
             }
-            
-            // Start loading process
-            tryLoadModel();
-        }
-
-        function createFallbackSpaceship() {
-            console.log('Creating fallback spaceship');
-            
-            // Create a simple rocket-like shape as fallback
-            const group = new THREE.Group();
-            
-            // Fuselage (body)
-            const fuselageGeometry = new THREE.CylinderGeometry(0.3, 0.1, 2, 8);
-            const fuselageMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0x888888,
-                transparent: true,
-                alphaToCoverage: true
-            });
-            const fuselage = new THREE.Mesh(fuselageGeometry, fuselageMaterial);
-            fuselage.rotation.z = Math.PI / 2;
-            fuselage.castShadow = true;
-            group.add(fuselage);
-            
-            // Wings
-            const wingGeometry = new THREE.BoxGeometry(1.5, 0.1, 0.3);
-            const wingMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0x666666,
-                transparent: true,
-                alphaToCoverage: true
-            });
-            
-            const leftWing = new THREE.Mesh(wingGeometry, wingMaterial);
-            leftWing.position.set(0, 0, 0.4);
-            leftWing.castShadow = true;
-            group.add(leftWing);
-            
-            const rightWing = new THREE.Mesh(wingGeometry, wingMaterial);
-            rightWing.position.set(0, 0, -0.4);
-            rightWing.castShadow = true;
-            group.add(rightWing);
-            
-            // Cockpit
-            const cockpitGeometry = new THREE.SphereGeometry(0.2, 8, 6);
-            const cockpitMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0x00aaff,
-                transparent: true,
-                alphaToCoverage: true
-            });
-            const cockpit = new THREE.Mesh(cockpitGeometry, cockpitMaterial);
-            cockpit.position.set(-0.7, 0.1, 0);
-            cockpit.castShadow = true;
-            group.add(cockpit);
-            
-            // Engine exhaust
-            const exhaustGeometry = new THREE.CylinderGeometry(0.15, 0.3, 0.5, 8);
-            const exhaustMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0xff4500,
-                transparent: true,
-                alphaToCoverage: true
-            });
-            const exhaust = new THREE.Mesh(exhaustGeometry, exhaustMaterial);
-            exhaust.position.set(0.8, 0, 0);
-            exhaust.rotation.z = Math.PI / 2;
-            exhaust.castShadow = true;
-            group.add(exhaust);
-            
-            group.scale.set(1.5, 1.5, 1.5);
-            spaceshipGroup.add(group);
-        }
-
-        function setupPostProcessing() {
-            composer = new THREE.EffectComposer(renderer);
-            const renderPass = new THREE.RenderPass(scene, camera);
-            composer.addPass(renderPass);
-            
-            const moebiusPass = new THREE.ShaderPass(moebiusMaterial);
-            moebiusPass.renderToScreen = true;
-            composer.addPass(moebiusPass);
-        }
-
-        // --- ADDED: pointer handler updates normalized target tilt ---
-        function onPointerMove(event) {
-            // normalize to -1..1 (center = 0)
-            const nx = (event.clientX / window.innerWidth) * 2 - 1;
-            const ny = - (event.clientY / window.innerHeight) * 2 + 1;
-            pointer.x = nx;
-            pointer.y = ny;
-
-            // only horizontal pointer controls roll (left/right). do NOT change pitch.
-            targetTilt.z = -pointer.x * tiltStrength;   // roll (left/right) (negate for natural feel)
-        }
-        // --- end add ---
-
-        function animate() {
-            requestAnimationFrame(animate);
-            
-            const elapsedTime = clock.getElapsedTime();
-            
-            // Update spaceship animation if loaded
-            if (spaceshipLoaded && spaceshipGroup) {
-                // remove pitch/bobbing-as-rotation; keep bobbing as vertical position only
-                const bobbingY = Math.sin(elapsedTime * 2.0) + 1.0;
-
-                // only update horizontal/roll target from pointer; do NOT use pointer.y for pitch
-                targetTilt.z = -pointer.x * tiltStrength;
-
-                // smooth interpolate current tilt toward target tilt (only z)
-                currentTilt.z += (targetTilt.z - currentTilt.z) * tiltDamping;
-
-                // apply combined rotation:
-                // - DO NOT change rotation.x (keep ship level)
-                spaceshipGroup.rotation.x = 0; // keep level; remove up/down tilt
-                // - apply roll (z) from pointer
-                spaceshipGroup.rotation.z = currentTilt.z * 0.7;
-                // update vertical position (bobbing)
-                spaceshipGroup.position.y = bobbingY;
-            }
-            
-            // Update ground material
-            if (ground && ground.material && ground.material.uniforms) {
-                ground.material.uniforms.uTime.value = elapsedTime;
-            }
-
-            // --- ADDED: update shadowReceiver geometry each frame to follow the same displacement used in ground shader ---
-            if (shadowReceiver && shadowReceiver.geometry && baseGroundPositions && baseGroundNormals) {
-                const posAttr = shadowReceiver.geometry.attributes.position;
-                const nAttr = shadowReceiver.geometry.attributes.normal;
-                const positions = posAttr.array;
-                const normals = baseGroundNormals; // use base normals (they remain constant for plane)
-                const uTime = elapsedTime;
-
-                // shader displacement: cnoise(point * 0.05 - vec3(0.0, uTime * 2.5, 0.0)) * 2.5
-                // approximate with perlin3
-                for (let i = 0; i < positions.length; i += 3) {
-                    const bx = baseGroundPositions[i];
-                    const by = baseGroundPositions[i + 1];
-                    const bz = baseGroundPositions[i + 2];
-
-                    // sample the CPU noise with same scale and time offset (approximation)
-                    const sampleX = bx * 0.05;
-                    const sampleY = by * 0.05 - uTime * 2.5;
-                    const sampleZ = bz * 0.05;
-                    const displacement = perlin3(sampleX, sampleY, sampleZ) * 2.5;
-
-                    // apply displacement along the vertex normal
-                    const nx = normals[i];
-                    const ny = normals[i + 1];
-                    const nz = normals[i + 2];
-
-                    positions[i]     = bx + nx * displacement;
-                    positions[i + 1] = by + ny * displacement;
-                    positions[i + 2] = bz + nz * displacement;
-                }
-
-                posAttr.needsUpdate = true;
-                shadowReceiver.geometry.computeVertexNormals(); // keep lighting/shadowing consistent
-            }
-            // --- end add ---
-
-            // First pass: render depth
-            renderer.setRenderTarget(depthRenderTarget);
-            renderer.render(scene, camera);
-            
-            // Second pass: render normals
-            const originalMaterials = [];
-            
-            scene.traverse((obj) => {
-                if (obj.isMesh && obj.material) {
-                    originalMaterials.push({
-                        object: obj,
-                        material: obj.material
-                    });
-                    
-                    if (obj.name === "ground") {
-                        obj.material = groundNormalMaterial;
-                        if (obj.material.uniforms) {
-                            obj.material.uniforms.uTime.value = elapsedTime;
-                            obj.material.uniforms.lightPosition.value = new THREE.Vector3(-50, 50, 15);
-                        }
-                    } else {
-                        obj.material = customNormalMaterial;
-                        if (obj.material.uniforms) {
-                            obj.material.uniforms.lightPosition.value = new THREE.Vector3(-50, 50, 15);
-                        }
-                    }
-                }
-            });
-            
-            renderer.setRenderTarget(normalRenderTarget);
-            renderer.render(scene, camera);
-            
-            // Restore original materials
-            originalMaterials.forEach(item => {
-                item.object.material = item.material;
-            });
-            
-            // Final pass: render with post-processing
-            renderer.setRenderTarget(null);
-            composer.render();
-            
-            controls.update();
-        }
-
-        // Handle window resize
-        window.addEventListener('resize', function() {
-            if (camera && renderer && composer) {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-                composer.setSize(window.innerWidth, window.innerHeight);
-                
-                // Update render targets
-                if (depthRenderTarget && normalRenderTarget) {
-                    depthRenderTarget.setSize(window.innerWidth, window.innerHeight);
-                    normalRenderTarget.setSize(window.innerWidth, window.innerHeight);
-                }
-                
-                // Update resolution uniforms
-                if (moebiusMaterial && moebiusMaterial.uniforms && moebiusMaterial.uniforms.resolution) {
-                    moebiusMaterial.uniforms.resolution.value.set(
-                        window.innerWidth * Math.min(window.devicePixelRatio, 2),
-                        window.innerHeight * Math.min(window.devicePixelRatio, 2)
-                    );
-                }
-            }
+          }
         });
 
-        // Material creation functions (same as before)
-        function createGroundMaterial() {
-            const vertexShader = `
+        renderer.setRenderTarget(normalRenderTarget);
+        renderer.render(scene, camera);
+
+        // Restore original materials
+        originalMaterials.forEach((item) => {
+          item.object.material = item.material;
+        });
+
+        // Final pass: render with post-processing
+        renderer.setRenderTarget(null);
+        composer.render();
+
+        controls.update();
+      }
+
+      // Handle window resize
+      window.addEventListener("resize", function () {
+        if (camera && renderer && composer) {
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize(window.innerWidth, window.innerHeight);
+          composer.setSize(window.innerWidth, window.innerHeight);
+
+          // Update render targets
+          if (depthRenderTarget && normalRenderTarget) {
+            depthRenderTarget.setSize(window.innerWidth, window.innerHeight);
+            normalRenderTarget.setSize(window.innerWidth, window.innerHeight);
+          }
+
+          // Update resolution uniforms
+          if (
+            moebiusMaterial &&
+            moebiusMaterial.uniforms &&
+            moebiusMaterial.uniforms.resolution
+          ) {
+            moebiusMaterial.uniforms.resolution.value.set(
+              window.innerWidth * Math.min(window.devicePixelRatio, 2),
+              window.innerHeight * Math.min(window.devicePixelRatio, 2)
+            );
+          }
+        }
+      });
+
+      // Material creation functions (same as before)
+      function createGroundMaterial() {
+        const vertexShader = `
                 uniform float uTime;
                 
                 vec4 permute(vec4 x) {
@@ -669,8 +705,8 @@
                     vNormal = displacedNormal;
                 }
             `;
-            
-            const fragmentShader = `
+
+        const fragmentShader = `
                 uniform vec3 color;
                 varying vec2 vUv;
                 varying vec3 vNormal;
@@ -681,21 +717,21 @@
                     gl_FragColor = vec4(color * (0.5 + 0.5 * light), 1.0);
                 }
             `;
-            
-            const material = new THREE.ShaderMaterial({
-                uniforms: {
-                    uTime: { value: 0.0 },
-                    color: { value: new THREE.Color(0xFF6457) }
-                },
-                vertexShader: vertexShader,
-                fragmentShader: fragmentShader
-            });
-            
-            return material;
-        }
 
-        function createGroundNormalMaterial() {
-            const vertexShader = `
+        const material = new THREE.ShaderMaterial({
+          uniforms: {
+            uTime: { value: 0.0 },
+            color: { value: new THREE.Color(0xff6457) },
+          },
+          vertexShader: vertexShader,
+          fragmentShader: fragmentShader,
+        });
+
+        return material;
+      }
+
+      function createGroundNormalMaterial() {
+        const vertexShader = `
                 uniform float uTime;
                 
                 vec4 permute(vec4 x) {
@@ -817,8 +853,8 @@
                     vNormal = displacedNormal * normalMatrix;
                 }
             `;
-            
-            const fragmentShader = `
+
+        const fragmentShader = `
                 varying vec3 vNormal;
                 varying vec3 eyeVector;
                 uniform vec3 lightPosition;
@@ -855,21 +891,21 @@
                     gl_FragColor = vec4(color, diffuseLight);
                 }
             `;
-            
-            const material = new THREE.ShaderMaterial({
-                uniforms: {
-                    uTime: { value: 0.0 },
-                    lightPosition: { value: new THREE.Vector3() }
-                },
-                vertexShader: vertexShader,
-                fragmentShader: fragmentShader
-            });
-            
-            return material;
-        }
 
-        function createCustomNormalMaterial() {
-            const vertexShader = `
+        const material = new THREE.ShaderMaterial({
+          uniforms: {
+            uTime: { value: 0.0 },
+            lightPosition: { value: new THREE.Vector3() },
+          },
+          vertexShader: vertexShader,
+          fragmentShader: fragmentShader,
+        });
+
+        return material;
+      }
+
+      function createCustomNormalMaterial() {
+        const vertexShader = `
                 varying vec3 vNormal;
                 varying vec3 eyeVector;
                 
@@ -884,8 +920,8 @@
                     eyeVector = normalize(worldPos.xyz - cameraPosition);
                 }
             `;
-            
-            const fragmentShader = `
+
+        const fragmentShader = `
                 varying vec3 vNormal;
                 varying vec3 eyeVector;
                 uniform vec3 lightPosition;
@@ -922,20 +958,20 @@
                     gl_FragColor = vec4(color, diffuseLight);
                 }
             `;
-            
-            const material = new THREE.ShaderMaterial({
-                uniforms: {
-                    lightPosition: { value: new THREE.Vector3(10, 10, 10) }
-                },
-                vertexShader: vertexShader,
-                fragmentShader: fragmentShader
-            });
-            
-            return material;
-        }
 
-        function createMoebiusMaterial(depthTexture, normalTexture, camera) {
-            const vertexShader = `
+        const material = new THREE.ShaderMaterial({
+          uniforms: {
+            lightPosition: { value: new THREE.Vector3(10, 10, 10) },
+          },
+          vertexShader: vertexShader,
+          fragmentShader: fragmentShader,
+        });
+
+        return material;
+      }
+
+      function createMoebiusMaterial(depthTexture, normalTexture, camera) {
+        const vertexShader = `
                 varying vec2 vUv;
                 
                 void main() {
@@ -943,8 +979,8 @@
                     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
                 }
             `;
-            
-            const fragmentShader = `
+
+        const fragmentShader = `
                 #include <packing>
                 varying vec2 vUv;
                 uniform sampler2D tDiffuse;
@@ -1102,83 +1138,105 @@
                   gl_FragColor = color;
                 }
             `;
-            
-            const material = new THREE.ShaderMaterial({
-                uniforms: {
-                    tDiffuse: { value: null },
-                    tDepth: { value: depthTexture },
-                    tNormal: { value: normalTexture },
-                    cameraNear: { value: camera.near },
-                    cameraFar: { value: camera.far },
-                    resolution: {
-                        value: new THREE.Vector2(
-                            window.innerWidth * Math.min(window.devicePixelRatio, 2),
-                            window.innerHeight * Math.min(window.devicePixelRatio, 2)
-                        )
-                    },
-                    shadowType: { value: 3.0 }
-                },
-                vertexShader: vertexShader,
-                fragmentShader: fragmentShader
-            });
-            
-            return material;
+
+        const material = new THREE.ShaderMaterial({
+          uniforms: {
+            tDiffuse: { value: null },
+            tDepth: { value: depthTexture },
+            tNormal: { value: normalTexture },
+            cameraNear: { value: camera.near },
+            cameraFar: { value: camera.far },
+            resolution: {
+              value: new THREE.Vector2(
+                window.innerWidth * Math.min(window.devicePixelRatio, 2),
+                window.innerHeight * Math.min(window.devicePixelRatio, 2)
+              ),
+            },
+            shadowType: { value: 3.0 },
+          },
+          vertexShader: vertexShader,
+          fragmentShader: fragmentShader,
+        });
+
+        return material;
+      }
+
+      // --- ADDED: lightweight 3D Perlin-like noise (improved Perlin) for CPU displacement ---
+      // Implementation adapted for brevity; matches shader usage approximately.
+      const perm = (function () {
+        const p = new Uint8Array(512);
+        for (let i = 0; i < 256; i++) p[i] = i;
+        for (let i = 255; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const t = p[i];
+          p[i] = p[j];
+          p[j] = t;
         }
+        for (let i = 0; i < 256; i++) p[i + 256] = p[i];
+        return p;
+      })();
 
-        // --- ADDED: lightweight 3D Perlin-like noise (improved Perlin) for CPU displacement ---
-        // Implementation adapted for brevity; matches shader usage approximately.
-        const perm = (function() {
-            const p = new Uint8Array(512);
-            for (let i = 0; i < 256; i++) p[i] = i;
-            for (let i = 255; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                const t = p[i]; p[i] = p[j]; p[j] = t;
-            }
-            for (let i = 0; i < 256; i++) p[i + 256] = p[i];
-            return p;
-        })();
+      function fade(t) {
+        return t * t * t * (t * (t * 6 - 15) + 10);
+      }
+      function lerp(a, b, t) {
+        return a + t * (b - a);
+      }
+      function grad(hash, x, y, z) {
+        const h = hash & 15;
+        const u = h < 8 ? x : y;
+        const v = h < 4 ? y : h === 12 || h === 14 ? x : z;
+        return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+      }
 
-        function fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
-        function lerp(a, b, t) { return a + t * (b - a); }
-        function grad(hash, x, y, z) {
-            const h = hash & 15;
-            const u = h < 8 ? x : y;
-            const v = h < 4 ? y : (h === 12 || h === 14 ? x : z);
-            return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
-        }
+      function perlin3(x, y, z) {
+        const X = Math.floor(x) & 255;
+        const Y = Math.floor(y) & 255;
+        const Z = Math.floor(z) & 255;
 
-        function perlin3(x, y, z) {
-            const X = Math.floor(x) & 255;
-            const Y = Math.floor(y) & 255;
-            const Z = Math.floor(z) & 255;
+        x -= Math.floor(x);
+        y -= Math.floor(y);
+        z -= Math.floor(z);
 
-            x -= Math.floor(x);
-            y -= Math.floor(y);
-            z -= Math.floor(z);
+        const u = fade(x);
+        const v = fade(y);
+        const w = fade(z);
 
-            const u = fade(x);
-            const v = fade(y);
-            const w = fade(z);
+        const A = perm[X] + Y,
+          AA = perm[A] + Z,
+          AB = perm[A + 1] + Z;
+        const B = perm[X + 1] + Y,
+          BA = perm[B] + Z,
+          BB = perm[B + 1] + Z;
 
-            const A  = perm[X] + Y, AA = perm[A] + Z, AB = perm[A + 1] + Z;
-            const B  = perm[X + 1] + Y, BA = perm[B] + Z, BB = perm[B + 1] + Z;
-
-            const res = lerp(
-                lerp(
-                    lerp(grad(perm[AA], x, y, z), grad(perm[BA], x - 1, y, z), u),
-                    lerp(grad(perm[AB], x, y - 1, z), grad(perm[BB], x - 1, y - 1, z), u),
-                    v
-                ),
-                lerp(
-                    lerp(grad(perm[AA + 1], x, y, z - 1), grad(perm[BA + 1], x - 1, y, z - 1), u),
-                    lerp(grad(perm[AB + 1], x, y - 1, z - 1), grad(perm[BB + 1], x - 1, y - 1, z - 1), u),
-                    v
-                ),
-                w
-            );
-            return res;
-        }
-        // --- end add ---
+        const res = lerp(
+          lerp(
+            lerp(grad(perm[AA], x, y, z), grad(perm[BA], x - 1, y, z), u),
+            lerp(
+              grad(perm[AB], x, y - 1, z),
+              grad(perm[BB], x - 1, y - 1, z),
+              u
+            ),
+            v
+          ),
+          lerp(
+            lerp(
+              grad(perm[AA + 1], x, y, z - 1),
+              grad(perm[BA + 1], x - 1, y, z - 1),
+              u
+            ),
+            lerp(
+              grad(perm[AB + 1], x, y - 1, z - 1),
+              grad(perm[BB + 1], x - 1, y - 1, z - 1),
+              u
+            ),
+            v
+          ),
+          w
+        );
+        return res;
+      }
+      // --- end add ---
     </script>
-</body>
+  </body>
 </html>

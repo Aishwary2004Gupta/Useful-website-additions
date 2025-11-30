@@ -409,8 +409,7 @@
             pointer.x = nx;
             pointer.y = ny;
 
-            // target tilt: pitch (x) responds to vertical pointer, roll (z) to horizontal pointer
-            targetTilt.x = pointer.y * tiltStrength;    // pitch (up/down)
+            // only horizontal pointer controls roll (left/right). do NOT change pitch.
             targetTilt.z = -pointer.x * tiltStrength;   // roll (left/right) (negate for natural feel)
         }
         // --- end add ---
@@ -426,19 +425,17 @@
                 const baseBobbingX = Math.cos(elapsedTime * 2.0) * Math.cos(elapsedTime) * 0.15;
                 const bobbingY = Math.sin(elapsedTime * 2.0) + 1.0;
 
-                // ensure targetTilt is set even without pointer movement (keeps consistency)
-                targetTilt.x = pointer.y * tiltStrength;
+                // only update horizontal/roll target from pointer; do NOT use pointer.y for pitch
                 targetTilt.z = -pointer.x * tiltStrength;
 
-                // smooth interpolate current tilt toward target tilt
-                currentTilt.x += (targetTilt.x - currentTilt.x) * tiltDamping;
+                // smooth interpolate current tilt toward target tilt (only z)
                 currentTilt.z += (targetTilt.z - currentTilt.z) * tiltDamping;
 
-                // apply combined rotation: base bobbing + smooth user tilt
-                spaceshipGroup.rotation.x = baseBobbingX + currentTilt.x;
-                // apply roll (z); scale down for subtlety
+                // apply combined rotation:
+                // - keep the original bobbing/pitch only (no user-controlled up/down tilt)
+                spaceshipGroup.rotation.x = baseBobbingX;
+                // - apply roll (z) from pointer
                 spaceshipGroup.rotation.z = currentTilt.z * 0.7;
-                // keep existing yaw/orientation untouched
                 // update vertical position (bobbing)
                 spaceshipGroup.position.y = bobbingY;
             }

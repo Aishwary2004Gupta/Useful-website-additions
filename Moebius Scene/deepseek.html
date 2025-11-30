@@ -64,6 +64,14 @@
         let baseGroundNormals = null;
         // --- end add ---
 
+        // --- ADDED: pointer/tilt state for smooth ship tilt ---
+        let pointer = { x: 0, y: 0 };
+        let targetTilt = { x: 0, z: 0 };
+        let currentTilt = { x: 0, z: 0 };
+        const tiltStrength = 0.35; // how much the ship tilts from cursor (-1..1)
+        const tiltDamping = 0.12;  // interpolation speed (0..1)
+        // --- end add ---
+
         // Wait for the DOM to load
         document.addEventListener('DOMContentLoaded', function() {
             init();
@@ -95,6 +103,10 @@
             controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
+
+            // --- ADDED: listen for pointer moves to update ship target tilt ---
+            window.addEventListener('pointermove', onPointerMove, { passive: true });
+            // --- end add ---
             
             // Lighting
             const ambientLight = new THREE.AmbientLight(0xFFFFFF, 0.2);
@@ -389,6 +401,20 @@
             composer.addPass(moebiusPass);
         }
 
+        // --- ADDED: pointer handler updates normalized target tilt ---
+        function onPointerMove(event) {
+            // normalize to -1..1 (center = 0)
+            const nx = (event.clientX / window.innerWidth) * 2 - 1;
+            const ny = - (event.clientY / window.innerHeight) * 2 + 1;
+            pointer.x = nx;
+            pointer.y = ny;
+
+            // target tilt: pitch (x) responds to vertical pointer, roll (z) to horizontal pointer
+            targetTilt.x = pointer.y * tiltStrength;    // pitch (up/down)
+            targetTilt.z = -pointer.x * tiltStrength;   // roll (left/right) (negate for natural feel)
+        }
+        // --- end add ---
+
         function animate() {
             requestAnimationFrame(animate);
             
@@ -396,11 +422,25 @@
             
             // Update spaceship animation if loaded
             if (spaceshipLoaded && spaceshipGroup) {
-                spaceshipGroup.rotation.x = 
-                    Math.cos(elapsedTime * 2.0) * 
-                    Math.cos(elapsedTime) * 0.15;
-                spaceshipGroup.position.y = 
-                    Math.sin(elapsedTime * 2.0) + 1.0;
+                // compute the original bobbing/pitch base
+                const baseBobbingX = Math.cos(elapsedTime * 2.0) * Math.cos(elapsedTime) * 0.15;
+                const bobbingY = Math.sin(elapsedTime * 2.0) + 1.0;
+
+                // ensure targetTilt is set even without pointer movement (keeps consistency)
+                targetTilt.x = pointer.y * tiltStrength;
+                targetTilt.z = -pointer.x * tiltStrength;
+
+                // smooth interpolate current tilt toward target tilt
+                currentTilt.x += (targetTilt.x - currentTilt.x) * tiltDamping;
+                currentTilt.z += (targetTilt.z - currentTilt.z) * tiltDamping;
+
+                // apply combined rotation: base bobbing + smooth user tilt
+                spaceshipGroup.rotation.x = baseBobbingX + currentTilt.x;
+                // apply roll (z); scale down for subtlety
+                spaceshipGroup.rotation.z = currentTilt.z * 0.7;
+                // keep existing yaw/orientation untouched
+                // update vertical position (bobbing)
+                spaceshipGroup.position.y = bobbingY;
             }
             
             // Update ground material

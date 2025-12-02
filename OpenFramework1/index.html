@@ -34,12 +34,12 @@
       scene.background = new THREE.Color(0xefefef);
 
       const camera = new THREE.PerspectiveCamera(
-        45,
+        100,
         innerWidth / innerHeight,
         0.1,
         3000
       );
-      camera.position.set(0, -300, 600);
+      camera.position.set(0, -300, 0);
 
       const renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(innerWidth, innerHeight);

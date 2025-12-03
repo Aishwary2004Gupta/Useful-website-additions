@@ -62,7 +62,7 @@
       scene.background = new THREE.Color(0x1a1a1a);
 
       const camera = new THREE.PerspectiveCamera(
-        70,
+        80,
         innerWidth / innerHeight,
         0.1,
         3000
@@ -275,7 +275,7 @@
 
         for (let z = -600; z <= 600; z += 20) {
           for (let radius of [150, 300]) {
-            const degStart = frameNum + z + 600 + (radius === 300 ? 180 : 0);
+            const degStart = frameNum + z + 600 + (radius === 300 ? 180 : 0) + (radius === 150 ? -frameNum * 2 : 0);
             const degEnd = degStart + 90;
 
             const rings = createRingMesh(

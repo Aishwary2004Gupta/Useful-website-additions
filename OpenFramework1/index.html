@@ -69,9 +69,13 @@
       );
       camera.position.set(0, -300, 600);
 
+      // Lower devicePixelRatio cap to reduce GPU load
       const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
       renderer.setSize(innerWidth, innerHeight);
-      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+      // Disable expensive shadow path for smoother frame times
+      renderer.shadowMap.enabled = false;
+
       document.body.appendChild(renderer.domElement);
 
       const controls = new OrbitControls(camera, renderer.domElement);
@@ -83,226 +87,125 @@
       document.body.classList.add('dark-mode');
 
       ///////////////////////////////////////////////////////////////////////////
-      // MATERIALS
+      // MATERIALS (reuse, swap on mode change)
       ///////////////////////////////////////////////////////////////////////////
-      const faceMat = new THREE.MeshBasicMaterial({ color: 0xefefef });
-      const frameMat = new THREE.LineBasicMaterial({ color: 0x272727 });
-      
-      // Dark mode materials
-      const faceMat_dark = new THREE.MeshBasicMaterial({ color: 0x1a1a1a });
+      const faceMat_light = new THREE.MeshStandardMaterial({ color: 0xefefef, roughness: 0.45, metalness: 0.05, side: THREE.DoubleSide });
+      const faceMat_dark = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.6, metalness: 0.08, side: THREE.DoubleSide });
+      const frameMat_light = new THREE.LineBasicMaterial({ color: 0x272727 });
       const frameMat_dark = new THREE.LineBasicMaterial({ color: 0xefefef });
 
       ///////////////////////////////////////////////////////////////////////////
-      // GROUP TO HOLD EVERYTHING
+      // Keep a root for subtle scene rotation
       ///////////////////////////////////////////////////////////////////////////
       const root = new THREE.Group();
-      const innerLoopGroup = new THREE.Group();
-      const outerLoopGroup = new THREE.Group();
-      root.add(innerLoopGroup);
-      root.add(outerLoopGroup);
       scene.add(root);
 
       ///////////////////////////////////////////////////////////////////////////
-      // RING GEOMETRY MAKER (Three.js version of setRingToMesh)
+      // Create a reusable BufferGeometry for a 90° ring segment (built once)
       ///////////////////////////////////////////////////////////////////////////
-      function createRingMesh(
-        position,
-        radius,
-        width,
-        height,
-        degStart,
-        degEnd
-      ) {
-        const faceGeom = new THREE.BufferGeometry();
-        const frameGeom = new THREE.BufferGeometry();
-
-        const faceVerts = [];
-        const faceIndices = [];
-
-        const frameVerts = [];
-        const frameIndices = [];
-
+      function buildRingGeometry(radius, width, height, segAngle = 90, stepDeg = 3) {
+        const positions = [];
+        const indices = [];
+        const radFactor = Math.PI / 180;
         let idx = 0;
-        let fidx = 0;
+        // build using stepDeg resolution (lower = fewer verts)
+        for (let deg = 0; deg < segAngle; deg += stepDeg) {
+          const deg2 = Math.min(deg + stepDeg, segAngle);
+          const rad1 = deg * radFactor;
+          const rad2 = deg2 * radFactor;
 
-        for (let deg = degStart; deg <= degEnd; deg++) {
-          const deg2 = deg + 1;
-          const rad = Math.PI / 180;
+          // outer quad (two vertices per edge at -h/2 and +h/2)
+          const o1 = [(radius + width / 2) * Math.cos(rad1), (radius + width / 2) * Math.sin(rad1)];
+          const o2 = [(radius + width / 2) * Math.cos(rad2), (radius + width / 2) * Math.sin(rad2)];
+          const i1 = [(radius - width / 2) * Math.cos(rad1), (radius - width / 2) * Math.sin(rad1)];
+          const i2 = [(radius - width / 2) * Math.cos(rad2), (radius - width / 2) * Math.sin(rad2)];
 
-          const v = [];
+          // push 8 verts (outer -z, outer +z, inner -z, inner +z) for this quad segment
+          positions.push(...o1, -height / 2);
+          positions.push(...o2, -height / 2);
+          positions.push(...o2, height / 2);
+          positions.push(...o1, height / 2);
+          positions.push(...i1, -height / 2);
+          positions.push(...i2, -height / 2);
+          positions.push(...i2, height / 2);
+          positions.push(...i1, height / 2);
 
-          // Outer ring
-          v.push(
-            new THREE.Vector3(
-              (radius + width / 2) * Math.cos(deg * rad),
-              (radius + width / 2) * Math.sin(deg * rad),
-              -height / 2
-            )
-          );
-          v.push(
-            new THREE.Vector3(
-              (radius + width / 2) * Math.cos(deg2 * rad),
-              (radius + width / 2) * Math.sin(deg2 * rad),
-              -height / 2
-            )
-          );
-          v.push(
-            new THREE.Vector3(
-              (radius + width / 2) * Math.cos(deg2 * rad),
-              (radius + width / 2) * Math.sin(deg2 * rad),
-              height / 2
-            )
-          );
-          v.push(
-            new THREE.Vector3(
-              (radius + width / 2) * Math.cos(deg * rad),
-              (radius + width / 2) * Math.sin(deg * rad),
-              height / 2
-            )
-          );
-
-          // Inner ring
-          v.push(
-            new THREE.Vector3(
-              (radius - width / 2) * Math.cos(deg * rad),
-              (radius - width / 2) * Math.sin(deg * rad),
-              -height / 2
-            )
-          );
-          v.push(
-            new THREE.Vector3(
-              (radius - width / 2) * Math.cos(deg2 * rad),
-              (radius - width / 2) * Math.sin(deg2 * rad),
-              -height / 2
-            )
-          );
-          v.push(
-            new THREE.Vector3(
-              (radius - width / 2) * Math.cos(deg2 * rad),
-              (radius - width / 2) * Math.sin(deg2 * rad),
-              height / 2
-            )
-          );
-          v.push(
-            new THREE.Vector3(
-              (radius - width / 2) * Math.cos(deg * rad),
-              (radius - width / 2) * Math.sin(deg * rad),
-              height / 2
-            )
-          );
-
-          // Shift by given location
-          v.forEach((p) => p.add(position));
-
-          // Add vertices
-          v.forEach((p) => {
-            faceVerts.push(p.x, p.y, p.z);
-            frameVerts.push(p.x, p.y, p.z);
-          });
-
-          // Face indices
-          faceIndices.push(
-            idx + 0,
-            idx + 1,
-            idx + 2,
-            idx + 0,
-            idx + 2,
-            idx + 3,
-            idx + 4,
-            idx + 5,
-            idx + 6,
-            idx + 4,
-            idx + 6,
-            idx + 7,
-
-            idx + 0,
-            idx + 4,
-            idx + 5,
-            idx + 0,
-            idx + 5,
-            idx + 1,
-            idx + 3,
-            idx + 7,
-            idx + 6,
-            idx + 3,
-            idx + 6,
-            idx + 2
-          );
-
-          // Frame edges
-          frameIndices.push(
-            fidx + 0,
-            fidx + 1,
-            fidx + 2,
-            fidx + 3,
-            fidx + 4,
-            fidx + 5,
-            fidx + 6,
-            fidx + 7
+          // two face quads + side faces (same indexing pattern as original)
+          indices.push(
+            idx + 0, idx + 1, idx + 2, idx + 0, idx + 2, idx + 3,
+            idx + 4, idx + 5, idx + 6, idx + 4, idx + 6, idx + 7,
+            idx + 0, idx + 4, idx + 5, idx + 0, idx + 5, idx + 1,
+            idx + 3, idx + 7, idx + 6, idx + 3, idx + 6, idx + 2
           );
 
           idx += 8;
-          fidx += 8;
         }
 
-        // Build THREE.js geometry objects
-        faceGeom.setAttribute(
-          "position",
-          new THREE.Float32BufferAttribute(faceVerts, 3)
-        );
-        faceGeom.setIndex(faceIndices);
-
-        frameGeom.setAttribute(
-          "position",
-          new THREE.Float32BufferAttribute(frameVerts, 3)
-        );
-        frameGeom.setIndex(frameIndices);
-
-        return {
-          face: new THREE.Mesh(faceGeom, isDarkMode ? faceMat_dark : faceMat),
-          frame: new THREE.LineSegments(frameGeom, isDarkMode ? frameMat_dark : frameMat),
-        };
+        const geom = new THREE.BufferGeometry();
+        geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        geom.setIndex(indices);
+        geom.computeVertexNormals(); // compute once
+        return geom;
       }
 
       ///////////////////////////////////////////////////////////////////////////
-      // BUILD SCENE CONTENT
+      // INSTANCED SETUP (create two instanced meshes and reuse them)
       ///////////////////////////////////////////////////////////////////////////
-      function buildScene() {
-        const frameNum = performance.now() * 0.06;
-        
-        innerLoopGroup.clear();
-        outerLoopGroup.clear();
+      // z distribution settings (fewer instances => smoother)
+      const zMin = -600, zMax = 600, zStep = 30; // was 20, now 30 -> fewer instances
+      const zPositions = [];
+      for (let z = zMin; z <= zMax; z += zStep) zPositions.push(z);
+      const instanceCount = zPositions.length;
 
-        for (let z = -600; z <= 600; z += 20) {
-          for (let radius of [150, 300]) {
-            const degStart = frameNum + z + 600 + (radius === 300 ? 180 : 0) + (radius === 150 ? -frameNum * 2 : 0);
-            const degEnd = degStart + 90;
+      // prebuilt geometries (90° segment)
+      const innerGeom = buildRingGeometry(150, 5, 15, 90, 3); // coarser step
+      const outerGeom = buildRingGeometry(300, 5, 15, 90, 3);
 
-            const rings = createRingMesh(
-              new THREE.Vector3(0, 0, z),
-              radius,
-              5,
-              15,
-              degStart,
-              degEnd
-            );
+      // instanced meshes
+      const innerInst = new THREE.InstancedMesh(innerGeom, isDarkMode ? faceMat_dark : faceMat_light, instanceCount);
+      const outerInst = new THREE.InstancedMesh(outerGeom, isDarkMode ? faceMat_dark : faceMat_light, instanceCount);
+      innerInst.instanceMatrix.setUsage(THREE.DynamicDrawUsage); // will update each frame
+      outerInst.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
 
-            if (radius === 150) {
-              innerLoopGroup.add(rings.face);
-              innerLoopGroup.add(rings.frame);
-            } else {
-              outerLoopGroup.add(rings.face);
-              outerLoopGroup.add(rings.frame);
-            }
-          }
+      // add lines (lightweight) as non-instanced single-line outlines optional — omitted for perf
+      root.add(innerInst);
+      root.add(outerInst);
+
+      // temporary objects for matrix updates (reuse to avoid allocations)
+      const tmpPos = new THREE.Vector3();
+      const tmpQuat = new THREE.Quaternion();
+      const tmpScale = new THREE.Vector3(1, 1, 1);
+      const tmpMat = new THREE.Matrix4();
+
+      // initial matrix setup
+      function updateInstanceMatrices(frameNum) {
+        for (let i = 0; i < instanceCount; i++) {
+          const z = zPositions[i];
+          // compute degStart like original but without per-degree loop
+          const degStartInner = frameNum + z + 600 - frameNum * 2; // matches original inner behavior
+          const degStartOuter = frameNum + z + 600 + 180;
+
+          // inner instance
+          tmpPos.set(0, -0.0, z); // y translation handled globally via group position in original, keep z here
+          tmpQuat.setFromAxisAngle(new THREE.Vector3(0,0,1), THREE.MathUtils.degToRad(degStartInner));
+          tmpMat.compose(tmpPos, tmpQuat, tmpScale);
+          innerInst.setMatrixAt(i, tmpMat);
+
+          // outer instance
+          tmpPos.set(0, -0.0, z);
+          tmpQuat.setFromAxisAngle(new THREE.Vector3(0,0,1), THREE.MathUtils.degToRad(degStartOuter));
+          tmpMat.compose(tmpPos, tmpQuat, tmpScale);
+          outerInst.setMatrixAt(i, tmpMat);
         }
+        innerInst.instanceMatrix.needsUpdate = true;
+        outerInst.instanceMatrix.needsUpdate = true;
       }
 
-      // Build scene once on startup
-      buildScene();
+      // initial populate
+      updateInstanceMatrices(performance.now() * 0.06);
 
       ///////////////////////////////////////////////////////////////////////////
-      // TOGGLE DARK/LIGHT MODE
+      // TOGGLE DARK/LIGHT MODE (swap materials on instanced meshes)
       ///////////////////////////////////////////////////////////////////////////
       function toggleDarkMode() {
         isDarkMode = !isDarkMode;
@@ -312,37 +215,40 @@
         if (isDarkMode) {
           document.body.classList.add('dark-mode');
           scene.background.setHex(0x1a1a1a);
+          innerInst.material = faceMat_dark;
+          outerInst.material = faceMat_dark;
         } else {
           document.body.classList.remove('dark-mode');
           scene.background.setHex(0xefefef);
+          innerInst.material = faceMat_light;
+          outerInst.material = faceMat_light;
         }
       }
 
       document.getElementById('toggleBtn').addEventListener('click', toggleDarkMode);
 
       ///////////////////////////////////////////////////////////////////////////
-      // ANIMATION LOOP
+      // ANIMATION LOOP (only update instance matrices each frame)
       ///////////////////////////////////////////////////////////////////////////
       function animate() {
         requestAnimationFrame(animate);
-
         const time = performance.now() * 0.001; // seconds
+        const frameNum = performance.now() * 0.06;
 
-        buildScene();
+        // update per-instance rotation/phase (fast)
+        updateInstanceMatrices(frameNum);
 
-        // Move inner and outer loops up/down (translate along Y) without changing ring positions
-        // inner: moves up/down with smaller amplitude, outer: moves opposite with larger amplitude
-        const innerAmplitude = 8; // pixels
-        const outerAmplitude = 12; // pixels
-        const innerSpeed = 2.0; // Hz
-        const outerSpeed = 2.5; // Hz
+        // gentle vertical motion like original but applied to instanced groups via root children positions
+        const innerAmplitude = 8;
+        const outerAmplitude = 12;
+        const innerSpeed = 2.0;
+        const outerSpeed = 2.5;
+        innerInst.position.y = -Math.sin(time * innerSpeed) * innerAmplitude;
+        outerInst.position.y = -Math.sin(time * outerSpeed) * outerAmplitude;
 
-        // inner moves upward (positive y) following sine; outer moves opposite (negative y)
-        innerLoopGroup.position.y = -Math.sin(time * innerSpeed) * innerAmplitude;
-        outerLoopGroup.position.y = -Math.sin(time * outerSpeed) * outerAmplitude;
-
-        // keep overall scene orientation
-        root.rotation.x = Math.PI + 200;
+        // reveal 3D
+        root.rotation.x = Math.PI / 2 - 0.6;
+        root.rotation.y = time * 0.08;
 
         renderer.render(scene, camera);
       }

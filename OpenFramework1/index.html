@@ -8,13 +8,41 @@
         margin: 0;
         overflow: hidden;
         background: #efefef;
+        font-family: Arial, sans-serif;
+        transition: background 0.3s ease;
       }
       canvas {
         display: block;
       }
+      #toggleBtn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 16px;
+        background: transparent;
+        color: #000;
+        border: none;
+        border-radius: 0;
+        cursor: pointer;
+        z-index: 100;
+        transition: all 0.3s ease;
+        padding: 0;
+        font-weight: bold;
+      }
+      #toggleBtn:hover {
+        opacity: 0.7;
+        transform: scale(1.05);
+      }
+      body.dark-mode #toggleBtn {
+        color: #fff;
+      }
+      body.dark-mode #toggleBtn:hover {
+        opacity: 0.7;
+      }
     </style>
   </head>
   <body>
+    <button id="toggleBtn">Dark</button>
     <script type="importmap">
       {
         "imports": {
@@ -41,18 +69,25 @@
       );
       camera.position.set(0, -300, 600);
 
-      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
       renderer.setSize(innerWidth, innerHeight);
-      renderer.setPixelRatio(devicePixelRatio);
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
       document.body.appendChild(renderer.domElement);
 
       const controls = new OrbitControls(camera, renderer.domElement);
+
+      // Dark mode state
+      let isDarkMode = false;
 
       ///////////////////////////////////////////////////////////////////////////
       // MATERIALS
       ///////////////////////////////////////////////////////////////////////////
       const faceMat = new THREE.MeshBasicMaterial({ color: 0xefefef });
       const frameMat = new THREE.LineBasicMaterial({ color: 0x272727 });
+      
+      // Dark mode materials
+      const faceMat_dark = new THREE.MeshBasicMaterial({ color: 0x1a1a1a });
+      const frameMat_dark = new THREE.LineBasicMaterial({ color: 0xefefef });
 
       ///////////////////////////////////////////////////////////////////////////
       // GROUP TO HOLD EVERYTHING
@@ -217,8 +252,8 @@
         frameGeom.setIndex(frameIndices);
 
         return {
-          face: new THREE.Mesh(faceGeom, faceMat),
-          frame: new THREE.LineSegments(frameGeom, frameMat),
+          face: new THREE.Mesh(faceGeom, isDarkMode ? faceMat_dark : faceMat),
+          frame: new THREE.LineSegments(frameGeom, isDarkMode ? frameMat_dark : frameMat),
         };
       }
 
@@ -226,8 +261,6 @@
       // BUILD SCENE CONTENT
       ///////////////////////////////////////////////////////////////////////////
       function buildScene() {
-        root.clear();
-
         const frameNum = performance.now() * 0.06;
 
         for (let z = -600; z <= 600; z += 20) {
@@ -251,11 +284,31 @@
       }
 
       ///////////////////////////////////////////////////////////////////////////
+      // TOGGLE DARK/LIGHT MODE
+      ///////////////////////////////////////////////////////////////////////////
+      function toggleDarkMode() {
+        isDarkMode = !isDarkMode;
+        const btn = document.getElementById('toggleBtn');
+        btn.textContent = isDarkMode ? 'Light' : 'Dark';
+        
+        if (isDarkMode) {
+          document.body.classList.add('dark-mode');
+          scene.background.setHex(0x1a1a1a);
+        } else {
+          document.body.classList.remove('dark-mode');
+          scene.background.setHex(0xefefef);
+        }
+      }
+
+      document.getElementById('toggleBtn').addEventListener('click', toggleDarkMode);
+
+      ///////////////////////////////////////////////////////////////////////////
       // ANIMATION LOOP
       ///////////////////////////////////////////////////////////////////////////
       function animate() {
         requestAnimationFrame(animate);
 
+        root.clear();
         buildScene();
         root.rotation.x = Math.PI * 1.5; // same as ofRotateX(270)
 

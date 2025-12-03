@@ -324,13 +324,13 @@
         requestAnimationFrame(animate);
 
         buildScene();
-        
-        // Inner loop spins upwards (positive rotation)
-        innerLoopGroup.rotation.z += 0.02;
-        
-        // Outer loop moves downwards (negative rotation)
-        outerLoopGroup.rotation.z -= 0.01;
-        
+
+        // Inner loop: rotate around Y-axis (opposite direction to outer loop)
+        innerLoopGroup.rotation.y += 0.02;
+
+        // Outer loop: rotate around Y-axis in opposite direction
+        outerLoopGroup.rotation.y -= 0.01;
+
         root.rotation.x = Math.PI * 1.5;
 
         renderer.render(scene, camera);

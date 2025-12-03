@@ -325,11 +325,11 @@
 
         buildScene();
 
-        // Inner loop: rotate around Y-axis (opposite direction to outer loop)
-        innerLoopGroup.rotation.y += 0.02;
+        // Inner loop: rotate around X-axis so it appears to spin "upwards"
+        innerLoopGroup.rotation.x += 0.02;
 
-        // Outer loop: rotate around Y-axis in opposite direction
-        outerLoopGroup.rotation.y -= 0.01;
+        // Outer loop: rotate around X-axis in the opposite direction so it appears to spin "downwards"
+        outerLoopGroup.rotation.x -= 0.01;
 
         root.rotation.x = Math.PI * 1.5;
 

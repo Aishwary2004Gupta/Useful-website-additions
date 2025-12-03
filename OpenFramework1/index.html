@@ -130,12 +130,26 @@
           positions.push(...i2, height / 2);
           positions.push(...i1, height / 2);
 
-          // two face quads + side faces (same indexing pattern as original)
+          // only add side faces (omit front/back faces for hollow strip)
+          // left side (between o1/i1, bottom/top)
           indices.push(
-            idx + 0, idx + 1, idx + 2, idx + 0, idx + 2, idx + 3,
-            idx + 4, idx + 5, idx + 6, idx + 4, idx + 6, idx + 7,
-            idx + 0, idx + 4, idx + 5, idx + 0, idx + 5, idx + 1,
-            idx + 3, idx + 7, idx + 6, idx + 3, idx + 6, idx + 2
+            idx + 0, idx + 4, idx + 7,
+            idx + 0, idx + 7, idx + 3
+          );
+          // right side (between o2/i2, bottom/top)
+          indices.push(
+            idx + 1, idx + 5, idx + 6,
+            idx + 1, idx + 6, idx + 2
+          );
+          // top edge (between o1/o2, i1/i2 at +z)
+          indices.push(
+            idx + 3, idx + 7, idx + 6,
+            idx + 3, idx + 6, idx + 2
+          );
+          // bottom edge (between o1/o2, i1/i2 at -z)
+          indices.push(
+            idx + 0, idx + 4, idx + 5,
+            idx + 0, idx + 5, idx + 1
           );
 
           idx += 8;

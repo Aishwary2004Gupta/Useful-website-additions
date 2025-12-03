@@ -42,7 +42,7 @@
     </style>
   </head>
   <body>
-    <button id="toggleBtn">Dark</button>
+    <button id="toggleBtn">[ Dark ]</button>
     <script type="importmap">
       {
         "imports": {
@@ -289,7 +289,7 @@
       function toggleDarkMode() {
         isDarkMode = !isDarkMode;
         const btn = document.getElementById('toggleBtn');
-        btn.textContent = isDarkMode ? 'Light' : 'Dark';
+        btn.textContent = isDarkMode ? '[ Light ]' : '[ Dark ]';
         
         if (isDarkMode) {
           document.body.classList.add('dark-mode');

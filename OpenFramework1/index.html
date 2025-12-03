@@ -42,7 +42,7 @@
     </style>
   </head>
   <body>
-    <button id="toggleBtn">[ Dark ]</button>
+    <button id="toggleBtn">[ Light ]</button>
     <script type="importmap">
       {
         "imports": {
@@ -59,10 +59,10 @@
       // SCENE SETUP
       ///////////////////////////////////////////////////////////////////////////
       const scene = new THREE.Scene();
-      scene.background = new THREE.Color(0xefefef);
+      scene.background = new THREE.Color(0x1a1a1a);
 
       const camera = new THREE.PerspectiveCamera(
-        100,
+        80,
         innerWidth / innerHeight,
         0.1,
         3000
@@ -76,8 +76,11 @@
 
       const controls = new OrbitControls(camera, renderer.domElement);
 
-      // Dark mode state
-      let isDarkMode = false;
+      // Dark mode state - set to true by default
+      let isDarkMode = true;
+      
+      // Apply dark mode on startup
+      document.body.classList.add('dark-mode');
 
       ///////////////////////////////////////////////////////////////////////////
       // MATERIALS
@@ -93,6 +96,10 @@
       // GROUP TO HOLD EVERYTHING
       ///////////////////////////////////////////////////////////////////////////
       const root = new THREE.Group();
+      const innerLoopGroup = new THREE.Group();
+      const outerLoopGroup = new THREE.Group();
+      root.add(innerLoopGroup);
+      root.add(outerLoopGroup);
       scene.add(root);
 
       ///////////////////////////////////////////////////////////////////////////
@@ -262,10 +269,13 @@
       ///////////////////////////////////////////////////////////////////////////
       function buildScene() {
         const frameNum = performance.now() * 0.06;
+        
+        innerLoopGroup.clear();
+        outerLoopGroup.clear();
 
         for (let z = -600; z <= 600; z += 20) {
           for (let radius of [150, 300]) {
-            const degStart = frameNum + z + 600 + (radius === 300 ? 180 : 0);
+            const degStart = frameNum + z + 600 + (radius === 300 ? 180 : 0) + (radius === 150 ? -frameNum * 2 : 0);
             const degEnd = degStart + 90;
 
             const rings = createRingMesh(
@@ -277,11 +287,19 @@
               degEnd
             );
 
-            root.add(rings.face);
-            root.add(rings.frame);
+            if (radius === 150) {
+              innerLoopGroup.add(rings.face);
+              innerLoopGroup.add(rings.frame);
+            } else {
+              outerLoopGroup.add(rings.face);
+              outerLoopGroup.add(rings.frame);
+            }
           }
         }
       }
+
+      // Build scene once on startup
+      buildScene();
 
       ///////////////////////////////////////////////////////////////////////////
       // TOGGLE DARK/LIGHT MODE
@@ -308,9 +326,23 @@
       function animate() {
         requestAnimationFrame(animate);
 
-        root.clear();
+        const time = performance.now() * 0.001; // seconds
+
         buildScene();
-        root.rotation.x = Math.PI * 1.5; // same as ofRotateX(270)
+
+        // Move inner and outer loops up/down (translate along Y) without changing ring positions
+        // inner: moves up/down with smaller amplitude, outer: moves opposite with larger amplitude
+        const innerAmplitude = 8; // pixels
+        const outerAmplitude = 12; // pixels
+        const innerSpeed = 2.0; // Hz
+        const outerSpeed = 2.5; // Hz
+
+        // inner moves upward (positive y) following sine; outer moves opposite (negative y)
+        innerLoopGroup.position.y = -Math.sin(time * innerSpeed) * innerAmplitude;
+        outerLoopGroup.position.y = -Math.sin(time * outerSpeed) * outerAmplitude;
+
+        // keep overall scene orientation
+        root.rotation.x = Math.PI + 200;
 
         renderer.render(scene, camera);
       }

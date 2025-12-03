@@ -328,11 +328,18 @@
 
         const time = performance.now() * 0.001; // seconds
 
-        // Inner loop moves UP (positive Y direction)
-        innerLoopGroup.position.y = Math.sin(time * 1.5) * 80;
+        buildScene();
 
-        // Outer loop moves DOWN (negative Y direction, opposite phase)
-        outerLoopGroup.position.y = -Math.sin(time * 1.5) * 80;
+        // Move inner and outer loops up/down (translate along Y) without changing ring positions
+        // inner: moves up/down with smaller amplitude, outer: moves opposite with larger amplitude
+        const innerAmplitude = 8; // pixels
+        const outerAmplitude = 12; // pixels
+        const innerSpeed = 2.0; // Hz
+        const outerSpeed = 1.2; // Hz
+
+        // inner moves upward (positive y) following sine; outer moves opposite (negative y)
+        innerLoopGroup.position.y = Math.sin(time * innerSpeed) * innerAmplitude;
+        outerLoopGroup.position.y = -Math.sin(time * outerSpeed) * outerAmplitude;
 
         // keep overall scene orientation
         root.rotation.x = Math.PI * 1.5;

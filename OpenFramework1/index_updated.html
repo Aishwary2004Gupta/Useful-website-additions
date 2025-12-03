@@ -335,14 +335,14 @@
         const innerAmplitude = 8; // pixels
         const outerAmplitude = 12; // pixels
         const innerSpeed = 2.0; // Hz
-        const outerSpeed = 1.2; // Hz
+        const outerSpeed = 2.5; // Hz
 
         // inner moves upward (positive y) following sine; outer moves opposite (negative y)
-        innerLoopGroup.position.y = Math.sin(time * innerSpeed) * innerAmplitude;
+        innerLoopGroup.position.y = -Math.sin(time * innerSpeed) * innerAmplitude;
         outerLoopGroup.position.y = -Math.sin(time * outerSpeed) * outerAmplitude;
 
         // keep overall scene orientation
-        root.rotation.x = Math.PI * 1.5;
+        root.rotation.x = Math.PI + 200;
 
         renderer.render(scene, camera);
       }

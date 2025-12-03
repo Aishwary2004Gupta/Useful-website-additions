@@ -72,6 +72,9 @@
       const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
       renderer.setSize(innerWidth, innerHeight);
       renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+      // enable shadows so standard materials show depth
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       document.body.appendChild(renderer.domElement);
 
       const controls = new OrbitControls(camera, renderer.domElement);
@@ -83,13 +86,44 @@
       document.body.classList.add('dark-mode');
 
       ///////////////////////////////////////////////////////////////////////////
-      // MATERIALS
+      // LIGHTS (for 3D shading)
       ///////////////////////////////////////////////////////////////////////////
-      const faceMat = new THREE.MeshBasicMaterial({ color: 0xefefef });
+      // Hemisphere for soft sky/ground lighting
+      const hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+      scene.add(hemi);
+
+      // Directional light for specular highlights / shadows
+      const dir = new THREE.DirectionalLight(0xffffff, 0.8);
+      dir.position.set(100, 200, 300);
+      dir.castShadow = true;
+      dir.shadow.mapSize.set(1024, 1024);
+      dir.shadow.camera.near = 0.5;
+      dir.shadow.camera.far = 2000;
+      scene.add(dir);
+
+      // Subtle point light to fill darker areas
+      const pLight = new THREE.PointLight(0xffffff, 0.35);
+      pLight.position.set(-200, -150, 150);
+      scene.add(pLight);
+
+      ///////////////////////////////////////////////////////////////////////////
+      // MATERIALS (use physically-based materials for 3D look)
+      ///////////////////////////////////////////////////////////////////////////
+      const faceMat = new THREE.MeshStandardMaterial({
+        color: 0xefefef,
+        roughness: 0.45,
+        metalness: 0.05,
+        side: THREE.DoubleSide
+      });
       const frameMat = new THREE.LineBasicMaterial({ color: 0x272727 });
       
       // Dark mode materials
-      const faceMat_dark = new THREE.MeshBasicMaterial({ color: 0x1a1a1a });
+      const faceMat_dark = new THREE.MeshStandardMaterial({
+        color: 0x1a1a1a,
+        roughness: 0.6,
+        metalness: 0.08,
+        side: THREE.DoubleSide
+      });
       const frameMat_dark = new THREE.LineBasicMaterial({ color: 0xefefef });
 
       ///////////////////////////////////////////////////////////////////////////
@@ -252,15 +286,26 @@
         );
         faceGeom.setIndex(faceIndices);
 
+        // compute normals so MeshStandardMaterial responds to lights
+        faceGeom.computeVertexNormals();
+        
         frameGeom.setAttribute(
           "position",
           new THREE.Float32BufferAttribute(frameVerts, 3)
         );
         frameGeom.setIndex(frameIndices);
 
+        // create mesh/lines and enable shadow flags
+        const faceMesh = new THREE.Mesh(faceGeom, isDarkMode ? faceMat_dark : faceMat);
+        faceMesh.castShadow = true;
+        faceMesh.receiveShadow = true;
+
+        const frameMesh = new THREE.LineSegments(frameGeom, isDarkMode ? frameMat_dark : frameMat);
+        frameMesh.castShadow = false;
+
         return {
-          face: new THREE.Mesh(faceGeom, isDarkMode ? faceMat_dark : faceMat),
-          frame: new THREE.LineSegments(frameGeom, isDarkMode ? frameMat_dark : frameMat),
+          face: faceMesh,
+          frame: frameMesh,
         };
       }
 
@@ -341,8 +386,9 @@
         innerLoopGroup.position.y = -Math.sin(time * innerSpeed) * innerAmplitude;
         outerLoopGroup.position.y = -Math.sin(time * outerSpeed) * outerAmplitude;
 
-        // keep overall scene orientation
+        // keep overall scene orientation — set to a sensible 3D viewing angle and add slow yaw
         root.rotation.x = Math.PI + 200;
+        // root.rotation.y = time * 0.08;
 
         renderer.render(scene, camera);
       }

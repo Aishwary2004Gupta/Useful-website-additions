@@ -2,12 +2,12 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Ring Mesh — Optimized Version</title>
+    <title>Ring Mesh — Three.js Version</title>
     <style>
       body {
         margin: 0;
         overflow: hidden;
-        background: #1a1a1a;
+        background: #efefef;
         font-family: Arial, sans-serif;
         transition: background 0.3s ease;
       }
@@ -20,27 +20,29 @@
         right: 20px;
         font-size: 16px;
         background: transparent;
-        color: #fff;
+        color: #000;
         border: none;
+        border-radius: 0;
         cursor: pointer;
         z-index: 100;
+        transition: all 0.3s ease;
+        padding: 0;
         font-weight: bold;
       }
       #toggleBtn:hover {
+        opacity: 0.7;
         transform: scale(1.05);
-        opacity: 0.75;
       }
-      body.light-mode {
-        background: #efefef;
+      body.dark-mode #toggleBtn {
+        color: #fff;
       }
-      body.light-mode #toggleBtn {
-        color: #000;
+      body.dark-mode #toggleBtn:hover {
+        opacity: 0.7;
       }
     </style>
   </head>
   <body>
     <button id="toggleBtn">[ Light ]</button>
-
     <script type="importmap">
       {
         "imports": {
@@ -49,7 +51,6 @@
         }
       }
     </script>
-
     <script type="module">
       import * as THREE from "three";
       import { OrbitControls } from "three/addons/controls/OrbitControls.js";
@@ -68,107 +69,280 @@
       );
       camera.position.set(0, -300, 600);
 
-      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
       renderer.setSize(innerWidth, innerHeight);
-      renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
       document.body.appendChild(renderer.domElement);
 
       const controls = new OrbitControls(camera, renderer.domElement);
 
+      // Dark mode state - set to true by default
       let isDarkMode = true;
+      
+      // Apply dark mode on startup
+      document.body.classList.add('dark-mode');
 
       ///////////////////////////////////////////////////////////////////////////
       // MATERIALS
       ///////////////////////////////////////////////////////////////////////////
-      const faceMat_light = new THREE.MeshBasicMaterial({ color: 0xefefef });
-      const frameMat_light = new THREE.LineBasicMaterial({ color: 0x272727 });
-
+      const faceMat = new THREE.MeshBasicMaterial({ color: 0xefefef });
+      const frameMat = new THREE.LineBasicMaterial({ color: 0x272727 });
+      
+      // Dark mode materials
       const faceMat_dark = new THREE.MeshBasicMaterial({ color: 0x1a1a1a });
       const frameMat_dark = new THREE.LineBasicMaterial({ color: 0xefefef });
 
-      let faceMat = faceMat_dark;
-      let frameMat = frameMat_dark;
-
       ///////////////////////////////////////////////////////////////////////////
-      // GROUPS
+      // GROUP TO HOLD EVERYTHING
       ///////////////////////////////////////////////////////////////////////////
       const root = new THREE.Group();
       const innerLoopGroup = new THREE.Group();
       const outerLoopGroup = new THREE.Group();
-      root.add(innerLoopGroup, outerLoopGroup);
+      root.add(innerLoopGroup);
+      root.add(outerLoopGroup);
       scene.add(root);
 
       ///////////////////////////////////////////////////////////////////////////
-      // BUILD RINGS ONCE
+      // RING GEOMETRY MAKER (Three.js version of setRingToMesh)
       ///////////////////////////////////////////////////////////////////////////
-      function createRingMesh(pos, radius, width, height) {
-        const geometry = new THREE.TorusGeometry(radius, width / 2, 6, 100);
-        const face = new THREE.Mesh(geometry, faceMat);
+      function createRingMesh(
+        position,
+        radius,
+        width,
+        height,
+        degStart,
+        degEnd
+      ) {
+        const faceGeom = new THREE.BufferGeometry();
+        const frameGeom = new THREE.BufferGeometry();
 
-        const edges = new THREE.EdgesGeometry(geometry);
-        const frame = new THREE.LineSegments(edges, frameMat);
+        const faceVerts = [];
+        const faceIndices = [];
 
-        face.position.copy(pos);
-        frame.position.copy(pos);
+        const frameVerts = [];
+        const frameIndices = [];
 
-        return { face, frame };
+        let idx = 0;
+        let fidx = 0;
+
+        for (let deg = degStart; deg <= degEnd; deg++) {
+          const deg2 = deg + 1;
+          const rad = Math.PI / 180;
+
+          const v = [];
+
+          // Outer ring
+          v.push(
+            new THREE.Vector3(
+              (radius + width / 2) * Math.cos(deg * rad),
+              (radius + width / 2) * Math.sin(deg * rad),
+              -height / 2
+            )
+          );
+          v.push(
+            new THREE.Vector3(
+              (radius + width / 2) * Math.cos(deg2 * rad),
+              (radius + width / 2) * Math.sin(deg2 * rad),
+              -height / 2
+            )
+          );
+          v.push(
+            new THREE.Vector3(
+              (radius + width / 2) * Math.cos(deg2 * rad),
+              (radius + width / 2) * Math.sin(deg2 * rad),
+              height / 2
+            )
+          );
+          v.push(
+            new THREE.Vector3(
+              (radius + width / 2) * Math.cos(deg * rad),
+              (radius + width / 2) * Math.sin(deg * rad),
+              height / 2
+            )
+          );
+
+          // Inner ring
+          v.push(
+            new THREE.Vector3(
+              (radius - width / 2) * Math.cos(deg * rad),
+              (radius - width / 2) * Math.sin(deg * rad),
+              -height / 2
+            )
+          );
+          v.push(
+            new THREE.Vector3(
+              (radius - width / 2) * Math.cos(deg2 * rad),
+              (radius - width / 2) * Math.sin(deg2 * rad),
+              -height / 2
+            )
+          );
+          v.push(
+            new THREE.Vector3(
+              (radius - width / 2) * Math.cos(deg2 * rad),
+              (radius - width / 2) * Math.sin(deg2 * rad),
+              height / 2
+            )
+          );
+          v.push(
+            new THREE.Vector3(
+              (radius - width / 2) * Math.cos(deg * rad),
+              (radius - width / 2) * Math.sin(deg * rad),
+              height / 2
+            )
+          );
+
+          // Shift by given location
+          v.forEach((p) => p.add(position));
+
+          // Add vertices
+          v.forEach((p) => {
+            faceVerts.push(p.x, p.y, p.z);
+            frameVerts.push(p.x, p.y, p.z);
+          });
+
+          // Face indices
+          faceIndices.push(
+            idx + 0,
+            idx + 1,
+            idx + 2,
+            idx + 0,
+            idx + 2,
+            idx + 3,
+            idx + 4,
+            idx + 5,
+            idx + 6,
+            idx + 4,
+            idx + 6,
+            idx + 7,
+
+            idx + 0,
+            idx + 4,
+            idx + 5,
+            idx + 0,
+            idx + 5,
+            idx + 1,
+            idx + 3,
+            idx + 7,
+            idx + 6,
+            idx + 3,
+            idx + 6,
+            idx + 2
+          );
+
+          // Frame edges
+          frameIndices.push(
+            fidx + 0,
+            fidx + 1,
+            fidx + 2,
+            fidx + 3,
+            fidx + 4,
+            fidx + 5,
+            fidx + 6,
+            fidx + 7
+          );
+
+          idx += 8;
+          fidx += 8;
+        }
+
+        // Build THREE.js geometry objects
+        faceGeom.setAttribute(
+          "position",
+          new THREE.Float32BufferAttribute(faceVerts, 3)
+        );
+        faceGeom.setIndex(faceIndices);
+
+        frameGeom.setAttribute(
+          "position",
+          new THREE.Float32BufferAttribute(frameVerts, 3)
+        );
+        frameGeom.setIndex(frameIndices);
+
+        return {
+          face: new THREE.Mesh(faceGeom, isDarkMode ? faceMat_dark : faceMat),
+          frame: new THREE.LineSegments(frameGeom, isDarkMode ? frameMat_dark : frameMat),
+        };
       }
 
+      ///////////////////////////////////////////////////////////////////////////
+      // BUILD SCENE CONTENT
+      ///////////////////////////////////////////////////////////////////////////
       function buildScene() {
-        for (let z = -400; z <= 400; z += 40) {
-          const pos = new THREE.Vector3(0, 0, z);
+        const frameNum = performance.now() * 0.06;
+        
+        innerLoopGroup.clear();
+        outerLoopGroup.clear();
 
-          const inner = createRingMesh(pos, 150, 8, 15);
-          innerLoopGroup.add(inner.face, inner.frame);
+        for (let z = -600; z <= 600; z += 20) {
+          for (let radius of [150, 300]) {
+            const degStart = frameNum + z + 600 + (radius === 300 ? 180 : 0) + (radius === 150 ? -frameNum * 2 : 0);
+            const degEnd = degStart + 90;
 
-          const outer = createRingMesh(pos, 300, 8, 15);
-          outerLoopGroup.add(outer.face, outer.frame);
+            const rings = createRingMesh(
+              new THREE.Vector3(0, 0, z),
+              radius,
+              5,
+              15,
+              degStart,
+              degEnd
+            );
+
+            if (radius === 150) {
+              innerLoopGroup.add(rings.face);
+              innerLoopGroup.add(rings.frame);
+            } else {
+              outerLoopGroup.add(rings.face);
+              outerLoopGroup.add(rings.frame);
+            }
+          }
         }
       }
 
+      // Build scene once on startup
       buildScene();
 
       ///////////////////////////////////////////////////////////////////////////
-      // DARK MODE TOGGLE
+      // TOGGLE DARK/LIGHT MODE
       ///////////////////////////////////////////////////////////////////////////
-      document.getElementById("toggleBtn").addEventListener("click", () => {
+      function toggleDarkMode() {
         isDarkMode = !isDarkMode;
-
+        const btn = document.getElementById('toggleBtn');
+        btn.textContent = isDarkMode ? '[ Light ]' : '[ Dark ]';
+        
         if (isDarkMode) {
-          document.body.classList.remove("light-mode");
+          document.body.classList.add('dark-mode');
           scene.background.setHex(0x1a1a1a);
-          faceMat = faceMat_dark;
-          frameMat = frameMat_dark;
-          document.getElementById("toggleBtn").textContent = "[ Light ]";
         } else {
-          document.body.classList.add("light-mode");
+          document.body.classList.remove('dark-mode');
           scene.background.setHex(0xefefef);
-          faceMat = faceMat_light;
-          frameMat = frameMat_light;
-          document.getElementById("toggleBtn").textContent = "[ Dark ]";
         }
+      }
 
-        // Update all materials instantly
-        innerLoopGroup.children.concat(outerLoopGroup.children).forEach((m) => {
-          m.material = m.type === "Mesh" ? faceMat : frameMat;
-        });
-      });
+      document.getElementById('toggleBtn').addEventListener('click', toggleDarkMode);
 
       ///////////////////////////////////////////////////////////////////////////
-      // ANIMATION
+      // ANIMATION LOOP
       ///////////////////////////////////////////////////////////////////////////
       function animate() {
         requestAnimationFrame(animate);
 
-        const time = performance.now() * 0.001;
-        
-        // Smooth movement
-        innerLoopGroup.position.y = Math.sin(time * 2) * 8;
-        outerLoopGroup.position.y = -Math.sin(time * 2.5) * 12;
+        const time = performance.now() * 0.001; // seconds
 
-        // Rotations for a cool tunnel effect
-        innerLoopGroup.rotation.z += 0.008;
-        outerLoopGroup.rotation.z -= 0.010;
+        buildScene();
+
+        // Move inner and outer loops up/down (translate along Y) without changing ring positions
+        // inner: moves up/down with smaller amplitude, outer: moves opposite with larger amplitude
+        const innerAmplitude = 8; // pixels
+        const outerAmplitude = 12; // pixels
+        const innerSpeed = 2.0; // Hz
+        const outerSpeed = 2.5; // Hz
+
+        // inner moves upward (positive y) following sine; outer moves opposite (negative y)
+        innerLoopGroup.position.y = -Math.sin(time * innerSpeed) * innerAmplitude;
+        outerLoopGroup.position.y = -Math.sin(time * outerSpeed) * outerAmplitude;
+
+        // keep overall scene orientation
+        root.rotation.x = Math.PI + 200;
 
         renderer.render(scene, camera);
       }

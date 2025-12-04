@@ -1,144 +1,377 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Optimized Ring Scene</title>
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      background: #1a1a1a;
-      font-family: Arial, sans-serif;
-      transition: background 0.3s ease;
-    }
-    #toggleBtn {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      font-size: 16px;
-      background: transparent;
-      color: #fff;
-      border: none;
-      cursor: pointer;
-      font-weight: bold;
-      z-index: 10;
-    }
-    #toggleBtn:hover { opacity: 0.8; }
-    body.light-mode { background: #efefef; }
-    body.light-mode #toggleBtn { color: #000; }
-  </style>
-</head>
-<body>
-<button id="toggleBtn">[ Light ]</button>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Ring Mesh — Three.js Version</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: #efefef;
+        font-family: Arial, sans-serif;
+        transition: background 0.3s ease;
+      }
+      canvas {
+        display: block;
+      }
+      #toggleBtn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 16px;
+        background: transparent;
+        color: #000;
+        border: none;
+        border-radius: 0;
+        cursor: pointer;
+        z-index: 100;
+        transition: all 0.3s ease;
+        padding: 0;
+        font-weight: bold;
+      }
+      #toggleBtn:hover {
+        opacity: 0.7;
+        transform: scale(1.05);
+      }
+      body.dark-mode #toggleBtn {
+        color: #fff;
+      }
+      body.dark-mode #toggleBtn:hover {
+        opacity: 0.7;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="toggleBtn">[ Light ]</button>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.164/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164/examples/jsm/"
+        }
+      }
+    </script>
+    <script type="module">
+      import * as THREE from "three";
+      import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.164/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164/examples/jsm/"
-  }
-}
-</script>
+      ///////////////////////////////////////////////////////////////////////////
+      // SCENE SETUP
+      ///////////////////////////////////////////////////////////////////////////
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x1a1a1a);
 
-<script type="module">
-import * as THREE from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+      const camera = new THREE.PerspectiveCamera(
+        80,
+        innerWidth / innerHeight,
+        0.1,
+        3000
+      );
+      camera.position.set(0, -300, 600);
 
-/////////////////////////////////////////////////////
-// SCENE
-/////////////////////////////////////////////////////
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x1a1a1a);
+      const renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        powerPreference: "high-performance",
+      });
+      renderer.setSize(innerWidth, innerHeight);
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+      document.body.appendChild(renderer.domElement);
 
-const camera = new THREE.PerspectiveCamera(80, innerWidth / innerHeight, 1, 3000);
-camera.position.set(0, -300, 600);
+      const controls = new OrbitControls(camera, renderer.domElement);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(innerWidth, innerHeight);
-document.body.appendChild(renderer.domElement);
+      // Dark mode state - set to true by default
+      let isDarkMode = true;
 
-const controls = new OrbitControls(camera, renderer.domElement);
+      // Apply dark mode on startup
+      document.body.classList.add("dark-mode");
 
-/////////////////////////////////////////////////////
-// MATERIALS
-/////////////////////////////////////////////////////
-let darkMode = true;
-let faceMat = new THREE.MeshBasicMaterial({ color: 0x1a1a1a });
-let frameMat = new THREE.LineBasicMaterial({ color: 0xffffff });
+      ///////////////////////////////////////////////////////////////////////////
+      // MATERIALS
+      ///////////////////////////////////////////////////////////////////////////
+      const faceMat = new THREE.MeshBasicMaterial({ color: 0xefefef });
+      const frameMat = new THREE.LineBasicMaterial({ color: 0x272727 });
 
-function updateMaterials() {
-  faceMat.color.set(darkMode ? 0x1a1a1a : 0xefefef);
-  frameMat.color.set(darkMode ? 0xffffff : 0x272727);
-  scene.background.setHex(darkMode ? 0x1a1a1a : 0xefefef);
-}
+      // Dark mode materials
+      const faceMat_dark = new THREE.MeshBasicMaterial({ color: 0x1a1a1a });
+      const frameMat_dark = new THREE.LineBasicMaterial({ color: 0xefefef });
 
-/////////////////////////////////////////////////////
-// CREATE RINGS ONCE (no rebuild)
-/////////////////////////////////////////////////////
-const innerGroup = new THREE.Group();
-const outerGroup = new THREE.Group();
-scene.add(innerGroup, outerGroup);
+      ///////////////////////////////////////////////////////////////////////////
+      // GROUP TO HOLD EVERYTHING
+      ///////////////////////////////////////////////////////////////////////////
+      const root = new THREE.Group();
+      const innerLoopGroup = new THREE.Group();
+      const outerLoopGroup = new THREE.Group();
+      root.add(innerLoopGroup);
+      root.add(outerLoopGroup);
+      scene.add(root);
 
-const innerRadius = 150;
-const outerRadius = 300;
-const rings = [];
-for (let z = -600; z <= 600; z += 20) {
-  const geomInner = new THREE.TorusGeometry(innerRadius, 5, 4, 24);
-  const meshInner = new THREE.Mesh(geomInner, faceMat);
-  meshInner.position.set(0, 0, z);
-  innerGroup.add(meshInner);
-  rings.push(meshInner);
+      ///////////////////////////////////////////////////////////////////////////
+      // RING GEOMETRY MAKER (Three.js version of setRingToMesh)
+      ///////////////////////////////////////////////////////////////////////////
+      function createRingMesh(
+        position,
+        radius,
+        width,
+        height,
+        degStart,
+        degEnd
+      ) {
+        const faceGeom = new THREE.BufferGeometry();
+        const frameGeom = new THREE.BufferGeometry();
 
-  const geomOuter = new THREE.TorusGeometry(outerRadius, 5, 4, 24);
-  const meshOuter = new THREE.Mesh(geomOuter, faceMat);
-  meshOuter.position.set(0, 0, z);
-  outerGroup.add(meshOuter);
-  rings.push(meshOuter);
-}
+        const faceVerts = [];
+        const faceIndices = [];
 
-updateMaterials();
+        const frameVerts = [];
+        const frameIndices = [];
 
-/////////////////////////////////////////////////////
-// DARK/LIGHT MODE SWITCH
-/////////////////////////////////////////////////////
-document.getElementById("toggleBtn").addEventListener("click", () => {
-  darkMode = !darkMode;
-  updateMaterials();
-  document.getElementById("toggleBtn").textContent =
-    darkMode ? "[ Light ]" : "[ Dark ]";
-});
+        let idx = 0;
+        let fidx = 0;
 
-/////////////////////////////////////////////////////
-// ANIMATION LIKE ORIGINAL (partial ring illusion)
-/////////////////////////////////////////////////////
-function animate() {
-  requestAnimationFrame(animate);
+        for (let deg = degStart; deg <= degEnd; deg++) {
+          const deg2 = deg + 1;
+          const rad = Math.PI / 180;
 
-  const t = performance.now() * 0.0006;
+          const v = [];
 
-  // Arc movement simulation — rotate differently based on radius
-  innerGroup.children.forEach((m,i)=>m.rotation.z = -t*4 + i*0.05);
-  outerGroup.children.forEach((m,i)=>m.rotation.z = t*2 + i*0.05);
+          // Outer ring
+          v.push(
+            new THREE.Vector3(
+              (radius + width / 2) * Math.cos(deg * rad),
+              (radius + width / 2) * Math.sin(deg * rad),
+              -height / 2
+            )
+          );
+          v.push(
+            new THREE.Vector3(
+              (radius + width / 2) * Math.cos(deg2 * rad),
+              (radius + width / 2) * Math.sin(deg2 * rad),
+              -height / 2
+            )
+          );
+          v.push(
+            new THREE.Vector3(
+              (radius + width / 2) * Math.cos(deg2 * rad),
+              (radius + width / 2) * Math.sin(deg2 * rad),
+              height / 2
+            )
+          );
+          v.push(
+            new THREE.Vector3(
+              (radius + width / 2) * Math.cos(deg * rad),
+              (radius + width / 2) * Math.sin(deg * rad),
+              height / 2
+            )
+          );
 
-  // Vertical oscillation like original
-  innerGroup.position.y = Math.sin(t*20)*8;
-  outerGroup.position.y = -Math.sin(t*25)*12;
+          // Inner ring
+          v.push(
+            new THREE.Vector3(
+              (radius - width / 2) * Math.cos(deg * rad),
+              (radius - width / 2) * Math.sin(deg * rad),
+              -height / 2
+            )
+          );
+          v.push(
+            new THREE.Vector3(
+              (radius - width / 2) * Math.cos(deg2 * rad),
+              (radius - width / 2) * Math.sin(deg2 * rad),
+              -height / 2
+            )
+          );
+          v.push(
+            new THREE.Vector3(
+              (radius - width / 2) * Math.cos(deg2 * rad),
+              (radius - width / 2) * Math.sin(deg2 * rad),
+              height / 2
+            )
+          );
+          v.push(
+            new THREE.Vector3(
+              (radius - width / 2) * Math.cos(deg * rad),
+              (radius - width / 2) * Math.sin(deg * rad),
+              height / 2
+            )
+          );
 
-  scene.rotation.x = Math.PI; // match original orientation
+          // Shift by given location
+          v.forEach((p) => p.add(position));
 
-  renderer.render(scene,camera);
-}
+          // Add vertices
+          v.forEach((p) => {
+            faceVerts.push(p.x, p.y, p.z);
+            frameVerts.push(p.x, p.y, p.z);
+          });
 
-animate();
+          // Face indices
+          faceIndices.push(
+            idx + 0,
+            idx + 1,
+            idx + 2,
+            idx + 0,
+            idx + 2,
+            idx + 3,
+            idx + 4,
+            idx + 5,
+            idx + 6,
+            idx + 4,
+            idx + 6,
+            idx + 7,
 
-/////////////////////////////////////////////////////
-// RESIZE
-/////////////////////////////////////////////////////
-window.addEventListener("resize", () => {
-  camera.aspect = innerWidth / innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
-});
-</script>
-</body>
+            idx + 0,
+            idx + 4,
+            idx + 5,
+            idx + 0,
+            idx + 5,
+            idx + 1,
+            idx + 3,
+            idx + 7,
+            idx + 6,
+            idx + 3,
+            idx + 6,
+            idx + 2
+          );
+
+          // Frame edges
+          frameIndices.push(
+            fidx + 0,
+            fidx + 1,
+            fidx + 2,
+            fidx + 3,
+            fidx + 4,
+            fidx + 5,
+            fidx + 6,
+            fidx + 7
+          );
+
+          idx += 8;
+          fidx += 8;
+        }
+
+        // Build THREE.js geometry objects
+        faceGeom.setAttribute(
+          "position",
+          new THREE.Float32BufferAttribute(faceVerts, 3)
+        );
+        faceGeom.setIndex(faceIndices);
+
+        frameGeom.setAttribute(
+          "position",
+          new THREE.Float32BufferAttribute(frameVerts, 3)
+        );
+        frameGeom.setIndex(frameIndices);
+
+        return {
+          face: new THREE.Mesh(faceGeom, isDarkMode ? faceMat_dark : faceMat),
+          frame: new THREE.LineSegments(
+            frameGeom,
+            isDarkMode ? frameMat_dark : frameMat
+          ),
+        };
+      }
+
+      ///////////////////////////////////////////////////////////////////////////
+      // BUILD SCENE CONTENT
+      ///////////////////////////////////////////////////////////////////////////
+      function buildScene() {
+        const frameNum = performance.now() * 0.06;
+
+        innerLoopGroup.clear();
+        outerLoopGroup.clear();
+
+        for (let z = -600; z <= 600; z += 20) {
+          for (let radius of [150, 300]) {
+            const degStart =
+              frameNum +
+              z +
+              600 +
+              (radius === 300 ? 180 : 0) +
+              (radius === 150 ? -frameNum * 2 : 0);
+            const degEnd = degStart + 90;
+
+            const rings = createRingMesh(
+              new THREE.Vector3(0, 0, z),
+              radius,
+              5,
+              15,
+              degStart,
+              degEnd
+            );
+
+            if (radius === 150) {
+              innerLoopGroup.add(rings.face);
+              innerLoopGroup.add(rings.frame);
+            } else {
+              outerLoopGroup.add(rings.face);
+              outerLoopGroup.add(rings.frame);
+            }
+          }
+        }
+      }
+
+      // Build scene once on startup
+      buildScene();
+
+      ///////////////////////////////////////////////////////////////////////////
+      // TOGGLE DARK/LIGHT MODE
+      ///////////////////////////////////////////////////////////////////////////
+      function toggleDarkMode() {
+        isDarkMode = !isDarkMode;
+        const btn = document.getElementById("toggleBtn");
+        btn.textContent = isDarkMode ? "[ Light ]" : "[ Dark ]";
+
+        if (isDarkMode) {
+          document.body.classList.add("dark-mode");
+          scene.background.setHex(0x1a1a1a);
+        } else {
+          document.body.classList.remove("dark-mode");
+          scene.background.setHex(0xefefef);
+        }
+      }
+
+      document
+        .getElementById("toggleBtn")
+        .addEventListener("click", toggleDarkMode);
+
+      ///////////////////////////////////////////////////////////////////////////
+      // ANIMATION LOOP
+      ///////////////////////////////////////////////////////////////////////////
+      function animate() {
+        requestAnimationFrame(animate);
+
+        const time = performance.now() * 0.001; // seconds
+
+        buildScene();
+
+        // Move inner and outer loops up/down (translate along Y) without changing ring positions
+        // inner: moves up/down with smaller amplitude, outer: moves opposite with larger amplitude
+        const innerAmplitude = 8; // pixels
+        const outerAmplitude = 12; // pixels
+        const innerSpeed = 2.0; // Hz
+        const outerSpeed = 2.5; // Hz
+
+        // inner moves upward (positive y) following sine; outer moves opposite (negative y)
+        innerLoopGroup.position.y =
+          -Math.sin(time * innerSpeed) * innerAmplitude;
+        outerLoopGroup.position.y =
+          -Math.sin(time * outerSpeed) * outerAmplitude;
+
+        // keep overall scene orientation
+        root.rotation.x = Math.PI + 200;
+
+        renderer.render(scene, camera);
+      }
+
+      animate();
+
+      ///////////////////////////////////////////////////////////////////////////
+      // RESIZE
+      ///////////////////////////////////////////////////////////////////////////
+      window.addEventListener("resize", () => {
+        camera.aspect = innerWidth / innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(innerWidth, innerHeight);
+      });
+    </script>
+  </body>
 </html>

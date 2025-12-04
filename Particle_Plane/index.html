@@ -10,13 +10,10 @@
         padding: 0;
         overflow: hidden;
       }
-
-      canvas {
-        display: block;
-        width: 100%;
-        height: 100%;
-        background: #00000015;
-      }
+      html,body { height: 100%; }
+      #canvas { display:block; width:100%; height:100%; background:#00000015; }
+      /* GUI panel style */
+      .dg { z-index: 9999 !important; }
     </style>
   </head>
 
@@ -25,6 +22,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
 
     <script>
       // Initialize scene
@@ -38,7 +36,7 @@
         0.1,
         100
       );
-      camera.position.z = 7;
+      camera.position.set(0, 2.2, 7);
 
       // Renderer
       const renderer = new THREE.WebGLRenderer({
@@ -48,66 +46,295 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-      // Create particles
-      const particleCount = 20000;
-      const positions = new Float32Array(particleCount * 3);
-      const colors = new Float32Array(particleCount * 3);
-
-      for (let i = 0; i < particleCount * 3; i++) {
-        positions[i] = (Math.random() - 0.5) * 10;
-        colors[i] = Math.random();
-      }
-
-      const geometry = new THREE.BufferGeometry();
-      geometry.setAttribute(
-        "position",
-        new THREE.BufferAttribute(positions, 3)
-      );
-      geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-
-      // Load texture (replace with your own particle image path)
-      const textureLoader = new THREE.TextureLoader();
-      const particleTexture = textureLoader.load(
-        "https://threejs.org/examples/textures/sprites/disc.png"
-      );
-
-      const material = new THREE.PointsMaterial({
-        size: 0.1,
-        sizeAttenuation: true,
-        transparent: true,
-        alphaMap: particleTexture,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending,
-        vertexColors: true,
-      });
-
-      const particles = new THREE.Points(geometry, material);
-      scene.add(particles);
-
-      // Controls
+      // controls & clock
       const controls = new THREE.OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
       controls.dampingFactor = 0.05;
-
       const clock = new THREE.Clock();
 
-      function animate() {
-        const elapsedTime = clock.getElapsedTime();
+      // Lights
+      const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+      const dir = new THREE.DirectionalLight(0xffffff, 0.6);
+      dir.position.set(5, 10, 7);
+      scene.add(ambient, dir);
 
-        for (let i = 0; i < particleCount; i++) {
-          const i3 = i * 3;
-          const x = geometry.attributes.position.array[i3];
-          geometry.attributes.position.array[i3 + 1] = Math.sin(
-            elapsedTime * 2 + x * 0.5
-          );
+      // GUI params
+      const params = {
+        mode: 'particles', // 'particles' | 'surface'
+        preset: 'default',
+        particleCount: 20000,
+        particleSize: 0.1,
+        segments: 120,
+        width: 10,
+        height: 10,
+        amplitude: 0.8,
+        frequency: 1.5,
+        speed: 1.0,
+        wireframe: true,
+        colorMap: 'height',
+        fill: false,
+        applyPresetImageLook() {
+          this.mode = 'surface';
+          this.segments = 140;
+          this.width = 12;
+          this.height = 12;
+          this.amplitude = 1.4;
+          this.frequency = 1.6;
+          this.speed = 0.8;
+          this.wireframe = true;
+          this.colorMap = 'coolwarm';
+          rebuild();
         }
+      };
+
+      // Geometry holders
+      let points = null;
+      let surface = null;
+      let wireframeMesh = null;
+      let contourPlane = null;
+
+      const textureLoader = new THREE.TextureLoader();
+      // soft disc for points
+      const particleTexture = textureLoader.load("https://threejs.org/examples/textures/sprites/disc.png");
+
+      // Helper - create a colors array from heights
+      function heightToColor(t, scheme='height') {
+        // t in [0,1]
+        if (scheme === 'coolwarm') {
+          // simple cool->warm gradient
+          const r = Math.min(1, 2 * t);
+          const g = 1 - Math.abs(2 * t - 1);
+          const b = Math.min(1, 2 * (1 - t));
+          return new THREE.Color(r, g * 0.85, b * 0.9);
+        }
+        // default height map: blue -> green -> yellow -> red
+        const c = new THREE.Color();
+        if (t < 0.33) {
+          c.setRGB(0, 0.3 + t * 1.8, 1 - t * 2.7);
+        } else if (t < 0.66) {
+          const tt = (t - 0.33) / 0.33;
+          c.setRGB(0.0 + tt * 0.4, 0.9, 0.0 + tt * 0.6);
+        } else {
+          const tt = (t - 0.66) / 0.34;
+          c.setRGB(0.4 + tt * 0.6, 0.9 - tt * 0.7, 0.6 - tt * 0.6);
+        }
+        return c;
+      }
+
+      // Create particles Points
+      function createParticles() {
+        disposeObjects();
+        const count = Math.max(1000, Math.min(50000, Math.floor(params.particleCount)));
+        const positions = new Float32Array(count * 3);
+        const colors = new Float32Array(count * 3);
+        for (let i = 0; i < count; i++) {
+          const x = (Math.random() - 0.5) * params.width;
+          const z = (Math.random() - 0.5) * params.height;
+          const y = 0; // will be animated
+          const i3 = i * 3;
+          positions[i3] = x;
+          positions[i3 + 1] = y;
+          positions[i3 + 2] = z;
+          const c = new THREE.Color(Math.random(), Math.random(), Math.random());
+          colors[i3] = c.r;
+          colors[i3 + 1] = c.g;
+          colors[i3 + 2] = c.b;
+        }
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        const material = new THREE.PointsMaterial({
+          size: params.particleSize,
+          sizeAttenuation: true,
+          transparent: true,
+          alphaMap: particleTexture,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
+          vertexColors: true
+        });
+        points = new THREE.Points(geometry, material);
+        scene.add(points);
+      }
+
+      // Create a surface plane (filled) with optional wireframe and contour base
+      function createSurface() {
+        disposeObjects();
+        const seg = Math.max(4, Math.floor(params.segments));
+        const geometry = new THREE.PlaneBufferGeometry(params.width, params.height, seg, seg);
+        geometry.rotateX(-Math.PI / 2); // make X-Z plane
+
+        // set initial y to 0
+        const positions = geometry.attributes.position.array;
+        const count = positions.length / 3;
+        const colors = new Float32Array(count * 3);
+
+        // compute initial heights and colors
+        for (let i = 0; i < count; i++) {
+          const i3 = i * 3;
+          const x = positions[i3];
+          const z = positions[i3 + 2];
+          const y = 0;
+          positions[i3 + 1] = y;
+          // placeholder color
+          const t = 0.5;
+          const c = heightToColor(t, params.colorMap);
+          colors[i3] = c.r;
+          colors[i3 + 1] = c.g;
+          colors[i3 + 2] = c.b;
+        }
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
         geometry.attributes.position.needsUpdate = true;
+        geometry.computeVertexNormals();
+
+        // Phong material with vertex colors
+        const material = new THREE.MeshPhongMaterial({
+          vertexColors: true,
+          shininess: 40,
+          side: THREE.DoubleSide,
+          flatShading: false
+        });
+
+        surface = new THREE.Mesh(geometry, material);
+        scene.add(surface);
+
+        // optional wireframe overlay
+        if (params.wireframe) {
+          const geo = new THREE.WireframeGeometry(geometry);
+          wireframeMesh = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: 0x111111, linewidth: 1 }));
+          scene.add(wireframeMesh);
+        }
+
+        // optional contour base plane (simple tinted plane with transparency)
+        contourPlane = new THREE.Mesh(
+          new THREE.PlaneBufferGeometry(params.width * 1.05, params.height * 1.05, 1, 1),
+          new THREE.MeshBasicMaterial({ color: 0xdddddd, transparent: true, opacity: 0.45 })
+        );
+        contourPlane.rotateX(-Math.PI / 2);
+        contourPlane.position.y = -1.8;
+        scene.add(contourPlane);
+      }
+
+      // Dispose any previous objects
+      function disposeObjects() {
+        if (points) {
+          scene.remove(points);
+          points.geometry.dispose();
+          points.material.dispose();
+          points = null;
+        }
+        if (surface) {
+          scene.remove(surface);
+          surface.geometry.dispose();
+          surface.material.dispose();
+          surface = null;
+        }
+        if (wireframeMesh) {
+          scene.remove(wireframeMesh);
+          wireframeMesh.geometry.dispose();
+          wireframeMesh.material.dispose();
+          wireframeMesh = null;
+        }
+        if (contourPlane) {
+          scene.remove(contourPlane);
+          contourPlane.geometry.dispose();
+          contourPlane.material.dispose();
+          contourPlane = null;
+        }
+      }
+
+      // Rebuild depending on params.mode
+      function rebuild() {
+        if (params.mode === 'particles') {
+          createParticles();
+        } else {
+          createSurface();
+        }
+      }
+
+      // initial build
+      rebuild();
+
+      // GUI
+      const gui = new dat.GUI();
+      gui.add(params, 'mode', ['particles', 'surface']).name('Mode').onChange(rebuild);
+      gui.add(params, 'preset').name('Preset');
+      gui.add(params, 'applyPresetImageLook').name('Apply Image Look');
+      const pFolder = gui.addFolder('Particles');
+      pFolder.add(params, 'particleCount', 1000, 50000, 1000).name('Count').onFinishChange(() => { if (params.mode === 'particles') rebuild(); });
+      pFolder.add(params, 'particleSize', 0.01, 0.5, 0.01).name('Size').onChange(() => { if (points) points.material.size = params.particleSize; });
+      pFolder.open();
+      const sFolder = gui.addFolder('Surface');
+      sFolder.add(params, 'segments', 4, 300, 1).name('Segments').onFinishChange(() => { if (params.mode === 'surface') rebuild(); });
+      sFolder.add(params, 'width', 1, 30, 0.1).name('Width').onFinishChange(rebuild);
+      sFolder.add(params, 'height', 1, 30, 0.1).name('Height').onFinishChange(rebuild);
+      sFolder.add(params, 'wireframe').name('Wireframe').onChange(() => { if (params.mode === 'surface') rebuild(); });
+      sFolder.add(params, 'colorMap', ['height','coolwarm']).name('Color Map').onChange(() => { if (params.mode === 'surface') rebuild(); });
+      sFolder.open();
+      const wFolder = gui.addFolder('Waves');
+      wFolder.add(params, 'amplitude', 0, 3, 0.01).name('Amplitude');
+      wFolder.add(params, 'frequency', 0, 6, 0.01).name('Frequency');
+      wFolder.add(params, 'speed', 0, 3, 0.01).name('Speed');
+      wFolder.open();
+
+      // Animation loop - update heights for both particles and surface
+      function animate() {
+        const t = clock.getElapsedTime() * params.speed;
+
+        if (points) {
+          const pos = points.geometry.attributes.position.array;
+          const count = pos.length / 3;
+          for (let i = 0; i < count; i++) {
+            const i3 = i * 3;
+            const x = pos[i3];
+            const z = pos[i3 + 2];
+            // wave from combined sin/cos for nicer surface
+            const y = Math.sin((x * 0.5 + t) * params.frequency) * Math.cos((z * 0.5 + t) * params.frequency) * params.amplitude;
+            pos[i3 + 1] = y;
+          }
+          points.geometry.attributes.position.needsUpdate = true;
+        }
+
+        if (surface) {
+          const pos = surface.geometry.attributes.position.array;
+          const colors = surface.geometry.attributes.color.array;
+          const vertCount = pos.length / 3;
+          let minY = Infinity, maxY = -Infinity;
+          // compute Y heights and track min/max
+          for (let i = 0; i < vertCount; i++) {
+            const i3 = i * 3;
+            const x = pos[i3];
+            const z = pos[i3 + 2];
+            const y = Math.sin((x * 0.5 + t) * params.frequency) * Math.cos((z * 0.5 + t) * params.frequency) * params.amplitude;
+            pos[i3 + 1] = y;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+          }
+          // update colors by normalized height
+          const range = Math.max(0.0001, maxY - minY);
+          for (let i = 0; i < vertCount; i++) {
+            const i3 = i * 3;
+            const y = pos[i3 + 1];
+            const tcol = (y - minY) / range;
+            const c = heightToColor(tcol, params.colorMap);
+            colors[i3] = c.r; colors[i3 + 1] = c.g; colors[i3 + 2] = c.b;
+          }
+          surface.geometry.attributes.position.needsUpdate = true;
+          surface.geometry.attributes.color.needsUpdate = true;
+          surface.geometry.computeVertexNormals();
+
+          if (wireframeMesh) {
+            wireframeMesh.geometry.dispose();
+            wireframeMesh.geometry = new THREE.WireframeGeometry(surface.geometry);
+          }
+        }
 
         controls.update();
         renderer.render(scene, camera);
         requestAnimationFrame(animate);
       }
 
+      // handle resize
       window.addEventListener("resize", () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();

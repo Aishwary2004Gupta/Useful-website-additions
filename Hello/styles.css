@@ -25,7 +25,7 @@ body {
   width: 100%;
   max-width: 600px;
 }
-.hello__svg {
+/* .hello__svg {
   fill: none;
   stroke: #fff;
   stroke-linecap: round;
@@ -41,7 +41,25 @@ body {
   flex-direction: column;
   margin: 0 auto;
   text-align: center;
+} */
+
+.hello__svg {
+  fill: none;
+  stroke: #fff;
+  stroke-linecap: round;
+  stroke-miterlimit: 10;
+  stroke-width: 48px;
+  stroke-dasharray: 5800px;
+  stroke-dashoffset: 5800px;
+  animation: anim__hello 5s linear infinite;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  margin: 0 auto;
+  text-align: center;
 }
+
 
 @keyframes anim__hello {
   0% {
@@ -54,3 +72,16 @@ body {
     stroke-dashoffset: 0;
   }
 }
+
+/* @keyframes anim__hello {
+  0% {
+    stroke-dashoffset: 5800;
+  }
+  70% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: 5800;
+  }
+} */
+

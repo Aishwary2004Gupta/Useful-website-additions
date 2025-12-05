@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Image Comparison Slider + Panning</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Comparison Slider + Panning</title>
 
-<style>
-    * {
+    <style>
+      * {
         box-sizing: border-box;
-    }
+      }
 
-    body {
+      body {
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -20,24 +20,24 @@
         background: #111;
         font-family: sans-serif;
         color: white;
-    }
+      }
 
-    .input-container {
+      .input-container {
         margin-bottom: 20px;
         display: flex;
         gap: 10px;
-    }
+      }
 
-    input[type="text"] {
+      input[type="text"] {
         width: 350px;
         padding: 8px;
         border-radius: 6px;
         border: none;
         outline: none;
         font-size: 14px;
-    }
+      }
 
-    button {
+      button {
         padding: 8px 14px;
         border-radius: 6px;
         border: none;
@@ -45,9 +45,9 @@
         color: white;
         font-weight: bold;
         cursor: pointer;
-    }
+      }
 
-    .comparison-container {
+      .comparison-container {
         position: relative;
         width: 80%;
         max-width: 900px;
@@ -56,9 +56,9 @@
         border-radius: 12px;
         cursor: ew-resize;
         background: #000;
-    }
+      }
 
-    .comparison-container img {
+      .comparison-container img {
         position: absolute;
         top: 0;
         left: 0;
@@ -67,20 +67,20 @@
         object-fit: cover;
         pointer-events: none;
         user-select: none;
-    }
+      }
 
-    .comparison-img.left {
+      .comparison-img.left {
         clip-path: inset(0 0 0 50%);
         filter: grayscale(100%);
         transition: clip-path 0.05s linear;
-    }
+      }
 
-    .comparison-img.right {
+      .comparison-img.right {
         clip-path: inset(0 50% 0 0);
         transition: clip-path 0.05s linear;
-    }
+      }
 
-    .slider {
+      .slider {
         position: absolute;
         top: 0;
         bottom: 0;
@@ -89,9 +89,9 @@
         backdrop-filter: blur(2px);
         transform: translateX(-50%);
         pointer-events: none;
-    }
+      }
 
-    .slider-handle {
+      .slider-handle {
         position: absolute;
         top: 50%;
         left: 50%;
@@ -100,193 +100,206 @@
         height: 16px;
         border-radius: 50%;
         background: white;
-    }
+      }
 
-    /* Offset Controls UI */
-    .controls {
+      /* Offset Controls UI */
+      .controls {
         display: flex;
         gap: 15px;
         margin-top: 15px;
         align-items: center;
-    }
+      }
 
-    .controls label {
+      .controls label {
         font-size: 14px;
-    }
+      }
 
-    .controls input[type="range"] {
+      .controls input[type="range"] {
         width: 150px;
-    }
-</style>
-</head>
+      }
+    </style>
+  </head>
 
-<body>
-
+  <body>
     <div class="input-container">
-        <input type="text" id="imgUrl" placeholder="Paste an image URL here" />
-        <button id="loadBtn">Load Image</button>
+      <input type="text" id="imgUrl" placeholder="Paste an image URL here" />
+      <button id="loadBtn">Load Image</button>
     </div>
 
     <div class="comparison-container" id="comparison">
-        <img id="leftImg"
-            src="https://images.unsplash.com/photo-1511919884226-fd3cad34687c?q=80&w=1170&auto=format&fit=crop"
-            alt="Left Image" class="comparison-img left" />
-        <img id="rightImg"
-            src="https://images.unsplash.com/photo-1511919884226-fd3cad34687c?q=80&w=1170&auto=format&fit=crop"
-            alt="Right Image" class="comparison-img right" />
-        <div class="slider" id="slider">
-            <div class="slider-handle"></div>
-        </div>
+      <img
+        id="leftImg"
+        src="https://images.unsplash.com/photo-1511919884226-fd3cad34687c?q=80&w=1170&auto=format&fit=crop"
+        alt="Left Image"
+        class="comparison-img left"
+      />
+      <img
+        id="rightImg"
+        src="https://images.unsplash.com/photo-1511919884226-fd3cad34687c?q=80&w=1170&auto=format&fit=crop"
+        alt="Right Image"
+        class="comparison-img right"
+      />
+      <div class="slider" id="slider">
+        <div class="slider-handle"></div>
+      </div>
     </div>
 
     <div class="controls">
-        <label>Horizontal Offset:
-            <input type="range" id="offsetX" min="-500" max="500" value="0">
-        </label>
-        <label>Vertical Offset:
-            <input type="range" id="offsetY" min="-500" max="500" value="0">
-        </label>
-        <button id="resetOffset">Reset</button>
+      <label
+        >Horizontal Offset:
+        <input type="range" id="offsetX" min="-500" max="500" value="0" />
+      </label>
+      <label
+        >Vertical Offset:
+        <input type="range" id="offsetY" min="-500" max="500" value="0" />
+      </label>
+      <button id="resetOffset">Reset</button>
     </div>
 
+    <script>
+      const container = document.getElementById("comparison");
+      const leftImg = document.getElementById("leftImg");
+      const rightImg = document.getElementById("rightImg");
+      const slider = document.getElementById("slider");
+      const loadBtn = document.getElementById("loadBtn");
+      const imgUrlInput = document.getElementById("imgUrl");
 
-<script>
-const container = document.getElementById("comparison");
-const leftImg = document.getElementById("leftImg");
-const rightImg = document.getElementById("rightImg");
-const slider = document.getElementById("slider");
-const loadBtn = document.getElementById("loadBtn");
-const imgUrlInput = document.getElementById("imgUrl");
+      const offsetX = document.getElementById("offsetX");
+      const offsetY = document.getElementById("offsetY");
+      const resetOffset = document.getElementById("resetOffset");
 
-const offsetX = document.getElementById("offsetX");
-const offsetY = document.getElementById("offsetY");
-const resetOffset = document.getElementById("resetOffset");
+      let isDragging = false;
+      let isPanning = false;
+      let lastX = 0;
+      let lastY = 0;
 
-let isDragging = false;
-let isPanning = false;
-let lastX = 0;
-let lastY = 0;
+      // Pan offset
+      let posX = 0;
+      let posY = 0;
 
-// Pan offset
-let posX = 0;
-let posY = 0;
+      function updateOffsetUI() {
+        leftImg.style.transform = `translate(${posX}px, ${posY}px)`;
+        rightImg.style.transform = `translate(${posX}px, ${posY}px)`;
+        offsetX.value = posX;
+        offsetY.value = posY;
+      }
 
-function updateOffsetUI() {
-    leftImg.style.transform = `translate(${posX}px, ${posY}px)`;
-    rightImg.style.transform = `translate(${posX}px, ${posY}px)`;
-    offsetX.value = posX;
-    offsetY.value = posY;
-}
+      function updateSlider(x) {
+        const rect = container.getBoundingClientRect();
+        const pos = Math.min(Math.max(x - rect.left, 0), rect.width);
+        const percent = (pos / rect.width) * 100;
 
-function updateSlider(x) {
-    const rect = container.getBoundingClientRect();
-    const pos = Math.min(Math.max(x - rect.left, 0), rect.width);
-    const percent = (pos / rect.width) * 100;
+        leftImg.style.clipPath = `inset(0 0 0 ${percent}%)`;
+        rightImg.style.clipPath = `inset(0 ${100 - percent}% 0 0)`;
+        slider.style.left = `${percent}%`;
+      }
 
-    leftImg.style.clipPath = `inset(0 0 0 ${percent}%)`;
-    rightImg.style.clipPath = `inset(0 ${100 - percent}% 0 0)`;
-    slider.style.left = `${percent}%`;
-}
+      // Drag slider & Pan Handling
+      container.addEventListener("mousedown", (e) => {
+        if (e.button === 0) isDragging = true;
+        else if (e.button === 2 || e.button === 1) {
+          isPanning = true;
+          lastX = e.clientX;
+          lastY = e.clientY;
+        }
+      });
 
-// Drag slider & Pan Handling
-container.addEventListener("mousedown", (e) => {
-    if (e.button === 0) isDragging = true;
-    else if (e.button === 2 || e.button === 1) {
-        isPanning = true;
-        lastX = e.clientX;
-        lastY = e.clientY;
-    }
-});
+      container.addEventListener("mousemove", (e) => {
+        if (isDragging) updateSlider(e.clientX);
 
-container.addEventListener("mousemove", (e) => {
-    if (isDragging) updateSlider(e.clientX);
+        if (isPanning) {
+          posX += e.clientX - lastX;
+          posY += e.clientY - lastY;
+          lastX = e.clientX;
+          lastY = e.clientY;
+          updateOffsetUI();
+        }
+      });
 
-    if (isPanning) {
-        posX += e.clientX - lastX;
-        posY += e.clientY - lastY;
-        lastX = e.clientX;
-        lastY = e.clientY;
+      container.addEventListener("mouseup", () => {
+        isDragging = false;
+        isPanning = false;
+      });
+      container.addEventListener("mouseleave", () => {
+        isDragging = false;
+        isPanning = false;
+      });
+
+      container.addEventListener("contextmenu", (e) => e.preventDefault());
+
+      // Scroll wheel pan: Shift = horizontal
+      container.addEventListener("wheel", (e) => {
+        e.preventDefault();
+        if (e.shiftKey) posX += e.deltaY * -0.3;
+        else posY += e.deltaY * -0.3;
         updateOffsetUI();
-    }
-});
+      });
 
-container.addEventListener("mouseup", () => {
-    isDragging = false;
-    isPanning = false;
-});
-container.addEventListener("mouseleave", () => {
-    isDragging = false;
-    isPanning = false;
-});
+      // Touch support
+      container.addEventListener(
+        "touchstart",
+        (e) => {
+          if (e.touches.length === 1) {
+            isDragging = true;
+          } else {
+            isPanning = true;
+            lastX = e.touches[0].clientX;
+            lastY = e.touches[0].clientY;
+          }
+        },
+        { passive: false }
+      );
 
-container.addEventListener("contextmenu", (e) => e.preventDefault());
+      container.addEventListener(
+        "touchmove",
+        (e) => {
+          e.preventDefault();
+          const t = e.touches[0];
 
-// Scroll wheel pan: Shift = horizontal
-container.addEventListener("wheel", (e) => {
-    e.preventDefault();
-    if (e.shiftKey) posX += e.deltaY * -0.3;
-    else posY += e.deltaY * -0.3;
-    updateOffsetUI();
-});
+          if (isDragging) updateSlider(t.clientX);
+          if (isPanning) {
+            posX += t.clientX - lastX;
+            posY += t.clientY - lastY;
+            lastX = t.clientX;
+            lastY = t.clientY;
+            updateOffsetUI();
+          }
+        },
+        { passive: false }
+      );
 
-// Touch support
-container.addEventListener("touchstart", (e) => {
-    if (e.touches.length === 1) {
-        isDragging = true;
-    } else {
-        isPanning = true;
-        lastX = e.touches[0].clientX;
-        lastY = e.touches[0].clientY;
-    }
-}, { passive: false });
+      container.addEventListener("touchend", () => {
+        isDragging = false;
+        isPanning = false;
+      });
 
-container.addEventListener("touchmove", (e) => {
-    e.preventDefault();
-    const t = e.touches[0];
-
-    if (isDragging) updateSlider(t.clientX);
-    if (isPanning) {
-        posX += t.clientX - lastX;
-        posY += t.clientY - lastY;
-        lastX = t.clientX;
-        lastY = t.clientY;
+      // Manual sliders
+      offsetX.addEventListener("input", () => {
+        posX = +offsetX.value;
         updateOffsetUI();
-    }
-}, { passive: false });
+      });
+      offsetY.addEventListener("input", () => {
+        posY = +offsetY.value;
+        updateOffsetUI();
+      });
 
-container.addEventListener("touchend", () => {
-    isDragging = false;
-    isPanning = false;
-});
+      // Reset
+      resetOffset.addEventListener("click", () => {
+        posX = 0;
+        posY = 0;
+        updateOffsetUI();
+      });
 
-// Manual sliders
-offsetX.addEventListener("input", () => {
-    posX = +offsetX.value;
-    updateOffsetUI();
-});
-offsetY.addEventListener("input", () => {
-    posY = +offsetY.value;
-    updateOffsetUI();
-});
+      // Default slider center
+      updateSlider(container.getBoundingClientRect().width / 2);
 
-// Reset
-resetOffset.addEventListener("click", () => {
-    posX = 0;
-    posY = 0;
-    updateOffsetUI();
-});
-
-// Default slider center
-updateSlider(container.getBoundingClientRect().width / 2);
-
-// Load custom URL
-loadBtn.addEventListener("click", () => {
-    const url = imgUrlInput.value.trim();
-    if (!url) return;
-    leftImg.src = url;
-    rightImg.src = url;
-});
-</script>
-
-</body>
+      // Load custom URL
+      loadBtn.addEventListener("click", () => {
+        const url = imgUrlInput.value.trim();
+        if (!url) return;
+        leftImg.src = url;
+        rightImg.src = url;
+      });
+    </script>
+  </body>
 </html>

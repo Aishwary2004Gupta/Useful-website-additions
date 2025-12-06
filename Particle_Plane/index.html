@@ -78,9 +78,7 @@
         speed: 1.0,
         wireframe: true,
         colorMap: "height",
-        particleColor: "#3498db", // Added particle color parameter
-        surfaceColor: "#2ecc71", // Added surface color parameter
-        wireframeColor: "#111111", // Added wireframe color parameter
+        fill: false,
         applyPresetImageLook() {
           this.mode = "surface";
           this.segments = 140;
@@ -90,8 +88,7 @@
           this.frequency = 1.6;
           this.speed = 0.8;
           this.wireframe = true;
-          this.surfaceColor = "#3498db";
-          this.wireframeColor = "#111111";
+          this.colorMap = "coolwarm";
           rebuild();
         },
       };
@@ -108,7 +105,31 @@
         "https://threejs.org/examples/textures/sprites/disc.png"
       );
 
-      // Create particles Points with consistent colors
+      // Helper - create a colors array from heights
+      function heightToColor(t, scheme = "height") {
+        // t in [0,1]
+        if (scheme === "coolwarm") {
+          // simple cool->warm gradient
+          const r = Math.min(1, 2 * t);
+          const g = 1 - Math.abs(2 * t - 1);
+          const b = Math.min(1, 2 * (1 - t));
+          return new THREE.Color(r, g * 0.85, b * 0.9);
+        }
+        // default height map: blue -> green -> yellow -> red
+        const c = new THREE.Color();
+        if (t < 0.33) {
+          c.setRGB(0, 0.3 + t * 1.8, 1 - t * 2.7);
+        } else if (t < 0.66) {
+          const tt = (t - 0.33) / 0.33;
+          c.setRGB(0.0 + tt * 0.4, 0.9, 0.0 + tt * 0.6);
+        } else {
+          const tt = (t - 0.66) / 0.34;
+          c.setRGB(0.4 + tt * 0.6, 0.9 - tt * 0.7, 0.6 - tt * 0.6);
+        }
+        return c;
+      }
+
+      // Create particles Points
       function createParticles() {
         disposeObjects();
         const count = Math.max(
@@ -117,10 +138,6 @@
         );
         const positions = new Float32Array(count * 3);
         const colors = new Float32Array(count * 3);
-
-        // Parse the color from the parameter
-        const particleColor = new THREE.Color(params.particleColor);
-
         for (let i = 0; i < count; i++) {
           const x = (Math.random() - 0.5) * params.width;
           const z = (Math.random() - 0.5) * params.height;
@@ -129,11 +146,14 @@
           positions[i3] = x;
           positions[i3 + 1] = y;
           positions[i3 + 2] = z;
-
-          // Use the same color for all particles
-          colors[i3] = particleColor.r;
-          colors[i3 + 1] = particleColor.g;
-          colors[i3 + 2] = particleColor.b;
+          const c = new THREE.Color(
+            Math.random(),
+            Math.random(),
+            Math.random()
+          );
+          colors[i3] = c.r;
+          colors[i3 + 1] = c.g;
+          colors[i3 + 2] = c.b;
         }
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute(
@@ -155,7 +175,7 @@
         scene.add(points);
       }
 
-      // Create a surface plane with consistent colors
+      // Create a surface plane (filled) with optional wireframe and contour base
       function createSurface() {
         disposeObjects();
         const seg = Math.max(4, Math.floor(params.segments));
@@ -172,21 +192,19 @@
         const count = positions.length / 3;
         const colors = new Float32Array(count * 3);
 
-        // Parse the surface color from the parameter
-        const surfaceColor = new THREE.Color(params.surfaceColor);
-
-        // compute initial heights and use consistent colors
+        // compute initial heights and colors
         for (let i = 0; i < count; i++) {
           const i3 = i * 3;
           const x = positions[i3];
           const z = positions[i3 + 2];
           const y = 0;
           positions[i3 + 1] = y;
-
-          // Use the same color for all vertices
-          colors[i3] = surfaceColor.r;
-          colors[i3 + 1] = surfaceColor.g;
-          colors[i3 + 2] = surfaceColor.b;
+          // placeholder color
+          const t = 0.5;
+          const c = heightToColor(t, params.colorMap);
+          colors[i3] = c.r;
+          colors[i3 + 1] = c.g;
+          colors[i3 + 2] = c.b;
         }
         geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
         geometry.attributes.position.needsUpdate = true;
@@ -206,13 +224,9 @@
         // optional wireframe overlay
         if (params.wireframe) {
           const geo = new THREE.WireframeGeometry(geometry);
-          const wireframeColor = new THREE.Color(params.wireframeColor);
           wireframeMesh = new THREE.LineSegments(
             geo,
-            new THREE.LineBasicMaterial({
-              color: wireframeColor,
-              linewidth: 1,
-            })
+            new THREE.LineBasicMaterial({ color: 0x111111, linewidth: 1 })
           );
           scene.add(wireframeMesh);
         }
@@ -277,13 +291,13 @@
       rebuild();
 
       // GUI
-      const gui = new dat.GUI({ closed: true }); // Start with GUI closed
+      const gui = new dat.GUI();
       gui
         .add(params, "mode", ["particles", "surface"])
         .name("Mode")
         .onChange(rebuild);
+      gui.add(params, "preset").name("Preset");
       gui.add(params, "applyPresetImageLook").name("Apply Image Look");
-
       const pFolder = gui.addFolder("Particles");
       pFolder
         .add(params, "particleCount", 1000, 50000, 1000)
@@ -297,14 +311,7 @@
         .onChange(() => {
           if (points) points.material.size = params.particleSize;
         });
-      pFolder
-        .addColor(params, "particleColor")
-        .name("Color")
-        .onChange(() => {
-          if (params.mode === "particles") rebuild();
-        });
       pFolder.open();
-
       const sFolder = gui.addFolder("Surface");
       sFolder
         .add(params, "segments", 4, 300, 1)
@@ -327,26 +334,19 @@
           if (params.mode === "surface") rebuild();
         });
       sFolder
-        .addColor(params, "surfaceColor")
-        .name("Surface Color")
-        .onChange(() => {
-          if (params.mode === "surface") rebuild();
-        });
-      sFolder
-        .addColor(params, "wireframeColor")
-        .name("Wireframe Color")
+        .add(params, "colorMap", ["height", "coolwarm"])
+        .name("Color Map")
         .onChange(() => {
           if (params.mode === "surface") rebuild();
         });
       sFolder.open();
-
       const wFolder = gui.addFolder("Waves");
       wFolder.add(params, "amplitude", 0, 3, 0.01).name("Amplitude");
       wFolder.add(params, "frequency", 0, 6, 0.01).name("Frequency");
       wFolder.add(params, "speed", 0, 3, 0.01).name("Speed");
       wFolder.open();
 
-      // Animation loop - update heights ONLY, colors remain constant
+      // Animation loop - update heights for both particles and surface
       function animate() {
         const t = clock.getElapsedTime() * params.speed;
 
@@ -365,14 +365,15 @@
             pos[i3 + 1] = y;
           }
           points.geometry.attributes.position.needsUpdate = true;
-          // NO COLOR UPDATES - colors remain constant
         }
 
         if (surface) {
           const pos = surface.geometry.attributes.position.array;
+          const colors = surface.geometry.attributes.color.array;
           const vertCount = pos.length / 3;
-
-          // Only update positions, not colors
+          let minY = Infinity,
+            maxY = -Infinity;
+          // compute Y heights and track min/max
           for (let i = 0; i < vertCount; i++) {
             const i3 = i * 3;
             const x = pos[i3];
@@ -382,11 +383,23 @@
               Math.cos((z * 0.5 + t) * params.frequency) *
               params.amplitude;
             pos[i3 + 1] = y;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
           }
-
+          // update colors by normalized height
+          const range = Math.max(0.0001, maxY - minY);
+          for (let i = 0; i < vertCount; i++) {
+            const i3 = i * 3;
+            const y = pos[i3 + 1];
+            const tcol = (y - minY) / range;
+            const c = heightToColor(tcol, params.colorMap);
+            colors[i3] = c.r;
+            colors[i3 + 1] = c.g;
+            colors[i3 + 2] = c.b;
+          }
           surface.geometry.attributes.position.needsUpdate = true;
+          surface.geometry.attributes.color.needsUpdate = true;
           surface.geometry.computeVertexNormals();
-          // NO COLOR UPDATES - colors remain constant
 
           if (wireframeMesh) {
             wireframeMesh.geometry.dispose();
@@ -406,13 +419,6 @@
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
-      });
-
-      // Optional: Add keyboard shortcut to toggle GUI (press 'H')
-      window.addEventListener("keydown", (e) => {
-        if (e.key === "h" || e.key === "H") {
-          gui.closed = !gui.closed;
-        }
       });
 
       animate();

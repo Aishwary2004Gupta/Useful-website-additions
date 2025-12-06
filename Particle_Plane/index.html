@@ -117,10 +117,10 @@
         );
         const positions = new Float32Array(count * 3);
         const colors = new Float32Array(count * 3);
-        
+
         // Parse the color from the parameter
         const particleColor = new THREE.Color(params.particleColor);
-        
+
         for (let i = 0; i < count; i++) {
           const x = (Math.random() - 0.5) * params.width;
           const z = (Math.random() - 0.5) * params.height;
@@ -129,7 +129,7 @@
           positions[i3] = x;
           positions[i3 + 1] = y;
           positions[i3 + 2] = z;
-          
+
           // Use the same color for all particles
           colors[i3] = particleColor.r;
           colors[i3 + 1] = particleColor.g;
@@ -174,7 +174,7 @@
 
         // Parse the surface color from the parameter
         const surfaceColor = new THREE.Color(params.surfaceColor);
-        
+
         // compute initial heights and use consistent colors
         for (let i = 0; i < count; i++) {
           const i3 = i * 3;
@@ -182,7 +182,7 @@
           const z = positions[i3 + 2];
           const y = 0;
           positions[i3 + 1] = y;
-          
+
           // Use the same color for all vertices
           colors[i3] = surfaceColor.r;
           colors[i3 + 1] = surfaceColor.g;
@@ -209,9 +209,9 @@
           const wireframeColor = new THREE.Color(params.wireframeColor);
           wireframeMesh = new THREE.LineSegments(
             geo,
-            new THREE.LineBasicMaterial({ 
-              color: wireframeColor, 
-              linewidth: 1 
+            new THREE.LineBasicMaterial({
+              color: wireframeColor,
+              linewidth: 1,
             })
           );
           scene.add(wireframeMesh);
@@ -283,7 +283,7 @@
         .name("Mode")
         .onChange(rebuild);
       gui.add(params, "applyPresetImageLook").name("Apply Image Look");
-      
+
       const pFolder = gui.addFolder("Particles");
       pFolder
         .add(params, "particleCount", 1000, 50000, 1000)
@@ -304,7 +304,7 @@
           if (params.mode === "particles") rebuild();
         });
       pFolder.open();
-      
+
       const sFolder = gui.addFolder("Surface");
       sFolder
         .add(params, "segments", 4, 300, 1)
@@ -339,7 +339,7 @@
           if (params.mode === "surface") rebuild();
         });
       sFolder.open();
-      
+
       const wFolder = gui.addFolder("Waves");
       wFolder.add(params, "amplitude", 0, 3, 0.01).name("Amplitude");
       wFolder.add(params, "frequency", 0, 6, 0.01).name("Frequency");
@@ -371,7 +371,7 @@
         if (surface) {
           const pos = surface.geometry.attributes.position.array;
           const vertCount = pos.length / 3;
-          
+
           // Only update positions, not colors
           for (let i = 0; i < vertCount; i++) {
             const i3 = i * 3;
@@ -383,7 +383,7 @@
               params.amplitude;
             pos[i3 + 1] = y;
           }
-          
+
           surface.geometry.attributes.position.needsUpdate = true;
           surface.geometry.computeVertexNormals();
           // NO COLOR UPDATES - colors remain constant
@@ -410,7 +410,7 @@
 
       // Optional: Add keyboard shortcut to toggle GUI (press 'H')
       window.addEventListener("keydown", (e) => {
-        if (e.key === 'h' || e.key === 'H') {
+        if (e.key === "h" || e.key === "H") {
           gui.closed = !gui.closed;
         }
       });

@@ -73,15 +73,4 @@ body {
   }
 }
 
-/* @keyframes anim__hello {
-  0% {
-    stroke-dashoffset: 5800;
-  }
-  70% {
-    stroke-dashoffset: 0;
-  }
-  100% {
-    stroke-dashoffset: 5800;
-  }
-} */
 

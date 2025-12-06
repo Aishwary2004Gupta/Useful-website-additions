@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Particle Animation</title>
     <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
       html,
       body {
-        overflow: hidden;
         height: 100%;
       }
       #canvas {
@@ -19,6 +22,14 @@
       /* GUI panel style */
       .dg {
         z-index: 9999 !important;
+      }
+      /* Make GUI more compact */
+      .dg.ac {
+        right: 0 !important;
+        left: auto !important;
+      }
+      .dg.main .close-button {
+        height: 16px !important;
       }
     </style>
   </head>
@@ -64,33 +75,50 @@
       dir.position.set(5, 10, 7);
       scene.add(ambient, dir);
 
-      // GUI params
+      // GUI params - improved with better defaults and organization
       const params = {
-        mode: "particles", // 'particles' | 'surface'
+        mode: "particles",
         preset: "default",
-        particleCount: 20000,
-        particleSize: 0.1,
-        segments: 120,
-        width: 10,
-        height: 10,
-        amplitude: 0.8,
-        frequency: 1.5,
-        speed: 1.0,
+        particleCount: 15000,
+        particleSize: 0.15,
+        segments: 80,
+        width: 12,
+        height: 12,
+        amplitude: 1.2,
+        frequency: 1.8,
+        speed: 1.2,
         wireframe: true,
         colorMap: "height",
-        fill: false,
+        autoRotate: false,
+        rotationSpeed: 0.5,
+        // Presets
         applyPresetImageLook() {
           this.mode = "surface";
-          this.segments = 140;
-          this.width = 12;
-          this.height = 12;
+          this.segments = 120;
+          this.width = 14;
+          this.height = 14;
           this.amplitude = 1.4;
-          this.frequency = 1.6;
-          this.speed = 0.8;
+          this.frequency = 2.0;
+          this.speed = 1.0;
           this.wireframe = true;
           this.colorMap = "coolwarm";
           rebuild();
         },
+        applyPresetParticles() {
+          this.mode = "particles";
+          this.particleCount = 25000;
+          this.particleSize = 0.08;
+          this.amplitude = 1.0;
+          this.frequency = 2.2;
+          this.speed = 1.5;
+          rebuild();
+        },
+        applyPresetCalm() {
+          this.amplitude = 0.6;
+          this.frequency = 1.2;
+          this.speed = 0.5;
+          rebuild();
+        }
       };
 
       // Geometry holders
@@ -109,22 +137,31 @@
       function heightToColor(t, scheme = "height") {
         // t in [0,1]
         if (scheme === "coolwarm") {
-          // simple cool->warm gradient
-          const r = Math.min(1, 2 * t);
-          const g = 1 - Math.abs(2 * t - 1);
-          const b = Math.min(1, 2 * (1 - t));
-          return new THREE.Color(r, g * 0.85, b * 0.9);
+          // Cool to warm gradient
+          const r = 0.5 + 0.5 * Math.sin(Math.PI * t);
+          const g = 0.3 + 0.4 * Math.sin(2 * Math.PI * t);
+          const b = 0.5 + 0.5 * Math.cos(Math.PI * t);
+          return new THREE.Color(r, g, b);
         }
-        // default height map: blue -> green -> yellow -> red
+        if (scheme === "rainbow") {
+          // Rainbow gradient
+          const hue = t * 0.8; // 0 to 0.8
+          return new THREE.Color().setHSL(hue, 0.8, 0.5);
+        }
+        // default height map: deep blue -> cyan -> green -> yellow -> red
         const c = new THREE.Color();
-        if (t < 0.33) {
-          c.setRGB(0, 0.3 + t * 1.8, 1 - t * 2.7);
-        } else if (t < 0.66) {
-          const tt = (t - 0.33) / 0.33;
-          c.setRGB(0.0 + tt * 0.4, 0.9, 0.0 + tt * 0.6);
+        if (t < 0.25) {
+          const tt = t / 0.25;
+          c.setRGB(0, 0.2 * tt, 0.4 + 0.6 * tt);
+        } else if (t < 0.5) {
+          const tt = (t - 0.25) / 0.25;
+          c.setRGB(0, 0.6 + 0.4 * tt, 0.8 - 0.8 * tt);
+        } else if (t < 0.75) {
+          const tt = (t - 0.5) / 0.25;
+          c.setRGB(tt, 0.8, 0);
         } else {
-          const tt = (t - 0.66) / 0.34;
-          c.setRGB(0.4 + tt * 0.6, 0.9 - tt * 0.7, 0.6 - tt * 0.6);
+          const tt = (t - 0.75) / 0.25;
+          c.setRGB(0.8 + 0.2 * tt, 0.8 - 0.8 * tt, 0);
         }
         return c;
       }
@@ -134,10 +171,11 @@
         disposeObjects();
         const count = Math.max(
           1000,
-          Math.min(50000, Math.floor(params.particleCount))
+          Math.min(100000, Math.floor(params.particleCount))
         );
         const positions = new Float32Array(count * 3);
         const colors = new Float32Array(count * 3);
+        
         for (let i = 0; i < count; i++) {
           const x = (Math.random() - 0.5) * params.width;
           const z = (Math.random() - 0.5) * params.height;
@@ -146,15 +184,13 @@
           positions[i3] = x;
           positions[i3 + 1] = y;
           positions[i3 + 2] = z;
-          const c = new THREE.Color(
-            Math.random(),
-            Math.random(),
-            Math.random()
-          );
+          // Initial random colors
+          const c = new THREE.Color().setHSL(Math.random() * 0.3 + 0.5, 0.7, 0.5);
           colors[i3] = c.r;
           colors[i3 + 1] = c.g;
           colors[i3 + 2] = c.b;
         }
+        
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute(
           "position",
@@ -187,66 +223,76 @@
         );
         geometry.rotateX(-Math.PI / 2); // make X-Z plane
 
-        // set initial y to 0
         const positions = geometry.attributes.position.array;
         const count = positions.length / 3;
         const colors = new Float32Array(count * 3);
 
-        // compute initial heights and colors
+        // Initialize positions and colors
         for (let i = 0; i < count; i++) {
           const i3 = i * 3;
           const x = positions[i3];
           const z = positions[i3 + 2];
-          const y = 0;
-          positions[i3 + 1] = y;
-          // placeholder color
-          const t = 0.5;
+          positions[i3 + 1] = 0;
+          
+          // Initial color based on position
+          const normX = (x / params.width) + 0.5;
+          const normZ = (z / params.height) + 0.5;
+          const t = (normX + normZ) * 0.5;
           const c = heightToColor(t, params.colorMap);
           colors[i3] = c.r;
           colors[i3 + 1] = c.g;
           colors[i3 + 2] = c.b;
         }
+        
         geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
         geometry.attributes.position.needsUpdate = true;
         geometry.computeVertexNormals();
 
-        // Phong material with vertex colors
+        // Material with vertex colors
         const material = new THREE.MeshPhongMaterial({
           vertexColors: true,
-          shininess: 40,
+          shininess: 60,
           side: THREE.DoubleSide,
           flatShading: false,
+          transparent: true,
+          opacity: 0.9,
         });
 
         surface = new THREE.Mesh(geometry, material);
         scene.add(surface);
 
-        // optional wireframe overlay
+        // Wireframe overlay
         if (params.wireframe) {
           const geo = new THREE.WireframeGeometry(geometry);
           wireframeMesh = new THREE.LineSegments(
             geo,
-            new THREE.LineBasicMaterial({ color: 0x111111, linewidth: 1 })
+            new THREE.LineBasicMaterial({ 
+              color: 0x000000, 
+              linewidth: 1,
+              transparent: true,
+              opacity: 0.3
+            })
           );
           scene.add(wireframeMesh);
         }
 
-        // optional contour base plane (simple tinted plane with transparency)
+        // Contour base plane
         contourPlane = new THREE.Mesh(
           new THREE.PlaneBufferGeometry(
-            params.width * 1.05,
-            params.height * 1.05,
+            params.width * 1.1,
+            params.height * 1.1,
             1,
             1
           ),
           new THREE.MeshBasicMaterial({
-            color: 0xdddddd,
+            color: 0x222222,
             transparent: true,
-            opacity: 0.45,
+            opacity: 0.15,
+            side: THREE.DoubleSide
           })
         );
         contourPlane.rotateX(-Math.PI / 2);
-        contourPlane.position.y = -1.8;
+        contourPlane.position.y = -2.5;
         scene.add(contourPlane);
       }
 
@@ -287,106 +333,139 @@
         }
       }
 
-      // initial build
+      // Initial build
       rebuild();
 
-      // GUI
-      const gui = new dat.GUI();
-      gui
-        .add(params, "mode", ["particles", "surface"])
-        .name("Mode")
-        .onChange(rebuild);
-      gui.add(params, "preset").name("Preset");
-      gui.add(params, "applyPresetImageLook").name("Apply Image Look");
-      const pFolder = gui.addFolder("Particles");
-      pFolder
-        .add(params, "particleCount", 1000, 50000, 1000)
-        .name("Count")
+      // GUI - Improved organization
+      const gui = new dat.GUI({
+        autoPlace: true,
+        width: 300,
+        closed: true // Start with panel closed
+      });
+
+      // Display Mode
+      const modeFolder = gui.addFolder('Display Mode');
+      modeFolder.add(params, 'mode', ['particles', 'surface']).name('Mode').onChange(rebuild);
+      modeFolder.open();
+
+      // Presets
+      const presetFolder = gui.addFolder('Presets');
+      presetFolder.add(params, 'applyPresetImageLook').name('Image Look');
+      presetFolder.add(params, 'applyPresetParticles').name('Particle Field');
+      presetFolder.add(params, 'applyPresetCalm').name('Calm Waves');
+      presetFolder.close();
+
+      // Particles Settings
+      const particleFolder = gui.addFolder('Particle Settings');
+      particleFolder.add(params, 'particleCount', 1000, 50000, 1000)
+        .name('Count')
         .onFinishChange(() => {
-          if (params.mode === "particles") rebuild();
+          if (params.mode === 'particles') rebuild();
         });
-      pFolder
-        .add(params, "particleSize", 0.01, 0.5, 0.01)
-        .name("Size")
+      particleFolder.add(params, 'particleSize', 0.02, 0.5, 0.01)
+        .name('Size')
         .onChange(() => {
           if (points) points.material.size = params.particleSize;
         });
-      pFolder.open();
-      const sFolder = gui.addFolder("Surface");
-      sFolder
-        .add(params, "segments", 4, 300, 1)
-        .name("Segments")
-        .onFinishChange(() => {
-          if (params.mode === "surface") rebuild();
-        });
-      sFolder
-        .add(params, "width", 1, 30, 0.1)
-        .name("Width")
-        .onFinishChange(rebuild);
-      sFolder
-        .add(params, "height", 1, 30, 0.1)
-        .name("Height")
-        .onFinishChange(rebuild);
-      sFolder
-        .add(params, "wireframe")
-        .name("Wireframe")
-        .onChange(() => {
-          if (params.mode === "surface") rebuild();
-        });
-      sFolder
-        .add(params, "colorMap", ["height", "coolwarm"])
-        .name("Color Map")
-        .onChange(() => {
-          if (params.mode === "surface") rebuild();
-        });
-      sFolder.open();
-      const wFolder = gui.addFolder("Waves");
-      wFolder.add(params, "amplitude", 0, 3, 0.01).name("Amplitude");
-      wFolder.add(params, "frequency", 0, 6, 0.01).name("Frequency");
-      wFolder.add(params, "speed", 0, 3, 0.01).name("Speed");
-      wFolder.open();
+      particleFolder.close();
 
-      // Animation loop - update heights for both particles and surface
+      // Surface Settings
+      const surfaceFolder = gui.addFolder('Surface Settings');
+      surfaceFolder.add(params, 'segments', 4, 200, 1)
+        .name('Resolution')
+        .onFinishChange(() => {
+          if (params.mode === 'surface') rebuild();
+        });
+      surfaceFolder.add(params, 'width', 1, 30, 0.5)
+        .name('Width')
+        .onFinishChange(rebuild);
+      surfaceFolder.add(params, 'height', 1, 30, 0.5)
+        .name('Height')
+        .onFinishChange(rebuild);
+      surfaceFolder.add(params, 'wireframe')
+        .name('Wireframe')
+        .onChange(() => {
+          if (params.mode === 'surface') rebuild();
+        });
+      surfaceFolder.add(params, 'colorMap', ['height', 'coolwarm', 'rainbow'])
+        .name('Color Scheme')
+        .onChange(() => {
+          if (params.mode === 'surface') rebuild();
+        });
+      surfaceFolder.close();
+
+      // Wave Settings
+      const waveFolder = gui.addFolder('Wave Settings');
+      waveFolder.add(params, 'amplitude', 0.1, 3, 0.1).name('Amplitude');
+      waveFolder.add(params, 'frequency', 0.1, 5, 0.1).name('Frequency');
+      waveFolder.add(params, 'speed', 0.1, 3, 0.1).name('Speed');
+      waveFolder.open();
+
+      // Camera Controls
+      const cameraFolder = gui.addFolder('Camera');
+      cameraFolder.add(params, 'autoRotate').name('Auto Rotate');
+      cameraFolder.add(params, 'rotationSpeed', 0.1, 2, 0.1).name('Rotation Speed');
+      cameraFolder.close();
+
+      // Animation loop
       function animate() {
         const t = clock.getElapsedTime() * params.speed;
 
+        // Update points
         if (points) {
           const pos = points.geometry.attributes.position.array;
+          const colors = points.geometry.attributes.color.array;
           const count = pos.length / 3;
+          
           for (let i = 0; i < count; i++) {
             const i3 = i * 3;
             const x = pos[i3];
             const z = pos[i3 + 2];
-            // wave from combined sin/cos for nicer surface
-            const y =
-              Math.sin((x * 0.5 + t) * params.frequency) *
-              Math.cos((z * 0.5 + t) * params.frequency) *
-              params.amplitude;
+            
+            // Combined wave functions for more organic motion
+            const wave1 = Math.sin((x * 0.3 + t) * params.frequency);
+            const wave2 = Math.cos((z * 0.3 + t * 0.7) * params.frequency * 0.8);
+            const wave3 = Math.sin((x + z) * 0.2 + t * 0.5) * 0.5;
+            const y = (wave1 * wave2 + wave3) * params.amplitude;
+            
             pos[i3 + 1] = y;
+            
+            // Update colors based on height
+            const heightNormalized = (y / params.amplitude + 1) * 0.5;
+            const color = heightToColor(heightNormalized, 'height');
+            colors[i3] = color.r;
+            colors[i3 + 1] = color.g;
+            colors[i3 + 2] = color.b;
           }
+          
           points.geometry.attributes.position.needsUpdate = true;
+          points.geometry.attributes.color.needsUpdate = true;
         }
 
+        // Update surface
         if (surface) {
           const pos = surface.geometry.attributes.position.array;
           const colors = surface.geometry.attributes.color.array;
           const vertCount = pos.length / 3;
-          let minY = Infinity,
-            maxY = -Infinity;
-          // compute Y heights and track min/max
+          let minY = Infinity, maxY = -Infinity;
+          
+          // First pass: compute heights
           for (let i = 0; i < vertCount; i++) {
             const i3 = i * 3;
             const x = pos[i3];
             const z = pos[i3 + 2];
-            const y =
-              Math.sin((x * 0.5 + t) * params.frequency) *
-              Math.cos((z * 0.5 + t) * params.frequency) *
-              params.amplitude;
+            
+            const wave1 = Math.sin((x * 0.3 + t) * params.frequency);
+            const wave2 = Math.cos((z * 0.3 + t * 0.7) * params.frequency * 0.8);
+            const wave3 = Math.sin((x + z) * 0.2 + t * 0.5) * 0.5;
+            const y = (wave1 * wave2 + wave3) * params.amplitude;
+            
             pos[i3 + 1] = y;
             if (y < minY) minY = y;
             if (y > maxY) maxY = y;
           }
-          // update colors by normalized height
+          
+          // Second pass: update colors
           const range = Math.max(0.0001, maxY - minY);
           for (let i = 0; i < vertCount; i++) {
             const i3 = i * 3;
@@ -397,30 +476,46 @@
             colors[i3 + 1] = c.g;
             colors[i3 + 2] = c.b;
           }
+          
           surface.geometry.attributes.position.needsUpdate = true;
           surface.geometry.attributes.color.needsUpdate = true;
           surface.geometry.computeVertexNormals();
 
-          if (wireframeMesh) {
+          // Update wireframe
+          if (wireframeMesh && params.wireframe) {
             wireframeMesh.geometry.dispose();
-            wireframeMesh.geometry = new THREE.WireframeGeometry(
-              surface.geometry
-            );
+            wireframeMesh.geometry = new THREE.WireframeGeometry(surface.geometry);
           }
         }
 
-        controls.update();
+        // Auto rotation
+        if (params.autoRotate) {
+          camera.position.x = Math.cos(t * 0.1 * params.rotationSpeed) * 7;
+          camera.position.z = Math.sin(t * 0.1 * params.rotationSpeed) * 7;
+          camera.lookAt(0, 0, 0);
+        } else {
+          controls.update();
+        }
+
         renderer.render(scene, camera);
         requestAnimationFrame(animate);
       }
 
-      // handle resize
-      window.addEventListener("resize", () => {
+      // Handle resize
+      window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
       });
 
+      // Handle key press to toggle GUI (optional)
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'h' || e.key === 'H') {
+          gui.closed = !gui.closed;
+        }
+      });
+
+      // Start animation
       animate();
     </script>
   </body>

@@ -25,23 +25,6 @@ body {
   width: 100%;
   max-width: 600px;
 }
-/* .hello__svg {
-  fill: none;
-  stroke: #fff;
-  stroke-linecap: round;
-  stroke-miterlimit: 10;
-  stroke-width: 48px;
-  stroke-dasharray: 5800px;
-  stroke-dashoffset: 5800px;
-  animation: anim__hello linear 5s forwards;
-  width: 100%;
-
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  margin: 0 auto;
-  text-align: center;
-} */
 
 .hello__svg {
   fill: none;

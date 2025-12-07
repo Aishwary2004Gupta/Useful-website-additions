@@ -1,427 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Particle Animation</title>
-    <style>
-      html,
-      body {
-        overflow: hidden;
-        height: 100%;
-      }
-      #canvas {
-        display: block;
-        width: 100%;
-        height: 100%;
-        background: #00000015;
-      }
-      /* GUI panel style */
-      .dg {
-        z-index: 9999 !important;
-      }
-    </style>
-  </head>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nano Banana Pro — Vertical Blind Effect</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <style>
+    body { background: #111; color: #eee; font-family: system-ui, sans-serif; }
+    .container { max-width: 1000px; }
+    .preview img { max-width: 100%; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+    .card { background: #1e1e1e; border: none; }
+    textarea { background: #2d2d2d; color: #fff; border: 1px solid #444; }
+    .loading { opacity: 0.6; pointer-events: none; }
+    .footer { margin-top: 100px; font-size: 0.9em; color: #666; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container py-5">
+    <h1 class="text-center mb-4">Nano Banana Pro Effect</h1>
+    <p class="text-center lead mb-5">Upload or paste an image URL → get the viral vertical blind distortion instantly</p>
 
-  <body>
-    <canvas id="canvas"></canvas>
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="card p-4">
+          <h4>1. Input Image</h4>
+          <div class="mb-3">
+            <label class="form-label">Upload Image</label>
+            <input type="file" id="fileInput" accept="image/*" class="form-control"/>
+          </div>
+          <div class="text-center my-3 text-muted">— or —</div>
+          <div class="mb-3">
+            <label class="form-label">Paste Image URL</label>
+            <input type="url" id="urlInput" class="form-control" placeholder="https://example.com/photo.jpg"/>
+          </div>
+          <button id="loadUrl" class="btn btn-outline-light btn-sm">Load from URL</button>
+        </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
+        <div class="card p-4 mt-4">
+          <h4>2. Prompt (you can edit)</h4>
+          <textarea id="prompt" class="form-control" rows="6" spellcheck="false">
+Create the viral "Nano Banana Pro" vertical blind effect: apply thin, evenly spaced semi-transparent gray vertical slats (1–2mm wide) across the entire image with a subtle 1–2 pixel offset on every other strip to create a moiré displacement. Keep the subject's face, clothing, and details perfectly intact and sharp. Add a soft blurred gray background visible through the slats. High-fashion glossy lighting, photorealistic, ultra-high resolution.
+          </textarea>
+        </div>
 
-    <script>
-      // Initialize scene
-      const scene = new THREE.Scene();
-      const canvas = document.querySelector("#canvas");
+        <div class="card p-4 mt-4">
+          <h4>3. Generate</h4>
+          <div class="input-group mb-3">
+            <input type="text" id="apiKey" class="form-control" placeholder="Your Gemini API Key (get free at https://aistudio.google.com/app/apikey)" required/>
+          </div>
+          <button id="generate" class="btn btn-warning btn-lg w-100">Generate Nano Banana Pro Effect</button>
+          <small class="text-muted d-block mt-2">Gemini 1.5 Flash = free, fast, unlimited with API key</small>
+        </div>
+      </div>
 
-      // Camera
-      const camera = new THREE.PerspectiveCamera(
-        75,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        100
-      );
-      camera.position.set(0, 2.2, 7);
+      <div class="col-lg-6">
+        <div class="card p-4 preview">
+          <h4>Original</h4>
+          <div id="originalContainer" class="text-center">
+            <p class="text-muted">No image loaded yet</p>
+          </div>
 
-      // Renderer
-      const renderer = new THREE.WebGLRenderer({
-        canvas: canvas,
-        antialias: true,
-      });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+          <hr class="my-5"/>
 
-      // controls & clock
-      const controls = new THREE.OrbitControls(camera, renderer.domElement);
-      controls.enableDamping = true;
-      controls.dampingFactor = 0.05;
-      const clock = new THREE.Clock();
+          <h4>Result (Nano Banana Pro)</h4>
+          <div id="resultContainer" class="text-center">
+            <p class="text-muted">Result will appear here...</p>
+          </div>
+          <div id="downloadBtn" class="text-center mt-3" style="display:none;">
+            <a id="downloadLink" class="btn btn-success btn-lg">Download Image</a>
+          </div>
+        </div>
+      </div>
+    </div>
 
-      // Lights
-      const ambient = new THREE.AmbientLight(0xffffff, 0.6);
-      const dir = new THREE.DirectionalLight(0xffffff, 0.6);
-      dir.position.set(5, 10, 7);
-      scene.add(ambient, dir);
+    <div class="footer">
+      Made with ❤️ for the Nano Banana Pro addicts • Uses Google Gemini 1.5 Flash (free tier)
+    </div>
+  </div>
 
-      // GUI params
-      const params = {
-        mode: "particles", // 'particles' | 'surface'
-        preset: "default",
-        particleCount: 20000,
-        particleSize: 0.1,
-        segments: 120,
-        width: 10,
-        height: 10,
-        amplitude: 0.8,
-        frequency: 1.5,
-        speed: 1.0,
-        wireframe: true,
-        colorMap: "height",
-        fill: false,
-        applyPresetImageLook() {
-          this.mode = "surface";
-          this.segments = 140;
-          this.width = 12;
-          this.height = 12;
-          this.amplitude = 1.4;
-          this.frequency = 1.6;
-          this.speed = 0.8;
-          this.wireframe = true;
-          this.colorMap = "coolwarm";
-          rebuild();
-        },
-      };
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const urlInput = document.getElementById('urlInput');
+    const loadUrl = document.getElementById('loadUrl');
+    const originalContainer = document.getElementById('originalContainer');
+    const resultContainer = document.getElementById('resultContainer');
+    const generateBtn = document.getElementById('generate');
+    const apiKeyInput = document.getElementById('apiKey');
+    const promptInput = document.getElementById('prompt');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const downloadLink = document.getElementById('downloadLink');
 
-      // Geometry holders
-      let points = null;
-      let surface = null;
-      let wireframeMesh = null;
-      let contourPlane = null;
+    let currentImageBlob = null;
 
-      const textureLoader = new THREE.TextureLoader();
-      // soft disc for points
-      const particleTexture = textureLoader.load(
-        "https://threejs.org/examples/textures/sprites/disc.png"
-      );
+    // Load image from file
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files[0];
+      if (file) displayImage(URL.createObjectURL(file));
+    });
 
-      // Helper - create a colors array from heights
-      function heightToColor(t, scheme = "height") {
-        // t in [0,1]
-        if (scheme === "coolwarm") {
-          // simple cool->warm gradient
-          const r = Math.min(1, 2 * t);
-          const g = 1 - Math.abs(2 * t - 1);
-          const b = Math.min(1, 2 * (1 - t));
-          return new THREE.Color(r, g * 0.85, b * 0.9);
-        }
-        // default height map: blue -> green -> yellow -> red
-        const c = new THREE.Color();
-        if (t < 0.33) {
-          c.setRGB(0, 0.3 + t * 1.8, 1 - t * 2.7);
-        } else if (t < 0.66) {
-          const tt = (t - 0.33) / 0.33;
-          c.setRGB(0.0 + tt * 0.4, 0.9, 0.0 + tt * 0.6);
-        } else {
-          const tt = (t - 0.66) / 0.34;
-          c.setRGB(0.4 + tt * 0.6, 0.9 - tt * 0.7, 0.6 - tt * 0.6);
-        }
-        return c;
-      }
+    // Load image from URL
+    loadUrl.addEventListener('click', () => {
+      const url = urlInput.value.trim();
+      if (url) displayImage(url);
+    });
 
-      // Create particles Points
-      function createParticles() {
-        disposeObjects();
-        const count = Math.max(
-          1000,
-          Math.min(50000, Math.floor(params.particleCount))
-        );
-        const positions = new Float32Array(count * 3);
-        const colors = new Float32Array(count * 3);
-        for (let i = 0; i < count; i++) {
-          const x = (Math.random() - 0.5) * params.width;
-          const z = (Math.random() - 0.5) * params.height;
-          const y = 0; // will be animated
-          const i3 = i * 3;
-          positions[i3] = x;
-          positions[i3 + 1] = y;
-          positions[i3 + 2] = z;
-          const c = new THREE.Color(
-            Math.random(),
-            Math.random(),
-            Math.random()
-          );
-          colors[i3] = c.r;
-          colors[i3 + 1] = c.g;
-          colors[i3 + 2] = c.b;
-        }
-        const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute(
-          "position",
-          new THREE.BufferAttribute(positions, 3)
-        );
-        geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+    function displayImage(src) {
+      originalContainer.innerHTML = `<img src="${src}" class="img-fluid"/>`;
+      currentImageBlob = src;
+    }
 
-        const material = new THREE.PointsMaterial({
-          size: params.particleSize,
-          sizeAttenuation: true,
-          transparent: true,
-          alphaMap: particleTexture,
-          depthWrite: false,
-          blending: THREE.AdditiveBlending,
-          vertexColors: true,
-        });
-        points = new THREE.Points(geometry, material);
-        scene.add(points);
-      }
+    // Main generate function
+    generateBtn.addEventListener('click', async () => {
+      const apiKey = apiKeyInput.value.trim();
+      if (!apiKey) return alert("Please enter your Gemini API key");
+      if (!currentImageBlob) return alert("Please load an image first");
 
-      // Create a surface plane (filled) with optional wireframe and contour base
-      function createSurface() {
-        disposeObjects();
-        const seg = Math.max(4, Math.floor(params.segments));
-        const geometry = new THREE.PlaneBufferGeometry(
-          params.width,
-          params.height,
-          seg,
-          seg
-        );
-        geometry.rotateX(-Math.PI / 2); // make X-Z plane
+      generateBtn.disabled = true;
+      generateBtn.textContent = "Generating...";
+      resultContainer.innerHTML = `<p class="text-info">Working on it... (usually 5–12 seconds)</p>`;
 
-        // set initial y to 0
-        const positions = geometry.attributes.position.array;
-        const count = positions.length / 3;
-        const colors = new Float32Array(count * 3);
+      try {
+        // Convert image to base64
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = currentImageBlob;
 
-        // compute initial heights and colors
-        for (let i = 0; i < count; i++) {
-          const i3 = i * 3;
-          const x = positions[i3];
-          const z = positions[i3 + 2];
-          const y = 0;
-          positions[i3 + 1] = y;
-          // placeholder color
-          const t = 0.5;
-          const c = heightToColor(t, params.colorMap);
-          colors[i3] = c.r;
-          colors[i3 + 1] = c.g;
-          colors[i3 + 2] = c.b;
-        }
-        geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-        geometry.attributes.position.needsUpdate = true;
-        geometry.computeVertexNormals();
-
-        // Phong material with vertex colors
-        const material = new THREE.MeshPhongMaterial({
-          vertexColors: true,
-          shininess: 40,
-          side: THREE.DoubleSide,
-          flatShading: false,
+        const base64 = await new Promise((resolve) => {
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            canvas.getContext('2d').drawImage(img, 0, 0);
+            resolve(canvas.toDataURL('image/png').split(',')[1]);
+          };
         });
 
-        surface = new THREE.Mesh(geometry, material);
-        scene.add(surface);
-
-        // optional wireframe overlay
-        if (params.wireframe) {
-          const geo = new THREE.WireframeGeometry(geometry);
-          wireframeMesh = new THREE.LineSegments(
-            geo,
-            new THREE.LineBasicMaterial({ color: 0x111111, linewidth: 1 })
-          );
-          scene.add(wireframeMesh);
-        }
-
-        // optional contour base plane (simple tinted plane with transparency)
-        contourPlane = new THREE.Mesh(
-          new THREE.PlaneBufferGeometry(
-            params.width * 1.05,
-            params.height * 1.05,
-            1,
-            1
-          ),
-          new THREE.MeshBasicMaterial({
-            color: 0xdddddd,
-            transparent: true,
-            opacity: 0.45,
-          })
-        );
-        contourPlane.rotateX(-Math.PI / 2);
-        contourPlane.position.y = -1.8;
-        scene.add(contourPlane);
-      }
-
-      // Dispose any previous objects
-      function disposeObjects() {
-        if (points) {
-          scene.remove(points);
-          points.geometry.dispose();
-          points.material.dispose();
-          points = null;
-        }
-        if (surface) {
-          scene.remove(surface);
-          surface.geometry.dispose();
-          surface.material.dispose();
-          surface = null;
-        }
-        if (wireframeMesh) {
-          scene.remove(wireframeMesh);
-          wireframeMesh.geometry.dispose();
-          wireframeMesh.material.dispose();
-          wireframeMesh = null;
-        }
-        if (contourPlane) {
-          scene.remove(contourPlane);
-          contourPlane.geometry.dispose();
-          contourPlane.material.dispose();
-          contourPlane = null;
-        }
-      }
-
-      // Rebuild depending on params.mode
-      function rebuild() {
-        if (params.mode === "particles") {
-          createParticles();
-        } else {
-          createSurface();
-        }
-      }
-
-      // initial build
-      rebuild();
-
-      // GUI
-      const gui = new dat.GUI();
-      gui
-        .add(params, "mode", ["particles", "surface"])
-        .name("Mode")
-        .onChange(rebuild);
-      gui.add(params, "preset").name("Preset");
-      gui.add(params, "applyPresetImageLook").name("Apply Image Look");
-      const pFolder = gui.addFolder("Particles");
-      pFolder
-        .add(params, "particleCount", 1000, 50000, 1000)
-        .name("Count")
-        .onFinishChange(() => {
-          if (params.mode === "particles") rebuild();
-        });
-      pFolder
-        .add(params, "particleSize", 0.01, 0.5, 0.01)
-        .name("Size")
-        .onChange(() => {
-          if (points) points.material.size = params.particleSize;
-        });
-      pFolder.open();
-      const sFolder = gui.addFolder("Surface");
-      sFolder
-        .add(params, "segments", 4, 300, 1)
-        .name("Segments")
-        .onFinishChange(() => {
-          if (params.mode === "surface") rebuild();
-        });
-      sFolder
-        .add(params, "width", 1, 30, 0.1)
-        .name("Width")
-        .onFinishChange(rebuild);
-      sFolder
-        .add(params, "height", 1, 30, 0.1)
-        .name("Height")
-        .onFinishChange(rebuild);
-      sFolder
-        .add(params, "wireframe")
-        .name("Wireframe")
-        .onChange(() => {
-          if (params.mode === "surface") rebuild();
-        });
-      sFolder
-        .add(params, "colorMap", ["height", "coolwarm"])
-        .name("Color Map")
-        .onChange(() => {
-          if (params.mode === "surface") rebuild();
-        });
-      sFolder.open();
-      const wFolder = gui.addFolder("Waves");
-      wFolder.add(params, "amplitude", 0, 3, 0.01).name("Amplitude");
-      wFolder.add(params, "frequency", 0, 6, 0.01).name("Frequency");
-      wFolder.add(params, "speed", 0, 3, 0.01).name("Speed");
-      wFolder.open();
-
-      // Animation loop - update heights for both particles and surface
-      function animate() {
-        const t = clock.getElapsedTime() * params.speed;
-
-        if (points) {
-          const pos = points.geometry.attributes.position.array;
-          const count = pos.length / 3;
-          for (let i = 0; i < count; i++) {
-            const i3 = i * 3;
-            const x = pos[i3];
-            const z = pos[i3 + 2];
-            // wave from combined sin/cos for nicer surface
-            const y =
-              Math.sin((x * 0.5 + t) * params.frequency) *
-              Math.cos((z * 0.5 + t) * params.frequency) *
-              params.amplitude;
-            pos[i3 + 1] = y;
+        // Call Gemini API
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ role: "user", parts: [
+                { text: promptInput.value },
+                { inline_data: { mime_type: "image/png", data: base64 } }
+              ]}]
+            })
           }
-          points.geometry.attributes.position.needsUpdate = true;
-        }
+        );
 
-        if (surface) {
-          const pos = surface.geometry.attributes.position.array;
-          const colors = surface.geometry.attributes.color.array;
-          const vertCount = pos.length / 3;
-          let minY = Infinity,
-            maxY = -Infinity;
-          // compute Y heights and track min/max
-          for (let i = 0; i < vertCount; i++) {
-            const i3 = i * 3;
-            const x = pos[i3];
-            const z = pos[i3 + 2];
-            const y =
-              Math.sin((x * 0.5 + t) * params.frequency) *
-              Math.cos((z * 0.5 + t) * params.frequency) *
-              params.amplitude;
-            pos[i3 + 1] = y;
-            if (y < minY) minY = y;
-            if (y > maxY) maxY = y;
-          }
-          // update colors by normalized height
-          const range = Math.max(0.0001, maxY - minY);
-          for (let i = 0; i < vertCount; i++) {
-            const i3 = i * 3;
-            const y = pos[i3 + 1];
-            const tcol = (y - minY) / range;
-            const c = heightToColor(tcol, params.colorMap);
-            colors[i3] = c.r;
-            colors[i3 + 1] = c.g;
-            colors[i3 + 2] = c.b;
-          }
-          surface.geometry.attributes.position.needsUpdate = true;
-          surface.geometry.attributes.color.needsUpdate = true;
-          surface.geometry.computeVertexNormals();
+        const data = await response.json();
+        if (data.error) throw new Error(data.error.message);
 
-          if (wireframeMesh) {
-            wireframeMesh.geometry.dispose();
-            wireframeMesh.geometry = new THREE.WireframeGeometry(
-              surface.geometry
-            );
-          }
-        }
+        const resultBase64 = data.candidates[0].content.parts[0].inline_data.data;
+        const resultUrl = "data:image/png;base64," + resultBase64;
 
-        controls.update();
-        renderer.render(scene, camera);
-        requestAnimationFrame(animate);
+        resultContainer.innerHTML = `<img src="${resultUrl}" class="img-fluid"/>`;
+        downloadLink.href = resultUrl;
+        downloadLink.download = "nano-banana-pro.png";
+        downloadBtn.style.display = "block";
+
+      } catch (err) {
+        resultContainer.innerHTML = `<p class="text-danger">Error: ${err.message}</p>`;
+        console.error(err);
+      } finally {
+        generateBtn.disabled = false;
+        generateBtn.textContent = "Generate Nano Banana Pro Effect";
       }
+    });
 
-      // handle resize
-      window.addEventListener("resize", () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-      });
-
-      animate();
-    </script>
-  </body>
+    // Optional: Press Enter in URL field to load
+    urlInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") loadUrl.click();
+    });
+  </script>
+</body>
 </html>

@@ -38,12 +38,12 @@
       const canvas = document.querySelector("#canvas");
 
       const camera = new THREE.PerspectiveCamera(
-        75,
+        65,
         window.innerWidth / window.innerHeight,
         0.1,
         100
       );
-      camera.position.set(10, 10, 10);
+      camera.position.set(-10, 5, 10);
 
       const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);

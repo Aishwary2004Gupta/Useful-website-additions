@@ -78,7 +78,7 @@
         segments: 140,
         wireframe: true,
         colorMap: "height",
-        playPause: () => togglePause()
+        playPause: () => togglePause(),
       };
 
       // ============================
@@ -180,7 +180,10 @@
           colors.set([c.r, c.g, c.b], index);
         }
 
-        geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute(
+          "position",
+          new THREE.BufferAttribute(positions, 3)
+        );
         geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
 
         points = new THREE.Points(
@@ -201,7 +204,10 @@
 
         const seg = Math.max(4, params.segments);
         const geometry = new THREE.PlaneBufferGeometry(
-          params.width, params.height, seg, seg
+          params.width,
+          params.height,
+          seg,
+          seg
         );
         geometry.rotateX(-Math.PI / 2);
 
@@ -237,7 +243,8 @@
 
       playPauseController = gui.add(params, "playPause").name("⏸ Pause");
 
-      gui.add(params, "mode", ["particles", "surface"])
+      gui
+        .add(params, "mode", ["particles", "surface"])
         .name("Display Mode 🌓")
         .onChange((v) => {
           v === "particles" ? applyParticlesDefaults() : applySurfaceDefaults();
@@ -245,31 +252,39 @@
         });
 
       const particlesFolder = gui.addFolder("✨ Particle Settings");
-      particlesFolder.add(params, "particleCount", 1000, 50000, 1000)
+      particlesFolder
+        .add(params, "particleCount", 1000, 50000, 1000)
         .name("Count")
         .onFinishChange(() => params.mode === "particles" && rebuild());
-      particlesFolder.add(params, "particleSize", 0.01, 0.5, 0.01)
+      particlesFolder
+        .add(params, "particleSize", 0.01, 0.5, 0.01)
         .name("Size")
         .onChange(() => points && (points.material.size = params.particleSize));
-      particlesFolder.add(params, "width", 2, 40, 0.5)
+      particlesFolder
+        .add(params, "width", 2, 40, 0.5)
         .name("Wave Area X")
         .onFinishChange(() => params.mode === "particles" && rebuild());
-      particlesFolder.add(params, "height", 2, 40, 0.5)
+      particlesFolder
+        .add(params, "height", 2, 40, 0.5)
         .name("Wave Area Z")
         .onFinishChange(() => params.mode === "particles" && rebuild());
       particlesFolder.close();
 
       const surfaceFolder = gui.addFolder("🌊 Surface Settings");
-      surfaceFolder.add(params, "segments", 4, 300, 1)
+      surfaceFolder
+        .add(params, "segments", 4, 300, 1)
         .name("Resolution")
         .onFinishChange(() => params.mode === "surface" && rebuild());
-      surfaceFolder.add(params, "width", 2, 40, 0.5)
+      surfaceFolder
+        .add(params, "width", 2, 40, 0.5)
         .name("Wave Area X")
         .onFinishChange(() => params.mode === "surface" && rebuild());
-      surfaceFolder.add(params, "height", 2, 40, 0.5)
+      surfaceFolder
+        .add(params, "height", 2, 40, 0.5)
         .name("Wave Area Z")
         .onFinishChange(() => params.mode === "surface" && rebuild());
-      surfaceFolder.add(params, "wireframe")
+      surfaceFolder
+        .add(params, "wireframe")
         .name("Wireframe")
         .onChange(() => params.mode === "surface" && rebuild());
       surfaceFolder.close();
@@ -317,8 +332,8 @@
               const z = pos[i + 2];
               const y =
                 Math.sin((x * 0.5 + t) * params.frequency) *
-                Math.cos((z * 0.5 + t) * params.frequency) *
-                params.amplitude +
+                  Math.cos((z * 0.5 + t) * params.frequency) *
+                  params.amplitude +
                 yOffset;
 
               pos[i + 1] = y;

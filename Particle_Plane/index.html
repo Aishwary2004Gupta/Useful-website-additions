@@ -83,7 +83,6 @@
         segments: 140,
         wireframe: true,
         colorMap: "height",
-        play: true
       };
 
       function applyParticlesDefaults() {
@@ -262,11 +261,6 @@
           updateGUI();
         });
 
-      wavesFolder.add({ toggle: () => {
-      params.play = !params.play;
-  }}, "toggle").name("Play / Pause");
-
-
       const particlesFolder = gui.addFolder("✨ Particle Settings");
       particlesFolder
         .add(params, "particleCount", 1000, 50000, 1000)
@@ -318,9 +312,7 @@
       rebuild();
 
       function animate() {
-        // const t = clock.getElapsedTime() * params.speed;
-        const elapsed = clock.getElapsedTime();
-        const t = params.play ? elapsed * params.speed : elapsed * 0;
+        const t = clock.getElapsedTime() * params.speed;
 
         if (points) {
           const pos = points.geometry.attributes.position.array;

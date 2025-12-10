@@ -78,7 +78,7 @@
         segments: 140,
         wireframe: true,
         colorMap: "height",
-        playPause: () => togglePause()
+        playPause: () => togglePause(),
       };
 
       let paused = false;
@@ -171,7 +171,10 @@
         }
 
         const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute(
+          "position",
+          new THREE.BufferAttribute(positions, 3)
+        );
         geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
 
         points = new THREE.Points(

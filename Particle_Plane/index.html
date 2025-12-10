@@ -37,9 +37,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
 
     <script>
-      /* ===========================
-       THREE.JS SETUP
-    ============================ */
       const scene = new THREE.Scene();
       const canvas = document.querySelector("#canvas");
 
@@ -69,13 +66,12 @@
         "https://threejs.org/examples/textures/sprites/disc.png"
       );
 
-      /* ============ PARAMETERS =============== */
-       
       const params = {
         mode: "particles",
         amplitude: 1.2,
         frequency: 1.5,
         speed: 1.2,
+        play: true,
         particleCount: 20000,
         particleSize: 0.12,
         width: 14,
@@ -107,9 +103,6 @@
         params.colorMap = "height";
       }
 
-      /* ===========================
-       OBJECT HANDLING
-    ============================ */
       let points = null;
       let surface = null;
       let wireframeMesh = null;
@@ -152,9 +145,6 @@
         return c;
       }
 
-      /* ===========================
-       PARTICLES MODE
-    ============================ */
       function createParticles() {
         disposeObjects();
 
@@ -193,9 +183,6 @@
         scene.add(points);
       }
 
-      /* ===========================
-       SURFACE MODE
-    ============================ */
       function createSurface() {
         disposeObjects();
 
@@ -235,17 +222,11 @@
         }
       }
 
-      /* ===========================
-       MODE SWITCH
-    ============================ */
       function rebuild() {
         if (params.mode === "particles") createParticles();
         else createSurface();
       }
 
-      /* ===========================
-       GUI CONTROLS
-    ============================ */
       const gui = new dat.GUI({ width: 300 });
       gui.close();
 
@@ -262,57 +243,35 @@
         });
 
       const particlesFolder = gui.addFolder("✨ Particle Settings");
-      particlesFolder
-        .add(params, "particleCount", 1000, 50000, 1000)
-        .name("Count")
-        .onFinishChange(() => params.mode === "particles" && rebuild());
-      particlesFolder
-        .add(params, "particleSize", 0.01, 0.5, 0.01)
-        .name("Size")
-        .onChange(() => points && (points.material.size = params.particleSize));
-      particlesFolder
-        .add(params, "width", 2, 40, 0.5)
-        .name("Wave Area X")
-        .onFinishChange(() => params.mode === "particles" && rebuild());
-      particlesFolder
-        .add(params, "height", 2, 40, 0.5)
-        .name("Wave Area Z")
-        .onFinishChange(() => params.mode === "particles" && rebuild());
       particlesFolder.close();
 
       const surfaceFolder = gui.addFolder("🌊 Surface Settings");
-      surfaceFolder
-        .add(params, "segments", 4, 300, 1)
-        .name("Resolution")
-        .onFinishChange(() => params.mode === "surface" && rebuild());
-      surfaceFolder
-        .add(params, "width", 2, 40, 0.5)
-        .name("Wave Area X")
-        .onFinishChange(() => params.mode === "surface" && rebuild());
-      surfaceFolder
-        .add(params, "height", 2, 40, 0.5)
-        .name("Wave Area Z")
-        .onFinishChange(() => params.mode === "surface" && rebuild());
-      surfaceFolder
-        .add(params, "wireframe")
-        .name("Wireframe")
-        .onChange(() => params.mode === "surface" && rebuild());
       surfaceFolder.close();
 
       const wavesFolder = gui.addFolder("🎛 Wave Controls");
       wavesFolder.add(params, "amplitude", 0, 3, 0.01).name("Wave Height");
       wavesFolder.add(params, "frequency", 0, 6, 0.01).name("Frequency");
       wavesFolder.add(params, "speed", 0, 3, 0.01).name("Speed");
+
+      wavesFolder
+        .add(
+          {
+            toggle: () => {
+              params.play = !params.play;
+            },
+          },
+          "toggle"
+        )
+        .name("Play / Pause Wave");
+
       wavesFolder.close();
 
-      /* ===========================
-       ANIMATION LOOP
-    ============================ */
       applyParticlesDefaults();
       rebuild();
 
       function animate() {
-        const t = clock.getElapsedTime() * params.speed;
+        const elapsed = clock.getElapsedTime();
+        const t = params.play ? elapsed * params.speed : 0;
 
         if (points) {
           const pos = points.geometry.attributes.position.array;
@@ -370,9 +329,6 @@
       }
       animate();
 
-      /* ===========================
-       RESIZE HANDLING
-    ============================ */
       window.addEventListener("resize", () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();

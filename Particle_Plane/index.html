@@ -78,17 +78,27 @@
         segments: 140,
         wireframe: true,
         colorMap: "height",
-        playPause: () => togglePause(),
+        playPause: () => togglePause()
       };
 
+      // ============================
+      // PAUSE / PLAY FIXED ✔
+      // ============================
       let paused = false;
+      let savedTime = 0;
       let playPauseController;
 
       function togglePause() {
-        paused = !paused;
-        playPauseController.name(paused ? "▶ Play" : "⏸ Pause");
-        if (paused) clock.stop();
-        else clock.start();
+        if (!paused) {
+          savedTime += clock.getElapsedTime();
+          clock.stop();
+          paused = true;
+          playPauseController.name("▶ Play");
+        } else {
+          clock.start();
+          paused = false;
+          playPauseController.name("⏸ Pause");
+        }
       }
 
       function applyParticlesDefaults() {
@@ -141,9 +151,8 @@
       function heightToColor(t) {
         t = THREE.MathUtils.clamp(t, 0, 1);
         const c = new THREE.Color();
-        if (t < 0.33) {
-          c.setRGB(0, 0.3 + t * 1.8, 1 - t * 2.7);
-        } else if (t < 0.66) {
+        if (t < 0.33) c.setRGB(0, 0.3 + t * 1.8, 1 - t * 2.7);
+        else if (t < 0.66) {
           const tt = (t - 0.33) / 0.33;
           c.setRGB(0 + tt * 0.4, 0.9, 0 + tt * 0.6);
         } else {
@@ -157,6 +166,7 @@
         disposeObjects();
 
         const count = Math.max(1000, Math.min(50000, params.particleCount));
+        const geometry = new THREE.BufferGeometry();
         const positions = new Float32Array(count * 3);
         const colors = new Float32Array(count * 3);
 
@@ -170,11 +180,7 @@
           colors.set([c.r, c.g, c.b], index);
         }
 
-        const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute(
-          "position",
-          new THREE.BufferAttribute(positions, 3)
-        );
+        geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
         geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
 
         points = new THREE.Points(
@@ -187,7 +193,6 @@
             blending: THREE.AdditiveBlending,
           })
         );
-
         scene.add(points);
       }
 
@@ -196,10 +201,7 @@
 
         const seg = Math.max(4, params.segments);
         const geometry = new THREE.PlaneBufferGeometry(
-          params.width,
-          params.height,
-          seg,
-          seg
+          params.width, params.height, seg, seg
         );
         geometry.rotateX(-Math.PI / 2);
 
@@ -208,16 +210,11 @@
           const c = heightToColor(0.5);
           colors.set([c.r, c.g, c.b], i);
         }
-
         geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
 
         surface = new THREE.Mesh(
           geometry,
-          new THREE.MeshPhongMaterial({
-            vertexColors: true,
-            shininess: 45,
-            side: THREE.DoubleSide,
-          })
+          new THREE.MeshPhongMaterial({ vertexColors: true, shininess: 45 })
         );
         scene.add(surface);
 
@@ -231,7 +228,8 @@
       }
 
       function rebuild() {
-        params.mode === "particles" ? createParticles() : createSurface();
+        if (params.mode === "particles") createParticles();
+        else createSurface();
       }
 
       const gui = new dat.GUI({ width: 300 });
@@ -239,8 +237,7 @@
 
       playPauseController = gui.add(params, "playPause").name("⏸ Pause");
 
-      gui
-        .add(params, "mode", ["particles", "surface"])
+      gui.add(params, "mode", ["particles", "surface"])
         .name("Display Mode 🌓")
         .onChange((v) => {
           v === "particles" ? applyParticlesDefaults() : applySurfaceDefaults();
@@ -248,39 +245,31 @@
         });
 
       const particlesFolder = gui.addFolder("✨ Particle Settings");
-      particlesFolder
-        .add(params, "particleCount", 1000, 50000, 1000)
+      particlesFolder.add(params, "particleCount", 1000, 50000, 1000)
         .name("Count")
         .onFinishChange(() => params.mode === "particles" && rebuild());
-      particlesFolder
-        .add(params, "particleSize", 0.01, 0.5, 0.01)
+      particlesFolder.add(params, "particleSize", 0.01, 0.5, 0.01)
         .name("Size")
         .onChange(() => points && (points.material.size = params.particleSize));
-      particlesFolder
-        .add(params, "width", 2, 40, 0.5)
+      particlesFolder.add(params, "width", 2, 40, 0.5)
         .name("Wave Area X")
         .onFinishChange(() => params.mode === "particles" && rebuild());
-      particlesFolder
-        .add(params, "height", 2, 40, 0.5)
+      particlesFolder.add(params, "height", 2, 40, 0.5)
         .name("Wave Area Z")
         .onFinishChange(() => params.mode === "particles" && rebuild());
       particlesFolder.close();
 
       const surfaceFolder = gui.addFolder("🌊 Surface Settings");
-      surfaceFolder
-        .add(params, "segments", 4, 300, 1)
+      surfaceFolder.add(params, "segments", 4, 300, 1)
         .name("Resolution")
         .onFinishChange(() => params.mode === "surface" && rebuild());
-      surfaceFolder
-        .add(params, "width", 2, 40, 0.5)
+      surfaceFolder.add(params, "width", 2, 40, 0.5)
         .name("Wave Area X")
         .onFinishChange(() => params.mode === "surface" && rebuild());
-      surfaceFolder
-        .add(params, "height", 2, 40, 0.5)
+      surfaceFolder.add(params, "height", 2, 40, 0.5)
         .name("Wave Area Z")
         .onFinishChange(() => params.mode === "surface" && rebuild());
-      surfaceFolder
-        .add(params, "wireframe")
+      surfaceFolder.add(params, "wireframe")
         .name("Wireframe")
         .onChange(() => params.mode === "surface" && rebuild());
       surfaceFolder.close();
@@ -297,9 +286,11 @@
       function animate() {
         requestAnimationFrame(animate);
 
-        if (!paused) {
-          const t = clock.getElapsedTime() * params.speed;
+        const yOffset = 1.2; // Waves moved UP ⭐
 
+        const t = (savedTime + clock.getElapsedTime()) * params.speed;
+
+        if (!paused) {
           if (points) {
             const pos = points.geometry.attributes.position.array;
             for (let i = 0; i < pos.length; i += 3) {
@@ -307,8 +298,9 @@
               const z = pos[i + 2];
               pos[i + 1] =
                 Math.sin((x * 0.5 + t) * params.frequency) *
-                Math.cos((z * 0.5 + t) * params.frequency) *
-                params.amplitude;
+                  Math.cos((z * 0.5 + t) * params.frequency) *
+                  params.amplitude +
+                yOffset;
             }
             points.geometry.attributes.position.needsUpdate = true;
           }
@@ -317,15 +309,18 @@
             const pos = surface.geometry.attributes.position.array;
             const col = surface.geometry.attributes.color.array;
 
-            let min = Infinity;
-            let max = -Infinity;
+            let min = Infinity,
+              max = -Infinity;
+
             for (let i = 0; i < pos.length; i += 3) {
               const x = pos[i];
               const z = pos[i + 2];
               const y =
                 Math.sin((x * 0.5 + t) * params.frequency) *
                 Math.cos((z * 0.5 + t) * params.frequency) *
-                params.amplitude;
+                params.amplitude +
+                yOffset;
+
               pos[i + 1] = y;
               min = Math.min(min, y);
               max = Math.max(max, y);
@@ -334,8 +329,8 @@
             const range = max - min;
             for (let i = 0; i < pos.length; i += 3) {
               const y = pos[i + 1];
-              const val = (y - min) / range;
-              const c = heightToColor(val);
+              const tt = (y - min) / range;
+              const c = heightToColor(tt);
               col.set([c.r, c.g, c.b], i);
             }
 

@@ -202,6 +202,23 @@
       function createSurface() {
         disposeObjects();
 
+        if (paused) {
+          const pos = geometry.attributes.position.array;
+
+          for (let i = 0; i < pos.length; i += 3) {
+            const x = pos[i];
+            const z = pos[i + 2];
+            pos[i + 1] =
+              Math.sin((x * 0.5 + savedTime * params.speed) * params.frequency) *
+              Math.cos((z * 0.5 + savedTime * params.speed) * params.frequency) *
+              params.amplitude +
+              1.2; // same Y offset
+          }
+
+          geometry.attributes.position.needsUpdate = true;
+        }
+
+
         const seg = Math.max(4, params.segments);
         const geometry = new THREE.PlaneBufferGeometry(
           params.width,
@@ -303,8 +320,24 @@
 
         const yOffset = 1.2; // Waves moved UP ⭐
 
-        const t = (savedTime + clock.getElapsedTime()) * params.speed;
+        // const t = (savedTime + clock.getElapsedTime()) * params.speed;
+        const t = (savedTime) * params.speed; // when paused, clock is stopped
+        if (!paused) savedTime += clock.getDelta(); // accumulate time only when playing
 
+        if (paused) {
+          const pos = geometry.attributes.position.array;
+          for (let i = 0; i < pos.length; i += 3) {
+            const x = pos[i];
+            const z = pos[i + 2];
+            pos[i + 1] =
+              Math.sin((x * 0.5 + savedTime * params.speed) * params.frequency) *
+              Math.cos((z * 0.5 + savedTime * params.speed) * params.frequency) *
+              params.amplitude +
+              1.2; // your Y offset
+          }
+        }
+
+        
         if (!paused) {
           if (points) {
             const pos = points.geometry.attributes.position.array;

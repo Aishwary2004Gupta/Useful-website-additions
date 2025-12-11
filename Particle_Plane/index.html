@@ -245,7 +245,7 @@
 
       gui
         .add(params, "mode", ["particles", "surface"])
-        .name("Display Mode 🌊")
+        .name("Display Mode")
         .onChange((v) => {
           v === "particles" ? applyParticlesDefaults() : applySurfaceDefaults();
           rebuild();

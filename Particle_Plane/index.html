@@ -83,7 +83,6 @@
         height: 14,
         segments: 140,
         wireframe: true,
-
         playPause: () => togglePause(),
       };
 
@@ -168,7 +167,7 @@
       }
 
       /* ======================================================
-            APPLY WAVE SHAPE
+            WAVE APPLY HELPERS
       ====================================================== */
       function applyWaveToGeometry(geometry, t) {
         const pos = geometry.attributes.position.array;
@@ -200,7 +199,7 @@
           max = Math.max(max, pos[i + 1]);
         }
 
-        const range = max - min;
+        const range = max - min || 1;
 
         for (let i = 0; i < pos.length; i += 3) {
           const t = (pos[i + 1] - min) / range;
@@ -212,12 +211,12 @@
       }
 
       /* ======================================================
-            PARTICLES
+            CREATE PARTICLES (initializes to current t to avoid jumps)
       ====================================================== */
       function createParticles() {
         disposeObjects();
 
-        const count = Math.max(1000, Math.min(50000, params.particleCount));
+        const count = Math.max(1000, Math.min(50000, Math.round(params.particleCount)));
         const geometry = new THREE.BufferGeometry();
 
         const positions = new Float32Array(count * 3);
@@ -236,7 +235,9 @@
         geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
         geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
 
-        if (paused) applyWaveToGeometry(geometry, savedTime * params.speed);
+        // initialize geometry to current wave shape (preserves phase/time)
+        const t = savedTime * params.speed;
+        applyWaveToGeometry(geometry, t);
 
         points = new THREE.Points(
           geometry,
@@ -253,12 +254,12 @@
       }
 
       /* ======================================================
-            SURFACE
+            CREATE SURFACE (initializes to current t to avoid jumps)
       ====================================================== */
       function createSurface() {
         disposeObjects();
 
-        const seg = Math.max(4, params.segments);
+        const seg = Math.max(4, Math.min(600, Math.round(params.segments)));
         const geometry = new THREE.PlaneBufferGeometry(
           params.width,
           params.height,
@@ -267,16 +268,13 @@
         );
         geometry.rotateX(-Math.PI / 2);
 
-        const colors = new Float32Array(
-          geometry.attributes.position.count * 3
-        );
+        const colors = new Float32Array(geometry.attributes.position.count * 3);
         geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
 
-        if (paused) {
-          const t = savedTime * params.speed;
-          applyWaveToGeometry(geometry, t);
-          applyColorToGeometry(geometry);
-        }
+        // initialize geometry to current wave shape (preserves phase/time)
+        const t = savedTime * params.speed;
+        applyWaveToGeometry(geometry, t);
+        applyColorToGeometry(geometry);
 
         surface = new THREE.Mesh(
           geometry,
@@ -314,17 +312,16 @@
 
           if (wireframeMesh) {
             wireframeMesh.geometry.dispose();
-            wireframeMesh.geometry = new THREE.WireframeGeometry(
-              surface.geometry
-            );
+            wireframeMesh.geometry = new THREE.WireframeGeometry(surface.geometry);
           }
         }
       }
 
       /* ======================================================
-            REBUILD
+            REBUILD (preserve wave shape/time)
       ====================================================== */
       function rebuild() {
+        // createParticles/createSurface initialize geometry to current t so no jump
         if (params.mode === "particles") createParticles();
         else createSurface();
       }
@@ -335,9 +332,7 @@
       const gui = new dat.GUI({ width: 300 });
       gui.close();
 
-      playPauseController = gui
-        .add(params, "playPause")
-        .name("⏸ Pause");
+      playPauseController = gui.add(params, "playPause").name("⏸ Pause");
 
       gui
         .add(params, "mode", ["particles", "surface"])
@@ -346,45 +341,53 @@
 
       /* PARTICLE SETTINGS */
       const particlesFolder = gui.addFolder("✨ Particle Settings");
+      // count - update immediately while preserving wave/time
       particlesFolder
         .add(params, "particleCount", 1000, 50000, 1000)
         .name("Count")
-        .onFinishChange(() => params.mode === "particles" && rebuild());
+        .onChange(() => {
+          // rebuild using current t so shape preserved
+          rebuild();
+        });
       particlesFolder
         .add(params, "particleSize", 0.01, 0.5, 0.01)
         .name("Size")
         .onChange(() => points && (points.material.size = params.particleSize));
+      // area X/Z: rebuild immediately
       particlesFolder
         .add(params, "width", 2, 40, 0.5)
         .name("Wave Area X")
-        .onFinishChange(() => params.mode === "particles" && rebuild());
+        .onChange(() => rebuild());
       particlesFolder
         .add(params, "height", 2, 40, 0.5)
         .name("Wave Area Z")
-        .onFinishChange(() => params.mode === "particles" && rebuild());
+        .onChange(() => rebuild());
       particlesFolder.close();
 
       /* SURFACE SETTINGS */
       const surfaceFolder = gui.addFolder("🌊 Surface Settings");
+      // resolution (segments) - update immediately while preserving wave/time
       surfaceFolder
         .add(params, "segments", 4, 300, 1)
         .name("Resolution")
-        .onFinishChange(() => params.mode === "surface" && rebuild());
+        .onChange(() => {
+          rebuild();
+        });
       surfaceFolder
         .add(params, "width", 2, 40, 0.5)
         .name("Wave Area X")
-        .onFinishChange(() => params.mode === "surface" && rebuild());
+        .onChange(() => rebuild());
       surfaceFolder
         .add(params, "height", 2, 40, 0.5)
         .name("Wave Area Z")
-        .onFinishChange(() => params.mode === "surface" && rebuild());
+        .onChange(() => rebuild());
       surfaceFolder
         .add(params, "wireframe")
         .name("Wireframe")
-        .onChange(() => params.mode === "surface" && rebuild());
+        .onChange(() => rebuild());
       surfaceFolder.close();
 
-      /* WAVE CONTROLS */
+      /* WAVE CONTROLS (update in real-time, also while paused) */
       const wavesFolder = gui.addFolder("🎛 Wave Controls");
       wavesFolder
         .add(params, "amplitude", 0, 3, 0.01)
@@ -400,6 +403,7 @@
         .onChange(updateWaveWhilePaused);
       wavesFolder.close();
 
+      /* initialize */
       applyParticlesDefaults();
       rebuild();
 
@@ -414,6 +418,7 @@
         const t = savedTime * params.speed;
         const yOffset = 1.2;
 
+        /* PARTICLES UPDATE (animated frames) */
         if (!paused && points) {
           const pos = points.geometry.attributes.position.array;
           for (let i = 0; i < pos.length; i += 3) {
@@ -428,6 +433,7 @@
           points.geometry.attributes.position.needsUpdate = true;
         }
 
+        /* SURFACE UPDATE (animated frames) */
         if (!paused && surface) {
           const pos = surface.geometry.attributes.position.array;
           let min = Infinity,
@@ -444,13 +450,12 @@
               yOffset;
 
             pos[i + 1] = y;
-
             min = Math.min(min, y);
             max = Math.max(max, y);
           }
 
           const col = surface.geometry.attributes.color.array;
-          const range = max - min;
+          const range = max - min || 1;
 
           for (let i = 0; i < pos.length; i += 3) {
             const y = pos[i + 1];
@@ -464,9 +469,7 @@
 
           if (wireframeMesh) {
             wireframeMesh.geometry.dispose();
-            wireframeMesh.geometry = new THREE.WireframeGeometry(
-              surface.geometry
-            );
+            wireframeMesh.geometry = new THREE.WireframeGeometry(surface.geometry);
           }
         }
 

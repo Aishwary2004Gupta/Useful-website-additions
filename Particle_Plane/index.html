@@ -422,7 +422,7 @@
         .name("Wireframe").onChange(() => rebuild());
       surfaceFolder.close();
 
-      const wavesFolder = gui.addFolder("🎛 Wave Controls");
+      const wavesFolder = gui.addFolder("⚙️ Wave Controls");
       wavesFolder.add(params, "amplitude", 0, 3, 0.01)
         .name("Wave Height").onChange(updateWaveWhilePaused);
       wavesFolder.add(params, "frequency", 0, 6, 0.01)

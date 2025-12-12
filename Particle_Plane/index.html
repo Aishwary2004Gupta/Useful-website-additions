@@ -1,278 +1,532 @@
+<!-- Create by @aish2004gupta on X -->
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Half-Half Wave</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Particles Surface Wave</title>
 
-  <style>
-    html, body {
-      margin: 0;
-      height: 100%;
-      overflow: hidden;
-      background: #000; 
-      transition: background 0.3s ease;
-    }
-
-    #canvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-
-    /* TEXT-ONLY BUTTON */
-    #toggle-theme {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 22px;
-      font-weight: 600;
-      background: none;
-      border: none;
-      cursor: pointer;
-      z-index: 10;
-      padding: 5px;
-      color: white; /* default in dark mode */
-    }
-    #toggle-theme:focus { outline: none; }
-  </style>
-</head>
-
-<body>
-  <button id="toggle-theme">Light Mode</button>
-  <canvas id="canvas"></canvas>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-
-  <script>
-    let isDark = true;
-
-    const scene = new THREE.Scene();
-    const canvas = document.getElementById("canvas");
-
-    const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.set(-10, 5, 10);
-
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.localClippingEnabled = true;
-    renderer.setClearColor(0x000000);
-
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-
-    scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-    const dir = new THREE.DirectionalLight(0xffffff, 0.6);
-    dir.position.set(6, 8, 6);
-    scene.add(dir);
-
-    const particleTexture = new THREE.TextureLoader().load(
-      "https://threejs.org/examples/textures/sprites/disc.png"
-    );
-
-    /* ---- WAVE SETTINGS ---- */
-    const amp = 1.2;
-    const freq = 1.5;
-    const speed = 1.2;
-    const width = 14;
-    const height = 14;
-    const segments = 140;
-    const particleCount = 20000;
-    const particleSize = 0.12;
-
-    let halfSurface, halfWireframe, halfParticles;
-    const clock = new THREE.Clock();
-
-    function applyWave(geo, t) {
-      const pos = geo.attributes.position.array;
-      const yOffset = 1.2;
-      for (let i = 0; i < pos.length; i += 3) {
-        const x = pos[i];
-        const z = pos[i + 2];
-        pos[i + 1] =
-          Math.sin((x * 0.5 + t) * freq) *
-          Math.cos((z * 0.5 + t) * freq) *
-          amp +
-          yOffset;
+    <style>
+      html, body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        background: #00000015;
       }
-      geo.attributes.position.needsUpdate = true;
-    }
-
-    function heightColor(t) {
-      t = Math.min(Math.max(t, 0), 1);
-      const c = new THREE.Color();
-      if (t < 0.33) c.setRGB(0, 0.3 + t * 1.8, 1 - t * 2.7);
-      else if (t < 0.66) {
-        const tt = (t - 0.33) / 0.33;
-        c.setRGB(tt * 0.4, 0.9, tt * 0.6);
-      } else {
-        const tt = (t - 0.66) / 0.34;
-        c.setRGB(0.4 + tt * 0.6, 0.9 - tt * 0.7, 0.6 - tt * 0.6);
+      #canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
       }
-      return c;
-    }
+      .dg { z-index: 99999 !important; }
+    </style>
+  </head>
 
-    function colorize(geo) {
-      const pos = geo.attributes.position.array;
-      const col = geo.attributes.color.array;
-      let min = Infinity, max = -Infinity;
+  <body>
+    <canvas id="canvas"></canvas>
 
-      for (let i = 0; i < pos.length; i += 3) {
-        min = Math.min(min, pos[i + 1]);
-        max = Math.max(max, pos[i + 1]);
-      }
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
 
-      const range = max - min || 1;
+    <script>
+      /* ============================================================
+            BASE SETUP
+      ============================================================ */
+      const scene = new THREE.Scene();
+      const canvas = document.querySelector("#canvas");
 
-      for (let i = 0; i < pos.length; i += 3) {
-        const t = (pos[i + 1] - min) / range;
-        const c = heightColor(t);
-        col[i] = c.r;
-        col[i + 1] = c.g;
-        col[i + 2] = c.b;
-      }
-      col.needsUpdate = true;
-    }
-
-    let originalParticleColors;
-
-    function createHalfWave() {
-      const geo = new THREE.PlaneBufferGeometry(width, height, segments, segments);
-      geo.rotateX(-Math.PI / 2);
-
-      const colors = new Float32Array(geo.attributes.position.count * 3);
-      geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-
-      const t = clock.getElapsedTime() * speed;
-      applyWave(geo, t);
-      colorize(geo);
-
-      const leftClip = new THREE.Plane(new THREE.Vector3(1, 0, 0), 0);
-
-      halfSurface = new THREE.Mesh(
-        geo,
-        new THREE.MeshPhongMaterial({
-          vertexColors: true,
-          side: THREE.DoubleSide,
-          clippingPlanes: [leftClip]
-        })
+      const camera = new THREE.PerspectiveCamera(
+        65, window.innerWidth / window.innerHeight, 0.1, 100
       );
-      scene.add(halfSurface);
+      camera.position.set(-10, 5, 10);
 
-      /* ALWAYS BLACK WIREFRAME */
-      halfWireframe = new THREE.LineSegments(
-        new THREE.WireframeGeometry(geo),
-        new THREE.LineBasicMaterial({
-          color: 0x000000,
-          clippingPlanes: [leftClip]
-        })
-      );
-      scene.add(halfWireframe);
-
-      /* PARTICLES */
-      const pGeo = new THREE.BufferGeometry();
-      const pos = new Float32Array(particleCount * 3);
-      const col = new Float32Array(particleCount * 3);
-
-      for (let i = 0; i < particleCount; i++) {
-        const j = i * 3;
-        pos[j] = (Math.random() - 0.5) * width;
-        pos[j + 1] = 0;
-        pos[j + 2] = (Math.random() - 0.5) * height;
-
-        const c = new THREE.Color().setHSL(Math.random(), 0.6, 0.55);
-        col[j] = c.r;
-        col[j + 1] = c.g;
-        col[j + 2] = c.b;
-      }
-
-      originalParticleColors = col.slice();
-
-      pGeo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-      pGeo.setAttribute("color", new THREE.BufferAttribute(col, 3));
-
-      applyWave(pGeo, t);
-
-      const rightClip = new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0);
-
-      halfParticles = new THREE.Points(
-        pGeo,
-        new THREE.PointsMaterial({
-          size: particleSize,
-          vertexColors: true,
-          alphaMap: particleTexture,
-          transparent: true,
-          blending: THREE.AdditiveBlending,
-          clippingPlanes: [rightClip]
-        })
-      );
-
-      scene.add(halfParticles);
-    }
-
-    createHalfWave();
-
-    function animate() {
-      requestAnimationFrame(animate);
-      const t = clock.getElapsedTime() * speed;
-
-      applyWave(halfSurface.geometry, t);
-      colorize(halfSurface.geometry);
-
-      halfWireframe.geometry.dispose();
-      halfWireframe.geometry = new THREE.WireframeGeometry(halfSurface.geometry);
-
-      applyWave(halfParticles.geometry, t);
-
-      controls.update();
-      renderer.render(scene, camera);
-    }
-    animate();
-
-    window.addEventListener("resize", () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
-    });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.localClippingEnabled = true;
 
-    /* ---- THEME TOGGLE ---- */
-    const toggleBtn = document.getElementById("toggle-theme");
+      const controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
 
-    toggleBtn.onclick = () => {
-      isDark = !isDark;
+      const clock = new THREE.Clock();
+      clock.start();
 
-      const colAttr = halfParticles.geometry.attributes.color.array;
+      scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+      dirLight.position.set(6, 8, 6);
+      scene.add(dirLight);
 
-      if (isDark) {
-        document.body.style.background = "#000";
-        renderer.setClearColor(0x000000);
-        toggleBtn.textContent = "Light Mode";
-        toggleBtn.style.color = "white";
+      const particleTexture = new THREE.TextureLoader().load(
+        "https://threejs.org/examples/textures/sprites/disc.png"
+      );
 
-        // restore colorful particles
-        for (let i = 0; i < colAttr.length; i++) {
-          colAttr[i] = originalParticleColors[i];
+      /* ============================================================
+            PARAMETERS
+      ============================================================ */
+      const params = {
+        mode: "half-half",  // particles | surface | half
+        amplitude: 1.2,
+        frequency: 1.5,
+        speed: 1.2,
+        particleCount: 20000,
+        particleSize: 0.12,
+        width: 14,
+        height: 14,
+        segments: 140,
+        wireframe: true,
+        playPause: () => togglePause(),
+      };
+
+      /* ============================================================
+            PAUSE / PLAY SYSTEM
+      ============================================================ */
+      let paused = false;
+      let savedTime = 0;
+      let playPauseController;
+
+      function togglePause() {
+        if (!paused) {
+          savedTime += clock.getElapsedTime();
+          clock.stop();
+          paused = true;
+          playPauseController.name("▶ Play");
+        } else {
+          clock.start();
+          paused = false;
+          playPauseController.name("⏸ Pause");
         }
-        colAttr.needsUpdate = true;
-
-      } else {
-        document.body.style.background = "#fff";
-        renderer.setClearColor(0xffffff);
-        toggleBtn.textContent = "Dark Mode";
-        toggleBtn.style.color = "black";
-
-        // particles → very dark black
-        for (let i = 0; i < colAttr.length; i += 3) {
-          colAttr[i] = 0.02;   /* deep black */
-          colAttr[i + 1] = 0.02;
-          colAttr[i + 2] = 0.02;
-        }
-        colAttr.needsUpdate = true;
       }
-    };
-  </script>
-</body>
+
+      /* ============================================================
+            OBJECTS STORAGE
+      ============================================================ */
+      let points = null;
+      let surface = null;
+      let wireframeMesh = null;
+
+      let halfSurface = null;
+      let halfParticles = null;
+      let halfWireframe = null;
+
+      function disposeObjects() {
+        const kill = (obj) => {
+          if (!obj) return;
+          scene.remove(obj);
+          if (obj.geometry) obj.geometry.dispose();
+          if (obj.material) obj.material.dispose();
+        };
+
+        kill(points); points = null;
+        kill(surface); surface = null;
+        kill(wireframeMesh); wireframeMesh = null;
+
+        kill(halfSurface); halfSurface = null;
+        kill(halfParticles); halfParticles = null;
+        kill(halfWireframe); halfWireframe = null;
+      }
+
+      /* ============================================================
+            COLOR GRADIENT
+      ============================================================ */
+      function heightToColor(t) {
+        t = THREE.MathUtils.clamp(t, 0, 1);
+        const c = new THREE.Color();
+
+        if (t < 0.33) c.setRGB(0, 0.3 + t * 1.8, 1 - t * 2.7);
+        else if (t < 0.66) {
+          const tt = (t - 0.33) / 0.33;
+          c.setRGB(tt * 0.4, 0.9, tt * 0.6);
+        } else {
+          const tt = (t - 0.66) / 0.34;
+          c.setRGB(0.4 + tt * 0.6, 0.9 - tt * 0.7, 0.6 - tt * 0.6);
+        }
+        return c;
+      }
+
+      /* ============================================================
+            WAVE FUNCTION
+      ============================================================ */
+      function applyWaveToGeometry(geometry, t) {
+        const pos = geometry.attributes.position.array;
+        const yOffset = 1.2;
+
+        for (let i = 0; i < pos.length; i += 3) {
+          const x = pos[i];
+          const z = pos[i + 2];
+          pos[i + 1] =
+            Math.sin((x * 0.5 + t) * params.frequency) *
+            Math.cos((z * 0.5 + t) * params.frequency) *
+            params.amplitude +
+            yOffset;
+        }
+
+        geometry.attributes.position.needsUpdate = true;
+      }
+
+      function applyColorToGeometry(geometry) {
+        const pos = geometry.attributes.position.array;
+        const col = geometry.attributes.color.array;
+
+        let min = Infinity, max = -Infinity;
+
+        for (let i = 0; i < pos.length; i += 3) {
+          min = Math.min(min, pos[i + 1]);
+          max = Math.max(max, pos[i + 1]);
+        }
+
+        const range = max - min || 1;
+
+        for (let i = 0; i < pos.length; i += 3) {
+          const t = (pos[i + 1] - min) / range;
+          const c = heightToColor(t);
+          col.set([c.r, c.g, c.b], i);
+        }
+
+        geometry.attributes.color.needsUpdate = true;
+      }
+
+      /* ============================================================
+            CREATE PARTICLES
+      ============================================================ */
+      function createParticles() {
+        disposeObjects();
+
+        const count = Math.round(params.particleCount);
+        const geometry = new THREE.BufferGeometry();
+        const pos = new Float32Array(count * 3);
+        const col = new Float32Array(count * 3);
+
+        for (let i = 0; i < count; i++) {
+          const i3 = i * 3;
+          pos[i3] = (Math.random() - 0.5) * params.width;
+          pos[i3 + 1] = 0;
+          pos[i3 + 2] = (Math.random() - 0.5) * params.height;
+
+          const c = new THREE.Color().setHSL(Math.random(), 0.6, 0.55);
+          col.set([c.r, c.g, c.b], i3);
+        }
+
+        geometry.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+        geometry.setAttribute("color", new THREE.BufferAttribute(col, 3));
+
+        // preserve wave
+        applyWaveToGeometry(geometry, savedTime * params.speed);
+
+        points = new THREE.Points(
+          geometry,
+          new THREE.PointsMaterial({
+            size: params.particleSize,
+            vertexColors: true,
+            alphaMap: particleTexture,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+          })
+        );
+        scene.add(points);
+      }
+
+      /* ============================================================
+            CREATE SURFACE
+      ============================================================ */
+      function createSurface() {
+        disposeObjects();
+
+        const seg = Math.round(params.segments);
+        const geometry = new THREE.PlaneBufferGeometry(
+          params.width, params.height, seg, seg
+        );
+        geometry.rotateX(-Math.PI / 2);
+
+        const colors = new Float32Array(geometry.attributes.position.count * 3);
+        geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+
+        applyWaveToGeometry(geometry, savedTime * params.speed);
+        applyColorToGeometry(geometry);
+
+        surface = new THREE.Mesh(
+          geometry,
+          new THREE.MeshPhongMaterial({
+            vertexColors: true,
+            shininess: 45,
+            side: THREE.DoubleSide,
+          })
+        );
+
+        scene.add(surface);
+
+        if (params.wireframe) {
+          wireframeMesh = new THREE.LineSegments(
+            new THREE.WireframeGeometry(geometry),
+            new THREE.LineBasicMaterial({ color: 0x101010 })
+          );
+          scene.add(wireframeMesh);
+        }
+      }
+
+      /* ============================================================
+            CREATE HALF MODE (FIXED VERSION)
+      ============================================================ */
+      function createHalfMode() {
+        disposeObjects();
+
+        const t = savedTime * params.speed;
+
+        /* ---------- LEFT HALF = SURFACE ---------- */
+        const seg = Math.round(params.segments);
+        const surfGeo = new THREE.PlaneBufferGeometry(
+          params.width, params.height, seg, seg
+        );
+        surfGeo.rotateX(-Math.PI / 2);
+
+        const colors = new Float32Array(surfGeo.attributes.position.count * 3);
+        surfGeo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+
+        applyWaveToGeometry(surfGeo, t);
+        applyColorToGeometry(surfGeo);
+
+        const leftClip = new THREE.Plane(new THREE.Vector3(1, 0, 0), 0);
+
+        halfSurface = new THREE.Mesh(
+          surfGeo,
+          new THREE.MeshPhongMaterial({
+            vertexColors: true,
+            shininess: 45,
+            side: THREE.DoubleSide,
+            clippingPlanes: [leftClip],
+          })
+        );
+        scene.add(halfSurface);
+
+        if (params.wireframe) {
+          halfWireframe = new THREE.LineSegments(
+            new THREE.WireframeGeometry(surfGeo),
+            new THREE.LineBasicMaterial({ color: 0x101010 })
+          );
+          halfWireframe.material.clippingPlanes = [leftClip];
+          scene.add(halfWireframe);
+        }
+
+        /* ---------- RIGHT HALF = PARTICLES (FIXED) ---------- */
+        const count = Math.round(params.particleCount);
+        const pos = new Float32Array(count * 3);
+        const col = new Float32Array(count * 3);
+
+        for (let i = 0; i < count; i++) {
+          const i3 = i * 3;
+          pos[i3] = (Math.random() - 0.5) * params.width;  // full range
+          pos[i3 + 1] = 0;
+          pos[i3 + 2] = (Math.random() - 0.5) * params.height;
+
+          const c = new THREE.Color().setHSL(Math.random(), 0.6, 0.55);
+          col.set([c.r, c.g, c.b], i3);
+        }
+
+        const partGeo = new THREE.BufferGeometry();
+        partGeo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+        partGeo.setAttribute("color", new THREE.BufferAttribute(col, 3));
+
+        applyWaveToGeometry(partGeo, t);
+
+        const rightClip = new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0);
+
+        halfParticles = new THREE.Points(
+          partGeo,
+          new THREE.PointsMaterial({
+            size: params.particleSize,
+            vertexColors: true,
+            alphaMap: particleTexture,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            clippingPlanes: [rightClip],
+          })
+        );
+
+        scene.add(halfParticles);
+      }
+
+      /* ============================================================
+            REAL-TIME UPDATE WHILE PAUSED
+      ============================================================ */
+      function updateWaveWhilePaused() {
+        if (!paused) return;
+
+        const t = savedTime * params.speed;
+
+        if (points) applyWaveToGeometry(points.geometry, t);
+
+        if (surface) {
+          applyWaveToGeometry(surface.geometry, t);
+          applyColorToGeometry(surface.geometry);
+          if (wireframeMesh) {
+            wireframeMesh.geometry.dispose();
+            wireframeMesh.geometry =
+              new THREE.WireframeGeometry(surface.geometry);
+          }
+        }
+
+        if (halfSurface) {
+          applyWaveToGeometry(halfSurface.geometry, t);
+          applyColorToGeometry(halfSurface.geometry);
+        }
+        if (halfParticles) {
+          applyWaveToGeometry(halfParticles.geometry, t);
+        }
+      }
+
+      /* ============================================================
+            REBUILD SYSTEM
+      ============================================================ */
+      function rebuild() {
+        if (params.mode === "particles") createParticles();
+        else if (params.mode === "surface") createSurface();
+        else if (params.mode === "half-half") createHalfMode();
+      }
+
+      /* ============================================================
+            GUI PANEL
+      ============================================================ */
+      const gui = new dat.GUI({ width: 300 });
+      gui.close();
+
+      playPauseController = gui.add(params, "playPause").name("⏸ Pause");
+
+      gui.add(params, "mode", ["particles", "surface", "half-half"])
+        .name("Display Mode")
+        .onChange(() => rebuild());
+
+      const particlesFolder = gui.addFolder("✨ Particle Settings");
+      particlesFolder.add(params, "particleCount", 1000, 50000, 1000)
+        .name("Count").onChange(() => rebuild());
+      particlesFolder.add(params, "particleSize", 0.01, 0.5, 0.01)
+        .name("Size")
+        .onChange(() => {
+          if (points) points.material.size = params.particleSize;
+          if (halfParticles) halfParticles.material.size = params.particleSize;
+        });
+      particlesFolder.add(params, "width", 2, 40, 0.5)
+        .name("Wave Area X").onChange(() => rebuild());
+      particlesFolder.add(params, "height", 2, 40, 0.5)
+        .name("Wave Area Z").onChange(() => rebuild());
+      particlesFolder.close();
+
+      const surfaceFolder = gui.addFolder("🌊 Surface Settings");
+      surfaceFolder.add(params, "segments", 4, 300, 1)
+        .name("Resolution").onChange(() => rebuild());
+      surfaceFolder.add(params, "width", 2, 40, 0.5)
+        .name("Wave Area X").onChange(() => rebuild());
+      surfaceFolder.add(params, "height", 2, 40, 0.5)
+        .name("Wave Area Z").onChange(() => rebuild());
+      surfaceFolder.add(params, "wireframe")
+        .name("Wireframe").onChange(() => rebuild());
+      surfaceFolder.close();
+
+      const wavesFolder = gui.addFolder("⚙️ Wave Controls");
+      wavesFolder.add(params, "amplitude", 0, 3, 0.01)
+        .name("Wave Height").onChange(updateWaveWhilePaused);
+      wavesFolder.add(params, "frequency", 0, 6, 0.01)
+        .name("Frequency").onChange(updateWaveWhilePaused);
+      wavesFolder.add(params, "speed", 0, 3, 0.01)
+        .name("Speed").onChange(updateWaveWhilePaused);
+      wavesFolder.close();
+
+      rebuild();
+
+      /* ============================================================
+            ANIMATION LOOP
+      ============================================================ */
+      function animate() {
+        requestAnimationFrame(animate);
+
+        if (!paused) savedTime += clock.getDelta();
+
+        const t = savedTime * params.speed;
+        const yOffset = 1.2;
+
+        // animate particles
+        if (!paused && points) {
+          const arr = points.geometry.attributes.position.array;
+          for (let i = 0; i < arr.length; i += 3) {
+            const x = arr[i], z = arr[i + 2];
+            arr[i + 1] =
+              Math.sin((x * 0.5 + t) * params.frequency) *
+              Math.cos((z * 0.5 + t) * params.frequency) *
+              params.amplitude +
+              yOffset;
+          }
+          points.geometry.attributes.position.needsUpdate = true;
+        }
+
+        // animate surface
+        if (!paused && surface) {
+          const arr = surface.geometry.attributes.position.array;
+          let min = Infinity, max = -Infinity;
+
+          for (let i = 0; i < arr.length; i += 3) {
+            const x = arr[i], z = arr[i + 2];
+            const y =
+              Math.sin((x * 0.5 + t) * params.frequency) *
+              Math.cos((z * 0.5 + t) * params.frequency) *
+              params.amplitude +
+              yOffset;
+            arr[i + 1] = y;
+            min = Math.min(min, y);
+            max = Math.max(max, y);
+          }
+
+          const col = surface.geometry.attributes.color.array;
+          const range = max - min || 1;
+
+          for (let i = 0; i < arr.length; i += 3) {
+            const y = arr[i + 1];
+            const tt = (y - min) / range;
+            const c = heightToColor(tt);
+            col.set([c.r, c.g, c.b], i);
+          }
+
+          surface.geometry.attributes.position.needsUpdate = true;
+          surface.geometry.attributes.color.needsUpdate = true;
+
+          if (wireframeMesh) {
+            wireframeMesh.geometry.dispose();
+            wireframeMesh.geometry =
+              new THREE.WireframeGeometry(surface.geometry);
+          }
+        }
+
+        // animate HALF MODE
+        if (params.mode === "half-half") {
+          if (halfSurface) {
+            if (!paused) {
+              applyWaveToGeometry(halfSurface.geometry, t);
+              applyColorToGeometry(halfSurface.geometry);
+            }
+            if (halfWireframe) {
+              halfWireframe.geometry.dispose();
+              halfWireframe.geometry =
+                new THREE.WireframeGeometry(halfSurface.geometry);
+            }
+          }
+
+          if (halfParticles && !paused) {
+            applyWaveToGeometry(halfParticles.geometry, t);
+          }
+        }
+
+        controls.update();
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      /* ============================================================
+            RESIZE HANDLING
+      ============================================================ */
+      window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    </script>
+  </body>
 </html>

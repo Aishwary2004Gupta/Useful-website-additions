@@ -1,10 +1,3 @@
-import { gsap } from 'gsap';
-import { CustomEase } from 'gsap/CustomEase';
-import { SplitText } from 'gsap/SplitText';
-
-gsap.registerPlugin(SplitText, CustomEase);
-CustomEase.create('slideshow-wipe', '0.625, 0.05, 0, 1');
-
 // Loading Animation
 function initCrispLoadingAnimation() {
     const container = document.querySelector('.crisp-header');
@@ -144,13 +137,6 @@ function initCrispLoadingAnimation() {
     );
 }
 
-// Initialize Crisp Loading Animation
-document.addEventListener('DOMContentLoaded', () => {
-    document.fonts.ready.then(() => {
-        initCrispLoadingAnimation();
-    });
-});
-
 // Slideshow
 function initSlideShow(el) {
     const ui = {
@@ -224,8 +210,19 @@ function initSlideShow(el) {
     });
 }
 
-// Initialize Slideshow
+// Register CustomEase for slideshow transition
+if (typeof CustomEase !== 'undefined') {
+    CustomEase.create('slideshow-wipe', '0.625, 0.05, 0, 1');
+}
+
+// Initialize everything when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize Crisp Loading Animation
+    document.fonts.ready.then(() => {
+        initCrispLoadingAnimation();
+    });
+    
+    // Initialize Slideshow
     document
         .querySelectorAll('[data-slideshow="wrap"]')
         .forEach(wrap => initSlideShow(wrap));

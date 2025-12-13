@@ -7,7 +7,8 @@
     <title>Particles Surface Wave</title>
 
     <style>
-      html, body {
+      html,
+      body {
         margin: 0;
         height: 100%;
         overflow: hidden;
@@ -18,7 +19,9 @@
         height: 100%;
         display: block;
       }
-      .dg { z-index: 99999 !important; }
+      .dg {
+        z-index: 99999 !important;
+      }
     </style>
   </head>
 
@@ -38,7 +41,10 @@
       const canvas = document.querySelector("#canvas");
 
       const camera = new THREE.PerspectiveCamera(
-        65, window.innerWidth / window.innerHeight, 0.1, 100
+        65,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        100
       );
       camera.position.set(-10, 5, 10);
 
@@ -66,7 +72,7 @@
             PARAMETERS
       ============================================================ */
       const params = {
-        mode: "half-half",  // particles | surface | half
+        mode: "half-half", // particles | surface | half
         amplitude: 1.2,
         frequency: 1.5,
         speed: 1.2,
@@ -118,13 +124,19 @@
           if (obj.material) obj.material.dispose();
         };
 
-        kill(points); points = null;
-        kill(surface); surface = null;
-        kill(wireframeMesh); wireframeMesh = null;
+        kill(points);
+        points = null;
+        kill(surface);
+        surface = null;
+        kill(wireframeMesh);
+        wireframeMesh = null;
 
-        kill(halfSurface); halfSurface = null;
-        kill(halfParticles); halfParticles = null;
-        kill(halfWireframe); halfWireframe = null;
+        kill(halfSurface);
+        halfSurface = null;
+        kill(halfParticles);
+        halfParticles = null;
+        kill(halfWireframe);
+        halfWireframe = null;
       }
 
       /* ============================================================
@@ -157,8 +169,8 @@
           const z = pos[i + 2];
           pos[i + 1] =
             Math.sin((x * 0.5 + t) * params.frequency) *
-            Math.cos((z * 0.5 + t) * params.frequency) *
-            params.amplitude +
+              Math.cos((z * 0.5 + t) * params.frequency) *
+              params.amplitude +
             yOffset;
         }
 
@@ -169,7 +181,8 @@
         const pos = geometry.attributes.position.array;
         const col = geometry.attributes.color.array;
 
-        let min = Infinity, max = -Infinity;
+        let min = Infinity,
+          max = -Infinity;
 
         for (let i = 0; i < pos.length; i += 3) {
           min = Math.min(min, pos[i + 1]);
@@ -235,7 +248,10 @@
 
         const seg = Math.round(params.segments);
         const geometry = new THREE.PlaneBufferGeometry(
-          params.width, params.height, seg, seg
+          params.width,
+          params.height,
+          seg,
+          seg
         );
         geometry.rotateX(-Math.PI / 2);
 
@@ -276,7 +292,10 @@
         /* ---------- LEFT HALF = SURFACE ---------- */
         const seg = Math.round(params.segments);
         const surfGeo = new THREE.PlaneBufferGeometry(
-          params.width, params.height, seg, seg
+          params.width,
+          params.height,
+          seg,
+          seg
         );
         surfGeo.rotateX(-Math.PI / 2);
 
@@ -315,7 +334,7 @@
 
         for (let i = 0; i < count; i++) {
           const i3 = i * 3;
-          pos[i3] = (Math.random() - 0.5) * params.width;  // full range
+          pos[i3] = (Math.random() - 0.5) * params.width; // full range
           pos[i3 + 1] = 0;
           pos[i3 + 2] = (Math.random() - 0.5) * params.height;
 
@@ -361,8 +380,9 @@
           applyColorToGeometry(surface.geometry);
           if (wireframeMesh) {
             wireframeMesh.geometry.dispose();
-            wireframeMesh.geometry =
-              new THREE.WireframeGeometry(surface.geometry);
+            wireframeMesh.geometry = new THREE.WireframeGeometry(
+              surface.geometry
+            );
           }
         }
 
@@ -392,43 +412,65 @@
 
       playPauseController = gui.add(params, "playPause").name("⏸ Pause");
 
-      gui.add(params, "mode", ["particles", "surface", "half-half"])
+      gui
+        .add(params, "mode", ["particles", "surface", "half-half"])
         .name("Display Mode")
         .onChange(() => rebuild());
 
       const particlesFolder = gui.addFolder("✨ Particle Settings");
-      particlesFolder.add(params, "particleCount", 1000, 50000, 1000)
-        .name("Count").onChange(() => rebuild());
-      particlesFolder.add(params, "particleSize", 0.01, 0.5, 0.01)
+      particlesFolder
+        .add(params, "particleCount", 1000, 50000, 1000)
+        .name("Count")
+        .onChange(() => rebuild());
+      particlesFolder
+        .add(params, "particleSize", 0.01, 0.5, 0.01)
         .name("Size")
         .onChange(() => {
           if (points) points.material.size = params.particleSize;
           if (halfParticles) halfParticles.material.size = params.particleSize;
         });
-      particlesFolder.add(params, "width", 2, 40, 0.5)
-        .name("Wave Area X").onChange(() => rebuild());
-      particlesFolder.add(params, "height", 2, 40, 0.5)
-        .name("Wave Area Z").onChange(() => rebuild());
+      particlesFolder
+        .add(params, "width", 2, 40, 0.5)
+        .name("Wave Area X")
+        .onChange(() => rebuild());
+      particlesFolder
+        .add(params, "height", 2, 40, 0.5)
+        .name("Wave Area Z")
+        .onChange(() => rebuild());
       particlesFolder.close();
 
       const surfaceFolder = gui.addFolder("🌊 Surface Settings");
-      surfaceFolder.add(params, "segments", 4, 300, 1)
-        .name("Resolution").onChange(() => rebuild());
-      surfaceFolder.add(params, "width", 2, 40, 0.5)
-        .name("Wave Area X").onChange(() => rebuild());
-      surfaceFolder.add(params, "height", 2, 40, 0.5)
-        .name("Wave Area Z").onChange(() => rebuild());
-      surfaceFolder.add(params, "wireframe")
-        .name("Wireframe").onChange(() => rebuild());
+      surfaceFolder
+        .add(params, "segments", 4, 300, 1)
+        .name("Resolution")
+        .onChange(() => rebuild());
+      surfaceFolder
+        .add(params, "width", 2, 40, 0.5)
+        .name("Wave Area X")
+        .onChange(() => rebuild());
+      surfaceFolder
+        .add(params, "height", 2, 40, 0.5)
+        .name("Wave Area Z")
+        .onChange(() => rebuild());
+      surfaceFolder
+        .add(params, "wireframe")
+        .name("Wireframe")
+        .onChange(() => rebuild());
       surfaceFolder.close();
 
       const wavesFolder = gui.addFolder("⚙️ Wave Controls");
-      wavesFolder.add(params, "amplitude", 0, 3, 0.01)
-        .name("Wave Height").onChange(updateWaveWhilePaused);
-      wavesFolder.add(params, "frequency", 0, 6, 0.01)
-        .name("Frequency").onChange(updateWaveWhilePaused);
-      wavesFolder.add(params, "speed", 0, 3, 0.01)
-        .name("Speed").onChange(updateWaveWhilePaused);
+      wavesFolder
+        .add(params, "amplitude", 0, 3, 0.01)
+        .name("Wave Height")
+        .onChange(updateWaveWhilePaused);
+      wavesFolder
+        .add(params, "frequency", 0, 6, 0.01)
+        .name("Frequency")
+        .onChange(updateWaveWhilePaused);
+      wavesFolder
+        .add(params, "speed", 0, 3, 0.01)
+        .name("Speed")
+        .onChange(updateWaveWhilePaused);
       wavesFolder.close();
 
       rebuild();
@@ -448,11 +490,12 @@
         if (!paused && points) {
           const arr = points.geometry.attributes.position.array;
           for (let i = 0; i < arr.length; i += 3) {
-            const x = arr[i], z = arr[i + 2];
+            const x = arr[i],
+              z = arr[i + 2];
             arr[i + 1] =
               Math.sin((x * 0.5 + t) * params.frequency) *
-              Math.cos((z * 0.5 + t) * params.frequency) *
-              params.amplitude +
+                Math.cos((z * 0.5 + t) * params.frequency) *
+                params.amplitude +
               yOffset;
           }
           points.geometry.attributes.position.needsUpdate = true;
@@ -461,14 +504,16 @@
         // animate surface
         if (!paused && surface) {
           const arr = surface.geometry.attributes.position.array;
-          let min = Infinity, max = -Infinity;
+          let min = Infinity,
+            max = -Infinity;
 
           for (let i = 0; i < arr.length; i += 3) {
-            const x = arr[i], z = arr[i + 2];
+            const x = arr[i],
+              z = arr[i + 2];
             const y =
               Math.sin((x * 0.5 + t) * params.frequency) *
-              Math.cos((z * 0.5 + t) * params.frequency) *
-              params.amplitude +
+                Math.cos((z * 0.5 + t) * params.frequency) *
+                params.amplitude +
               yOffset;
             arr[i + 1] = y;
             min = Math.min(min, y);
@@ -490,8 +535,9 @@
 
           if (wireframeMesh) {
             wireframeMesh.geometry.dispose();
-            wireframeMesh.geometry =
-              new THREE.WireframeGeometry(surface.geometry);
+            wireframeMesh.geometry = new THREE.WireframeGeometry(
+              surface.geometry
+            );
           }
         }
 
@@ -504,8 +550,9 @@
             }
             if (halfWireframe) {
               halfWireframe.geometry.dispose();
-              halfWireframe.geometry =
-                new THREE.WireframeGeometry(halfSurface.geometry);
+              halfWireframe.geometry = new THREE.WireframeGeometry(
+                halfSurface.geometry
+              );
             }
           }
 

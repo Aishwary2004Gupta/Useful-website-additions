@@ -142,7 +142,7 @@ main:has(.crisp-header.is--loading) {
 }
 
 /* Loading: Loading Done */
-.crisp-loader {
+.crisp-header:not(.is--loading) .crisp-loader {
   display: none;
 }
 
@@ -321,7 +321,7 @@ main:has(.crisp-header.is--loading) {
 
 @font-face {
   font-family: 'Haffer';
-  src: url('https://cdn.prod.website-files.com/69158db916f2854de7fae735/69158dbc16f2854de7fae7d9_HafferRegular.ttf') format('ttf');
+  src: url('https://cdn.prod.website-files.com/69158db916f2854de7fae735/69158dbc16f2854de7fae7d9_HafferRegular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -329,7 +329,7 @@ main:has(.crisp-header.is--loading) {
 
 @font-face {
   font-family: 'Haffer XH';
-  src: url('https://cdn.prod.website-files.com/69158db916f2854de7fae735/69158dbc16f2854de7fae7d0_HafferXHRegular.woff2') format('ttf');
+  src: url('https://cdn.prod.website-files.com/69158db916f2854de7fae735/69158dbc16f2854de7fae7d0_HafferXHRegular.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;

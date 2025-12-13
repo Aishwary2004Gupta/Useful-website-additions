@@ -227,3 +227,4 @@ document.addEventListener('DOMContentLoaded', () => {
         .querySelectorAll('[data-slideshow="wrap"]')
         .forEach(wrap => initSlideShow(wrap));
 });
+

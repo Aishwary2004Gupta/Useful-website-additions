@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motion Layer Scroller Recreation</title>
+    <style>
+        /* 1. Reset and Base Styles */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #111;
+            color: white;
+            font-family: sans-serif;
+            /* IMPORTANT: Create enough scroll space */
+            height: 300vh;
+        }
+
+        /* 2. Scroll Container Setup */
+        .scroll-container {
+            /* This div defines the area where the scroll animation takes place */
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            
+            /* Pin the container to the viewport while the scroll takes effect */
+            position: sticky;
+            top: 0;
+            
+            /* Set perspective for 3D effects */
+            perspective: 1000px; 
+            overflow: hidden;
+        }
+        
+        /* 3. Layer Styles */
+        .layer {
+            position: absolute;
+            width: 80vw;
+            height: 60vh;
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            /* Enable 3D transforms for smoothness */
+            will-change: transform;
+            /* Initial state: Center of the screen */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Define specific styles and z-depth for each layer */
+        .layer:nth-child(1) {
+            background-color: #FF6B6B; /* Front layer */
+            z-index: 3;
+        }
+        .layer:nth-child(2) {
+            background-color: #4ECDC4; /* Middle layer */
+            z-index: 2;
+            /* Push back slightly in 3D space */
+            transform: translate(-50%, -50%) translateZ(-100px);
+        }
+        .layer:nth-child(3) {
+            background-color: #4F98CA; /* Back layer */
+            z-index: 1;
+            /* Push back further in 3D space */
+            transform: translate(-50%, -50%) translateZ(-200px);
+        }
+        
+        /* Optional guide text for scrolling */
+        .guide-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            opacity: 0.5;
+            font-size: 1.2em;
+        }
+        .start { top: 10vh; }
+        .end { bottom: 10vh; }
+
+    </style>
+</head>
+<body>
+
+    <div class="guide-text start">SCROLL DOWN TO ACTIVATE EFFECT</div>
+
+    <div class="scroll-container">
+        <div class="layer" data-speed="1.0">Layer 1 (Front)</div>
+        <div class="layer" data-speed="0.8">Layer 2 (Middle)</div>
+        <div class="layer" data-speed="0.5">Layer 3 (Back)</div>
+    </div>
+
+    <div class="guide-text end">END OF SCROLL SECTION</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    
+    <script>
+        // Register the ScrollTrigger plugin
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Get all the layers
+        const layers = gsap.utils.toArray('.layer');
+        const container = document.querySelector('.scroll-container');
+
+        // Create the ScrollTrigger to define the active scroll duration
+        ScrollTrigger.create({
+            trigger: 'body', // The whole body scroll is the trigger
+            start: 'top top',
+            end: 'bottom bottom',
+            scrub: true, // Smoothly link scroll position to animation progress
+        });
+
+        layers.forEach((layer) => {
+            const speed = parseFloat(layer.dataset.speed);
+            
+            // Calculate the total distance to move based on the body's scroll height.
+            // A higher speed factor means the element moves more (for parallax effect).
+            const distance = (1 - speed) * (window.innerHeight * 2);
+
+            // Apply the scroll-linked animation
+            gsap.to(layer, {
+                y: distance, // Translate the layer vertically
+                scale: speed, // Scale it down as it moves (optional depth effect)
+                rotationX: speed * 5, // Optional slight tilt for 3D effect
+                ease: 'none',
+                
+                scrollTrigger: {
+                    trigger: 'body',
+                    start: 'top top',
+                    end: 'bottom bottom',
+                    scrub: true,
+                },
+            });
+        });
+    </script>
+</body>
+</html>

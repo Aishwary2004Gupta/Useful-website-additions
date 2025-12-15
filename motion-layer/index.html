@@ -118,7 +118,7 @@
 
         layers.forEach((layer) => {
             const speed = parseFloat(layer.dataset.speed);
-            
+        
             // Calculate the total distance to move based on the body's scroll height.
             // A higher speed factor means the element moves more (for parallax effect).
             const distance = (1 - speed) * (window.innerHeight * 2);

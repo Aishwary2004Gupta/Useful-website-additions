@@ -1,146 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Morphing Glass Cube</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear Glass Cube - Internal Animation</title>
     <style>
-      body {
-        margin: 0;
-        background-color: #000;
-        overflow: hidden;
-      }
-      canvas {
-        display: block;
-      }
+        body { margin: 0; background-color: #000; overflow: hidden; }
+        canvas { display: block; }
     </style>
-  </head>
-  <body>
+</head>
+<body>
+
     <script type="importmap">
-      {
-        "imports": {
-          "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-          "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
         }
-      }
     </script>
 
     <script type="module">
-      import * as THREE from "three";
-      import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-      // --- Scene & Renderer ---
-      const scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x000000); // Pure Black Background
+        // --- Scene Setup ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 5;
 
-      const camera = new THREE.PerspectiveCamera(
-        50,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        1000
-      );
-      camera.position.z = 4;
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
 
-      const renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setPixelRatio(window.devicePixelRatio);
-      // Brighten the internal textures
-      renderer.toneMapping = THREE.ReinhardToneMapping;
-      renderer.toneMappingExposure = 2;
-      document.body.appendChild(renderer.domElement);
+        // --- Lighting (Dramatic) ---
+        const ambient = new THREE.AmbientLight(0xffffff, 0.2);
+        scene.add(ambient);
 
-      // --- Lighting ---
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-      scene.add(ambientLight);
+        const pointLight = new THREE.PointLight(0x00ffff, 20, 10);
+        pointLight.position.set(2, 2, 2);
+        scene.add(pointLight);
 
-      const pointLight = new THREE.PointLight(0xffffff, 15);
-      pointLight.position.set(2, 3, 4);
-      scene.add(pointLight);
-
-      // --- Texture Loading ---
-      const loader = new THREE.TextureLoader();
-      const imgIds = [1506491, 1533333, 1550677, 1464810, 1521444, 1564450];
-      const textures = imgIds.map((id) => {
-        const tex = loader.load(
-          `https://images.unsplash.com/photo-${id}-0486eef93130?auto=format&fit=crop&q=80&w=500`
-        );
-        tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-        return tex;
-      });
-
-      // --- Materials (6 Different Faces) ---
-      // We use MeshPhysicalMaterial for that "Glass/Plastic" look
-      const materials = textures.map(
-        (tex) =>
-          new THREE.MeshPhysicalMaterial({
-            map: tex,
-            transmission: 0.3, // Allows some light through the texture
-            thickness: 0.5,
-            roughness: 0.1,
-            ior: 1.45,
-            reflectivity: 0.5,
-            clearcoat: 1.0,
-            clearcoatRoughness: 0.1,
+        // --- 1. The Glass Cube (The Container) ---
+        const cubeGeometry = new THREE.BoxGeometry(2, 2, 2);
+        const glassMaterial = new THREE.MeshPhysicalMaterial({
+            thickness: 0.8,
+            roughness: 0.05,
+            transmission: 1, // Fully clear
+            ior: 1.5,
+            reflectivity: 0.9,
+            transparent: true,
+            opacity: 1,
             side: THREE.DoubleSide,
-          })
-      );
-
-      // --- Cube Creation ---
-      const geometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);
-      const cube = new THREE.Mesh(geometry, materials);
-      scene.add(cube);
-
-      // --- Outer Wireframe (Glowing edges) ---
-      const wireGeo = new THREE.BoxGeometry(1.51, 1.51, 1.51);
-      const wireMat = new THREE.MeshBasicMaterial({
-        color: 0x00ffff,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.3,
-      });
-      const wireframe = new THREE.Mesh(wireGeo, wireMat);
-      cube.add(wireframe);
-
-      // --- Interaction ---
-      const controls = new OrbitControls(camera, renderer.domElement);
-      controls.enableDamping = true;
-
-      // --- Animation Loop ---
-      let time = 0;
-      function animate() {
-        time += 0.01;
-        requestAnimationFrame(animate);
-
-        // Rotate Cube
-        cube.rotation.x += 0.005;
-        cube.rotation.y += 0.008;
-
-        // "Morphing" Logic: Update texture offsets and scale pulsing
-        textures.forEach((tex, i) => {
-          // Shift the image position to create a "liquid" morphing movement
-          tex.offset.x = Math.sin(time * 0.5 + i) * 0.1;
-          tex.offset.y = Math.cos(time * 0.3 + i) * 0.1;
-
-          // Pulsing intensity
-          materials[i].emissive = new THREE.Color(0x222222);
-          materials[i].emissiveIntensity = Math.sin(time + i) * 0.5 + 0.5;
+            color: 0xffffff
         });
 
-        // Pulse the size slightly to simulate morphing
-        const pulse = 1 + Math.sin(time * 2) * 0.02;
-        cube.scale.set(pulse, pulse, pulse);
+        const glassCube = new THREE.Mesh(cubeGeometry, glassMaterial);
+        scene.add(glassCube);
 
-        controls.update();
-        renderer.render(scene, camera);
-      }
+        // --- 2. Inside Animation: Floating Morphing Core ---
+        const coreGeo = new THREE.IcosahedronGeometry(0.5, 15);
+        const coreMat = new THREE.MeshStandardMaterial({ 
+            color: 0xff00ff, 
+            emissive: 0x330033,
+            wireframe: true 
+        });
+        const core = new THREE.Mesh(coreGeo, coreMat);
+        glassCube.add(core); // Parenting to cube so it stays inside
 
-      window.addEventListener("resize", () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-      });
+        // --- 3. Inside Animation: Particle Swarm ---
+        const particlesCount = 200;
+        const pCoords = new Float32Array(particlesCount * 3);
+        for(let i=0; i < particlesCount * 3; i++) {
+            pCoords[i] = (Math.random() - 0.5) * 1.5; // Keep within cube bounds
+        }
+        const pGeo = new THREE.BufferGeometry();
+        pGeo.setAttribute('position', new THREE.BufferAttribute(pCoords, 3));
+        const pMat = new THREE.PointsMaterial({ color: 0x00ffff, size: 0.02 });
+        const particles = new THREE.Points(pGeo, pMat);
+        glassCube.add(particles);
 
-      animate();
+        // --- Controls ---
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+
+        // --- Animation Logic ---
+        let time = 0;
+        const initialPos = pGeo.attributes.position.array.slice();
+
+        function animate() {
+            time += 0.015;
+            requestAnimationFrame(animate);
+
+            // Rotate the outer glass
+            glassCube.rotation.y += 0.005;
+            glassCube.rotation.x += 0.003;
+
+            // Animate Internal Core (Morphing & Pulsing)
+            const scale = 1 + Math.sin(time * 2) * 0.2;
+            core.scale.set(scale, scale, scale);
+            core.rotation.z -= 0.02;
+
+            // Animate Internal Particles (Swirling)
+            const positions = pGeo.attributes.position.array;
+            for(let i = 0; i < particlesCount; i++) {
+                const i3 = i * 3;
+                positions[i3] += Math.sin(time + positions[i3+1]) * 0.002;
+                positions[i3+1] += Math.cos(time + positions[i3]) * 0.002;
+            }
+            pGeo.attributes.position.needsUpdate = true;
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
     </script>
-  </body>
+</body>
 </html>

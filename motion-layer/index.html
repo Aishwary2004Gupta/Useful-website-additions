@@ -1,247 +1,324 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Smooth Morphing Glass Cube</title>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; }
-        canvas { display: block; }
-        #face-indicator {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: white;
-            font-family: Arial, sans-serif;
-            font-size: 18px;
-            background: rgba(0,0,0,0.5);
-            padding: 10px;
-            border-radius: 5px;
-            z-index: 100;
-        }
+      body {
+        margin: 0;
+        background: #000;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+      }
+      #face-indicator {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        color: white;
+        font-family: Arial, sans-serif;
+        font-size: 18px;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 10px;
+        border-radius: 5px;
+        z-index: 100;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div id="face-indicator">Face: Front</div>
 
     <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-            }
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
         }
+      }
     </script>
 
     <script type="module">
-        import * as THREE from 'three';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+      import * as THREE from "three";
+      import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-        // --- Core Setup ---
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(3, 3, 5);
+      // --- Core Setup ---
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(
+        50,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+      camera.position.set(3, 3, 5);
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        document.body.appendChild(renderer.domElement);
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      document.body.appendChild(renderer.domElement);
 
-        // --- Lights ---
-        const light1 = new THREE.PointLight(0xff00ff, 10, 10); // Neon Pink
-        light1.position.set(2, 2, 2);
-        scene.add(light1);
+      // --- Lights ---
+      const light1 = new THREE.PointLight(0xff00ff, 10, 10); // Neon Pink
+      light1.position.set(2, 2, 2);
+      scene.add(light1);
 
-        const light2 = new THREE.PointLight(0x00ffff, 10, 10); // Neon Cyan
-        light2.position.set(-2, -2, 2);
-        scene.add(light2);
+      const light2 = new THREE.PointLight(0x00ffff, 10, 10); // Neon Cyan
+      light2.position.set(-2, -2, 2);
+      scene.add(light2);
 
-        // --- 1. The Cube Outline ---
-        const cubeSize = 2;
-        const boxGeo = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
-        const edgeGeo = new THREE.EdgesGeometry(boxGeo);
-        const edgeMat = new THREE.LineBasicMaterial({ color: 0x444444, transparent: true, opacity: 0.5 });
-        const cubeOutline = new THREE.LineSegments(edgeGeo, edgeMat);
-        scene.add(cubeOutline);
+      // --- 1. The Cube Outline ---
+      const cubeSize = 2;
+      const boxGeo = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+      const edgeGeo = new THREE.EdgesGeometry(boxGeo);
+      const edgeMat = new THREE.LineBasicMaterial({
+        color: 0x444444,
+        transparent: true,
+        opacity: 0.5,
+      });
+      const cubeOutline = new THREE.LineSegments(edgeGeo, edgeMat);
+      scene.add(cubeOutline);
 
-        // --- 2. The Glass Shell ---
-        const glassMat = new THREE.MeshPhysicalMaterial({
-            transmission: 1,
-            thickness: 0.5,
-            roughness: 0.05,
-            ior: 1.5,
-            transparent: true,
-            opacity: 0.3,
-            side: THREE.DoubleSide
-        });
-        const glassCube = new THREE.Mesh(boxGeo, glassMat);
-        scene.add(glassCube);
+      // --- 2. The Glass Shell ---
+      const glassMat = new THREE.MeshPhysicalMaterial({
+        transmission: 1,
+        thickness: 0.5,
+        roughness: 0.05,
+        ior: 1.5,
+        transparent: true,
+        opacity: 0.3,
+        side: THREE.DoubleSide,
+      });
+      const glassCube = new THREE.Mesh(boxGeo, glassMat);
+      scene.add(glassCube);
 
-        // --- 3. The Morphing Blob (Inside) ---
-        const blobGeo = new THREE.IcosahedronGeometry(0.7, 32); 
-        const blobMat = new THREE.MeshStandardMaterial({
-            color: 0xffffff,
-            roughness: 0,
-            metalness: 1,
-            emissive: 0x220044
-        });
-        const blob = new THREE.Mesh(blobGeo, blobMat);
-        scene.add(blob);
+      // --- 3. The Morphing Blob (Inside) ---
+      const blobGeo = new THREE.IcosahedronGeometry(0.7, 32);
+      const blobMat = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        roughness: 0,
+        metalness: 1,
+        emissive: 0x220044,
+      });
+      const blob = new THREE.Mesh(blobGeo, blobMat);
+      scene.add(blob);
 
-        // Store original positions for the morphing math
-        const positionAttribute = blobGeo.attributes.position;
-        const vertex = new THREE.Vector3();
-        const originalPositions = new Float32Array(positionAttribute.array);
+      // Store original positions for the morphing math
+      const positionAttribute = blobGeo.attributes.position;
+      const vertex = new THREE.Vector3();
+      const originalPositions = new Float32Array(positionAttribute.array);
 
-        // --- Controls ---
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
+      // --- Controls ---
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
 
-        // --- Face Detection Variables ---
-        const faceIndicators = ['Front', 'Right', 'Back', 'Left', 'Top', 'Bottom'];
-        let currentFace = 0;
-        const faceIndicator = document.getElementById('face-indicator');
+      // --- Face Detection Variables ---
+      const faceIndicators = [
+        "Front",
+        "Right",
+        "Back",
+        "Left",
+        "Top",
+        "Bottom",
+      ];
+      let currentFace = 0;
+      const faceIndicator = document.getElementById("face-indicator");
 
-        // Colors and parameters for each face
-        const faceProperties = [
-            { color: 0xff0000, speed: 0.02, waveScale: 0.3, name: 'Front' },      // Red - Front
-            { color: 0x00ff00, speed: 0.03, waveScale: 0.4, name: 'Right' },     // Green - Right
-            { color: 0x0000ff, speed: 0.01, waveScale: 0.2, name: 'Back' },      // Blue - Back
-            { color: 0xffff00, speed: 0.04, waveScale: 0.5, name: 'Left' },      // Yellow - Left
-            { color: 0xff00ff, speed: 0.025, waveScale: 0.35, name: 'Top' },     // Magenta - Top
-            { color: 0x00ffff, speed: 0.015, waveScale: 0.25, name: 'Bottom' }   // Cyan - Bottom
+      // Colors and parameters for each face
+      const faceProperties = [
+        { color: 0xff0000, speed: 0.02, waveScale: 0.3, name: "Front" }, // Red - Front
+        { color: 0x00ff00, speed: 0.03, waveScale: 0.4, name: "Right" }, // Green - Right
+        { color: 0x0000ff, speed: 0.01, waveScale: 0.2, name: "Back" }, // Blue - Back
+        { color: 0xffff00, speed: 0.04, waveScale: 0.5, name: "Left" }, // Yellow - Left
+        { color: 0xff00ff, speed: 0.025, waveScale: 0.35, name: "Top" }, // Magenta - Top
+        { color: 0x00ffff, speed: 0.015, waveScale: 0.25, name: "Bottom" }, // Cyan - Bottom
+      ];
+
+      // Function to detect which face is facing the camera
+      function detectFacingFace() {
+        // Create normals for each cube face (in world space)
+        const normals = [
+          new THREE.Vector3(0, 0, 1), // Front (positive Z)
+          new THREE.Vector3(1, 0, 0), // Right (positive X)
+          new THREE.Vector3(0, 0, -1), // Back (negative Z)
+          new THREE.Vector3(-1, 0, 0), // Left (negative X)
+          new THREE.Vector3(0, 1, 0), // Top (positive Y)
+          new THREE.Vector3(0, -1, 0), // Bottom (negative Y)
         ];
 
-        // Function to detect which face is facing the camera
-        function detectFacingFace() {
-            // Create normals for each cube face (in world space)
-            const normals = [
-                new THREE.Vector3(0, 0, 1),    // Front (positive Z)
-                new THREE.Vector3(1, 0, 0),    // Right (positive X)
-                new THREE.Vector3(0, 0, -1),   // Back (negative Z)
-                new THREE.Vector3(-1, 0, 0),   // Left (negative X)
-                new THREE.Vector3(0, 1, 0),    // Top (positive Y)
-                new THREE.Vector3(0, -1, 0)    // Bottom (negative Y)
-            ];
-            
-            // Transform normals to world space using cube's rotation
-            const cubeRotation = cubeOutline.rotation;
-            const cameraDirection = new THREE.Vector3();
-            camera.getWorldDirection(cameraDirection);
-            
-            // Find which face normal is most aligned with camera view direction
-            let maxDot = -Infinity;
-            let detectedFace = 0;
-            
-            for (let i = 0; i < normals.length; i++) {
-                const normal = normals[i].clone();
-                normal.applyEuler(cubeRotation); // Rotate normal according to cube's rotation
-                
-                // Dot product between face normal and camera direction (we want the face pointing towards camera)
-                const dot = normal.dot(cameraDirection);
-                
-                if (dot > maxDot) {
-                    maxDot = dot;
-                    detectedFace = i;
-                }
-            }
-            
-            return detectedFace;
+        // Transform normals to world space using cube's rotation
+        const cubeRotation = cubeOutline.rotation;
+        const cameraDirection = new THREE.Vector3();
+        camera.getWorldDirection(cameraDirection);
+
+        // Find which face normal is most aligned with camera view direction
+        let maxDot = -Infinity;
+        let detectedFace = 0;
+
+        for (let i = 0; i < normals.length; i++) {
+          const normal = normals[i].clone();
+          normal.applyEuler(cubeRotation); // Rotate normal according to cube's rotation
+
+          // Dot product between face normal and camera direction (we want the face pointing towards camera)
+          const dot = normal.dot(cameraDirection);
+
+          if (dot > maxDot) {
+            maxDot = dot;
+            detectedFace = i;
+          }
         }
 
-        // Function to update blob animation based on current face
-        function updateBlobAnimation(faceIndex, time) {
-            const props = faceProperties[faceIndex];
-            
-            // Update blob material color
-            blobMat.color.set(props.color);
-            blobMat.emissive.set(props.color).multiplyScalar(0.2);
-            
-            // Update animation parameters
-            for (let i = 0; i < positionAttribute.count; i++) {
-                vertex.fromArray(originalPositions, i * 3);
-                
-                // Different wave patterns for different faces
-                let wave1, wave2, wave3;
-                
-                switch(faceIndex) {
-                    case 0: // Front - Smooth waves
-                        wave1 = Math.sin(vertex.x * 2 + time * props.speed) * props.waveScale;
-                        wave2 = Math.cos(vertex.y * 2 + time * props.speed) * props.waveScale * 0.7;
-                        wave3 = Math.sin(vertex.z * 1.5 + time * props.speed * 0.5) * props.waveScale * 0.5;
-                        break;
-                    case 1: // Right - Fast, turbulent
-                        wave1 = Math.sin(vertex.x * 3 + time * props.speed * 2) * props.waveScale;
-                        wave2 = Math.cos(vertex.y * 4 + time * props.speed * 1.5) * props.waveScale;
-                        wave3 = Math.sin(vertex.z * 2 + time * props.speed) * props.waveScale * 0.3;
-                        break;
-                    case 2: // Back - Slow, gentle
-                        wave1 = Math.sin(vertex.x * 1 + time * props.speed * 0.5) * props.waveScale * 0.5;
-                        wave2 = Math.cos(vertex.y * 1.5 + time * props.speed * 0.3) * props.waveScale * 0.3;
-                        wave3 = Math.sin(vertex.z * 2 + time * props.speed * 0.2) * props.waveScale * 0.2;
-                        break;
-                    case 3: // Left - Sharp, angular
-                        wave1 = Math.abs(Math.sin(vertex.x * 4 + time * props.speed)) * props.waveScale;
-                        wave2 = Math.abs(Math.cos(vertex.y * 3 + time * props.speed * 1.2)) * props.waveScale * 0.8;
-                        wave3 = Math.sin(vertex.z * 5 + time * props.speed * 3) * props.waveScale * 0.6;
-                        break;
-                    case 4: // Top - Spherical, pulsing
-                        wave1 = Math.sin(vertex.x * 2.5 + time * props.speed) * props.waveScale * 0.7;
-                        wave2 = Math.cos(vertex.y * 2.5 + time * props.speed) * props.waveScale * 0.7;
-                        wave3 = Math.sin(Math.sqrt(vertex.x*vertex.x + vertex.z*vertex.z) * 3 + time * props.speed) * props.waveScale;
-                        break;
-                    case 5: // Bottom - Complex interference pattern
-                        wave1 = Math.sin(vertex.x * 3 + time * props.speed) * Math.cos(vertex.z * 2 + time * props.speed) * props.waveScale;
-                        wave2 = Math.cos(vertex.y * 2 + time * props.speed * 1.5) * Math.sin(vertex.x * 1.5 + time * props.speed) * props.waveScale * 0.6;
-                        wave3 = Math.sin(vertex.z * 2.5 + time * props.speed * 0.7) * props.waveScale * 0.4;
-                        break;
-                }
-                
-                const offset = 1 + (wave1 + wave2 + wave3) / 3;
-                vertex.multiplyScalar(offset);
-                positionAttribute.setXYZ(i, vertex.x, vertex.y, vertex.z);
-            }
-            positionAttribute.needsUpdate = true;
-            blobGeo.computeVertexNormals();
-            
-            // Update face indicator
-            faceIndicator.textContent = `Face: ${props.name}`;
-            faceIndicator.style.color = `rgb(${Math.floor(props.color >> 16)}, ${Math.floor((props.color >> 8) & 255)}, ${Math.floor(props.color & 255)})`;
+        return detectedFace;
+      }
+
+      // Function to update blob animation based on current face
+      function updateBlobAnimation(faceIndex, time) {
+        const props = faceProperties[faceIndex];
+
+        // Update blob material color
+        blobMat.color.set(props.color);
+        blobMat.emissive.set(props.color).multiplyScalar(0.2);
+
+        // Update animation parameters
+        for (let i = 0; i < positionAttribute.count; i++) {
+          vertex.fromArray(originalPositions, i * 3);
+
+          // Different wave patterns for different faces
+          let wave1, wave2, wave3;
+
+          switch (faceIndex) {
+            case 0: // Front - Smooth waves
+              wave1 =
+                Math.sin(vertex.x * 2 + time * props.speed) * props.waveScale;
+              wave2 =
+                Math.cos(vertex.y * 2 + time * props.speed) *
+                props.waveScale *
+                0.7;
+              wave3 =
+                Math.sin(vertex.z * 1.5 + time * props.speed * 0.5) *
+                props.waveScale *
+                0.5;
+              break;
+            case 1: // Right - Fast, turbulent
+              wave1 =
+                Math.sin(vertex.x * 3 + time * props.speed * 2) *
+                props.waveScale;
+              wave2 =
+                Math.cos(vertex.y * 4 + time * props.speed * 1.5) *
+                props.waveScale;
+              wave3 =
+                Math.sin(vertex.z * 2 + time * props.speed) *
+                props.waveScale *
+                0.3;
+              break;
+            case 2: // Back - Slow, gentle
+              wave1 =
+                Math.sin(vertex.x * 1 + time * props.speed * 0.5) *
+                props.waveScale *
+                0.5;
+              wave2 =
+                Math.cos(vertex.y * 1.5 + time * props.speed * 0.3) *
+                props.waveScale *
+                0.3;
+              wave3 =
+                Math.sin(vertex.z * 2 + time * props.speed * 0.2) *
+                props.waveScale *
+                0.2;
+              break;
+            case 3: // Left - Sharp, angular
+              wave1 =
+                Math.abs(Math.sin(vertex.x * 4 + time * props.speed)) *
+                props.waveScale;
+              wave2 =
+                Math.abs(Math.cos(vertex.y * 3 + time * props.speed * 1.2)) *
+                props.waveScale *
+                0.8;
+              wave3 =
+                Math.sin(vertex.z * 5 + time * props.speed * 3) *
+                props.waveScale *
+                0.6;
+              break;
+            case 4: // Top - Spherical, pulsing
+              wave1 =
+                Math.sin(vertex.x * 2.5 + time * props.speed) *
+                props.waveScale *
+                0.7;
+              wave2 =
+                Math.cos(vertex.y * 2.5 + time * props.speed) *
+                props.waveScale *
+                0.7;
+              wave3 =
+                Math.sin(
+                  Math.sqrt(vertex.x * vertex.x + vertex.z * vertex.z) * 3 +
+                    time * props.speed
+                ) * props.waveScale;
+              break;
+            case 5: // Bottom - Complex interference pattern
+              wave1 =
+                Math.sin(vertex.x * 3 + time * props.speed) *
+                Math.cos(vertex.z * 2 + time * props.speed) *
+                props.waveScale;
+              wave2 =
+                Math.cos(vertex.y * 2 + time * props.speed * 1.5) *
+                Math.sin(vertex.x * 1.5 + time * props.speed) *
+                props.waveScale *
+                0.6;
+              wave3 =
+                Math.sin(vertex.z * 2.5 + time * props.speed * 0.7) *
+                props.waveScale *
+                0.4;
+              break;
+          }
+
+          const offset = 1 + (wave1 + wave2 + wave3) / 3;
+          vertex.multiplyScalar(offset);
+          positionAttribute.setXYZ(i, vertex.x, vertex.y, vertex.z);
+        }
+        positionAttribute.needsUpdate = true;
+        blobGeo.computeVertexNormals();
+
+        // Update face indicator
+        faceIndicator.textContent = `Face: ${props.name}`;
+        faceIndicator.style.color = `rgb(${Math.floor(
+          props.color >> 16
+        )}, ${Math.floor((props.color >> 8) & 255)}, ${Math.floor(
+          props.color & 255
+        )})`;
+      }
+
+      // --- Animation Loop ---
+      let time = 0;
+
+      function animate() {
+        time += 0.02;
+        requestAnimationFrame(animate);
+
+        // Rotate Everything
+        cubeOutline.rotation.y += 0.005;
+        glassCube.rotation.y = cubeOutline.rotation.y;
+        blob.rotation.y -= 0.01;
+
+        // Detect which face is currently facing the camera
+        const detectedFace = detectFacingFace();
+        if (detectedFace !== currentFace) {
+          currentFace = detectedFace;
         }
 
-        // --- Animation Loop ---
-        let time = 0;
+        // Update blob animation based on current face
+        updateBlobAnimation(currentFace, time);
 
-        function animate() {
-            time += 0.02;
-            requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+      }
 
-            // Rotate Everything
-            cubeOutline.rotation.y += 0.005;
-            glassCube.rotation.y = cubeOutline.rotation.y;
-            blob.rotation.y -= 0.01;
+      window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
 
-            // Detect which face is currently facing the camera
-            const detectedFace = detectFacingFace();
-            if (detectedFace !== currentFace) {
-                currentFace = detectedFace;
-            }
-
-            // Update blob animation based on current face
-            updateBlobAnimation(currentFace, time);
-
-            controls.update();
-            renderer.render(scene, camera);
-        }
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        animate();
+      animate();
     </script>
-</body>
+  </body>
 </html>

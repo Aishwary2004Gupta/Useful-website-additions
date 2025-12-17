@@ -1,0 +1,29 @@
+body {
+  margin: 0;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+  background: #74B7FF;
+}
+
+#control-panel {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  padding: 14px;
+  width: 220px;
+  background: rgba(0,0,0,0.65);
+  color: white;
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+}
+
+#control-panel h3 {
+  margin: 0 0 10px;
+  font-size: 16px;
+  text-align: center;
+}
+
+#progressSlider {
+  width: 100%;
+  margin-top: 6px;
+}

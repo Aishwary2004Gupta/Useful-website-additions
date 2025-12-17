@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Depixelation Shader Demo</title>
+  <meta charset="UTF-8">
+  <title>Depixelation Shader - ESM</title>
   <style>
     body, html {
       margin: 0;
@@ -10,178 +10,172 @@
       overflow: hidden;
       background: #74B7FF;
     }
-    #canvas {
-      width: 100vw;
-      height: 100vh;
+    canvas {
       display: block;
     }
   </style>
 </head>
-
 <body>
-  <canvas id="canvas"></canvas>
 
-  <!-- GUI slider -->
-  <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.18/dist/lil-gui.min.js"></script>
+<script type="module">
 
-  <!-- IMPORTANT: Load Three.js FIRST -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+/* ------------------ IMPORTS ------------------ */
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js";
 
-  <!-- Then postprocessing (after THREE is defined) -->
-  <script src="https://cdn.jsdelivr.net/npm/postprocessing@6.33.4/build/postprocessing.min.js"></script>
+import {
+  EffectComposer,
+  RenderPass,
+  EffectPass,
+  Effect
+} from "https://cdn.jsdelivr.net/npm/postprocessing@6.33.4/build/postprocessing.esm.js";
 
-  <!-- Fragment Shader -->
-  <script id="fragmentShader" type="x-shader/x-fragment">
-    uniform float progress;
-    uniform float time;
-    uniform vec2 resolution;
-    uniform sampler2D inputBuffer;
 
-    float random(vec2 st) {
-      return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+/* ------------------ SHADER ------------------ */
+const fragmentShader = `
+uniform float progress;
+uniform float time;
+uniform vec2 resolution;
+uniform sampler2D inputBuffer;
+
+float random(vec2 st) {
+  return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+}
+
+const float LEVELS = 5.0;
+
+void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
+  float basePixelSize = pow(2.0, LEVELS);
+  float currentLevel = floor(progress * LEVELS);
+
+  float currentPixelSize = max(basePixelSize / pow(2.0, currentLevel), 1.0);
+
+  float currentPixelsPerRow = ceil(resolution.x / currentPixelSize);
+  float currentPixelsPerCol = ceil(resolution.y / currentPixelSize);
+  float currentTotalPixels = currentPixelsPerRow * currentPixelsPerCol;
+
+  float levelProgress = fract(progress * LEVELS) * currentTotalPixels;
+  float currentRowInLevel = floor(levelProgress / currentPixelsPerRow);
+  float currentPixelInRow = mod(levelProgress, currentPixelsPerRow);
+
+  vec2 gridPos = floor(uv * resolution / currentPixelSize);
+  float row = floor(currentPixelsPerCol - gridPos.y - 1.0);
+  float posInRow = floor(gridPos.x);
+
+  vec4 additionalColor = vec4(0.0, 0.0, 0.0, 1.0);
+  vec2 finalUv;
+  vec2 finalNormalizedPixelSize;
+
+  if (currentPixelSize <= 1.0) {
+    finalUv = uv;
+    additionalColor = vec4(0.0);
+  } else if (row < currentRowInLevel || (row == currentRowInLevel && posInRow <= currentPixelInRow)) {
+    finalNormalizedPixelSize = currentPixelSize / resolution;
+    vec2 uvPixel = finalNormalizedPixelSize * floor(uv / finalNormalizedPixelSize);
+    finalUv = uvPixel;
+
+    if (row == currentRowInLevel) {
+      float rand = random(vec2(posInRow, row));
+      float twinkle = sin(time * 10.0 + rand * 10.0) + 1.0;
+      additionalColor = vec4(0.005) * (twinkle * 20.0);
     }
+  } else {
+    float finalPixelSize = currentPixelSize * 2.0;
+    finalNormalizedPixelSize = finalPixelSize / resolution;
+    vec2 uvPixel = finalNormalizedPixelSize * floor(uv / finalNormalizedPixelSize);
+    finalUv = uvPixel;
+  }
 
-    const float LEVELS = 5.0;
+  vec4 color = texture2D(inputBuffer, finalUv);
+  outputColor = color + additionalColor;
+}
 
-    void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
-      float basePixelSize = pow(2.0, LEVELS);
-      float currentLevel = floor(progress * LEVELS);  
+void main() {
+  mainImage(vec4(0.0), gl_FragCoord.xy / resolution, gl_FragColor);
+}
+`;
 
-      float currentPixelSize = max(basePixelSize / pow(2.0, currentLevel), 1.0);
 
-      float currentPixelsPerRow = ceil(resolution.x / currentPixelSize);
-      float currentPixelsPerCol = ceil(resolution.y / currentPixelSize);
-      float currentTotalPixels = currentPixelsPerRow * currentPixelsPerCol;
-      
-      float levelProgress = fract(progress * LEVELS) * currentTotalPixels;
-      float currentRowInLevel = floor(levelProgress / currentPixelsPerRow);
-      float currentPixelInRow = mod(levelProgress, currentPixelsPerRow);
-      
-      vec2 gridPos = floor(uv * resolution / currentPixelSize);
-      float row = floor(currentPixelsPerCol - gridPos.y - 1.0);
-      float posInRow = floor(gridPos.x);
-      
-      vec4 additionalColor = vec4(0.0, 0.0, 0.0, 1.0);
-      vec2 finalUv;
-      vec2 finalNormalizedPixelSize;
-      
-      if (currentPixelSize <= 1.0) {
-        finalUv = uv;
-        additionalColor = vec4(0.0);
-      } else if (row < currentRowInLevel || (row == currentRowInLevel && posInRow <= currentPixelInRow)) {
-        finalNormalizedPixelSize = currentPixelSize / resolution;
-        vec2 uvPixel = finalNormalizedPixelSize * floor(uv / finalNormalizedPixelSize);
-        finalUv = uvPixel;
-        
-        if (row == currentRowInLevel) {
-          float rand = random(vec2(posInRow, row));
-          float twinkle = sin(time * 10.0 + rand * 10.0) + 1.0;
-          additionalColor = vec4(0.005) * (twinkle * 20.0);
-        }
-      } else {
-        float finalPixelSize = currentPixelSize * 2.0;
-        finalNormalizedPixelSize = finalPixelSize / resolution;
-        vec2 uvPixel = finalNormalizedPixelSize * floor(uv / finalNormalizedPixelSize);
-        finalUv = uvPixel;
-      }
+/* ------------------ SCENE ------------------ */
+const w = window.innerWidth;
+const h = window.innerHeight;
 
-      vec4 color = texture2D(inputBuffer, finalUv);
-      outputColor = color + additionalColor;
-    }
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(w, h);
+renderer.setPixelRatio(devicePixelRatio);
+document.body.appendChild(renderer.domElement);
 
-    void main() {
-      mainImage(vec4(0.0), gl_FragCoord.xy / resolution, gl_FragColor);
-    }
-  </script>
+const scene = new THREE.Scene();
 
-  <!-- JavaScript Scene -->
-  <script>
-    // Ensure THREE exists
-    if (typeof THREE === "undefined") {
-      console.error("THREE failed to load!");
-    }
-    if (typeof POSTPROCESSING === "undefined") {
-      console.error("POSTPROCESSING failed to load!");
-    }
+const camera = new THREE.OrthographicCamera(
+  -w / 2, w / 2,
+  h / 2, -h / 2,
+  0.01, 500
+);
+camera.position.z = 10;
 
-    const canvas = document.getElementById("canvas");
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(devicePixelRatio);
+const controls = new OrbitControls(camera, renderer.domElement);
 
-    const scene = new THREE.Scene();
 
-    // Orthographic Camera
-    const camera = new THREE.OrthographicCamera(
-      -window.innerWidth / 2,
-      window.innerWidth / 2,
-      window.innerHeight / 2,
-      -window.innerHeight / 2,
-      0.01,
-      500
-    );
-    camera.position.set(0, 0, 10);
+/* ------------------ IMAGE ------------------ */
+const texLoader = new THREE.TextureLoader();
+const texture = texLoader.load(
+  "https://cdn.maximeheckel.com/images/backgrounds/gril-with-pearl-earing.jpg"
+);
 
-    // Controls
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+const mesh = new THREE.Mesh(
+  new THREE.PlaneGeometry(w, h),
+  new THREE.MeshBasicMaterial({ map: texture })
+);
 
-    // Load Fullscreen Image
-    const textureLoader = new THREE.TextureLoader();
-    const tex = textureLoader.load(
-      "https://cdn.maximeheckel.com/images/backgrounds/gril-with-pearl-earing.jpg",
-      () => {
-        tex.minFilter = THREE.LinearFilter;
-        tex.magFilter = THREE.LinearFilter;
-      }
-    );
+scene.add(mesh);
 
-    const geometry = new THREE.PlaneGeometry(window.innerWidth, window.innerHeight);
-    const material = new THREE.MeshBasicMaterial({ map: tex });
 
-    const mesh = new THREE.Mesh(geometry, material);
-    scene.add(mesh);
-
-    // Postprocessing Setup
-    const composer = new POSTPROCESSING.EffectComposer(renderer);
-    composer.addPass(new POSTPROCESSING.RenderPass(scene, camera));
-
-    const fragmentShader = document.getElementById("fragmentShader").textContent;
-
-    class DepixelationEffect extends POSTPROCESSING.Effect {
-      constructor() {
-        super("DepixelationEffect", fragmentShader, {
-          uniforms: new Map([
-            ["progress", new THREE.Uniform(0)],
-            ["time", new THREE.Uniform(0)],
-            ["resolution", new THREE.Uniform(new THREE.Vector2(window.innerWidth, window.innerHeight))]
-          ])
-        });
-      }
-
-      update(renderer, inputBuffer, deltaTime) {
-        this.uniforms.get("time").value += deltaTime;
-      }
-    }
-
-    const depixelEffect = new DepixelationEffect();
-    composer.addPass(new POSTPROCESSING.EffectPass(camera, depixelEffect));
-
-    // GUI
-    const gui = new lil.GUI();
-    const params = { progress: 0.0 };
-    gui.add(params, "progress", 0, 1, 0.001).onChange(v => {
-      depixelEffect.uniforms.get("progress").value = v;
+/* ------------------ POSTPROCESSING ------------------ */
+class DepixelEffect extends Effect {
+  constructor() {
+    super("DepixelEffect", fragmentShader, {
+      uniforms: new Map([
+        ["progress", new THREE.Uniform(0)],
+        ["time", new THREE.Uniform(0)],
+        ["resolution", new THREE.Uniform(new THREE.Vector2(w, h))]
+      ])
     });
+  }
 
-    // Animation Loop
-    function animate() {
-      requestAnimationFrame(animate);
+  update(_, __, dt) {
+    this.uniforms.get("time").value += dt;
+  }
+}
 
-      camera.lookAt(0, 0, 0);
-      composer.render();
-    }
-    animate();
-  </script>
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+
+const depixelEffect = new DepixelEffect();
+composer.addPass(new EffectPass(camera, depixelEffect));
+
+
+/* ------------------ GUI ------------------ */
+import GUI from "https://cdn.jsdelivr.net/npm/lil-gui@0.18/+esm";
+
+const gui = new GUI();
+const params = { progress: 0 };
+gui.add(params, "progress", 0, 1, 0.001).onChange(v => {
+  depixelEffect.uniforms.get("progress").value = v;
+});
+
+
+/* ------------------ ANIMATION ------------------ */
+function animate() {
+  requestAnimationFrame(animate);
+
+  camera.lookAt(0, 0, 0);
+  composer.render();
+}
+
+animate();
+
+</script>
+
 </body>
 </html>

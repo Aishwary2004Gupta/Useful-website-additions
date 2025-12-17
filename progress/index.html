@@ -1,189 +1,216 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Depixelation Effect - Working Version</title>
-
-<style>
-  body {
-    margin: 0;
-    overflow: hidden;
-    background: #74B7FF;
-    font-family: Arial;
-  }
-
-  #control-panel {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    padding: 14px;
-    width: 220px;
-    background: rgba(0,0,0,0.65);
-    color: white;
-    border-radius: 10px;
-    backdrop-filter: blur(10px);
-  }
-
-  #progressSlider {
-    width: 100%;
-  }
-</style>
-</head>
-
-<body>
-
-<div id="control-panel">
-  <h3>Depixelation Controls</h3>
-  <label>Progress: <span id="progressValue">0.00</span></label>
-  <input type="range" id="progressSlider" min="0" max="1" step="0.001" value="0">
-</div>
-
-<canvas id="webgl"></canvas>
-
-<!-- 🟦 ES MODULE SCRIPT (THIS FIXES YOUR ISSUE) -->
-<script type="module">
-import * as THREE from "https://unpkg.com/three@0.152.2/build/three.module.js";
-import { OrbitControls } from "https://unpkg.com/three@0.152.2/examples/jsm/controls/OrbitControls.js";
-import { EffectComposer } from "https://unpkg.com/three@0.152.2/examples/jsm/postprocessing/EffectComposer.js";
-import { RenderPass } from "https://unpkg.com/three@0.152.2/examples/jsm/postprocessing/RenderPass.js";
-import { ShaderPass } from "https://unpkg.com/three@0.152.2/examples/jsm/postprocessing/ShaderPass.js";
-
-// Canvas
-const canvas = document.getElementById("webgl");
-const scene = new THREE.Scene();
-
-// Camera
-const aspect = window.innerWidth / window.innerHeight;
-const camera = new THREE.OrthographicCamera(-aspect, aspect, 1, -1, 0.01, 500);
-camera.position.set(0, 0, 10);
-camera.zoom = 100;
-camera.updateProjectionMatrix();
-scene.add(camera);
-
-// Renderer
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-
-// Controls
-const controls = new OrbitControls(camera, renderer.domElement);
-
-// Image
-const texture = new THREE.TextureLoader().load(
-  "https://cdn.maximeheckel.com/images/backgrounds/gril-with-pearl-earing.jpg"
-);
-const plane = new THREE.Mesh(
-  new THREE.PlaneGeometry(2 * aspect, 2),
-  new THREE.MeshBasicMaterial({ map: texture })
-);
-scene.add(plane);
-
-// Shader
-const DepixelationShader = {
-  uniforms: {
-    progress: { value: 0.0 },
-    resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
-    time: { value: 0 },
-    tDiffuse: { value: null }
-  },
-  vertexShader: `
-    varying vec2 vUv;
-    void main() {
-      vUv = uv;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
-    }
-  `,
-  fragmentShader: `
-    uniform float progress;
-    uniform vec2 resolution;
-    uniform float time;
-    uniform sampler2D tDiffuse;
-
-    float random(vec2 st) {
-      return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
-    }
-
-    const float LEVELS = 5.0;
-
-    void main() {
-      vec2 uv = gl_FragCoord.xy / resolution;
-
-      float basePixelSize = pow(2.0, LEVELS);
-      float currentLevel = floor(progress * LEVELS);
-      float currentPixelSize = max(basePixelSize / pow(2.0, currentLevel), 1.0);
-
-      float rowCount = ceil(resolution.y / currentPixelSize);
-      float colCount = ceil(resolution.x / currentPixelSize);
-      float totalPixels = rowCount * colCount;
-
-      float levelProgress = fract(progress * LEVELS) * totalPixels;
-      float currentRow = floor(levelProgress / colCount);
-      float currentCol = mod(levelProgress, colCount);
-
-      vec2 grid = floor(uv * resolution / currentPixelSize);
-
-      float row = floor(rowCount - grid.y - 1.0);
-      float col = floor(grid.x);
-
-      vec2 finalUv;
-      vec4 extra = vec4(0.0);
-
-      if (currentPixelSize <= 1.0) {
-        finalUv = uv;
-      } else if (row < currentRow || (row == currentRow && col <= currentCol)) {
-        vec2 snap = currentPixelSize / resolution;
-        finalUv = snap * floor(uv / snap);
-
-        if (row == currentRow) {
-          float tw = sin(time * 10.0 + random(vec2(col, row)) * 10.0) + 1.0;
-          extra = vec4(0.005 * tw * 20.0);
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Depixelation Effect</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #74B7FF;
         }
-      } else {
-        float bigger = currentPixelSize * 2.0;
-        vec2 snap = bigger / resolution;
-        finalUv = snap * floor(uv / snap);
-      }
+        canvas {
+            display: block;
+        }
+        #leva-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <div id="leva-container"></div>
 
-      gl_FragColor = texture2D(tDiffuse, finalUv) + extra;
-    }
-  `
-};
+    <!-- Load Three.js and related libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@react-three/fiber@8.15.16/dist/react-three-fiber.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@react-three/drei@9.88.1/dist/drei-umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leva@0.9.34/dist/leva.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/maath@0.9.0/dist/maath.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/postprocessing@6.32.1/build/postprocessing.js"></script>
 
-// Postprocessing
-const composer = new EffectComposer(renderer);
-composer.addPass(new RenderPass(scene, camera));
-const shaderPass = new ShaderPass(DepixelationShader);
-composer.addPass(shaderPass);
+    <!-- React and ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-// Slider UI
-const slider = document.getElementById("progressSlider");
-const label = document.getElementById("progressValue");
+    <script type="text/babel">
+        const { Suspense, useRef } = React;
+        const { Canvas, useFrame, useThree } = ReactThreeFiber;
+        const { OrbitControls, OrthographicCamera, Image } = Drei;
+        const { EffectComposer, wrapEffect } = POSTPROCESSING;
+        const { Leva, useControls } = LevaLib;
+        const { easing } = maath;
 
-slider.oninput = () => {
-  shaderPass.uniforms.progress.value = parseFloat(slider.value);
-  label.textContent = slider.value;
-};
+        // Fragment shader code
+        const fragmentShader = `
+            uniform float progress;
+            uniform float time;
 
-// Resize
-window.onresize = () => {
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  camera.left = -window.innerWidth / window.innerHeight;
-  camera.right = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  shaderPass.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
-};
+            float random(vec2 st) {
+                return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+            }
 
-// Animate
-let t = 0;
-function animate() {
-  requestAnimationFrame(animate);
-  t += 0.01;
-  shaderPass.uniforms.time.value = t;
-  controls.update();
-  composer.render();
-}
-animate();
-</script>
+            const float LEVELS = 5.0;
 
+            void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
+                float basePixelSize = pow(2.0, LEVELS);
+                float currentLevel = floor(progress * LEVELS);
+
+                float currentPixelSize = max(basePixelSize / pow(2.0, currentLevel), 1.0);
+
+                float currentPixelsPerRow = ceil(resolution.x / currentPixelSize);
+                float currentPixelsPerCol = ceil(resolution.y / currentPixelSize);
+                float currentTotalPixels = currentPixelsPerRow * currentPixelsPerCol;
+
+                float levelProgress = fract(progress * LEVELS) * currentTotalPixels;
+                float currentRowInLevel = floor(levelProgress / currentPixelsPerRow);
+                float currentPixelInRow = mod(levelProgress, currentPixelsPerRow);
+
+                vec2 gridPos = floor(uv * resolution / currentPixelSize);
+                float row = floor(currentPixelsPerCol - gridPos.y - 1.0);
+                float posInRow = floor(gridPos.x);
+
+                vec4 additionalColor = vec4(0.0, 0.0, 0.0, 1.0);
+                vec2 finalUv;
+                vec2 finalNormalizedPixelSize;
+
+                if (currentPixelSize <= 1.0) {
+                    finalUv = uv;
+                    additionalColor = vec4(0.0);
+                } else if (row < currentRowInLevel || (row == currentRowInLevel && posInRow <= currentPixelInRow)) {
+                    finalNormalizedPixelSize = currentPixelSize / resolution;
+                    vec2 uvPixel = finalNormalizedPixelSize * floor(uv / finalNormalizedPixelSize);
+                    finalUv = uvPixel;
+
+                    if (row == currentRowInLevel) {
+                        float rand = random(vec2(posInRow, row));
+                        float twinkle = sin(time * 10.0 + rand * 10.0) + 1.0;
+                        additionalColor = vec4(0.005) * (twinkle * 20.0);
+                    }
+                } else {
+                    float finalPixelSize = currentPixelSize * 2.0;
+                    finalNormalizedPixelSize = finalPixelSize / resolution;
+                    vec2 uvPixel = finalNormalizedPixelSize * floor(uv / finalNormalizedPixelSize);
+                    finalUv = uvPixel;
+                }
+
+                vec4 color = texture2D(inputBuffer, finalUv);
+                outputColor = color + additionalColor;
+            }
+        `;
+
+        class CustomDepixelationEffectImpl extends POSTPROCESSING.Effect {
+            constructor({ progress = 0.5 }) {
+                const uniforms = new Map([
+                    ['progress', new THREE.Uniform(progress)],
+                    ['time', new THREE.Uniform(0)]
+                ]);
+
+                super('CustomDepixelationEffect', fragmentShader, {
+                    uniforms,
+                });
+
+                this.uniforms = uniforms;
+            }
+
+            update(_renderer, _inputBuffer, deltaTime) {
+                this.uniforms.get('progress').value = this.progress;
+                this.uniforms.get('time').value += deltaTime;
+            }
+        }
+
+        const CustomDepixelationEffect = wrapEffect(CustomDepixelationEffectImpl);
+
+        const DepixelationEffect = () => {
+            const effectRef = useRef();
+            const smoothProgressRef = useRef(0);
+
+            const { progress } = useControls({
+                progress: {
+                    value: 0.0,
+                    min: 0.0,
+                    max: 1.0,
+                    step: 0.001,
+                },
+            });
+
+            useFrame((state) => {
+                const { camera } = state;
+
+                easing.damp(smoothProgressRef, 'current', progress, 0.25);
+
+                if (effectRef.current) {
+                    effectRef.current.progress = smoothProgressRef.current;
+                }
+
+                camera.lookAt(0, 0, 0);
+            });
+
+            return (
+                <EffectComposer>
+                    <CustomDepixelationEffect ref={effectRef} progress={progress} />
+                </EffectComposer>
+            );
+        };
+
+        const FullScreenImage = () => {
+            const meshRef = useRef();
+            const { viewport } = useThree();
+
+            useFrame((state) => {
+                const { camera } = state;
+                meshRef.current.rotation.setFromQuaternion(camera.quaternion);
+            });
+
+            return (
+                <Image
+                    ref={meshRef}
+                    scale={[viewport.width, viewport.height, 1.0]}
+                    url='https://cdn.maximeheckel.com/images/backgrounds/gril-with-pearl-earing.jpg'
+                />
+            );
+        };
+
+        const Depixelation = () => {
+            return (
+                <>
+                    <OrthographicCamera
+                        makeDefault
+                        position={[0, 0, 10]}
+                        zoom={100}
+                        near={0.01}
+                        far={500}
+                    />
+                    <FullScreenImage />
+                    <DepixelationEffect />
+                </>
+            );
+        };
+
+        const Scene = () => {
+            return (
+                <>
+                    <Canvas shadows dpr={[1, 1.5]}>
+                        <Suspense>
+                            <color attach='background' args={['#74B7FF']} />
+                            <ambientLight intensity={0.5} />
+                            <directionalLight position={[5, 10, -5]} intensity={10.0} />
+                            <OrbitControls />
+                            <Depixelation />
+                        </Suspense>
+                    </Canvas>
+                    <Leva collapsed />
+                </>
+            );
+        };
+
+        // Render the scene
+        ReactDOM.createRoot(document.getElementById('root')).render(<Scene />);
+    </script>
 </body>
 </html>

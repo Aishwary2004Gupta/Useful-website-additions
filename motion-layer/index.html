@@ -1,64 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Morphing Glass Cube</title>
     <style>
-        body { margin: 0; background-color: #000; overflow: hidden; }
-        canvas { display: block; }
+      body {
+        margin: 0;
+        background-color: #000;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+      }
     </style>
-</head>
-<body>
-
+  </head>
+  <body>
     <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-            }
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
         }
+      }
     </script>
 
     <script type="module">
-        import * as THREE from 'three';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+      import * as THREE from "three";
+      import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-        // --- Scene & Renderer ---
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x000000); // Pure Black Background
+      // --- Scene & Renderer ---
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x000000); // Pure Black Background
 
-        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.z = 4;
+      const camera = new THREE.PerspectiveCamera(
+        50,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+      camera.position.z = 4;
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        // Brighten the internal textures
-        renderer.toneMapping = THREE.ReinhardToneMapping;
-        renderer.toneMappingExposure = 2; 
-        document.body.appendChild(renderer.domElement);
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(window.devicePixelRatio);
+      // Brighten the internal textures
+      renderer.toneMapping = THREE.ReinhardToneMapping;
+      renderer.toneMappingExposure = 2;
+      document.body.appendChild(renderer.domElement);
 
-        // --- Lighting ---
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-        scene.add(ambientLight);
+      // --- Lighting ---
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+      scene.add(ambientLight);
 
-        const pointLight = new THREE.PointLight(0xffffff, 15);
-        pointLight.position.set(2, 3, 4);
-        scene.add(pointLight);
+      const pointLight = new THREE.PointLight(0xffffff, 15);
+      pointLight.position.set(2, 3, 4);
+      scene.add(pointLight);
 
-        // --- Texture Loading ---
-        const loader = new THREE.TextureLoader();
-        const imgIds = [1506491, 1533333, 1550677, 1464810, 1521444, 1564450];
-        const textures = imgIds.map(id => {
-            const tex = loader.load(`https://images.unsplash.com/photo-${id}-0486eef93130?auto=format&fit=crop&q=80&w=500`);
-            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-            return tex;
-        });
+      // --- Texture Loading ---
+      const loader = new THREE.TextureLoader();
+      const imgIds = [1506491, 1533333, 1550677, 1464810, 1521444, 1564450];
+      const textures = imgIds.map((id) => {
+        const tex = loader.load(
+          `https://images.unsplash.com/photo-${id}-0486eef93130?auto=format&fit=crop&q=80&w=500`
+        );
+        tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+        return tex;
+      });
 
-        // --- Materials (6 Different Faces) ---
-        // We use MeshPhysicalMaterial for that "Glass/Plastic" look
-        const materials = textures.map(tex => new THREE.MeshPhysicalMaterial({
+      // --- Materials (6 Different Faces) ---
+      // We use MeshPhysicalMaterial for that "Glass/Plastic" look
+      const materials = textures.map(
+        (tex) =>
+          new THREE.MeshPhysicalMaterial({
             map: tex,
             transmission: 0.3, // Allows some light through the texture
             thickness: 0.5,
@@ -67,65 +81,66 @@
             reflectivity: 0.5,
             clearcoat: 1.0,
             clearcoatRoughness: 0.1,
-            side: THREE.DoubleSide
-        }));
+            side: THREE.DoubleSide,
+          })
+      );
 
-        // --- Cube Creation ---
-        const geometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);
-        const cube = new THREE.Mesh(geometry, materials);
-        scene.add(cube);
+      // --- Cube Creation ---
+      const geometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+      const cube = new THREE.Mesh(geometry, materials);
+      scene.add(cube);
 
-        // --- Outer Wireframe (Glowing edges) ---
-        const wireGeo = new THREE.BoxGeometry(1.51, 1.51, 1.51);
-        const wireMat = new THREE.MeshBasicMaterial({ 
-            color: 0x00ffff, 
-            wireframe: true, 
-            transparent: true, 
-            opacity: 0.3 
-        });
-        const wireframe = new THREE.Mesh(wireGeo, wireMat);
-        cube.add(wireframe);
+      // --- Outer Wireframe (Glowing edges) ---
+      const wireGeo = new THREE.BoxGeometry(1.51, 1.51, 1.51);
+      const wireMat = new THREE.MeshBasicMaterial({
+        color: 0x00ffff,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.3,
+      });
+      const wireframe = new THREE.Mesh(wireGeo, wireMat);
+      cube.add(wireframe);
 
-        // --- Interaction ---
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
+      // --- Interaction ---
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
 
-        // --- Animation Loop ---
-        let time = 0;
-        function animate() {
-            time += 0.01;
-            requestAnimationFrame(animate);
+      // --- Animation Loop ---
+      let time = 0;
+      function animate() {
+        time += 0.01;
+        requestAnimationFrame(animate);
 
-            // Rotate Cube
-            cube.rotation.x += 0.005;
-            cube.rotation.y += 0.008;
+        // Rotate Cube
+        cube.rotation.x += 0.005;
+        cube.rotation.y += 0.008;
 
-            // "Morphing" Logic: Update texture offsets and scale pulsing
-            textures.forEach((tex, i) => {
-                // Shift the image position to create a "liquid" morphing movement
-                tex.offset.x = Math.sin(time * 0.5 + i) * 0.1;
-                tex.offset.y = Math.cos(time * 0.3 + i) * 0.1;
-                
-                // Pulsing intensity
-                materials[i].emissive = new THREE.Color(0x222222);
-                materials[i].emissiveIntensity = Math.sin(time + i) * 0.5 + 0.5;
-            });
+        // "Morphing" Logic: Update texture offsets and scale pulsing
+        textures.forEach((tex, i) => {
+          // Shift the image position to create a "liquid" morphing movement
+          tex.offset.x = Math.sin(time * 0.5 + i) * 0.1;
+          tex.offset.y = Math.cos(time * 0.3 + i) * 0.1;
 
-            // Pulse the size slightly to simulate morphing
-            const pulse = 1 + Math.sin(time * 2) * 0.02;
-            cube.scale.set(pulse, pulse, pulse);
-
-            controls.update();
-            renderer.render(scene, camera);
-        }
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+          // Pulsing intensity
+          materials[i].emissive = new THREE.Color(0x222222);
+          materials[i].emissiveIntensity = Math.sin(time + i) * 0.5 + 0.5;
         });
 
-        animate();
+        // Pulse the size slightly to simulate morphing
+        const pulse = 1 + Math.sin(time * 2) * 0.02;
+        cube.scale.set(pulse, pulse, pulse);
+
+        controls.update();
+        renderer.render(scene, camera);
+      }
+
+      window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      animate();
     </script>
-</body>
+  </body>
 </html>

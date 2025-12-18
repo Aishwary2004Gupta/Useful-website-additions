@@ -60,10 +60,10 @@
     }
   </style>
 
-  <!-- ES module shims for broader browser support -->
+  <!-- ES module shims so import maps work reliably -->
   <script async src="https://unpkg.com/es-module-shims@1.10.0/dist/es-module-shims.js"></script>
 
-  <!-- Import map: tells the browser where "three" and its addons live -->
+  <!-- Import map for three and addons -->
   <script type="importmap">
   {
     "imports": {
@@ -79,28 +79,28 @@
     <input id="progress" type="range" min="0" max="1" step="0.001" value="0" />
   </div>
 
-  <!-- <script type="module">
+  <script type="module">
     import * as THREE from "three";
     import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
     import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
     import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 
-    /* -------------------------------
-        SHADER
-    --------------------------------*/
+    // -------------------------------
+    // SHADER (ShaderPass-style)
+    // -------------------------------
     const DepixelShader = {
       uniforms: {
-        "tDiffuse": { value: null },
-        "progress": { value: 0.0 },
-        "resolution": { value: new THREE.Vector2() },
-        "time": { value: 0.0 }
+        tDiffuse: { value: null },
+        progress: { value: 0.0 },
+        resolution: { value: new THREE.Vector2() },
+        time: { value: 0.0 }
       },
 
       vertexShader: `
         varying vec2 vUv;
         void main() {
           vUv = uv;
-          gl_Position = vec4(position, 1.0);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         }
       `,
 
@@ -119,43 +119,44 @@
 
         void main() {
           vec2 uv = vUv;
-          
+
           float basePixelSize = pow(2.0, LEVELS);
-          float currentLevel = floor(progress * LEVELS);  
+          float currentLevel = floor(progress * LEVELS);
 
           float currentPixelSize = max(basePixelSize / pow(2.0, currentLevel), 1.0);
+
           float currentPixelsPerRow = ceil(resolution.x / currentPixelSize);
           float currentPixelsPerCol = ceil(resolution.y / currentPixelSize);
           float currentTotalPixels = currentPixelsPerRow * currentPixelsPerCol;
-          
+
           float levelProgress = fract(progress * LEVELS) * currentTotalPixels;
           float currentRowInLevel = floor(levelProgress / currentPixelsPerRow);
           float currentPixelInRow = mod(levelProgress, currentPixelsPerRow);
-          
+
           vec2 gridPos = floor(uv * resolution / currentPixelSize);
           float row = floor(currentPixelsPerCol - gridPos.y - 1.0);
           float posInRow = floor(gridPos.x);
-          
-          vec4 additionalColor = vec4(0.0);
+
+          vec4 additionalColor = vec4(0.0, 0.0, 0.0, 1.0);
           vec2 finalUv;
-          
+          vec2 finalNormalizedPixelSize;
+
           if (currentPixelSize <= 1.0) {
             finalUv = uv;
-          } 
-          else if (row < currentRowInLevel || (row == currentRowInLevel && posInRow <= currentPixelInRow)) {
-            vec2 finalNormalizedPixelSize = currentPixelSize / resolution;
+            additionalColor = vec4(0.0);
+          } else if (row < currentRowInLevel || (row == currentRowInLevel && posInRow <= currentPixelInRow)) {
+            finalNormalizedPixelSize = currentPixelSize / resolution;
             vec2 uvPixel = finalNormalizedPixelSize * floor(uv / finalNormalizedPixelSize);
             finalUv = uvPixel;
-            
+
             if (row == currentRowInLevel) {
               float rand = random(vec2(posInRow, row));
               float twinkle = sin(time * 10.0 + rand * 10.0) + 1.0;
               additionalColor = vec4(0.005) * (twinkle * 20.0);
             }
-          } 
-          else {
+          } else {
             float finalPixelSize = currentPixelSize * 2.0;
-            vec2 finalNormalizedPixelSize = finalPixelSize / resolution;
+            finalNormalizedPixelSize = finalPixelSize / resolution;
             vec2 uvPixel = finalNormalizedPixelSize * floor(uv / finalNormalizedPixelSize);
             finalUv = uvPixel;
           }
@@ -166,9 +167,9 @@
       `
     };
 
-    /* -------------------------------
-        THREE.JS SETUP
-    --------------------------------*/
+    // -------------------------------
+    // THREE.JS SETUP
+    // -------------------------------
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -191,9 +192,9 @@
     directionalLight.position.set(5, 10, -5);
     scene.add(directionalLight);
 
-    /* -------------------------------
-        FULLSCREEN IMAGE PLANE
-    --------------------------------*/
+    // -------------------------------
+    // FULLSCREEN IMAGE PLANE
+    // -------------------------------
     const textureLoader = new THREE.TextureLoader();
     const tex = textureLoader.load(
       "https://cdn.maximeheckel.com/images/backgrounds/gril-with-pearl-earing.jpg"
@@ -201,16 +202,16 @@
     tex.colorSpace = THREE.SRGBColorSpace;
 
     const planeGeometry = new THREE.PlaneGeometry(2 * aspect, 2);
-    const planeMaterial = new THREE.MeshBasicMaterial({ 
+    const planeMaterial = new THREE.MeshBasicMaterial({
       map: tex,
       toneMapped: false
     });
     const plane = new THREE.Mesh(planeGeometry, planeMaterial);
     scene.add(plane);
 
-    /* -------------------------------
-        POSTPROCESSING
-    --------------------------------*/
+    // -------------------------------
+    // POSTPROCESSING
+    // -------------------------------
     const composer = new EffectComposer(renderer);
     composer.addPass(new RenderPass(scene, camera));
 
@@ -222,40 +223,42 @@
       window.innerHeight
     );
 
-    /* -------------------------------
-        ANIMATION & CONTROLS
-    --------------------------------*/
+    // -------------------------------
+    // ANIMATION & CONTROLS
+    // -------------------------------
     const progressSlider = document.getElementById("progress");
     let smoothProgress = 0;
     let targetProgress = 0;
 
-    function damp(current, target, smoothing, deltaTime) {
-      return current + (target - current) * smoothing * deltaTime;
+    // Exponential smoothing similar to maath.easing.damp
+    function damp(current, target, lambda, dt) {
+      return current + (target - current) * (1.0 - Math.exp(-lambda * dt));
     }
 
     let lastTime = 0;
     function animate(time) {
       requestAnimationFrame(animate);
-      
-      const deltaTime = Math.min((time - lastTime) / 1000, 0.1);
+
+      const t = time * 0.001;
+      const dt = Math.min((time - lastTime) / 1000, 0.1);
       lastTime = time;
 
       targetProgress = parseFloat(progressSlider.value);
-      smoothProgress = damp(smoothProgress, targetProgress, 4, deltaTime);
+      smoothProgress = damp(smoothProgress, targetProgress, 4.0, dt);
 
       shaderPass.uniforms.progress.value = smoothProgress;
-      shaderPass.uniforms.time.value = time * 0.001;
+      shaderPass.uniforms.time.value = t;
 
       plane.quaternion.copy(camera.quaternion);
 
       composer.render();
     }
 
-    animate();
+    animate(0);
 
-    /* -------------------------------
-        RESIZE HANDLER
-    --------------------------------*/
+    // -------------------------------
+    // RESIZE HANDLER
+    // -------------------------------
     window.addEventListener("resize", () => {
       const width = window.innerWidth;
       const height = window.innerHeight;
@@ -274,10 +277,13 @@
       shaderPass.uniforms.resolution.value.set(width, height);
     });
 
+    // -------------------------------
+    // KEYBOARD SHORTCUTS
+    // -------------------------------
     window.addEventListener("keydown", (e) => {
       const step = 0.01;
       let current = parseFloat(progressSlider.value);
-      
+
       if (e.key === "ArrowRight" || e.key === "ArrowUp") {
         current = Math.min(1, current + step);
       } else if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
@@ -285,210 +291,9 @@
       } else if (e.key === " ") {
         current = current === 0 ? 1 : 0;
       }
-      
+
       progressSlider.value = current;
     });
-  </script> -->
-  <script type="module">
-  import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js";
-  import { EffectComposer } from "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/postprocessing/EffectComposer.js";
-  import { RenderPass } from "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/postprocessing/RenderPass.js";
-  import { ShaderPass } from "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/postprocessing/ShaderPass.js";
-
-  // --- SHADER: converted to ShaderPass style ---
-  const DepixelShader = {
-    uniforms: {
-      tDiffuse: { value: null },
-      progress: { value: 0.0 },
-      resolution: { value: new THREE.Vector2() },
-      time: { value: 0.0 }
-    },
-
-    vertexShader: `
-      varying vec2 vUv;
-      void main() {
-        vUv = uv;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-
-    fragmentShader: `
-      uniform sampler2D tDiffuse;
-      uniform float progress;
-      uniform vec2 resolution;
-      uniform float time;
-      varying vec2 vUv;
-
-      float random(vec2 st) {
-        return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
-      }
-
-      const float LEVELS = 5.0;
-
-      void main() {
-        vec2 uv = vUv;
-
-        float basePixelSize = pow(2.0, LEVELS);
-        float currentLevel = floor(progress * LEVELS);  
-
-        float currentPixelSize = max(basePixelSize / pow(2.0, currentLevel), 1.0);
-
-        float currentPixelsPerRow = ceil(resolution.x / currentPixelSize);
-        float currentPixelsPerCol = ceil(resolution.y / currentPixelSize);
-        float currentTotalPixels = currentPixelsPerRow * currentPixelsPerCol;
-        
-        float levelProgress = fract(progress * LEVELS) * currentTotalPixels;
-        float currentRowInLevel = floor(levelProgress / currentPixelsPerRow);
-        float currentPixelInRow = mod(levelProgress, currentPixelsPerRow);
-        
-        vec2 gridPos = floor(uv * resolution / currentPixelSize);
-        float row = floor(currentPixelsPerCol - gridPos.y - 1.0);
-        float posInRow = floor(gridPos.x);
-        
-        vec4 additionalColor = vec4(0.0, 0.0, 0.0, 1.0);
-        vec2 finalUv;
-        vec2 finalNormalizedPixelSize;
-        
-        if (currentPixelSize <= 1.0) {
-          finalUv = uv;
-          additionalColor = vec4(0.0);
-        } else if (row < currentRowInLevel || (row == currentRowInLevel && posInRow <= currentPixelInRow)) {
-          finalNormalizedPixelSize = currentPixelSize / resolution;
-          vec2 uvPixel = finalNormalizedPixelSize * floor(uv / finalNormalizedPixelSize);
-          finalUv = uvPixel;
-          
-          if (row == currentRowInLevel) {
-            float rand = random(vec2(posInRow, row));
-            float twinkle = sin(time * 10.0 + rand * 10.0) + 1.0;
-            additionalColor = vec4(0.005) * (twinkle * 20.0);
-          }
-        } else {
-          float finalPixelSize = currentPixelSize * 2.0;
-          finalNormalizedPixelSize = finalPixelSize / resolution;
-          vec2 uvPixel = finalNormalizedPixelSize * floor(uv / finalNormalizedPixelSize);
-          finalUv = uvPixel;
-        }
-
-        vec4 color = texture2D(tDiffuse, finalUv);
-        gl_FragColor = color + additionalColor;
-      }
-    `
-  };
-
-  // --- THREE.JS SETUP ---
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setClearColor(0x74B7FF);
-  document.body.appendChild(renderer.domElement);
-
-  const scene = new THREE.Scene();
-
-  const aspect = window.innerWidth / window.innerHeight;
-  const camera = new THREE.OrthographicCamera(-aspect, aspect, 1, -1, 0.01, 500);
-  camera.position.set(0, 0, 10);
-  camera.lookAt(0, 0, 0);
-
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-  scene.add(ambientLight);
-
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 10.0);
-  directionalLight.position.set(5, 10, -5);
-  scene.add(directionalLight);
-
-  // --- FULLSCREEN IMAGE PLANE ---
-  const textureLoader = new THREE.TextureLoader();
-  const tex = textureLoader.load(
-    "https://cdn.maximeheckel.com/images/backgrounds/gril-with-pearl-earing.jpg"
-  );
-  tex.colorSpace = THREE.SRGBColorSpace;
-
-  const planeGeometry = new THREE.PlaneGeometry(2 * aspect, 2);
-  const planeMaterial = new THREE.MeshBasicMaterial({
-    map: tex,
-    toneMapped: false
-  });
-  const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-  scene.add(plane);
-
-  // --- POSTPROCESSING ---
-  const composer = new EffectComposer(renderer);
-  composer.addPass(new RenderPass(scene, camera));
-
-  const shaderPass = new ShaderPass(DepixelShader);
-  composer.addPass(shaderPass);
-
-  shaderPass.uniforms.resolution.value.set(
-    window.innerWidth,
-    window.innerHeight
-  );
-
-  // --- ANIMATION & CONTROLS ---
-  const progressSlider = document.getElementById("progress");
-  let smoothProgress = 0;
-  let targetProgress = 0;
-
-  function damp(current, target, lambda, dt) {
-    // similar to maath.easing.damp: exponential smoothing
-    return current + (target - current) * (1 - Math.exp(-lambda * dt));
-  }
-
-  let lastTime = 0;
-  function animate(time) {
-    requestAnimationFrame(animate);
-
-    const t = time * 0.001;
-    const dt = Math.min((time - lastTime) / 1000, 0.1);
-    lastTime = time;
-
-    targetProgress = parseFloat(progressSlider.value);
-    smoothProgress = damp(smoothProgress, targetProgress, 4.0, dt);
-
-    shaderPass.uniforms.progress.value = smoothProgress;
-    shaderPass.uniforms.time.value = t;
-
-    plane.quaternion.copy(camera.quaternion);
-
-    composer.render();
-  }
-
-  animate(0);
-
-  // --- RESIZE HANDLER ---
-  window.addEventListener("resize", () => {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    const newAspect = width / height;
-
-    camera.left = -newAspect;
-    camera.right = newAspect;
-    camera.top = 1;
-    camera.bottom = -1;
-    camera.updateProjectionMatrix();
-
-    plane.scale.set(newAspect / aspect, 1, 1);
-
-    renderer.setSize(width, height);
-    composer.setSize(width, height);
-    shaderPass.uniforms.resolution.value.set(width, height);
-  });
-
-  // --- KEYBOARD SHORTCUTS ---
-  window.addEventListener("keydown", (e) => {
-    const step = 0.01;
-    let current = parseFloat(progressSlider.value);
-
-    if (e.key === "ArrowRight" || e.key === "ArrowUp") {
-      current = Math.min(1, current + step);
-    } else if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
-      current = Math.max(0, current - step);
-    } else if (e.key === " ") {
-      current = current === 0 ? 1 : 0;
-    }
-
-    progressSlider.value = current;
-  });
-</script>
-
+  </script>
 </body>
 </html>

@@ -8,30 +8,58 @@
     html, body {
       margin: 0;
       padding: 0;
-      overflow: hidden;
-      background: black;
-    }
-
-    #ui {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      z-index: 10;
-      background: rgba(0, 0, 0, 0.7);
-      padding: 15px;
-      border-radius: 10px;
-      color: white;
+      height: 100%;
+      background: #000;
       font-family: sans-serif;
     }
 
-    #ui label {
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Centered container for the Three.js canvas */
+    .viewer {
+      position: relative;
+      width: 80vw;
+      max-width: 900px;
+      aspect-ratio: 16 / 9;
+      background: #111;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    /* The Three.js canvas will fill this container */
+    .viewer canvas {
       display: block;
-      margin-bottom: 8px;
-      font-size: 14px;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* UI overlay */
+    #ui {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      right: 16px;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 10px 12px;
+      border-radius: 10px;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    #ui label {
+      font-size: 13px;
     }
 
     #progress {
-      width: 250px;
+      width: 100%;
       height: 4px;
       -webkit-appearance: none;
       appearance: none;
@@ -43,16 +71,16 @@
     #progress::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
-      width: 16px;
-      height: 16px;
+      width: 14px;
+      height: 14px;
       border-radius: 50%;
       background: #74B7FF;
       cursor: pointer;
     }
 
     #progress::-moz-range-thumb {
-      width: 16px;
-      height: 16px;
+      width: 14px;
+      height: 14px;
       border-radius: 50%;
       background: #74B7FF;
       cursor: pointer;
@@ -60,10 +88,7 @@
     }
   </style>
 
-  <!-- ES module shims so import maps work reliably -->
   <script async src="https://unpkg.com/es-module-shims@1.10.0/dist/es-module-shims.js"></script>
-
-  <!-- Import map for three and addons -->
   <script type="importmap">
   {
     "imports": {
@@ -74,9 +99,11 @@
   </script>
 </head>
 <body>
-  <div id="ui">
-    <label for="progress">Progress</label>
-    <input id="progress" type="range" min="0" max="1" step="0.001" value="0" />
+  <div class="viewer" id="viewer">
+    <div id="ui">
+      <label for="progress">Progress</label>
+      <input id="progress" type="range" min="0" max="1" step="0.001" value="0" />
+    </div>
   </div>
 
   <script type="module">
@@ -85,9 +112,8 @@
     import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
     import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 
-    // -------------------------------
-    // SHADER (ShaderPass-style)
-    // -------------------------------
+    const container = document.getElementById("viewer");
+
     const DepixelShader = {
       uniforms: {
         tDiffuse: { value: null },
@@ -167,21 +193,13 @@
       `
     };
 
-    // -------------------------------
-    // THREE.JS SETUP
-    // -------------------------------
+    // Renderer attached to the container
     const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0x74B7FF);
-    document.body.appendChild(renderer.domElement);
+    container.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
 
-    const aspect = window.innerWidth / window.innerHeight;
-    const camera = new THREE.OrthographicCamera(
-      -aspect, aspect, 1, -1, 0.01, 500
-    );
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.01, 500);
     camera.position.set(0, 0, 10);
     camera.lookAt(0, 0, 0);
 
@@ -192,16 +210,13 @@
     directionalLight.position.set(5, 10, -5);
     scene.add(directionalLight);
 
-    // -------------------------------
-    // FULLSCREEN IMAGE PLANE
-    // -------------------------------
     const textureLoader = new THREE.TextureLoader();
     const tex = textureLoader.load(
       "https://cdn.maximeheckel.com/images/backgrounds/gril-with-pearl-earing.jpg"
     );
     tex.colorSpace = THREE.SRGBColorSpace;
 
-    const planeGeometry = new THREE.PlaneGeometry(2 * aspect, 2);
+    const planeGeometry = new THREE.PlaneGeometry(2, 2);
     const planeMaterial = new THREE.MeshBasicMaterial({
       map: tex,
       toneMapped: false
@@ -209,28 +224,36 @@
     const plane = new THREE.Mesh(planeGeometry, planeMaterial);
     scene.add(plane);
 
-    // -------------------------------
-    // POSTPROCESSING
-    // -------------------------------
     const composer = new EffectComposer(renderer);
     composer.addPass(new RenderPass(scene, camera));
-
     const shaderPass = new ShaderPass(DepixelShader);
     composer.addPass(shaderPass);
 
-    shaderPass.uniforms.resolution.value.set(
-      window.innerWidth,
-      window.innerHeight
-    );
+    function resizeRendererToContainer() {
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      if (width === 0 || height === 0) return;
 
-    // -------------------------------
-    // ANIMATION & CONTROLS
-    // -------------------------------
+      renderer.setSize(width, height, false);
+      shaderPass.uniforms.resolution.value.set(width, height);
+
+      const aspect = width / height;
+      camera.left = -aspect;
+      camera.right = aspect;
+      camera.top = 1;
+      camera.bottom = -1;
+      camera.updateProjectionMatrix();
+
+      plane.scale.set(aspect, 1, 1);
+    }
+
+    resizeRendererToContainer();
+    window.addEventListener("resize", resizeRendererToContainer);
+
     const progressSlider = document.getElementById("progress");
     let smoothProgress = 0;
     let targetProgress = 0;
 
-    // Exponential smoothing similar to maath.easing.damp
     function damp(current, target, lambda, dt) {
       return current + (target - current) * (1.0 - Math.exp(-lambda * dt));
     }
@@ -256,30 +279,6 @@
 
     animate(0);
 
-    // -------------------------------
-    // RESIZE HANDLER
-    // -------------------------------
-    window.addEventListener("resize", () => {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      const newAspect = width / height;
-
-      camera.left = -newAspect;
-      camera.right = newAspect;
-      camera.top = 1;
-      camera.bottom = -1;
-      camera.updateProjectionMatrix();
-
-      plane.scale.set(newAspect / aspect, 1, 1);
-
-      renderer.setSize(width, height);
-      composer.setSize(width, height);
-      shaderPass.uniforms.resolution.value.set(width, height);
-    });
-
-    // -------------------------------
-    // KEYBOARD SHORTCUTS
-    // -------------------------------
     window.addEventListener("keydown", (e) => {
       const step = 0.01;
       let current = parseFloat(progressSlider.value);

@@ -59,6 +59,19 @@
       border: none;
     }
   </style>
+
+  <!-- ES module shims for broader browser support -->
+  <script async src="https://unpkg.com/es-module-shims@1.10.0/dist/es-module-shims.js"></script>
+
+  <!-- Import map: tells the browser where "three" and its addons live -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+    }
+  }
+  </script>
 </head>
 <body>
   <div id="ui">
@@ -67,13 +80,13 @@
   </div>
 
   <script type="module">
-    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js";
-    import { EffectComposer } from "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/postprocessing/EffectComposer.js";
-    import { RenderPass } from "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/postprocessing/RenderPass.js";
-    import { ShaderPass } from "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/postprocessing/ShaderPass.js";
+    import * as THREE from "three";
+    import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+    import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+    import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 
     /* -------------------------------
-        SHADER (adapted from React version)
+        SHADER
     --------------------------------*/
     const DepixelShader = {
       uniforms: {
@@ -164,7 +177,6 @@
 
     const scene = new THREE.Scene();
 
-    // Orthographic camera setup
     const aspect = window.innerWidth / window.innerHeight;
     const camera = new THREE.OrthographicCamera(
       -aspect, aspect, 1, -1, 0.01, 500
@@ -172,7 +184,6 @@
     camera.position.set(0, 0, 10);
     camera.lookAt(0, 0, 0);
 
-    // Add lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
 
@@ -235,7 +246,6 @@
       shaderPass.uniforms.progress.value = smoothProgress;
       shaderPass.uniforms.time.value = time * 0.001;
 
-      // Keep plane facing camera
       plane.quaternion.copy(camera.quaternion);
 
       composer.render();
@@ -251,23 +261,19 @@
       const height = window.innerHeight;
       const newAspect = width / height;
 
-      // Update camera
       camera.left = -newAspect;
       camera.right = newAspect;
       camera.top = 1;
       camera.bottom = -1;
       camera.updateProjectionMatrix();
 
-      // Update plane size
       plane.scale.set(newAspect / aspect, 1, 1);
 
-      // Update renderer and composer
       renderer.setSize(width, height);
       composer.setSize(width, height);
       shaderPass.uniforms.resolution.value.set(width, height);
     });
 
-    // Keyboard controls
     window.addEventListener("keydown", (e) => {
       const step = 0.01;
       let current = parseFloat(progressSlider.value);

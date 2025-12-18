@@ -4,41 +4,34 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Depixelation Effect</title>
+
   <style>
     html, body {
       margin: 0;
       padding: 0;
       height: 100%;
       background: #000;
-      font-family: sans-serif;
-    }
-
-    body {
       display: flex;
       align-items: center;
       justify-content: center;
+      font-family: sans-serif;
     }
 
-    /* Centered container for the Three.js canvas */
     .viewer {
       position: relative;
-      width: 80vw;
-      max-width: 900px;
-      aspect-ratio: 16 / 9;
       background: #111;
       border-radius: 16px;
       overflow: hidden;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      display: inline-block;
     }
 
-    /* The Three.js canvas will fill this container */
     .viewer canvas {
       display: block;
       width: 100%;
       height: 100%;
     }
 
-    /* UI overlay */
     #ui {
       position: absolute;
       bottom: 16px;
@@ -54,15 +47,10 @@
       gap: 6px;
     }
 
-    #ui label {
-      font-size: 13px;
-    }
-
     #progress {
       width: 100%;
       height: 4px;
       -webkit-appearance: none;
-      appearance: none;
       background: #444;
       border-radius: 2px;
       outline: none;
@@ -70,25 +58,16 @@
 
     #progress::-webkit-slider-thumb {
       -webkit-appearance: none;
-      appearance: none;
       width: 14px;
       height: 14px;
       border-radius: 50%;
       background: #74B7FF;
       cursor: pointer;
-    }
-
-    #progress::-moz-range-thumb {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: #74B7FF;
-      cursor: pointer;
-      border: none;
     }
   </style>
 
   <script async src="https://unpkg.com/es-module-shims@1.10.0/dist/es-module-shims.js"></script>
+
   <script type="importmap">
   {
     "imports": {
@@ -98,6 +77,7 @@
   }
   </script>
 </head>
+
 <body>
   <div class="viewer" id="viewer">
     <div id="ui">
@@ -114,6 +94,9 @@
 
     const container = document.getElementById("viewer");
 
+    /* -------------------------------------
+       SHADER
+    ------------------------------------- */
     const DepixelShader = {
       uniforms: {
         tDiffuse: { value: null },
@@ -131,6 +114,8 @@
       `,
 
       fragmentShader: `
+        precision highp float;
+
         uniform sampler2D tDiffuse;
         uniform float progress;
         uniform vec2 resolution;
@@ -150,50 +135,51 @@
           float currentLevel = floor(progress * LEVELS);
 
           float currentPixelSize = max(basePixelSize / pow(2.0, currentLevel), 1.0);
-
           float currentPixelsPerRow = ceil(resolution.x / currentPixelSize);
           float currentPixelsPerCol = ceil(resolution.y / currentPixelSize);
-          float currentTotalPixels = currentPixelsPerRow * currentPixelsPerCol;
 
+          float currentTotalPixels = currentPixelsPerRow * currentPixelsPerCol;
           float levelProgress = fract(progress * LEVELS) * currentTotalPixels;
+
           float currentRowInLevel = floor(levelProgress / currentPixelsPerRow);
           float currentPixelInRow = mod(levelProgress, currentPixelsPerRow);
 
           vec2 gridPos = floor(uv * resolution / currentPixelSize);
-          float row = floor(currentPixelsPerCol - gridPos.y - 1.0);
-          float posInRow = floor(gridPos.x);
+          float row = currentPixelsPerCol - gridPos.y - 1.0;
+          float posInRow = gridPos.x;
 
-          vec4 additionalColor = vec4(0.0, 0.0, 0.0, 1.0);
-          vec2 finalUv;
-          vec2 finalNormalizedPixelSize;
+          vec2 finalUv = uv;
+          vec4 extra = vec4(0.0);
 
-          if (currentPixelSize <= 1.0) {
-            finalUv = uv;
-            additionalColor = vec4(0.0);
-          } else if (row < currentRowInLevel || (row == currentRowInLevel && posInRow <= currentPixelInRow)) {
-            finalNormalizedPixelSize = currentPixelSize / resolution;
-            vec2 uvPixel = finalNormalizedPixelSize * floor(uv / finalNormalizedPixelSize);
-            finalUv = uvPixel;
+          if (currentPixelSize > 1.0) {
+            if (row < currentRowInLevel || (row == currentRowInLevel && posInRow <= currentPixelInRow)) {
 
-            if (row == currentRowInLevel) {
-              float rand = random(vec2(posInRow, row));
-              float twinkle = sin(time * 10.0 + rand * 10.0) + 1.0;
-              additionalColor = vec4(0.005) * (twinkle * 20.0);
+              vec2 pix = currentPixelSize / resolution;
+              finalUv = pix * floor(uv / pix);
+
+              if (row == currentRowInLevel) {
+                float r = random(vec2(posInRow, row));
+                float tw = sin(time * 10.0 + r * 10.0) + 1.0;
+                extra = vec4(0.005 * tw * 20.0);
+              }
+
+            } else {
+
+              float prev = currentPixelSize * 2.0;
+              vec2 pix = prev / resolution;
+              finalUv = pix * floor(uv / pix);
+
             }
-          } else {
-            float finalPixelSize = currentPixelSize * 2.0;
-            finalNormalizedPixelSize = finalPixelSize / resolution;
-            vec2 uvPixel = finalNormalizedPixelSize * floor(uv / finalNormalizedPixelSize);
-            finalUv = uvPixel;
           }
 
-          vec4 color = texture2D(tDiffuse, finalUv);
-          gl_FragColor = color + additionalColor;
+          gl_FragColor = texture2D(tDiffuse, finalUv) + extra;
         }
       `
     };
 
-    // Renderer attached to the container
+    /* -------------------------------------
+       RENDERER
+    ------------------------------------- */
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     container.appendChild(renderer.domElement);
 
@@ -201,34 +187,43 @@
 
     const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.01, 500);
     camera.position.set(0, 0, 10);
-    camera.lookAt(0, 0, 0);
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-    scene.add(ambientLight);
-
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 10.0);
-    directionalLight.position.set(5, 10, -5);
-    scene.add(directionalLight);
-
+    /* -------------------------------------
+       LOAD IMAGE & RESIZE CONTAINER TO IMAGE
+    ------------------------------------- */
     const textureLoader = new THREE.TextureLoader();
     const tex = textureLoader.load(
-      "https://cdn.maximeheckel.com/images/backgrounds/gril-with-pearl-earing.jpg"
+      "https://images.unsplash.com/photo-1765716789917-18236e0e86a2?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      () => {
+        const img = tex.image;
+
+        container.style.width = img.width + "px";
+        container.style.height = img.height + "px";
+
+        resizeRendererToContainer();
+      }
     );
+
     tex.colorSpace = THREE.SRGBColorSpace;
 
-    const planeGeometry = new THREE.PlaneGeometry(2, 2);
-    const planeMaterial = new THREE.MeshBasicMaterial({
-      map: tex,
-      toneMapped: false
-    });
-    const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+    const plane = new THREE.Mesh(
+      new THREE.PlaneGeometry(1, 1),
+      new THREE.MeshBasicMaterial({ map: tex })
+    );
     scene.add(plane);
 
+    /* -------------------------------------
+       POSTPROCESS
+    ------------------------------------- */
     const composer = new EffectComposer(renderer);
     composer.addPass(new RenderPass(scene, camera));
+
     const shaderPass = new ShaderPass(DepixelShader);
     composer.addPass(shaderPass);
 
+    /* -------------------------------------
+       RESIZE FUNCTION
+    ------------------------------------- */
     function resizeRendererToContainer() {
       const width = container.clientWidth;
       const height = container.clientHeight;
@@ -237,62 +232,45 @@
       renderer.setSize(width, height, false);
       shaderPass.uniforms.resolution.value.set(width, height);
 
-      const aspect = width / height;
-      camera.left = -aspect;
-      camera.right = aspect;
-      camera.top = 1;
-      camera.bottom = -1;
+      camera.left = -width / 2;
+      camera.right = width / 2;
+      camera.top = height / 2;
+      camera.bottom = -height / 2;
       camera.updateProjectionMatrix();
 
-      plane.scale.set(aspect, 1, 1);
+      plane.scale.set(width, height, 1);
     }
 
-    resizeRendererToContainer();
-    window.addEventListener("resize", resizeRendererToContainer);
-
+    /* -------------------------------------
+       ANIMATION
+    ------------------------------------- */
     const progressSlider = document.getElementById("progress");
-    let smoothProgress = 0;
-    let targetProgress = 0;
+    let smooth = 0, target = 0;
 
-    function damp(current, target, lambda, dt) {
-      return current + (target - current) * (1.0 - Math.exp(-lambda * dt));
+    function damp(a, b, lambda, dt) {
+      return a + (b - a) * (1.0 - Math.exp(-lambda * dt));
     }
 
-    let lastTime = 0;
+    let last = 0;
     function animate(time) {
       requestAnimationFrame(animate);
 
       const t = time * 0.001;
-      const dt = Math.min((time - lastTime) / 1000, 0.1);
-      lastTime = time;
+      const dt = Math.min((time - last) / 1000, 0.1);
+      last = time;
 
-      targetProgress = parseFloat(progressSlider.value);
-      smoothProgress = damp(smoothProgress, targetProgress, 4.0, dt);
+      target = parseFloat(progressSlider.value);
+      smooth = damp(smooth, target, 4.0, dt);
 
-      shaderPass.uniforms.progress.value = smoothProgress;
+      shaderPass.uniforms.progress.value = smooth;
       shaderPass.uniforms.time.value = t;
-
-      plane.quaternion.copy(camera.quaternion);
 
       composer.render();
     }
 
     animate(0);
 
-    window.addEventListener("keydown", (e) => {
-      const step = 0.01;
-      let current = parseFloat(progressSlider.value);
-
-      if (e.key === "ArrowRight" || e.key === "ArrowUp") {
-        current = Math.min(1, current + step);
-      } else if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
-        current = Math.max(0, current - step);
-      } else if (e.key === " ") {
-        current = current === 0 ? 1 : 0;
-      }
-
-      progressSlider.value = current;
-    });
+    window.addEventListener("resize", resizeRendererToContainer);
   </script>
 </body>
 </html>

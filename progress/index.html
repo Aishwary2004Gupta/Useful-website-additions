@@ -1,189 +1,206 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Depixelation Shader - ESM</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Depixelation Shader - Single File</title>
+
   <style>
-    body, html {
+    html, body {
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background: #74B7FF;
+      background: black;
     }
-    canvas {
-      display: block;
+
+    #progressContainer {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 10;
+      color: white;
+      font-family: sans-serif;
+    }
+
+    #progress {
+      width: 250px;
     }
   </style>
 </head>
+
 <body>
+  <!-- Slider UI -->
+  <div id="progressContainer">
+    <label>Progress</label><br />
+    <input id="progress" type="range" min="0" max="1" step="0.001" value="0" />
+  </div>
+  
 
-<script type="module">
+  <!-- THREE JS MODULES -->
+  <script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js";
+    import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/controls/OrbitControls.js";
+    import { EffectComposer } from "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/postprocessing/EffectComposer.js";
+    import { RenderPass } from "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/postprocessing/RenderPass.js";
+    import { ShaderPass } from "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/postprocessing/ShaderPass.js";
 
-/* -------------------------------------------------------
-   IMPORT MODULES
-------------------------------------------------------- */
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
-import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js";
+    /* -------------------------------
+        SHADER (converted from GLSL)
+    --------------------------------*/
+    const DepixelShader = {
 
-import {
-  EffectComposer,
-  RenderPass,
-  EffectPass,
-  Effect
-} from "https://cdn.jsdelivr.net/npm/postprocessing@6.33.4/build/postprocessing.module.js";
+      uniforms: {
+        "tDiffuse": { value: null },
+        "progress": { value: 0.0 },
+        "resolution": { value: new THREE.Vector2() },
+        "time": { value: 0.0 }
+      },
 
-import GUI from "https://cdn.jsdelivr.net/npm/lil-gui@0.18/+esm";
+      vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = vec4(position, 1.0);
+        }
+      `,
 
-/* -------------------------------------------------------
-   SHADER CODE
-------------------------------------------------------- */
-const fragmentShader = `
-uniform float progress;
-uniform float time;
-uniform vec2 resolution;
-uniform sampler2D inputBuffer;
+      fragmentShader: `
+        uniform sampler2D tDiffuse;
+        uniform float progress;
+        uniform vec2 resolution;
+        uniform float time;
+        varying vec2 vUv;
 
-float random(vec2 st) {
-  return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
-}
+        float random(vec2 st) {
+          return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+        }
 
-const float LEVELS = 5.0;
+        const float LEVELS = 5.0;
 
-void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
-  float basePixelSize = pow(2.0, LEVELS);
-  float currentLevel = floor(progress * LEVELS);
+        void main() {
+          float basePixelSize = pow(2.0, LEVELS);
+          float currentLevel = floor(progress * LEVELS);
 
-  float currentPixelSize = max(basePixelSize / pow(2.0, currentLevel), 1.0);
+          float currentPixelSize = max(basePixelSize / pow(2.0, currentLevel), 1.0);
+          float currentPixelsPerRow = ceil(resolution.x / currentPixelSize);
+          float currentPixelsPerCol = ceil(resolution.y / currentPixelSize);
+          float currentTotalPixels = currentPixelsPerRow * currentPixelsPerCol;
 
-  float currentPixelsPerRow = ceil(resolution.x / currentPixelSize);
-  float currentPixelsPerCol = ceil(resolution.y / currentPixelSize);
-  float currentTotalPixels = currentPixelsPerRow * currentPixelsPerCol;
+          float levelProgress = fract(progress * LEVELS) * currentTotalPixels;
+          float currentRowInLevel = floor(levelProgress / currentPixelsPerRow);
+          float currentPixelInRow = mod(levelProgress, currentPixelsPerRow);
 
-  float levelProgress = fract(progress * LEVELS) * currentTotalPixels;
-  float currentRowInLevel = floor(levelProgress / currentPixelsPerRow);
-  float currentPixelInRow = mod(levelProgress, currentPixelsPerRow);
+          vec2 gridPos = floor(vUv * resolution / currentPixelSize);
+          float row = floor(currentPixelsPerCol - gridPos.y - 1.0);
+          float posInRow = floor(gridPos.x);
 
-  vec2 gridPos = floor(uv * resolution / currentPixelSize);
-  float row = floor(currentPixelsPerCol - gridPos.y - 1.0);
-  float posInRow = floor(gridPos.x);
+          vec4 additionalColor = vec4(0.0,0.0,0.0,1.0);
+          vec2 finalUv;
 
-  vec4 additionalColor = vec4(0.0, 0.0, 0.0, 1.0);
-  vec2 finalUv;
-  vec2 finalNormalizedPixelSize;
+          if (currentPixelSize <= 1.0) {
+            finalUv = vUv;
+            additionalColor = vec4(0.0);
+          }
+          else if (row < currentRowInLevel || (row == currentRowInLevel && posInRow <= currentPixelInRow)) {
+            vec2 finalNormalizedPixelSize = currentPixelSize / resolution;
+            vec2 uvPixel = finalNormalizedPixelSize * floor(vUv / finalNormalizedPixelSize);
+            finalUv = uvPixel;
 
-  if (currentPixelSize <= 1.0) {
-    finalUv = uv;
-    additionalColor = vec4(0.0);
-  } else if (row < currentRowInLevel || (row == currentRowInLevel && posInRow <= currentPixelInRow)) {
-    finalNormalizedPixelSize = currentPixelSize / resolution;
-    vec2 uvPixel = finalNormalizedPixelSize * floor(uv / finalNormalizedPixelSize);
-    finalUv = uvPixel;
+            if (row == currentRowInLevel) {
+              float rand = random(vec2(posInRow, row));
+              float twinkle = sin(time * 10.0 + rand * 10.0) + 1.0;
+              additionalColor = vec4(0.005) * (twinkle * 20.0);
+            }
+          }
+          else {
+            float finalPixelSize = currentPixelSize * 2.0;
+            vec2 finalNormalizedPixelSize = finalPixelSize / resolution;
+            vec2 uvPixel = finalNormalizedPixelSize * floor(vUv / finalNormalizedPixelSize);
+            finalUv = uvPixel;
+          }
 
-    if (row == currentRowInLevel) {
-      float rand = random(vec2(posInRow, row));
-      float twinkle = sin(time * 10.0 + rand * 10.0) + 1.0;
-      additionalColor = vec4(0.005) * (twinkle * 20.0);
+          vec4 color = texture2D(tDiffuse, finalUv);
+          gl_FragColor = color + additionalColor;
+        }
+      `
+    };
+
+    /* -------------------------------
+        BASIC THREE.JS SETUP
+    --------------------------------*/
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.OrthographicCamera(
+      -1, 1, 1, -1, 0.01, 100
+    );
+    camera.position.set(0, 0, 10);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+
+    /* -------------------------------
+        FULLSCREEN IMAGE PLANE
+    --------------------------------*/
+    const textureLoader = new THREE.TextureLoader();
+    const tex = textureLoader.load(
+      "https://cdn.maximeheckel.com/images/backgrounds/gril-with-pearl-earing.jpg"
+    );
+
+    const plane = new THREE.Mesh(
+      new THREE.PlaneGeometry(2, 2),
+      new THREE.MeshBasicMaterial({ map: tex })
+    );
+    scene.add(plane);
+
+    /* -------------------------------
+        POSTPROCESSING
+    --------------------------------*/
+    const composer = new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene, camera));
+
+    const shaderPass = new ShaderPass(DepixelShader);
+    composer.addPass(shaderPass);
+
+    shaderPass.uniforms.resolution.value.set(
+      window.innerWidth,
+      window.innerHeight
+    );
+
+    /* -------------------------------
+        ANIMATION
+    --------------------------------*/
+    const progressSlider = document.getElementById("progress");
+    let smoothProgress = 0;
+
+    function animate(t) {
+      requestAnimationFrame(animate);
+
+      shaderPass.uniforms.time.value = t * 0.001;
+
+      // Smooth easing like maath.damp()
+      smoothProgress += (progressSlider.value - smoothProgress) * 0.1;
+
+      shaderPass.uniforms.progress.value = smoothProgress;
+
+      controls.update();
+      composer.render();
     }
-  } else {
-    float finalPixelSize = currentPixelSize * 2.0;
-    finalNormalizedPixelSize = finalPixelSize / resolution;
-    vec2 uvPixel = finalNormalizedPixelSize * floor(uv / finalNormalizedPixelSize);
-    finalUv = uvPixel;
-  }
 
-  vec4 color = texture2D(inputBuffer, finalUv);
-  outputColor = color + additionalColor;
-}
+    animate();
 
-void main() {
-  mainImage(vec4(0.0), gl_FragCoord.xy / resolution, gl_FragColor);
-}
-`;
-
-/* -------------------------------------------------------
-   SETUP SCENE
-------------------------------------------------------- */
-const width = window.innerWidth;
-const height = window.innerHeight;
-
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(width, height);
-renderer.setPixelRatio(devicePixelRatio);
-document.body.appendChild(renderer.domElement);
-
-const scene = new THREE.Scene();
-
-/* Camera */
-const camera = new THREE.OrthographicCamera(
-  -width / 2, width / 2,
-   height / 2, -height / 2,
-  0.01, 500
-);
-camera.position.z = 10;
-
-/* Controls */
-const controls = new OrbitControls(camera, renderer.domElement);
-
-/* -------------------------------------------------------
-   FULLSCREEN IMAGE
-------------------------------------------------------- */
-const textureLoader = new THREE.TextureLoader();
-const texture = textureLoader.load(
-  "https://cdn.maximeheckel.com/images/backgrounds/gril-with-pearl-earing.jpg"
-);
-
-const plane = new THREE.PlaneGeometry(width, height);
-const material = new THREE.MeshBasicMaterial({ map: texture });
-const imageMesh = new THREE.Mesh(plane, material);
-scene.add(imageMesh);
-
-/* -------------------------------------------------------
-   POSTPROCESSING SETUP
-------------------------------------------------------- */
-class DepixelEffect extends Effect {
-  constructor() {
-    super("DepixelEffect", fragmentShader, {
-      uniforms: new Map([
-        ["progress", new THREE.Uniform(0)],
-        ["time", new THREE.Uniform(0)],
-        ["resolution", new THREE.Uniform(new THREE.Vector2(width, height))]
-      ])
+    /* -------------------------------
+        RESIZE HANDLER
+    --------------------------------*/
+    window.addEventListener("resize", () => {
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      composer.setSize(window.innerWidth, window.innerHeight);
+      shaderPass.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
     });
-  }
 
-  update(_, __, delta) {
-    this.uniforms.get("time").value += delta;
-  }
-}
-
-const composer = new EffectComposer(renderer);
-composer.addPass(new RenderPass(scene, camera));
-
-const depixelEffect = new DepixelEffect();
-composer.addPass(new EffectPass(camera, depixelEffect));
-
-/* -------------------------------------------------------
-   GUI CONTROL
-------------------------------------------------------- */
-const gui = new GUI();
-const params = { progress: 0 };
-gui.add(params, "progress", 0, 1, 0.001).onChange(v => {
-  depixelEffect.uniforms.get("progress").value = v;
-});
-
-/* -------------------------------------------------------
-   ANIMATION LOOP
-------------------------------------------------------- */
-function animate() {
-  requestAnimationFrame(animate);
-
-  camera.lookAt(0, 0, 0);
-  composer.render();
-}
-
-animate();
-
-</script>
+  </script>
 
 </body>
 </html>

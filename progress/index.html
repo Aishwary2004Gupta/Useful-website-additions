@@ -19,7 +19,9 @@
 
 <script type="module">
 
-/* ------------------ IMPORTS ------------------ */
+/* -------------------------------------------------------
+   IMPORT MODULES
+------------------------------------------------------- */
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js";
 
@@ -28,10 +30,13 @@ import {
   RenderPass,
   EffectPass,
   Effect
-} from "https://cdn.jsdelivr.net/npm/postprocessing@6.33.4/build/postprocessing.esm.js";
+} from "https://cdn.jsdelivr.net/npm/postprocessing@6.33.4/build/postprocessing.module.js";
 
+import GUI from "https://cdn.jsdelivr.net/npm/lil-gui@0.18/+esm";
 
-/* ------------------ SHADER ------------------ */
+/* -------------------------------------------------------
+   SHADER CODE
+------------------------------------------------------- */
 const fragmentShader = `
 uniform float progress;
 uniform float time;
@@ -95,56 +100,59 @@ void main() {
 }
 `;
 
-
-/* ------------------ SCENE ------------------ */
-const w = window.innerWidth;
-const h = window.innerHeight;
+/* -------------------------------------------------------
+   SETUP SCENE
+------------------------------------------------------- */
+const width = window.innerWidth;
+const height = window.innerHeight;
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(w, h);
+renderer.setSize(width, height);
 renderer.setPixelRatio(devicePixelRatio);
 document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 
+/* Camera */
 const camera = new THREE.OrthographicCamera(
-  -w / 2, w / 2,
-  h / 2, -h / 2,
+  -width / 2, width / 2,
+   height / 2, -height / 2,
   0.01, 500
 );
 camera.position.z = 10;
 
+/* Controls */
 const controls = new OrbitControls(camera, renderer.domElement);
 
-
-/* ------------------ IMAGE ------------------ */
-const texLoader = new THREE.TextureLoader();
-const texture = texLoader.load(
+/* -------------------------------------------------------
+   FULLSCREEN IMAGE
+------------------------------------------------------- */
+const textureLoader = new THREE.TextureLoader();
+const texture = textureLoader.load(
   "https://cdn.maximeheckel.com/images/backgrounds/gril-with-pearl-earing.jpg"
 );
 
-const mesh = new THREE.Mesh(
-  new THREE.PlaneGeometry(w, h),
-  new THREE.MeshBasicMaterial({ map: texture })
-);
+const plane = new THREE.PlaneGeometry(width, height);
+const material = new THREE.MeshBasicMaterial({ map: texture });
+const imageMesh = new THREE.Mesh(plane, material);
+scene.add(imageMesh);
 
-scene.add(mesh);
-
-
-/* ------------------ POSTPROCESSING ------------------ */
+/* -------------------------------------------------------
+   POSTPROCESSING SETUP
+------------------------------------------------------- */
 class DepixelEffect extends Effect {
   constructor() {
     super("DepixelEffect", fragmentShader, {
       uniforms: new Map([
         ["progress", new THREE.Uniform(0)],
         ["time", new THREE.Uniform(0)],
-        ["resolution", new THREE.Uniform(new THREE.Vector2(w, h))]
+        ["resolution", new THREE.Uniform(new THREE.Vector2(width, height))]
       ])
     });
   }
 
-  update(_, __, dt) {
-    this.uniforms.get("time").value += dt;
+  update(_, __, delta) {
+    this.uniforms.get("time").value += delta;
   }
 }
 
@@ -154,18 +162,18 @@ composer.addPass(new RenderPass(scene, camera));
 const depixelEffect = new DepixelEffect();
 composer.addPass(new EffectPass(camera, depixelEffect));
 
-
-/* ------------------ GUI ------------------ */
-import GUI from "https://cdn.jsdelivr.net/npm/lil-gui@0.18/+esm";
-
+/* -------------------------------------------------------
+   GUI CONTROL
+------------------------------------------------------- */
 const gui = new GUI();
 const params = { progress: 0 };
 gui.add(params, "progress", 0, 1, 0.001).onChange(v => {
   depixelEffect.uniforms.get("progress").value = v;
 });
 
-
-/* ------------------ ANIMATION ------------------ */
+/* -------------------------------------------------------
+   ANIMATION LOOP
+------------------------------------------------------- */
 function animate() {
   requestAnimationFrame(animate);
 

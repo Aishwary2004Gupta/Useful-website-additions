@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>HD Depixelation Effect</title>
+    <title>Depixelation Effect</title>
 
     <style>
       html,
@@ -16,7 +16,7 @@
         align-items: center;
         justify-content: center;
         font-family: sans-serif;
-        overflow: hidden;
+        overflow: hidden; /* prevent scrolling */
       }
 
       .viewer {
@@ -88,7 +88,7 @@
   <body>
     <div class="viewer" id="viewer">
       <div id="ui">
-        <label for="progress">HD Depixelation Progress</label>
+        <label for="progress">Progress</label>
         <input
           id="progress"
           type="range"
@@ -109,9 +109,9 @@
       const container = document.getElementById("viewer");
 
       /* -------------------------------------
-       ENHANCED HD SHADER
+       SHADER
     ------------------------------------- */
-      const HDDepixelShader = {
+      const DepixelShader = {
         uniforms: {
           tDiffuse: { value: null },
           progress: { value: 0.0 },
@@ -140,106 +140,53 @@
           return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
         }
 
-        const float LEVELS = 8.0;
+        const float LEVELS = 5.0;
 
         void main() {
           vec2 uv = vUv;
-          
-          // Ensure we're sampling at full resolution when progress is 1.0
-          if (progress >= 0.999) {
-            gl_FragColor = texture2D(tDiffuse, uv);
-            return;
-          }
 
           float basePixelSize = pow(2.0, LEVELS);
           float currentLevel = floor(progress * LEVELS);
-          
-          // Calculate current pixel size for this level
+
           float currentPixelSize = max(basePixelSize / pow(2.0, currentLevel), 1.0);
-          
-          // Calculate pixel grid dimensions
           float currentPixelsPerRow = ceil(resolution.x / currentPixelSize);
           float currentPixelsPerCol = ceil(resolution.y / currentPixelSize);
-          
-          // Total pixels in current level
+
           float currentTotalPixels = currentPixelsPerRow * currentPixelsPerCol;
-          
-          // Progress within current level
-          float levelProgress = fract(progress * LEVELS);
-          
-          // Calculate current pixel being processed
-          float currentPixelIndex = levelProgress * currentTotalPixels;
-          float currentRow = floor(currentPixelIndex / currentPixelsPerRow);
-          float currentCol = mod(currentPixelIndex, currentPixelsPerRow);
-          
-          // Current pixel's grid position
+          float levelProgress = fract(progress * LEVELS) * currentTotalPixels;
+
+          float currentRowInLevel = floor(levelProgress / currentPixelsPerRow);
+          float currentPixelInRow = mod(levelProgress, currentPixelsPerRow);
+
           vec2 gridPos = floor(uv * resolution / currentPixelSize);
           float row = currentPixelsPerCol - gridPos.y - 1.0;
-          float col = gridPos.x;
-          
-          // Determine if this pixel should be depixelated yet
-          bool shouldDepixelate = false;
-          if (row < currentRow) {
-            shouldDepixelate = true;
-          } else if (row == currentRow && col <= currentCol) {
-            shouldDepixelate = true;
-          }
-          
-          vec4 color;
-          
-          if (shouldDepixelate) {
-            // Depixelated (higher resolution)
-            if (currentLevel > 0.0) {
-              // For pixels that have been processed, use half the pixel size
-              float prevPixelSize = max(basePixelSize / pow(2.0, currentLevel - 1.0), 1.0);
-              vec2 pix = prevPixelSize / resolution;
-              vec2 depixelatedUv = pix * floor(uv / pix);
-              color = texture2D(tDiffuse, depixelatedUv);
+          float posInRow = gridPos.x;
+
+          vec2 finalUv = uv;
+          vec4 extra = vec4(0.0);
+
+          if (currentPixelSize > 1.0) {
+            if (row < currentRowInLevel || (row == currentRowInLevel && posInRow <= currentPixelInRow)) {
+
+              vec2 pix = currentPixelSize / resolution;
+              finalUv = pix * floor(uv / pix);
+
+              if (row == currentRowInLevel) {
+                float r = random(vec2(posInRow, row));
+                float tw = sin(time * 10.0 + r * 10.0) + 1.0;
+                extra = vec4(0.005 * tw * 20.0);
+              }
+
             } else {
-              // At level 0, use full resolution
-              color = texture2D(tDiffuse, uv);
-            }
-          } else {
-            // Still pixelated
-            vec2 pix = currentPixelSize / resolution;
-            vec2 pixelatedUv = pix * floor(uv / pix);
-            color = texture2D(tDiffuse, pixelatedUv);
-            
-            // Add subtle animation for pixels about to be depixelated
-            if (row == currentRow && col == floor(currentCol) + 1.0) {
-              float r = random(vec2(col, row));
-              float pulse = sin(time * 8.0 + r * 6.283) * 0.5 + 0.5;
-              color.rgb += vec3(0.1, 0.15, 0.2) * pulse * 0.3;
+
+              float prev = currentPixelSize * 2.0;
+              vec2 pix = prev / resolution;
+              finalUv = pix * floor(uv / pix);
+
             }
           }
-          
-          // Smooth transition between pixel sizes
-          if (currentPixelSize > 2.0) {
-            // Add subtle anti-aliasing at edges
-            vec2 subPixel = fract(uv * resolution / currentPixelSize);
-            vec2 edge = smoothstep(0.0, 0.1, subPixel) * smoothstep(1.0, 0.9, subPixel);
-            float edgeFactor = edge.x * edge.y;
-            
-            if (shouldDepixelate && currentLevel > 0.0) {
-              float prevPixelSize = max(basePixelSize / pow(2.0, currentLevel - 1.0), 1.0);
-              vec2 prevPix = prevPixelSize / resolution;
-              vec2 prevUv = prevPix * floor(uv / prevPix);
-              vec4 prevColor = texture2D(tDiffuse, prevUv);
-              
-              // Blend between current and previous pixel sizes
-              float blend = levelProgress;
-              color = mix(prevColor, color, blend);
-            }
-          }
-          
-          // Ensure full resolution at the very end
-          if (progress > 0.99) {
-            float finalBlend = (progress - 0.99) / 0.01;
-            vec4 finalColor = texture2D(tDiffuse, uv);
-            color = mix(color, finalColor, finalBlend);
-          }
-          
-          gl_FragColor = color;
+
+          gl_FragColor = texture2D(tDiffuse, finalUv) + extra;
         }
       `,
       };
@@ -247,12 +194,7 @@
       /* -------------------------------------
        RENDERER
     ------------------------------------- */
-      const renderer = new THREE.WebGLRenderer({ 
-        antialias: true,
-        powerPreference: "high-performance",
-        precision: "highp"
-      });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
       container.appendChild(renderer.domElement);
 
       const scene = new THREE.Scene();
@@ -260,7 +202,7 @@
       camera.position.set(0, 0, 10);
 
       /* -------------------------------------
-       LOAD HD IMAGE
+       LOAD IMAGE & SIZE CONTAINER TO FIT VIEWPORT
     ------------------------------------- */
       const textureLoader = new THREE.TextureLoader();
       const tex = textureLoader.load(
@@ -269,11 +211,9 @@
           const img = tex.image;
           const imgW = img.naturalWidth || img.width;
           const imgH = img.naturalHeight || img.height;
-          
-          console.log(`Loaded HD image: ${imgW}x${imgH}`);
 
           // Fit image size into viewport with some padding
-          const padding = 40;
+          const padding = 40; // space for border/controls
           const maxW = window.innerWidth - padding;
           const maxH = window.innerHeight - padding;
           const scale = Math.min(maxW / imgW, maxH / imgH, 1);
@@ -285,12 +225,6 @@
           container.style.height = targetH + "px";
 
           resizeRendererToContainer();
-          
-          // Enable texture filtering for better quality
-          tex.minFilter = THREE.LinearFilter;
-          tex.magFilter = THREE.LinearFilter;
-          tex.generateMipmaps = true;
-          tex.needsUpdate = true;
         }
       );
 
@@ -298,20 +232,17 @@
 
       const plane = new THREE.Mesh(
         new THREE.PlaneGeometry(1, 1),
-        new THREE.MeshBasicMaterial({ 
-          map: tex,
-          transparent: true
-        })
+        new THREE.MeshBasicMaterial({ map: tex })
       );
       scene.add(plane);
 
       /* -------------------------------------
-       POSTPROCESSING
+       POSTPROCESS
     ------------------------------------- */
       const composer = new EffectComposer(renderer);
       composer.addPass(new RenderPass(scene, camera));
 
-      const shaderPass = new ShaderPass(HDDepixelShader);
+      const shaderPass = new ShaderPass(DepixelShader);
       composer.addPass(shaderPass);
 
       /* -------------------------------------
@@ -323,21 +254,21 @@
         if (width === 0 || height === 0) return;
 
         renderer.setSize(width, height, false);
-        composer.setSize(width, height);
         shaderPass.uniforms.resolution.value.set(width, height);
 
-        // Update camera for pixel-perfect rendering
+        // camera in pixel space
         camera.left = -width / 2;
         camera.right = width / 2;
         camera.top = height / 2;
         camera.bottom = -height / 2;
         camera.updateProjectionMatrix();
 
-        // Scale plane to fit container exactly
+        // plane covers full container
         plane.scale.set(width, height, 1);
       }
 
       window.addEventListener("resize", () => {
+        // On resize, refit current image to viewport
         const img = tex.image;
         if (!img) return;
         const imgW = img.naturalWidth || img.width;
@@ -361,32 +292,30 @@
        ANIMATION
     ------------------------------------- */
       const progressSlider = document.getElementById("progress");
-      let smoothProgress = 0,
-        targetProgress = 0;
+      let smooth = 0,
+        target = 0;
 
-      function damp(current, target, lambda, dt) {
-        return current + (target - current) * (1.0 - Math.exp(-lambda * dt));
+      function damp(a, b, lambda, dt) {
+        return a + (b - a) * (1.0 - Math.exp(-lambda * dt));
       }
 
-      let lastTime = 0;
+      let last = 0;
       function animate(time) {
         requestAnimationFrame(animate);
 
         const t = time * 0.001;
-        const dt = Math.min((time - lastTime) / 1000, 0.1);
-        lastTime = time;
+        const dt = Math.min((time - last) / 1000, 0.1);
+        last = time;
 
-        targetProgress = parseFloat(progressSlider.value);
-        smoothProgress = damp(smoothProgress, targetProgress, 6.0, dt);
+        target = parseFloat(progressSlider.value);
+        smooth = damp(smooth, target, 4.0, dt);
 
-        shaderPass.uniforms.progress.value = smoothProgress;
+        shaderPass.uniforms.progress.value = smooth;
         shaderPass.uniforms.time.value = t;
 
         composer.render();
       }
 
-      // Initialize
-      resizeRendererToContainer();
       animate(0);
     </script>
   </body>

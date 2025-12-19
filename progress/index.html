@@ -1,114 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Depixelation Effect</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Depixelation Effect</title>
 
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: sans-serif;
-      overflow: hidden; /* prevent scrolling */
-    }
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: sans-serif;
+        overflow: hidden; /* prevent scrolling */
+      }
 
-    .viewer {
-      position: relative;
-      background: #111;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-      display: inline-block;
-      max-width: 100vw;
-      max-height: 100vh;
-    }
+      .viewer {
+        position: relative;
+        background: #111;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+        display: inline-block;
+        max-width: 100vw;
+        max-height: 100vh;
+      }
 
-    .viewer canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
+      .viewer canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
 
-    #ui {
-      position: absolute;
-      bottom: 16px;
-      left: 16px;
-      right: 16px;
-      z-index: 10;
-      background: rgba(0, 0, 0, 0.6);
-      padding: 10px 12px;
-      border-radius: 10px;
-      color: white;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
+      #ui {
+        position: absolute;
+        bottom: 16px;
+        left: 16px;
+        right: 16px;
+        z-index: 10;
+        background: rgba(0, 0, 0, 0.6);
+        padding: 10px 12px;
+        border-radius: 10px;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
 
-    #progress {
-      width: 100%;
-      height: 4px;
-      -webkit-appearance: none;
-      background: #444;
-      border-radius: 2px;
-      outline: none;
-    }
+      #progress {
+        width: 100%;
+        height: 4px;
+        -webkit-appearance: none;
+        background: #444;
+        border-radius: 2px;
+        outline: none;
+      }
 
-    #progress::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: #74B7FF;
-      cursor: pointer;
-    }
-  </style>
+      #progress::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #74b7ff;
+        cursor: pointer;
+      }
+    </style>
 
-  <script async src="https://unpkg.com/es-module-shims@1.10.0/dist/es-module-shims.js"></script>
+    <script
+      async
+      src="https://unpkg.com/es-module-shims@1.10.0/dist/es-module-shims.js"
+    ></script>
 
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
-    }
-  }
-  </script>
-</head>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
 
-<body>
-  <div class="viewer" id="viewer">
-    <div id="ui">
-      <label for="progress">Progress</label>
-      <input id="progress" type="range" min="0" max="1" step="0.001" value="0" />
+  <body>
+    <div class="viewer" id="viewer">
+      <div id="ui">
+        <label for="progress">Progress</label>
+        <input
+          id="progress"
+          type="range"
+          min="0"
+          max="1"
+          step="0.001"
+          value="0"
+        />
+      </div>
     </div>
-  </div>
 
-  <script type="module">
-    import * as THREE from "three";
-    import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
-    import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
-    import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
+    <script type="module">
+      import * as THREE from "three";
+      import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+      import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+      import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 
-    const container = document.getElementById("viewer");
+      const container = document.getElementById("viewer");
 
-    /* -------------------------------------
+      /* -------------------------------------
        SHADER
     ------------------------------------- */
-    const DepixelShader = {
-      uniforms: {
-        tDiffuse: { value: null },
-        progress: { value: 0.0 },
-        resolution: { value: new THREE.Vector2() },
-        time: { value: 0.0 }
-      },
+      const DepixelShader = {
+        uniforms: {
+          tDiffuse: { value: null },
+          progress: { value: 0.0 },
+          resolution: { value: new THREE.Vector2() },
+          time: { value: 0.0 },
+        },
 
-      vertexShader: `
+        vertexShader: `
         varying vec2 vUv;
         void main() {
           vUv = uv;
@@ -116,7 +127,7 @@
         }
       `,
 
-      fragmentShader: `
+        fragmentShader: `
         precision highp float;
 
         uniform sampler2D tDiffuse;
@@ -177,32 +188,93 @@
 
           gl_FragColor = texture2D(tDiffuse, finalUv) + extra;
         }
-      `
-    };
+      `,
+      };
 
-    /* -------------------------------------
+      /* -------------------------------------
        RENDERER
     ------------------------------------- */
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    container.appendChild(renderer.domElement);
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      container.appendChild(renderer.domElement);
 
-    const scene = new THREE.Scene();
-    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.01, 500);
-    camera.position.set(0, 0, 10);
+      const scene = new THREE.Scene();
+      const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.01, 500);
+      camera.position.set(0, 0, 10);
 
-    /* -------------------------------------
+      /* -------------------------------------
        LOAD IMAGE & SIZE CONTAINER TO FIT VIEWPORT
     ------------------------------------- */
-    const textureLoader = new THREE.TextureLoader();
-    const tex = textureLoader.load(
-      "https://cdn.maximeheckel.com/images/backgrounds/gril-with-pearl-earing.jpg",
-      () => {
+      const textureLoader = new THREE.TextureLoader();
+      const tex = textureLoader.load(
+        "https://cdn.maximeheckel.com/images/backgrounds/gril-with-pearl-earing.jpg",
+        () => {
+          const img = tex.image;
+          const imgW = img.naturalWidth || img.width;
+          const imgH = img.naturalHeight || img.height;
+
+          // Fit image size into viewport with some padding
+          const padding = 40; // space for border/controls
+          const maxW = window.innerWidth - padding;
+          const maxH = window.innerHeight - padding;
+          const scale = Math.min(maxW / imgW, maxH / imgH, 1);
+
+          const targetW = imgW * scale;
+          const targetH = imgH * scale;
+
+          container.style.width = targetW + "px";
+          container.style.height = targetH + "px";
+
+          resizeRendererToContainer();
+        }
+      );
+
+      tex.colorSpace = THREE.SRGBColorSpace;
+
+      const plane = new THREE.Mesh(
+        new THREE.PlaneGeometry(1, 1),
+        new THREE.MeshBasicMaterial({ map: tex })
+      );
+      scene.add(plane);
+
+      /* -------------------------------------
+       POSTPROCESS
+    ------------------------------------- */
+      const composer = new EffectComposer(renderer);
+      composer.addPass(new RenderPass(scene, camera));
+
+      const shaderPass = new ShaderPass(DepixelShader);
+      composer.addPass(shaderPass);
+
+      /* -------------------------------------
+       RESIZE FUNCTION
+    ------------------------------------- */
+      function resizeRendererToContainer() {
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+        if (width === 0 || height === 0) return;
+
+        renderer.setSize(width, height, false);
+        shaderPass.uniforms.resolution.value.set(width, height);
+
+        // camera in pixel space
+        camera.left = -width / 2;
+        camera.right = width / 2;
+        camera.top = height / 2;
+        camera.bottom = -height / 2;
+        camera.updateProjectionMatrix();
+
+        // plane covers full container
+        plane.scale.set(width, height, 1);
+      }
+
+      window.addEventListener("resize", () => {
+        // On resize, refit current image to viewport
         const img = tex.image;
+        if (!img) return;
         const imgW = img.naturalWidth || img.width;
         const imgH = img.naturalHeight || img.height;
 
-        // Fit image size into viewport with some padding
-        const padding = 40; // space for border/controls
+        const padding = 40;
         const maxW = window.innerWidth - padding;
         const maxH = window.innerHeight - padding;
         const scale = Math.min(maxW / imgW, maxH / imgH, 1);
@@ -214,97 +286,37 @@
         container.style.height = targetH + "px";
 
         resizeRendererToContainer();
-      }
-    );
+      });
 
-    tex.colorSpace = THREE.SRGBColorSpace;
-
-    const plane = new THREE.Mesh(
-      new THREE.PlaneGeometry(1, 1),
-      new THREE.MeshBasicMaterial({ map: tex })
-    );
-    scene.add(plane);
-
-    /* -------------------------------------
-       POSTPROCESS
-    ------------------------------------- */
-    const composer = new EffectComposer(renderer);
-    composer.addPass(new RenderPass(scene, camera));
-
-    const shaderPass = new ShaderPass(DepixelShader);
-    composer.addPass(shaderPass);
-
-    /* -------------------------------------
-       RESIZE FUNCTION
-    ------------------------------------- */
-    function resizeRendererToContainer() {
-      const width = container.clientWidth;
-      const height = container.clientHeight;
-      if (width === 0 || height === 0) return;
-
-      renderer.setSize(width, height, false);
-      shaderPass.uniforms.resolution.value.set(width, height);
-
-      // camera in pixel space
-      camera.left = -width / 2;
-      camera.right = width / 2;
-      camera.top = height / 2;
-      camera.bottom = -height / 2;
-      camera.updateProjectionMatrix();
-
-      // plane covers full container
-      plane.scale.set(width, height, 1);
-    }
-
-    window.addEventListener("resize", () => {
-      // On resize, refit current image to viewport
-      const img = tex.image;
-      if (!img) return;
-      const imgW = img.naturalWidth || img.width;
-      const imgH = img.naturalHeight || img.height;
-
-      const padding = 40;
-      const maxW = window.innerWidth - padding;
-      const maxH = window.innerHeight - padding;
-      const scale = Math.min(maxW / imgW, maxH / imgH, 1);
-
-      const targetW = imgW * scale;
-      const targetH = imgH * scale;
-
-      container.style.width = targetW + "px";
-      container.style.height = targetH + "px";
-
-      resizeRendererToContainer();
-    });
-
-    /* -------------------------------------
+      /* -------------------------------------
        ANIMATION
     ------------------------------------- */
-    const progressSlider = document.getElementById("progress");
-    let smooth = 0, target = 0;
+      const progressSlider = document.getElementById("progress");
+      let smooth = 0,
+        target = 0;
 
-    function damp(a, b, lambda, dt) {
-      return a + (b - a) * (1.0 - Math.exp(-lambda * dt));
-    }
+      function damp(a, b, lambda, dt) {
+        return a + (b - a) * (1.0 - Math.exp(-lambda * dt));
+      }
 
-    let last = 0;
-    function animate(time) {
-      requestAnimationFrame(animate);
+      let last = 0;
+      function animate(time) {
+        requestAnimationFrame(animate);
 
-      const t = time * 0.001;
-      const dt = Math.min((time - last) / 1000, 0.1);
-      last = time;
+        const t = time * 0.001;
+        const dt = Math.min((time - last) / 1000, 0.1);
+        last = time;
 
-      target = parseFloat(progressSlider.value);
-      smooth = damp(smooth, target, 4.0, dt);
+        target = parseFloat(progressSlider.value);
+        smooth = damp(smooth, target, 4.0, dt);
 
-      shaderPass.uniforms.progress.value = smooth;
-      shaderPass.uniforms.time.value = t;
+        shaderPass.uniforms.progress.value = smooth;
+        shaderPass.uniforms.time.value = t;
 
-      composer.render();
-    }
+        composer.render();
+      }
 
-    animate(0);
-  </script>
-</body>
+      animate(0);
+    </script>
+  </body>
 </html>

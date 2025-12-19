@@ -109,7 +109,7 @@
       const container = document.getElementById("viewer");
 
       /* -------------------------------------
-       SHADER
+       SHADER - MODIFIED TO ENSURE FULL QUALITY AT THE END
     ------------------------------------- */
       const DepixelShader = {
         uniforms: {
@@ -144,6 +144,12 @@
 
         void main() {
           vec2 uv = vUv;
+
+          // CRITICAL FIX: When progress is 1.0, render full quality image
+          if (progress >= 0.999) {
+            gl_FragColor = texture2D(tDiffuse, uv);
+            return;
+          }
 
           float basePixelSize = pow(2.0, LEVELS);
           float currentLevel = floor(progress * LEVELS);

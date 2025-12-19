@@ -16,7 +16,7 @@
         align-items: center;
         justify-content: center;
         font-family: sans-serif;
-        overflow: hidden; /* prevent scrolling */
+        overflow: hidden;
       }
 
       .viewer {
@@ -109,7 +109,7 @@
       const container = document.getElementById("viewer");
 
       /* -------------------------------------
-       SHADER - MODIFIED TO ENSURE FULL QUALITY AT THE END
+       SHADER - FIXED FOR FULL QUALITY AT THE END
     ------------------------------------- */
       const DepixelShader = {
         uniforms: {
@@ -145,8 +145,8 @@
         void main() {
           vec2 uv = vUv;
 
-          // CRITICAL FIX: When progress is 1.0, render full quality image
-          if (progress >= 0.999) {
+          // FIX: When progress is 1.0, show full quality immediately
+          if (progress >= 0.9999) {
             gl_FragColor = texture2D(tDiffuse, uv);
             return;
           }
@@ -154,7 +154,19 @@
           float basePixelSize = pow(2.0, LEVELS);
           float currentLevel = floor(progress * LEVELS);
 
+          // FIX: Ensure at the highest level we use pixelSize = 1.0
+          if (currentLevel >= LEVELS) {
+            currentLevel = LEVELS - 1.0;
+          }
+
           float currentPixelSize = max(basePixelSize / pow(2.0, currentLevel), 1.0);
+          
+          // FIX: When we're at the smallest pixel size (1.0), just show original
+          if (currentPixelSize <= 1.01) {
+            gl_FragColor = texture2D(tDiffuse, uv);
+            return;
+          }
+
           float currentPixelsPerRow = ceil(resolution.x / currentPixelSize);
           float currentPixelsPerCol = ceil(resolution.y / currentPixelSize);
 
@@ -171,28 +183,33 @@
           vec2 finalUv = uv;
           vec4 extra = vec4(0.0);
 
-          if (currentPixelSize > 1.0) {
-            if (row < currentRowInLevel || (row == currentRowInLevel && posInRow <= currentPixelInRow)) {
+          // FIX: Simplify logic - when pixelSize is too small, just use original UV
+          if (currentPixelSize <= 2.0) {
+            finalUv = uv;
+          } else if (row < currentRowInLevel || (row == currentRowInLevel && posInRow <= currentPixelInRow)) {
+            vec2 pix = currentPixelSize / resolution;
+            finalUv = pix * floor(uv / pix);
 
-              vec2 pix = currentPixelSize / resolution;
-              finalUv = pix * floor(uv / pix);
-
-              if (row == currentRowInLevel) {
-                float r = random(vec2(posInRow, row));
-                float tw = sin(time * 10.0 + r * 10.0) + 1.0;
-                extra = vec4(0.005 * tw * 20.0);
-              }
-
-            } else {
-
-              float prev = currentPixelSize * 2.0;
-              vec2 pix = prev / resolution;
-              finalUv = pix * floor(uv / pix);
-
+            if (row == currentRowInLevel) {
+              float r = random(vec2(posInRow, row));
+              float tw = sin(time * 10.0 + r * 10.0) + 1.0;
+              extra = vec4(0.005 * tw * 20.0);
             }
+          } else {
+            float prev = currentPixelSize * 2.0;
+            vec2 pix = prev / resolution;
+            finalUv = pix * floor(uv / pix);
           }
 
-          gl_FragColor = texture2D(tDiffuse, finalUv) + extra;
+          // FIX: Smooth transition to full quality at the very end
+          if (progress > 0.95) {
+            float endBlend = (progress - 0.95) / 0.05;
+            vec4 fullQualityColor = texture2D(tDiffuse, uv);
+            vec4 currentColor = texture2D(tDiffuse, finalUv) + extra;
+            gl_FragColor = mix(currentColor, fullQualityColor, endBlend);
+          } else {
+            gl_FragColor = texture2D(tDiffuse, finalUv) + extra;
+          }
         }
       `,
       };
@@ -200,7 +217,10 @@
       /* -------------------------------------
        RENDERER
     ------------------------------------- */
-      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      const renderer = new THREE.WebGLRenderer({ 
+        antialias: true,
+        powerPreference: "high-performance"
+      });
       container.appendChild(renderer.domElement);
 
       const scene = new THREE.Scene();
@@ -218,8 +238,14 @@
           const imgW = img.naturalWidth || img.width;
           const imgH = img.naturalHeight || img.height;
 
+          // Enable proper texture filtering for best quality
+          tex.minFilter = THREE.LinearFilter;
+          tex.magFilter = THREE.LinearFilter;
+          tex.generateMipmaps = true;
+          tex.needsUpdate = true;
+
           // Fit image size into viewport with some padding
-          const padding = 40; // space for border/controls
+          const padding = 40;
           const maxW = window.innerWidth - padding;
           const maxH = window.innerHeight - padding;
           const scale = Math.min(maxW / imgW, maxH / imgH, 1);
@@ -260,21 +286,19 @@
         if (width === 0 || height === 0) return;
 
         renderer.setSize(width, height, false);
+        composer.setSize(width, height);
         shaderPass.uniforms.resolution.value.set(width, height);
 
-        // camera in pixel space
         camera.left = -width / 2;
         camera.right = width / 2;
         camera.top = height / 2;
         camera.bottom = -height / 2;
         camera.updateProjectionMatrix();
 
-        // plane covers full container
         plane.scale.set(width, height, 1);
       }
 
       window.addEventListener("resize", () => {
-        // On resize, refit current image to viewport
         const img = tex.image;
         if (!img) return;
         const imgW = img.naturalWidth || img.width;
@@ -323,6 +347,7 @@
       }
 
       animate(0);
+      
     </script>
   </body>
 </html>

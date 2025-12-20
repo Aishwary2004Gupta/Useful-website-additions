@@ -116,7 +116,7 @@
           tDiffuse: { value: null },
           progress: { value: 0.0 },
           resolution: { value: new THREE.Vector2() },
-          time: { value: 0.0 }
+          time: { value: 0.0 },
         },
 
         vertexShader: `
@@ -201,7 +201,7 @@
             vec4 fullColor = texture2D(tDiffuse, uv);
             gl_FragColor = mix(pixColor, fullColor, endBlend);
           }
-        `
+        `,
       };
 
       /* -------------------------------------
@@ -209,7 +209,7 @@
       ------------------------------------- */
       const renderer = new THREE.WebGLRenderer({
         antialias: true,
-        powerPreference: "high-performance"
+        powerPreference: "high-performance",
       });
       container.appendChild(renderer.domElement);
 

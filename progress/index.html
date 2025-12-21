@@ -1,340 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Depixelation Effect</title>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Depixelation Effect</title>
 
-    <style>
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        background: #000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: sans-serif;
-        overflow: hidden;
-      }
+<style>
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-family: system-ui, sans-serif;
+}
 
-      .viewer {
-        position: relative;
-        background: #111;
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-        display: inline-block;
-        max-width: 100vw;
-        max-height: 100vh;
-      }
+.viewer {
+  position: relative;
+  background: #111;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0,0,0,.6);
+}
 
-      .viewer canvas {
-        display: block;
-        width: 100%;
-        height: 100%;
-      }
+canvas {
+  display: block;
+}
+</style>
 
-      #ui {
-        position: absolute;
-        bottom: 16px;
-        left: 16px;
-        right: 16px;
-        z-index: 10;
-        background: rgba(0, 0, 0, 0.6);
-        padding: 10px 12px;
-        border-radius: 10px;
-        color: white;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-      }
+<script async src="https://unpkg.com/es-module-shims@1.10.0/dist/es-module-shims.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  }
+}
+</script>
+</head>
 
-      #progress {
-        width: 100%;
-        height: 4px;
-        -webkit-appearance: none;
-        background: #444;
-        border-radius: 2px;
-        outline: none;
-      }
+<body>
+<div class="viewer" id="viewer"></div>
 
-      #progress::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        width: 14px;
-        height: 14px;
-        border-radius: 50%;
-        background: #74b7ff;
-        cursor: pointer;
-      }
-    </style>
+<script type="module">
+import * as THREE from "three";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 
-    <script
-      async
-      src="https://unpkg.com/es-module-shims@1.10.0/dist/es-module-shims.js"
-    ></script>
+const container = document.getElementById("viewer");
 
-    <script type="importmap">
-      {
-        "imports": {
-          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
-          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
-        }
-      }
-    </script>
-  </head>
+/* ---------- SHADER ---------- */
+const DepixelShader = {
+  uniforms: {
+    tDiffuse: { value: null },
+    progress: { value: 0 },
+    resolution: { value: new THREE.Vector2() },
+    time: { value: 0 }
+  },
+  vertexShader: `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+    }
+  `,
+  fragmentShader: `
+    precision highp float;
+    uniform sampler2D tDiffuse;
+    uniform float progress;
+    uniform vec2 resolution;
+    varying vec2 vUv;
 
-  <body>
-    <div class="viewer" id="viewer">
-      <div id="ui">
-        <label for="progress">Progress</label>
-        <input
-          id="progress"
-          type="range"
-          min="0"
-          max="1"
-          step="0.001"
-          value="0"
-        />
-      </div>
-    </div>
+    void main() {
+      float size = mix(48.0, 1.0, progress);
+      vec2 pix = size / resolution;
+      vec2 uv = pix * floor(vUv / pix);
+      gl_FragColor = texture2D(tDiffuse, uv);
+    }
+  `
+};
 
-    <script type="module">
-      import * as THREE from "three";
-      import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
-      import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
-      import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
+/* ---------- THREE SETUP ---------- */
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+container.appendChild(renderer.domElement);
 
-      const container = document.getElementById("viewer");
+const scene = new THREE.Scene();
+const camera = new THREE.OrthographicCamera();
+camera.position.z = 10;
 
-      /* -------------------------------------
-         SHADER – continuous depixelation
-      ------------------------------------- */
-      const DepixelShader = {
-        uniforms: {
-          tDiffuse: { value: null },
-          progress: { value: 0.0 },
-          resolution: { value: new THREE.Vector2() },
-          time: { value: 0.0 },
-        },
+let plane, texture;
 
-        vertexShader: `
-          varying vec2 vUv;
-          void main() {
-            vUv = uv;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-          }
-        `,
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const shaderPass = new ShaderPass(DepixelShader);
+composer.addPass(shaderPass);
 
-        fragmentShader: `
-          precision highp float;
+function resize(img) {
+  const padding = 40;
+  const maxW = innerWidth - padding;
+  const maxH = innerHeight - padding;
+  const s = Math.min(maxW / img.width, maxH / img.height, 1);
 
-          uniform sampler2D tDiffuse;
-          uniform float progress;
-          uniform vec2 resolution;
-          uniform float time;
-          varying vec2 vUv;
+  const w = img.width * s;
+  const h = img.height * s;
 
-          float random(vec2 st) {
-            return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
-          }
+  container.style.width = w + "px";
+  container.style.height = h + "px";
 
-          const float LEVELS = 5.0;
+  renderer.setSize(w, h);
+  composer.setSize(w, h);
+  shaderPass.uniforms.resolution.value.set(w, h);
 
-          void main() {
-            vec2 uv = vUv;
+  camera.left = -w / 2;
+  camera.right = w / 2;
+  camera.top = h / 2;
+  camera.bottom = -h / 2;
+  camera.updateProjectionMatrix();
 
-            // basePixelSize is the coarsest block size
-            float basePixelSize = pow(2.0, LEVELS);
+  plane.scale.set(w, h, 1);
+}
 
-            // progress 0 -> currentLevel 0, progress 1 -> currentLevel LEVELS
-            float levelFloat = progress * LEVELS;
-            float currentLevel = floor(levelFloat);
-            float levelFrac = fract(levelFloat);
+function loadImage(src) {
+  new THREE.TextureLoader().load(src, tex => {
+    texture?.dispose();
+    texture = tex;
+    texture.colorSpace = THREE.SRGBColorSpace;
 
-            // clamp to valid level range
-            currentLevel = clamp(currentLevel, 0.0, LEVELS);
-
-            // pixel size smoothly goes from coarse to 1.0 as progress increases
-            float pixelSizeCoarse = basePixelSize / pow(2.0, currentLevel);
-            float pixelSizeFine   = max(pixelSizeCoarse / 2.0, 1.0);
-            float currentPixelSize = mix(pixelSizeCoarse, pixelSizeFine, levelFrac);
-
-            float currentPixelsPerRow = ceil(resolution.x / currentPixelSize);
-            float currentPixelsPerCol = ceil(resolution.y / currentPixelSize);
-            float currentTotalPixels  = currentPixelsPerRow * currentPixelsPerCol;
-
-            // position of the "drawn" block in the scan order
-            float levelProgress    = progress * currentTotalPixels;
-            float currentRowInLevel = floor(levelProgress / currentPixelsPerRow);
-            float currentPixelInRow = mod(levelProgress, currentPixelsPerRow);
-
-            vec2 gridPos = floor(uv * resolution / currentPixelSize);
-            float row     = currentPixelsPerCol - gridPos.y - 1.0;
-            float posInRow = gridPos.x;
-
-            vec2 finalUv = uv;
-            vec4 extra   = vec4(0.0);
-
-            // For blocks already "revealed", snap to currentPixelSize grid
-            if (row < currentRowInLevel || (row == currentRowInLevel && posInRow <= currentPixelInRow)) {
-              vec2 pix = currentPixelSize / resolution;
-              finalUv = pix * floor(uv / pix);
-
-              // twinkle on the active row
-              if (row == currentRowInLevel) {
-                float r = random(vec2(posInRow, row));
-                float tw = sin(time * 10.0 + r * 10.0) + 1.0;
-                extra = vec4(0.005 * tw * 20.0);
-              }
-            } else {
-              // for not-yet-revealed blocks, keep a coarser preview
-              float prevSize = currentPixelSize * 2.0;
-              vec2 pix = prevSize / resolution;
-              finalUv = pix * floor(uv / pix);
-            }
-
-            // at progress == 1.0, smoothly blend into full-quality image
-            float endBlend = smoothstep(0.95, 1.0, progress);
-            vec4 pixColor  = texture2D(tDiffuse, finalUv) + extra;
-            vec4 fullColor = texture2D(tDiffuse, uv);
-            gl_FragColor = mix(pixColor, fullColor, endBlend);
-          }
-        `,
-      };
-
-      /* -------------------------------------
-         RENDERER
-      ------------------------------------- */
-      const renderer = new THREE.WebGLRenderer({
-        antialias: true,
-        powerPreference: "high-performance",
-      });
-      container.appendChild(renderer.domElement);
-
-      const scene = new THREE.Scene();
-      const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.01, 500);
-      camera.position.set(0, 0, 10);
-
-      /* -------------------------------------
-         LOAD IMAGE & SIZE CONTAINER TO FIT VIEWPORT
-      ------------------------------------- */
-      const textureLoader = new THREE.TextureLoader();
-      const tex = textureLoader.load(
-        "https://cdn.maximeheckel.com/images/backgrounds/gril-with-pearl-earing.jpg",
-        () => {
-          const img = tex.image;
-          const imgW = img.naturalWidth || img.width;
-          const imgH = img.naturalHeight || img.height;
-
-          tex.minFilter = THREE.LinearFilter;
-          tex.magFilter = THREE.LinearFilter;
-          tex.generateMipmaps = true;
-          tex.needsUpdate = true;
-
-          const padding = 40;
-          const maxW = window.innerWidth - padding;
-          const maxH = window.innerHeight - padding;
-          const scale = Math.min(maxW / imgW, maxH / imgH, 1.0);
-
-          const targetW = imgW * scale;
-          const targetH = imgH * scale;
-
-          container.style.width = targetW + "px";
-          container.style.height = targetH + "px";
-
-          resizeRendererToContainer();
-        }
-      );
-
-      tex.colorSpace = THREE.SRGBColorSpace;
-
-      const plane = new THREE.Mesh(
+    if (!plane) {
+      plane = new THREE.Mesh(
         new THREE.PlaneGeometry(1, 1),
-        new THREE.MeshBasicMaterial({ map: tex })
+        new THREE.MeshBasicMaterial({ map: texture })
       );
       scene.add(plane);
+    } else {
+      plane.material.map = texture;
+      plane.material.needsUpdate = true;
+    }
 
-      /* -------------------------------------
-         POSTPROCESS
-      ------------------------------------- */
-      const composer = new EffectComposer(renderer);
-      composer.addPass(new RenderPass(scene, camera));
-      const shaderPass = new ShaderPass(DepixelShader);
-      composer.addPass(shaderPass);
+    resize(texture.image);
+  });
+}
 
-      /* -------------------------------------
-         RESIZE FUNCTION
-      ------------------------------------- */
-      function resizeRendererToContainer() {
-        const width = container.clientWidth;
-        const height = container.clientHeight;
-        if (width === 0 || height === 0) return;
+/* ---------- IMAGE ---------- */
+loadImage(
+  "https://pbs.twimg.com/profile_images/1985967049378820096/6KOnyC-C_400x400.jpg"
+);
 
-        renderer.setSize(width, height, false);
-        composer.setSize(width, height);
-        shaderPass.uniforms.resolution.value.set(width, height);
+/* ---------- ANIMATION ---------- */
+let progress = 0;
+function animate(t) {
+  requestAnimationFrame(animate);
+  progress = Math.min(progress + 0.0025, 1.0);
+  shaderPass.uniforms.progress.value = progress;
+  composer.render();
+}
+animate(0);
 
-        camera.left = -width / 2;
-        camera.right = width / 2;
-        camera.top = height / 2;
-        camera.bottom = -height / 2;
-        camera.updateProjectionMatrix();
-
-        plane.scale.set(width, height, 1);
-      }
-
-      window.addEventListener("resize", () => {
-        const img = tex.image;
-        if (!img) return;
-
-        const imgW = img.naturalWidth || img.width;
-        const imgH = img.naturalHeight || img.height;
-
-        const padding = 40;
-        const maxW = window.innerWidth - padding;
-        const maxH = window.innerHeight - padding;
-        const scale = Math.min(maxW / imgW, maxH / imgH, 1.0);
-
-        const targetW = imgW * scale;
-        const targetH = imgH * scale;
-
-        container.style.width = targetW + "px";
-        container.style.height = targetH + "px";
-
-        resizeRendererToContainer();
-      });
-
-      /* -------------------------------------
-         ANIMATION
-      ------------------------------------- */
-      const progressSlider = document.getElementById("progress");
-      let smooth = 0,
-        target = 0;
-
-      function damp(a, b, lambda, dt) {
-        return a + (b - a) * (1.0 - Math.exp(-lambda * dt));
-      }
-
-      let last = 0;
-      function animate(time) {
-        requestAnimationFrame(animate);
-
-        const t = time * 0.001;
-        const dt = Math.min((time - last) / 1000, 0.1);
-        last = time;
-
-        target = parseFloat(progressSlider.value);
-        smooth = damp(smooth, target, 4.0, dt);
-
-        shaderPass.uniforms.progress.value = smooth;
-        shaderPass.uniforms.time.value = t;
-
-        composer.render();
-      }
-
-      animate(0);
-    </script>
-  </body>
+window.addEventListener("resize", () => {
+  if (texture?.image) resize(texture.image);
+});
+</script>
+</body>
 </html>

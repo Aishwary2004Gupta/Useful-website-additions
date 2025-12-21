@@ -29,11 +29,16 @@ canvas {
   display: block;
 }
 
-/* ---- START BUTTON ---- */
-.start-btn {
+/* ---- BUTTONS ---- */
+.controls {
   position: absolute;
   bottom: 16px;
   right: 16px;
+  display: flex;
+  gap: 8px;
+}
+
+.controls button {
   padding: 10px 16px;
   border-radius: 10px;
   background: rgba(30,30,30,.85);
@@ -45,7 +50,7 @@ canvas {
   transition: transform .2s ease, opacity .2s ease;
 }
 
-.start-btn:hover {
+.controls button:hover {
   transform: scale(1.05);
   opacity: .9;
 }
@@ -64,7 +69,10 @@ canvas {
 
 <body>
 <div class="viewer" id="viewer">
-  <button class="start-btn" id="startBtn">Start</button>
+  <div class="controls">
+    <button id="startBtn">Start</button>
+    <button id="reverseBtn">Reverse</button>
+  </div>
 </div>
 
 <script type="module">
@@ -75,6 +83,7 @@ import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 
 const container = document.getElementById("viewer");
 const startBtn = document.getElementById("startBtn");
+const reverseBtn = document.getElementById("reverseBtn");
 
 /* ---------- SHADER ---------- */
 const DepixelShader = {
@@ -173,23 +182,34 @@ loadImage(
 
 /* ---------- ANIMATION CONTROL ---------- */
 let progress = 0;
-let playing = false;
+let direction = 0; // 1 = forward, -1 = reverse, 0 = idle
+const speed = 0.003;
 
 startBtn.onclick = () => {
   progress = 0;
-  shaderPass.uniforms.progress.value = 0;
-  playing = true;
+  direction = 1;
+};
+
+reverseBtn.onclick = () => {
+  progress = 1;
+  direction = -1;
 };
 
 function animate() {
   requestAnimationFrame(animate);
 
-  if (playing) {
-    progress += 0.003;
+  if (direction !== 0) {
+    progress += speed * direction;
+
     if (progress >= 1) {
       progress = 1;
-      playing = false;
+      direction = 0;
     }
+    if (progress <= 0) {
+      progress = 0;
+      direction = 0;
+    }
+
     shaderPass.uniforms.progress.value = progress;
   }
 

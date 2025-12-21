@@ -28,6 +28,27 @@ html, body {
 canvas {
   display: block;
 }
+
+/* ---- START BUTTON ---- */
+.start-btn {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: rgba(30,30,30,.85);
+  color: #fff;
+  border: 1px solid #333;
+  cursor: pointer;
+  font-size: 13px;
+  backdrop-filter: blur(6px);
+  transition: transform .2s ease, opacity .2s ease;
+}
+
+.start-btn:hover {
+  transform: scale(1.05);
+  opacity: .9;
+}
 </style>
 
 <script async src="https://unpkg.com/es-module-shims@1.10.0/dist/es-module-shims.js"></script>
@@ -42,7 +63,9 @@ canvas {
 </head>
 
 <body>
-<div class="viewer" id="viewer"></div>
+<div class="viewer" id="viewer">
+  <button class="start-btn" id="startBtn">Start</button>
+</div>
 
 <script type="module">
 import * as THREE from "three";
@@ -51,14 +74,14 @@ import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 
 const container = document.getElementById("viewer");
+const startBtn = document.getElementById("startBtn");
 
 /* ---------- SHADER ---------- */
 const DepixelShader = {
   uniforms: {
     tDiffuse: { value: null },
     progress: { value: 0 },
-    resolution: { value: new THREE.Vector2() },
-    time: { value: 0 }
+    resolution: { value: new THREE.Vector2() }
   },
   vertexShader: `
     varying vec2 vUv;
@@ -83,7 +106,7 @@ const DepixelShader = {
   `
 };
 
-/* ---------- THREE SETUP ---------- */
+/* ---------- THREE ---------- */
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 container.appendChild(renderer.domElement);
 
@@ -144,20 +167,35 @@ function loadImage(src) {
   });
 }
 
-/* ---------- IMAGE ---------- */
 loadImage(
-  "https://pbs.twimg.com/profile_images/1985967049378820096/6KOnyC-C_400x400.jpg"
+  "https://cdn.maximeheckel.com/images/backgrounds/gril-with-pearl-earing.jpg"
 );
 
-/* ---------- ANIMATION ---------- */
+/* ---------- ANIMATION CONTROL ---------- */
 let progress = 0;
-function animate(t) {
+let playing = false;
+
+startBtn.onclick = () => {
+  progress = 0;
+  shaderPass.uniforms.progress.value = 0;
+  playing = true;
+};
+
+function animate() {
   requestAnimationFrame(animate);
-  progress = Math.min(progress + 0.0025, 1.0);
-  shaderPass.uniforms.progress.value = progress;
+
+  if (playing) {
+    progress += 0.003;
+    if (progress >= 1) {
+      progress = 1;
+      playing = false;
+    }
+    shaderPass.uniforms.progress.value = progress;
+  }
+
   composer.render();
 }
-animate(0);
+animate();
 
 window.addEventListener("resize", () => {
   if (texture?.image) resize(texture.image);

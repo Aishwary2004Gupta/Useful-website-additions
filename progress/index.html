@@ -1,340 +1,269 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Depixelation Effect</title>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Depixelation Effect</title>
 
-    <style>
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        background: #000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: sans-serif;
-        overflow: hidden;
-      }
+<style>
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-family: system-ui, sans-serif;
+}
 
-      .viewer {
-        position: relative;
-        background: #111;
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-        display: inline-block;
-        max-width: 100vw;
-        max-height: 100vh;
-      }
+.viewer {
+  position: relative;
+  background: #111;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0,0,0,.6);
+}
 
-      .viewer canvas {
-        display: block;
-        width: 100%;
-        height: 100%;
-      }
+/* ---------- CONTROL PANEL ---------- */
+.panel {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 260px;
+  background: rgba(20,20,20,.85);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 12px;
+  color: #ddd;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
-      #ui {
-        position: absolute;
-        bottom: 16px;
-        left: 16px;
-        right: 16px;
-        z-index: 10;
-        background: rgba(0, 0, 0, 0.6);
-        padding: 10px 12px;
-        border-radius: 10px;
-        color: white;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-      }
+.panel h4 {
+  margin: 0;
+  font-weight: 500;
+  color: #fff;
+  font-size: 13px;
+}
 
-      #progress {
-        width: 100%;
-        height: 4px;
-        -webkit-appearance: none;
-        background: #444;
-        border-radius: 2px;
-        outline: none;
-      }
+.control {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 
-      #progress::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        width: 14px;
-        height: 14px;
-        border-radius: 50%;
-        background: #74b7ff;
-        cursor: pointer;
-      }
-    </style>
+.control label {
+  opacity: .75;
+}
 
-    <script
-      async
-      src="https://unpkg.com/es-module-shims@1.10.0/dist/es-module-shims.js"
-    ></script>
+input[type="range"] {
+  width: 100%;
+}
 
-    <script type="importmap">
-      {
-        "imports": {
-          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
-          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
-        }
-      }
-    </script>
-  </head>
+input[type="text"] {
+  background: #111;
+  border: 1px solid #333;
+  color: #fff;
+  border-radius: 6px;
+  padding: 6px;
+  font-size: 12px;
+}
 
-  <body>
-    <div class="viewer" id="viewer">
-      <div id="ui">
-        <label for="progress">Progress</label>
-        <input
-          id="progress"
-          type="range"
-          min="0"
-          max="1"
-          step="0.001"
-          value="0"
-        />
-      </div>
+button {
+  background: #2b7cff;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  padding: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+button.secondary {
+  background: #333;
+}
+
+.panel-toggle {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  background: #111;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: #fff;
+}
+</style>
+
+<script async src="https://unpkg.com/es-module-shims@1.10.0/dist/es-module-shims.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+
+<body>
+<div class="viewer" id="viewer">
+
+  <div class="panel-toggle" id="toggle">☰</div>
+
+  <div class="panel" id="panel">
+    <h4>Controls</h4>
+
+    <div class="control">
+      <label>Progress</label>
+      <input id="progress" type="range" min="0" max="1" step="0.001" value="0" />
     </div>
 
-    <script type="module">
-      import * as THREE from "three";
-      import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
-      import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
-      import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
+    <div class="control">
+      <label>Reveal Speed</label>
+      <input id="speed" type="range" min="0.5" max="10" step="0.1" value="4" />
+    </div>
 
-      const container = document.getElementById("viewer");
+    <div class="control">
+      <label>Image URL</label>
+      <input id="imgUrl" type="text" placeholder="Paste image URL…" />
+      <button id="loadUrl">Load URL</button>
+    </div>
 
-      /* -------------------------------------
-         SHADER – continuous depixelation
-      ------------------------------------- */
-      const DepixelShader = {
-        uniforms: {
-          tDiffuse: { value: null },
-          progress: { value: 0.0 },
-          resolution: { value: new THREE.Vector2() },
-          time: { value: 0.0 },
-        },
+    <div class="control">
+      <label>Upload Image</label>
+      <input id="fileInput" type="file" accept="image/*" />
+    </div>
 
-        vertexShader: `
-          varying vec2 vUv;
-          void main() {
-            vUv = uv;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-          }
-        `,
+    <button class="secondary" id="reset">Reset Progress</button>
+  </div>
 
-        fragmentShader: `
-          precision highp float;
+</div>
 
-          uniform sampler2D tDiffuse;
-          uniform float progress;
-          uniform vec2 resolution;
-          uniform float time;
-          varying vec2 vUv;
+<script type="module">
+import * as THREE from "three";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 
-          float random(vec2 st) {
-            return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
-          }
+const container = document.getElementById("viewer");
 
-          const float LEVELS = 5.0;
+/* ---------- SHADER ---------- */
+const DepixelShader = {
+  uniforms: {
+    tDiffuse: { value: null },
+    progress: { value: 0 },
+    resolution: { value: new THREE.Vector2() },
+    time: { value: 0 }
+  },
+  vertexShader: `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+    }
+  `,
+  fragmentShader: `
+    precision highp float;
+    uniform sampler2D tDiffuse;
+    uniform float progress;
+    uniform vec2 resolution;
+    varying vec2 vUv;
 
-          void main() {
-            vec2 uv = vUv;
+    void main() {
+      float size = mix(32.0, 1.0, progress);
+      vec2 pix = size / resolution;
+      vec2 uv = pix * floor(vUv / pix);
+      gl_FragColor = texture2D(tDiffuse, uv);
+    }
+  `
+};
 
-            // basePixelSize is the coarsest block size
-            float basePixelSize = pow(2.0, LEVELS);
+/* ---------- THREE ---------- */
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+container.appendChild(renderer.domElement);
 
-            // progress 0 -> currentLevel 0, progress 1 -> currentLevel LEVELS
-            float levelFloat = progress * LEVELS;
-            float currentLevel = floor(levelFloat);
-            float levelFrac = fract(levelFloat);
+const scene = new THREE.Scene();
+const camera = new THREE.OrthographicCamera();
+camera.position.z = 10;
 
-            // clamp to valid level range
-            currentLevel = clamp(currentLevel, 0.0, LEVELS);
+let plane, texture;
 
-            // pixel size smoothly goes from coarse to 1.0 as progress increases
-            float pixelSizeCoarse = basePixelSize / pow(2.0, currentLevel);
-            float pixelSizeFine   = max(pixelSizeCoarse / 2.0, 1.0);
-            float currentPixelSize = mix(pixelSizeCoarse, pixelSizeFine, levelFrac);
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const shaderPass = new ShaderPass(DepixelShader);
+composer.addPass(shaderPass);
 
-            float currentPixelsPerRow = ceil(resolution.x / currentPixelSize);
-            float currentPixelsPerCol = ceil(resolution.y / currentPixelSize);
-            float currentTotalPixels  = currentPixelsPerRow * currentPixelsPerCol;
+function resize(img) {
+  const maxW = innerWidth - 40;
+  const maxH = innerHeight - 40;
+  const s = Math.min(maxW / img.width, maxH / img.height, 1);
+  const w = img.width * s;
+  const h = img.height * s;
 
-            // position of the "drawn" block in the scan order
-            float levelProgress    = progress * currentTotalPixels;
-            float currentRowInLevel = floor(levelProgress / currentPixelsPerRow);
-            float currentPixelInRow = mod(levelProgress, currentPixelsPerRow);
+  container.style.width = w + "px";
+  container.style.height = h + "px";
 
-            vec2 gridPos = floor(uv * resolution / currentPixelSize);
-            float row     = currentPixelsPerCol - gridPos.y - 1.0;
-            float posInRow = gridPos.x;
+  renderer.setSize(w, h);
+  composer.setSize(w, h);
+  shaderPass.uniforms.resolution.value.set(w, h);
 
-            vec2 finalUv = uv;
-            vec4 extra   = vec4(0.0);
+  camera.left = -w / 2;
+  camera.right = w / 2;
+  camera.top = h / 2;
+  camera.bottom = -h / 2;
+  camera.updateProjectionMatrix();
 
-            // For blocks already "revealed", snap to currentPixelSize grid
-            if (row < currentRowInLevel || (row == currentRowInLevel && posInRow <= currentPixelInRow)) {
-              vec2 pix = currentPixelSize / resolution;
-              finalUv = pix * floor(uv / pix);
+  plane.scale.set(w, h, 1);
+}
 
-              // twinkle on the active row
-              if (row == currentRowInLevel) {
-                float r = random(vec2(posInRow, row));
-                float tw = sin(time * 10.0 + r * 10.0) + 1.0;
-                extra = vec4(0.005 * tw * 20.0);
-              }
-            } else {
-              // for not-yet-revealed blocks, keep a coarser preview
-              float prevSize = currentPixelSize * 2.0;
-              vec2 pix = prevSize / resolution;
-              finalUv = pix * floor(uv / pix);
-            }
+function loadImage(src) {
+  new THREE.TextureLoader().load(src, tex => {
+    texture?.dispose();
+    texture = tex;
+    texture.colorSpace = THREE.SRGBColorSpace;
 
-            // at progress == 1.0, smoothly blend into full-quality image
-            float endBlend = smoothstep(0.95, 1.0, progress);
-            vec4 pixColor  = texture2D(tDiffuse, finalUv) + extra;
-            vec4 fullColor = texture2D(tDiffuse, uv);
-            gl_FragColor = mix(pixColor, fullColor, endBlend);
-          }
-        `,
-      };
-
-      /* -------------------------------------
-         RENDERER
-      ------------------------------------- */
-      const renderer = new THREE.WebGLRenderer({
-        antialias: true,
-        powerPreference: "high-performance",
-      });
-      container.appendChild(renderer.domElement);
-
-      const scene = new THREE.Scene();
-      const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.01, 500);
-      camera.position.set(0, 0, 10);
-
-      /* -------------------------------------
-         LOAD IMAGE & SIZE CONTAINER TO FIT VIEWPORT
-      ------------------------------------- */
-      const textureLoader = new THREE.TextureLoader();
-      const tex = textureLoader.load(
-        "https://cdn.maximeheckel.com/images/backgrounds/gril-with-pearl-earing.jpg",
-        () => {
-          const img = tex.image;
-          const imgW = img.naturalWidth || img.width;
-          const imgH = img.naturalHeight || img.height;
-
-          tex.minFilter = THREE.LinearFilter;
-          tex.magFilter = THREE.LinearFilter;
-          tex.generateMipmaps = true;
-          tex.needsUpdate = true;
-
-          const padding = 40;
-          const maxW = window.innerWidth - padding;
-          const maxH = window.innerHeight - padding;
-          const scale = Math.min(maxW / imgW, maxH / imgH, 1.0);
-
-          const targetW = imgW * scale;
-          const targetH = imgH * scale;
-
-          container.style.width = targetW + "px";
-          container.style.height = targetH + "px";
-
-          resizeRendererToContainer();
-        }
-      );
-
-      tex.colorSpace = THREE.SRGBColorSpace;
-
-      const plane = new THREE.Mesh(
+    if (!plane) {
+      plane = new THREE.Mesh(
         new THREE.PlaneGeometry(1, 1),
-        new THREE.MeshBasicMaterial({ map: tex })
+        new THREE.MeshBasicMaterial({ map: texture })
       );
       scene.add(plane);
+    } else {
+      plane.material.map = texture;
+    }
+    resize(texture.image);
+  });
+}
 
-      /* -------------------------------------
-         POSTPROCESS
-      ------------------------------------- */
-      const composer = new EffectComposer(renderer);
-      composer.addPass(new RenderPass(scene, camera));
-      const shaderPass = new ShaderPass(DepixelShader);
-      composer.addPass(shaderPass);
+loadImage("https://cdn.maximeheckel.com/images/backgrounds/gril-with-pearl-earing.jpg");
 
-      /* -------------------------------------
-         RESIZE FUNCTION
-      ------------------------------------- */
-      function resizeRendererToContainer() {
-        const width = container.clientWidth;
-        const height = container.clientHeight;
-        if (width === 0 || height === 0) return;
+/* ---------- UI ---------- */
+const panel = document.getElementById("panel");
+toggle.onclick = () => panel.style.display =
+  panel.style.display === "none" ? "flex" : "none";
 
-        renderer.setSize(width, height, false);
-        composer.setSize(width, height);
-        shaderPass.uniforms.resolution.value.set(width, height);
+loadUrl.onclick = () => imgUrl.value && loadImage(imgUrl.value);
+fileInput.onchange = e =>
+  loadImage(URL.createObjectURL(e.target.files[0]));
+reset.onclick = () => progress.value = 0;
 
-        camera.left = -width / 2;
-        camera.right = width / 2;
-        camera.top = height / 2;
-        camera.bottom = -height / 2;
-        camera.updateProjectionMatrix();
-
-        plane.scale.set(width, height, 1);
-      }
-
-      window.addEventListener("resize", () => {
-        const img = tex.image;
-        if (!img) return;
-
-        const imgW = img.naturalWidth || img.width;
-        const imgH = img.naturalHeight || img.height;
-
-        const padding = 40;
-        const maxW = window.innerWidth - padding;
-        const maxH = window.innerHeight - padding;
-        const scale = Math.min(maxW / imgW, maxH / imgH, 1.0);
-
-        const targetW = imgW * scale;
-        const targetH = imgH * scale;
-
-        container.style.width = targetW + "px";
-        container.style.height = targetH + "px";
-
-        resizeRendererToContainer();
-      });
-
-      /* -------------------------------------
-         ANIMATION
-      ------------------------------------- */
-      const progressSlider = document.getElementById("progress");
-      let smooth = 0,
-        target = 0;
-
-      function damp(a, b, lambda, dt) {
-        return a + (b - a) * (1.0 - Math.exp(-lambda * dt));
-      }
-
-      let last = 0;
-      function animate(time) {
-        requestAnimationFrame(animate);
-
-        const t = time * 0.001;
-        const dt = Math.min((time - last) / 1000, 0.1);
-        last = time;
-
-        target = parseFloat(progressSlider.value);
-        smooth = damp(smooth, target, 4.0, dt);
-
-        shaderPass.uniforms.progress.value = smooth;
-        shaderPass.uniforms.time.value = t;
-
-        composer.render();
-      }
-
-      animate(0);
-    </script>
-  </body>
+/* ---------- ANIMATION ---------- */
+let smooth = 0;
+function animate(t) {
+  requestAnimationFrame(animate);
+  const speed = +document.getElementById("speed").value;
+  smooth += (progress.value - smooth) * 0.02 * speed;
+  shaderPass.uniforms.progress.value = smooth;
+  composer.render();
+}
+animate(0);
+</script>
+</body>
 </html>

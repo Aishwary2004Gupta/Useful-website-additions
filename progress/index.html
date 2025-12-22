@@ -28,64 +28,35 @@ html, body {
 canvas {
   display: block;
 }
-
-/* ---- BUTTONS ---- */
-.controls {
-  position: absolute;
-  bottom: 16px;
-  right: 16px;
-  display: flex;
-  gap: 8px;
-}
-
-.controls button {
-  padding: 10px 16px;
-  border-radius: 10px;
-  background: rgba(30,30,30,.85);
-  color: #fff;
-  border: 1px solid #333;
-  cursor: pointer;
-  font-size: 13px;
-  backdrop-filter: blur(6px);
-  transition: transform .2s ease, opacity .2s ease;
-}
-
-.controls button:hover {
-  transform: scale(1.05);
-  opacity: .9;
-}
 </style>
 
+<!-- ES Module shim -->
 <script async src="https://unpkg.com/es-module-shims@1.10.0/dist/es-module-shims.js"></script>
+
 <script type="importmap">
 {
   "imports": {
     "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
+    "lil-gui": "https://cdn.jsdelivr.net/npm/lil-gui@0.19/+esm"
   }
 }
 </script>
 </head>
 
 <body>
-<div class="viewer" id="viewer">
-  <div class="controls">
-    <button id="startBtn">Start</button>
-    <button id="reverseBtn">Reverse</button>
-  </div>
-</div>
+<div class="viewer" id="viewer"></div>
 
 <script type="module">
 import * as THREE from "three";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
+import GUI from "lil-gui";
 
 const container = document.getElementById("viewer");
-const startBtn = document.getElementById("startBtn");
-const reverseBtn = document.getElementById("reverseBtn");
 
-/* ---------- SHADER ---------- */
+/* ---------------- SHADER ---------------- */
 const DepixelShader = {
   uniforms: {
     tDiffuse: { value: null },
@@ -115,7 +86,7 @@ const DepixelShader = {
   `
 };
 
-/* ---------- THREE ---------- */
+/* ---------------- THREE ---------------- */
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 container.appendChild(renderer.domElement);
 
@@ -130,6 +101,7 @@ composer.addPass(new RenderPass(scene, camera));
 const shaderPass = new ShaderPass(DepixelShader);
 composer.addPass(shaderPass);
 
+/* ---------------- RESIZE ---------------- */
 function resize(img) {
   const padding = 40;
   const maxW = innerWidth - padding;
@@ -155,6 +127,7 @@ function resize(img) {
   plane.scale.set(w, h, 1);
 }
 
+/* ---------------- IMAGE LOAD ---------------- */
 function loadImage(src) {
   new THREE.TextureLoader().load(src, tex => {
     texture?.dispose();
@@ -173,49 +146,78 @@ function loadImage(src) {
     }
 
     resize(texture.image);
+    state.progress = 0;
   });
 }
 
-loadImage(
-  "https://pbs.twimg.com/profile_images/1985967049378820096/6KOnyC-C_400x400.jpg"
-);
-
-/* ---------- ANIMATION CONTROL ---------- */
-let progress = 0;
-let direction = 0; // 1 = forward, -1 = reverse, 0 = idle
-const speed = 0.003;
-
-startBtn.onclick = () => {
-  progress = 0;
-  direction = 1;
+/* ---------------- STATE ---------------- */
+const state = {
+  progress: 0,
+  speed: 0.003,
+  imageUrl: "",
+  start() {
+    direction = 1;
+    state.progress = 0;
+  },
+  reverse() {
+    direction = -1;
+    state.progress = 1;
+  },
+  reset() {
+    direction = 0;
+    state.progress = 0;
+  },
+  loadFromUrl() {
+    if (state.imageUrl) loadImage(state.imageUrl);
+  },
+  uploadImage() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = e =>
+      loadImage(URL.createObjectURL(e.target.files[0]));
+    input.click();
+  }
 };
 
-reverseBtn.onclick = () => {
-  progress = 1;
-  direction = -1;
-};
+let direction = 0;
 
+/* ---------------- GUI ---------------- */
+const gui = new GUI({ title: "Depixel Controls" });
+
+const imgFolder = gui.addFolder("Image");
+imgFolder.add(state, "imageUrl").name("Image URL");
+imgFolder.add(state, "loadFromUrl").name("Load URL");
+imgFolder.add(state, "uploadImage").name("Upload Image");
+
+const animFolder = gui.addFolder("Animation");
+animFolder.add(state, "start");
+animFolder.add(state, "reverse");
+animFolder.add(state, "reset");
+animFolder.add(state, "speed", 0.0005, 0.01, 0.0005).name("Speed");
+animFolder.add(state, "progress", 0, 1, 0.001).listen();
+
+gui.close();
+
+/* ---------------- LOOP ---------------- */
 function animate() {
   requestAnimationFrame(animate);
 
   if (direction !== 0) {
-    progress += speed * direction;
-
-    if (progress >= 1) {
-      progress = 1;
-      direction = 0;
-    }
-    if (progress <= 0) {
-      progress = 0;
-      direction = 0;
-    }
-
-    shaderPass.uniforms.progress.value = progress;
+    state.progress += state.speed * direction;
+    state.progress = Math.max(0, Math.min(1, state.progress));
+    if (state.progress === 0 || state.progress === 1) direction = 0;
   }
 
+  shaderPass.uniforms.progress.value = state.progress;
   composer.render();
 }
 animate();
+
+/* ---------------- DEFAULT IMAGE ---------------- */
+loadImage(
+  "https://cdn.maximeheckel.com/images/backgrounds/gril-with-pearl-earing.jpg"
+);
 
 window.addEventListener("resize", () => {
   if (texture?.image) resize(texture.image);

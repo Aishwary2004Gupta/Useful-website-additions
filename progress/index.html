@@ -29,56 +29,11 @@ canvas {
   display: block;
 }
 
-/* -------- TOP IMAGE INPUT BAR -------- */
-.top-bar {
-  position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 6px;
-  background: rgba(20,20,20,.85);
-  padding: 8px;
-  border-radius: 10px;
-  backdrop-filter: blur(8px);
-  z-index: 10;
-}
-
-.top-bar input[type="text"] {
-  width: 220px;
-  background: #111;
-  border: 1px solid #333;
-  color: #fff;
-  border-radius: 6px;
-  padding: 6px;
-  font-size: 12px;
-}
-
-.top-bar input[type="file"] {
-  display: none;
-}
-
-.top-bar label,
-.top-bar button {
-  background: #2b7cff;
-  border: none;
-  color: #fff;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 12px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.top-bar button.secondary {
-  background: #333;
-}
-
-/* -------- BOTTOM CONTROLS -------- */
+/* ---- BUTTONS ---- */
 .controls {
   position: absolute;
-  bottom: 14px;
-  right: 14px;
+  bottom: 16px;
+  right: 16px;
   display: flex;
   gap: 8px;
 }
@@ -92,6 +47,12 @@ canvas {
   cursor: pointer;
   font-size: 13px;
   backdrop-filter: blur(6px);
+  transition: transform .2s ease, opacity .2s ease;
+}
+
+.controls button:hover {
+  transform: scale(1.05);
+  opacity: .9;
 }
 </style>
 
@@ -108,16 +69,6 @@ canvas {
 
 <body>
 <div class="viewer" id="viewer">
-
-  <!-- TOP BAR -->
-  <div class="top-bar">
-    <input id="imgUrl" type="text" placeholder="Paste image URL…" />
-    <button id="loadUrl">Load</button>
-    <label for="fileInput">Upload</label>
-    <input id="fileInput" type="file" accept="image/*" />
-  </div>
-
-  <!-- BOTTOM CONTROLS -->
   <div class="controls">
     <button id="startBtn">Start</button>
     <button id="reverseBtn">Reverse</button>
@@ -133,11 +84,8 @@ import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 const container = document.getElementById("viewer");
 const startBtn = document.getElementById("startBtn");
 const reverseBtn = document.getElementById("reverseBtn");
-const imgUrl = document.getElementById("imgUrl");
-const loadUrl = document.getElementById("loadUrl");
-const fileInput = document.getElementById("fileInput");
 
-/* -------- SHADER -------- */
+/* ---------- SHADER ---------- */
 const DepixelShader = {
   uniforms: {
     tDiffuse: { value: null },
@@ -167,7 +115,7 @@ const DepixelShader = {
   `
 };
 
-/* -------- THREE -------- */
+/* ---------- THREE ---------- */
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 container.appendChild(renderer.domElement);
 
@@ -225,31 +173,44 @@ function loadImage(src) {
     }
 
     resize(texture.image);
-    shaderPass.uniforms.progress.value = 0;
   });
 }
 
-/* -------- IMAGE INPUT -------- */
-loadUrl.onclick = () => imgUrl.value && loadImage(imgUrl.value);
-fileInput.onchange = e =>
-  loadImage(URL.createObjectURL(e.target.files[0]));
+loadImage(
+  "https://pbs.twimg.com/profile_images/1985967049378820096/6KOnyC-C_400x400.jpg"
+);
 
-/* -------- ANIMATION -------- */
+/* ---------- ANIMATION CONTROL ---------- */
 let progress = 0;
-let direction = 0;
+let direction = 0; // 1 = forward, -1 = reverse, 0 = idle
 const speed = 0.003;
 
-startBtn.onclick = () => { progress = 0; direction = 1; };
-reverseBtn.onclick = () => { progress = 1; direction = -1; };
+startBtn.onclick = () => {
+  progress = 0;
+  direction = 1;
+};
+
+reverseBtn.onclick = () => {
+  progress = 1;
+  direction = -1;
+};
 
 function animate() {
   requestAnimationFrame(animate);
 
   if (direction !== 0) {
     progress += speed * direction;
-    progress = Math.max(0, Math.min(1, progress));
+
+    if (progress >= 1) {
+      progress = 1;
+      direction = 0;
+    }
+    if (progress <= 0) {
+      progress = 0;
+      direction = 0;
+    }
+
     shaderPass.uniforms.progress.value = progress;
-    if (progress === 0 || progress === 1) direction = 0;
   }
 
   composer.render();
@@ -259,11 +220,6 @@ animate();
 window.addEventListener("resize", () => {
   if (texture?.image) resize(texture.image);
 });
-
-/* -------- DEFAULT IMAGE -------- */
-loadImage(
-  "https://cdn.maximeheckel.com/images/backgrounds/gril-with-pearl-earing.jpg"
-);
 </script>
 </body>
 </html>

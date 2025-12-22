@@ -1,79 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Depixelation Effect</title>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Depixelation Effect</title>
 
-    <style>
-      html,
-      body {
-        margin: 0;
-        height: 100%;
-        background: #000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        font-family: system-ui, sans-serif;
-      }
+<style>
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-family: system-ui, sans-serif;
+}
 
-      .viewer {
-        position: relative;
-        background: #111;
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-      }
+.viewer {
+  position: relative;
+  background: #111;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0,0,0,.6);
+}
 
-      canvas {
-        display: block;
-      }
-    </style>
+canvas {
+  display: block;
+}
+</style>
 
-    <script
-      async
-      src="https://unpkg.com/es-module-shims@1.10.0/dist/es-module-shims.js"
-    ></script>
+<script async src="https://unpkg.com/es-module-shims@1.10.0/dist/es-module-shims.js"></script>
 
-    <script type="importmap">
-      {
-        "imports": {
-          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
-          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
-          "lil-gui": "https://cdn.jsdelivr.net/npm/lil-gui@0.19/+esm"
-        }
-      }
-    </script>
-  </head>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
+    "lil-gui": "https://cdn.jsdelivr.net/npm/lil-gui@0.19/+esm"
+  }
+}
+</script>
+</head>
 
-  <body>
-    <div class="viewer" id="viewer"></div>
+<body>
+<div class="viewer" id="viewer"></div>
 
-    <script type="module">
-      import * as THREE from "three";
-      import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
-      import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
-      import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
-      import GUI from "lil-gui";
+<script type="module">
+import * as THREE from "three";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
+import GUI from "lil-gui";
 
-      const container = document.getElementById("viewer");
+const container = document.getElementById("viewer");
 
-      /* ---------------- SHADER ---------------- */
-      const DepixelShader = {
-        uniforms: {
-          tDiffuse: { value: null },
-          progress: { value: 0 },
-          resolution: { value: new THREE.Vector2() },
-        },
-        vertexShader: `
+/* ================= SHADER ================= */
+const DepixelShader = {
+  uniforms: {
+    tDiffuse: { value: null },
+    progress: { value: 0 },
+    resolution: { value: new THREE.Vector2() }
+  },
+  vertexShader: `
     varying vec2 vUv;
     void main() {
       vUv = uv;
       gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
     }
   `,
-        fragmentShader: `
+  fragmentShader: `
     precision highp float;
     uniform sampler2D tDiffuse;
     uniform float progress;
@@ -86,164 +82,158 @@
       vec2 uv = pix * floor(vUv / pix);
       gl_FragColor = texture2D(tDiffuse, uv);
     }
-  `,
-      };
+  `
+};
 
-      /* ---------------- THREE ---------------- */
-      const renderer = new THREE.WebGLRenderer({ antialias: true });
-      container.appendChild(renderer.domElement);
+/* ================= THREE ================= */
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+container.appendChild(renderer.domElement);
 
-      const scene = new THREE.Scene();
-      const camera = new THREE.OrthographicCamera();
-      camera.position.z = 10;
+const scene = new THREE.Scene();
+const camera = new THREE.OrthographicCamera();
+camera.position.z = 10;
 
-      let plane, texture;
+let plane, texture;
 
-      const composer = new EffectComposer(renderer);
-      composer.addPass(new RenderPass(scene, camera));
-      const shaderPass = new ShaderPass(DepixelShader);
-      composer.addPass(shaderPass);
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const shaderPass = new ShaderPass(DepixelShader);
+composer.addPass(shaderPass);
 
-      /* ---------------- RESIZE ---------------- */
-      function resize(img) {
-        const padding = 40;
-        const maxW = innerWidth - padding;
-        const maxH = innerHeight - padding;
-        const s = Math.min(maxW / img.width, maxH / img.height, 1);
+/* ================= RESIZE ================= */
+function resize(img) {
+  const padding = 40;
+  const maxW = innerWidth - padding;
+  const maxH = innerHeight - padding;
+  const s = Math.min(maxW / img.width, maxH / img.height, 1);
 
-        const w = img.width * s;
-        const h = img.height * s;
+  const w = img.width * s;
+  const h = img.height * s;
 
-        container.style.width = w + "px";
-        container.style.height = h + "px";
+  container.style.width = w + "px";
+  container.style.height = h + "px";
 
-        renderer.setSize(w, h);
-        composer.setSize(w, h);
-        shaderPass.uniforms.resolution.value.set(w, h);
+  renderer.setSize(w, h);
+  composer.setSize(w, h);
+  shaderPass.uniforms.resolution.value.set(w, h);
 
-        camera.left = -w / 2;
-        camera.right = w / 2;
-        camera.top = h / 2;
-        camera.bottom = -h / 2;
-        camera.updateProjectionMatrix();
+  camera.left = -w / 2;
+  camera.right = w / 2;
+  camera.top = h / 2;
+  camera.bottom = -h / 2;
+  camera.updateProjectionMatrix();
 
-        plane.scale.set(w, h, 1);
-      }
+  plane.scale.set(w, h, 1);
+}
 
-      /* ---------------- IMAGE LOAD ---------------- */
-      function loadImage(src) {
-        new THREE.TextureLoader().load(src, (tex) => {
-          texture?.dispose();
-          texture = tex;
-          texture.colorSpace = THREE.SRGBColorSpace;
+/* ================= IMAGE LOAD ================= */
+function loadImage(src) {
+  new THREE.TextureLoader().load(src, tex => {
+    texture?.dispose();
+    texture = tex;
+    texture.colorSpace = THREE.SRGBColorSpace;
 
-          if (!plane) {
-            plane = new THREE.Mesh(
-              new THREE.PlaneGeometry(1, 1),
-              new THREE.MeshBasicMaterial({ map: texture })
-            );
-            scene.add(plane);
-          } else {
-            plane.material.map = texture;
-            plane.material.needsUpdate = true;
-          }
-
-          resize(texture.image);
-          state.progress = 0;
-          direction = 0;
-        });
-      }
-
-      /* ---------------- STATE ---------------- */
-      const state = {
-        progress: 0,
-        speed: 0.003,
-        imageUrl: "",
-
-        start() {
-          // 🔁 If already finished → restart from 0
-          if (state.progress >= 1) {
-            state.progress = 0;
-          }
-          direction = 1;
-        },
-
-        reverse() {
-          direction = -1;
-        },
-
-        reset() {
-          direction = 0;
-          state.progress = 0;
-        },
-
-        loadFromUrl() {
-          if (state.imageUrl) loadImage(state.imageUrl);
-        },
-
-        uploadImage() {
-          const input = document.createElement("input");
-          input.type = "file";
-          input.accept = "image/*";
-          input.onchange = (e) =>
-            loadImage(URL.createObjectURL(e.target.files[0]));
-          input.click();
-        },
-      };
-
-      let direction = 0;
-
-      /* ---------------- GUI ---------------- */
-      const gui = new GUI({ title: "Depixel Controls" });
-
-      const imgFolder = gui.addFolder("Image");
-      imgFolder.add(state, "imageUrl").name("Image URL");
-      imgFolder.add(state, "loadFromUrl").name("Load URL");
-      imgFolder.add(state, "uploadImage").name("Upload Image");
-
-      const animFolder = gui.addFolder("Animation");
-      animFolder.add(state, "start");
-      animFolder.add(state, "reverse");
-      animFolder.add(state, "reset");
-      animFolder.add(state, "speed", 0.0005, 0.01, 0.0005).name("Speed");
-
-      animFolder
-        .add(state, "progress", 0, 1, 0.001)
-        .name("Progress")
-        .listen()
-        .onChange(() => {
-          // ⛔ pause animation when user scrubs
-          direction = 0;
-        });
-
-      gui.close();
-
-      /* ---------------- LOOP ---------------- */
-      function animate() {
-        requestAnimationFrame(animate);
-
-        if (direction !== 0) {
-          state.progress += state.speed * direction;
-          state.progress = Math.max(0, Math.min(1, state.progress));
-
-          if (state.progress === 0 || state.progress === 1) {
-            direction = 0;
-          }
-        }
-
-        shaderPass.uniforms.progress.value = state.progress;
-        composer.render();
-      }
-      animate();
-
-      /* ---------------- DEFAULT IMAGE ---------------- */
-      loadImage(
-        "https://cdn.maximeheckel.com/images/backgrounds/gril-with-pearl-earing.jpg"
+    if (!plane) {
+      plane = new THREE.Mesh(
+        new THREE.PlaneGeometry(1, 1),
+        new THREE.MeshBasicMaterial({ map: texture })
       );
+      scene.add(plane);
+    } else {
+      plane.material.map = texture;
+      plane.material.needsUpdate = true;
+    }
 
-      window.addEventListener("resize", () => {
-        if (texture?.image) resize(texture.image);
-      });
-    </script>
-  </body>
+    resize(texture.image);
+    state.progress = 0;
+    direction = 0;
+  });
+}
+
+/* ================= STATE ================= */
+const state = {
+  progress: 0,
+  speed: 0.003,
+  imageUrl: "",
+
+  start() {
+    if (state.progress >= 1) state.progress = 0;
+    direction = 1;
+  },
+
+  reverse() {
+    if (state.progress <= 0) state.progress = 1;
+    direction = -1;
+  },
+
+  reset() {
+    direction = 0;
+    state.progress = 0;
+  },
+
+  loadFromUrl() {
+    if (state.imageUrl) loadImage(state.imageUrl);
+  },
+
+  uploadImage() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = e =>
+      loadImage(URL.createObjectURL(e.target.files[0]));
+    input.click();
+  }
+};
+
+let direction = 0;
+
+/* ================= GUI ================= */
+const gui = new GUI({ title: "Depixel Controls" });
+
+const imgFolder = gui.addFolder("Image");
+imgFolder.add(state, "imageUrl").name("Image URL");
+imgFolder.add(state, "loadFromUrl").name("Load URL");
+imgFolder.add(state, "uploadImage").name("Upload Image");
+
+const animFolder = gui.addFolder("Animation");
+animFolder.add(state, "start");
+animFolder.add(state, "reverse");
+animFolder.add(state, "reset");
+animFolder.add(state, "speed", 0.0005, 0.01, 0.0005).name("Speed");
+
+animFolder
+  .add(state, "progress", 0, 1, 0.001)
+  .name("Progress")
+  .listen()
+  .onChange(() => {
+    direction = 0; // pause on scrub
+  });
+
+gui.close();
+
+/* ================= LOOP ================= */
+function animate() {
+  requestAnimationFrame(animate);
+
+  if (direction !== 0) {
+    state.progress += state.speed * direction;
+    state.progress = Math.max(0, Math.min(1, state.progress));
+    if (state.progress === 0 || state.progress === 1) direction = 0;
+  }
+
+  shaderPass.uniforms.progress.value = state.progress;
+  composer.render();
+}
+animate();
+
+/* ================= DEFAULT IMAGE ================= */
+loadImage(
+  "https://cdn.maximeheckel.com/images/backgrounds/gril-with-pearl-earing.jpg"
+);
+
+window.addEventListener("resize", () => {
+  if (texture?.image) resize(texture.image);
+});
+</script>
+</body>
 </html>

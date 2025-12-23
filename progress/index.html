@@ -59,7 +59,7 @@ const container = document.getElementById("viewer");
 const DepixelShader = {
   uniforms: {
     tDiffuse: { value: null },
-    progress: { value: 0 },
+    progress: { value: 1 },
     resolution: { value: new THREE.Vector2() }
   },
   vertexShader: `
@@ -145,30 +145,34 @@ function loadImage(src) {
     }
 
     resize(texture.image);
-    state.progress = 0;
+
+    // 🔑 NEW RULE
+    state.progress = 1;
     direction = 0;
   });
 }
 
 /* ================= STATE ================= */
 const state = {
-  progress: 0,
+  progress: 1,
   speed: 0.003,
   imageUrl: "",
 
+  // 🔄 START = old reverse behavior (play backward)
   start() {
-    if (state.progress >= 1) state.progress = 0;
-    direction = 1;
-  },
-
-  reverse() {
     if (state.progress <= 0) state.progress = 1;
     direction = -1;
   },
 
+  // ▶️ REVERSE = old start behavior (play forward)
+  reverse() {
+    if (state.progress >= 1) state.progress = 0;
+    direction = 1;
+  },
+
   reset() {
     direction = 0;
-    state.progress = 0;
+    state.progress = 1;
   },
 
   loadFromUrl() {
@@ -196,8 +200,8 @@ imgFolder.add(state, "loadFromUrl").name("Load URL");
 imgFolder.add(state, "uploadImage").name("Upload Image");
 
 const animFolder = gui.addFolder("Animation");
-animFolder.add(state, "start");
-animFolder.add(state, "reverse");
+animFolder.add(state, "start").name("Start (Pixelate)");
+animFolder.add(state, "reverse").name("Reverse (Reveal)");
 animFolder.add(state, "reset");
 animFolder.add(state, "speed", 0.0005, 0.01, 0.0005).name("Speed");
 

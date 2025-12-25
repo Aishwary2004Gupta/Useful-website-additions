@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crochet Effect with Spaceship</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        #root {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            color: #74B7FF;
+            z-index: 1000;
+        }
+        
+        .info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            max-width: 300px;
+            line-height: 1.4;
+        }
+        
+        .info h3 {
+            color: #74B7FF;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <div class="loading">Loading 3D scene...</div>
+    </div>
+    
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+            "@react-three/fiber": "https://esm.sh/@react-three/fiber@8.15.24",
+            "@react-three/drei": "https://esm.sh/@react-three/drei@9.96.3",
+            "@react-three/postprocessing": "https://esm.sh/@react-three/postprocessing@2.13.4",
+            "three": "https://esm.sh/three@0.158.0",
+            "postprocessing": "https://esm.sh/postprocessing@6.35.3",
+            "leva": "https://esm.sh/leva@0.9.35",
+            "uuid": "https://esm.sh/uuid@9.0.1"
+        }
+    }
+    </script>
+    
+    <script type="module">
+    import React, { Suspense, useRef } from 'react';
+    import * as THREE from 'three';
+    import { createRoot } from 'react-dom/client';
+    import { Canvas, useFrame } from '@react-three/fiber';
+    import { OrbitControls, OrthographicCamera, useGLTF } from '@react-three/drei';
+    import { EffectComposer, wrapEffect } from '@react-three/postprocessing';
+    import { Leva, useControls } from 'leva';
+    import { Effect } from 'postprocessing';
+    import { v4 as uuidv4 } from 'uuid';
+
+    // Fragment shader as a string since we can't import raw files in HTML
+    const fragmentShader = `
+    uniform float pixelSize;
+
+    float random(vec2 st) {
+        return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+    }
+
+    vec3 rgbToHsv(vec3 c) {
+        vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+        vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
+        vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
+        float d = q.x - min(q.w, q.y);
+        float e = 1.0e-10;
+        return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
+    }
+
+    vec3 hsvToRgb(vec3 c) {
+        vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+        vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+        return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+    }
+
+    float noise(vec2 st) {
+        vec2 i = floor(st);
+        vec2 f = fract(st);
+
+        float a = random(i);
+        float b = random(i + vec2(1.0, 0.0));
+        float c = random(i + vec2(0.0, 1.0));
+        float d = random(i + vec2(1.0, 1.0));
+
+        vec2 u = f * f * (3.0 - 2.0 * f);
+
+        return mix(a, b, u.x) +
+               (c - a) * u.y * (1.0 - u.x) +
+               (d - b) * u.x * u.y;
+    }
+
+    void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
+        vec2 normalizedPixelSize = pixelSize / resolution;
+        vec2 uvPixel = normalizedPixelSize * floor(uv / normalizedPixelSize);
+        vec4 color = texture(inputBuffer, uvPixel);
+
+        vec2 cellPosition = floor(uv / normalizedPixelSize);
+        vec2 cellUV = fract(uv / normalizedPixelSize);
+
+        float rowOffset = sin((random(vec2(0.0, uvPixel.y)) - 0.5) * 0.25);
+        cellUV.x += rowOffset; 
+        vec2 centered = cellUV - 0.5;
+
+        float noiseAmount = 0.18;
+        vec2 noisyCenter = centered + (vec2(
+            random(cellPosition + centered ),
+            random(cellPosition + centered)
+        ) - 0.5) * noiseAmount;
+
+        float isAlternate = mod(cellPosition.x, 2.0);
+        float angle = isAlternate == 0.0 ? radians(-65.0) : radians(65.0);
+        
+        vec2 rotated = vec2(
+            noisyCenter.x * cos(angle) - noisyCenter.y * sin(angle),
+            noisyCenter.x * sin(angle) + noisyCenter.y * cos(angle)
+        );
+        
+        float aspectRatio = 1.55;
+        float ellipse = length(vec2(rotated.x, rotated.y * aspectRatio - 0.075));
+        color.rgb *= smoothstep(0.2, 1.0, 1.0 - ellipse);
+        
+        float stripeNoise = noise(vec2(centered.x, centered.y * 100.0)); 
+        color.rgb *= stripeNoise + 0.4;
+       
+        float hueShift = (random(cellPosition) - 0.5) * 0.08;
+        vec3 hsv = rgbToHsv(color.rgb);
+        hsv.x += hueShift;
+        color.rgb = hsvToRgb(hsv);
+
+        color.rgb *= smoothstep(0.2, 1.0, 1.0 - ellipse);
+        outputColor = color;
+    }
+    `;
+
+    class CustomCrochetEffectImpl extends Effect {
+        constructor({ pixelSize = 1.0 }) {
+            const uniforms = new Map([
+                ['pixelSize', new THREE.Uniform(pixelSize)],
+            ]);
+
+            super('CustomCrochetEffect', fragmentShader, {
+                uniforms,
+            });
+
+            this.uniforms = uniforms;
+        }
+
+        update(_renderer, _inputBuffer, _deltaTime) {
+            this.uniforms.get('pixelSize').value = this.pixelSize;
+        }
+    }
+
+    const CustomCrochetEffect = wrapEffect(CustomCrochetEffectImpl);
+
+    const CrochetEffect = () => {
+        const effectRef = useRef();
+
+        const { pixelSize } = useControls({
+            pixelSize: {
+                value: 16.0,
+                min: 8.0,
+                max: 32.0,
+                step: 2.0,
+            }
+        });
+
+        useFrame((state) => {
+            const { camera } = state;
+
+            if (effectRef.current) {
+                effectRef.current.pixelSize = pixelSize;
+            }
+
+            camera.lookAt(0, 0, 0);
+        });
+
+        return React.createElement(EffectComposer, null,
+            React.createElement(CustomCrochetEffect, {
+                ref: effectRef,
+                pixelSize: pixelSize
+            })
+        );
+    };
+
+    const Spaceship = () => {
+        const gltf = useGLTF("https://cdn.maximeheckel.com/models/spaceship-optimized.glb");
+
+        React.useEffect(() => {
+            if (gltf) {
+                function alphaFix(material) {
+                    material.transparent = true;
+                    material.alphaToCoverage = true;
+                    material.depthFunc = THREE.LessEqualDepth;
+                    material.depthTest = true;
+                    material.depthWrite = true;
+                }
+                alphaFix(gltf.materials.spaceship_racer);
+                alphaFix(gltf.materials.cockpit);
+            }
+        }, [gltf]);
+
+        return React.createElement('group', { rotation: [Math.PI * 0.05, Math.PI * 0.4, 0] },
+            React.createElement('group', {
+                scale: 0.005,
+                rotation: [0, -Math.PI * 0.5, 0],
+                position: [1.583, 0, -3.725]
+            },
+                React.createElement('mesh', {
+                    castShadow: true,
+                    receiveShadow: true,
+                    geometry: gltf.nodes.Cube001_spaceship_racer_0.geometry,
+                    material: gltf.materials.spaceship_racer,
+                    position: [739.26, -64.81, 64.77]
+                }),
+                React.createElement('mesh', {
+                    castShadow: true,
+                    receiveShadow: true,
+                    geometry: gltf.nodes.Cube005_cockpit_0.geometry,
+                    material: gltf.materials.spaceship_racer,
+                    position: [739.26, 0, 0]
+                })
+            ),
+            React.createElement('directionalLight', {
+                position: [5, 10, 5.95],
+                intensity: 25.0
+            })
+        );
+    };
+
+    const Crochet = () => {
+        return React.createElement(React.Fragment, null,
+            React.createElement(OrthographicCamera, {
+                makeDefault: true,
+                position: [0, 0, 10],
+                zoom: 100,
+                near: 0.01,
+                far: 500
+            }),
+            React.createElement(Spaceship, null),
+            React.createElement(CrochetEffect, null)
+        );
+    };
+
+    const Scene = () => {
+        return React.createElement(React.Fragment, null,
+            React.createElement(Canvas, {
+                shadows: true,
+                dpr: [1, 1.5],
+                style: {
+                    width: '100%',
+                    height: '100vh',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0
+                }
+            },
+                React.createElement(Suspense, {
+                    fallback: null
+                },
+                    React.createElement('color', {
+                        attach: 'background',
+                        args: ['#74B7FF']
+                    }),
+                    React.createElement('ambientLight', {
+                        intensity: 0.5
+                    }),
+                    React.createElement('directionalLight', {
+                        position: [5, 10, -5],
+                        intensity: 10.0
+                    }),
+                    React.createElement(OrbitControls, null),
+                    React.createElement(Crochet, null)
+                )
+            ),
+            React.createElement(Leva, {
+                collapsed: true
+            })
+        );
+    };
+
+    // Initialize the app
+    const root = createRoot(document.getElementById('root'));
+    
+    // Remove loading text and render the scene
+    setTimeout(() => {
+        document.querySelector('.loading').style.display = 'none';
+        root.render(React.createElement(Scene));
+    }, 100);
+    </script>
+</body>
+</html>

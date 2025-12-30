@@ -22,24 +22,27 @@
       <!-- * Images loaded randomly from Picsum.photos -->
     </div>
 
-    <div class="book">
-      <div class="gap"></div>
-      <div class="pages">
-        <div class="page"></div>
-        <div class="page"></div>
-        <div class="page"></div>
-        <div class="page"></div>
-        <div class="page"></div>
-        <div class="page"></div>
-      </div>
-      <div class="flips">
-        <div class="flip flip1">
-          <div class="flip flip2">
-            <div class="flip flip3">
-              <div class="flip flip4">
-                <div class="flip flip5">
-                  <div class="flip flip6">
-                    <div class="flip flip7"></div>
+    <!-- wrap book in a 3D scene so we can rotate the whole object -->
+    <div class="scene">
+      <div class="book" id="book">
+        <div class="gap"></div>
+        <div class="pages">
+          <div class="page"></div>
+          <div class="page"></div>
+          <div class="page"></div>
+          <div class="page"></div>
+          <div class="page"></div>
+          <div class="page"></div>
+        </div>
+        <div class="flips">
+          <div class="flip flip1">
+            <div class="flip flip2">
+              <div class="flip flip3">
+                <div class="flip flip4">
+                  <div class="flip flip5">
+                    <div class="flip flip6">
+                      <div class="flip flip7"></div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -48,7 +51,99 @@
         </div>
       </div>
     </div>
+
   </div>
+
+  <!-- Pointer drag to rotate + light inertia -->
+  <script>
+    (function () {
+      const book = document.getElementById('book');
+      if (!book) return;
+
+      let dragging = false;
+      let lastX = 0, lastY = 0;
+      let rotX = -10, rotY = 0; // starting tilt (deg)
+      let vx = 0, vy = 0;
+      let raf = null;
+
+      const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+      const apply = () => {
+        book.style.transform = 'scale(1.2) rotateX(' + rotX + 'deg) rotateY(' + rotY + 'deg)';
+      };
+
+      const onPointerDown = (e) => {
+        dragging = true;
+        book.classList.add('dragging');
+        lastX = e.clientX;
+        lastY = e.clientY;
+        vx = vy = 0;
+        book.setPointerCapture?.(e.pointerId);
+      };
+
+      const onPointerMove = (e) => {
+        if (!dragging) return;
+        const dx = e.clientX - lastX;
+        const dy = e.clientY - lastY;
+        lastX = e.clientX;
+        lastY = e.clientY;
+
+        // update rotation (invert X so dragging up tilts book toward viewer)
+        rotY += dx * 0.2;
+        rotX += dy * 0.15;
+        rotX = clamp(rotX, -60, 60);
+        rotY = clamp(rotY, -60, 60);
+
+        // track velocity for inertia
+        vx = dx;
+        vy = dy;
+
+        apply();
+      };
+
+      const release = () => {
+        if (!dragging) return;
+        dragging = false;
+        book.classList.remove('dragging');
+
+        // simple inertia: decay velocity using RAF
+        let decay = 0.95;
+        const step = () => {
+          vx *= decay;
+          vy *= decay;
+          if (Math.abs(vx) < 0.1 && Math.abs(vy) < 0.1) {
+            cancelAnimationFrame(raf);
+            raf = null;
+            return;
+          }
+          rotY += vx * 0.2;
+          rotX += vy * 0.15;
+          rotX = clamp(rotX, -60, 60);
+          rotY = clamp(rotY, -60, 60);
+          apply();
+          raf = requestAnimationFrame(step);
+        };
+        if (!raf) raf = requestAnimationFrame(step);
+      };
+
+      // initial apply
+      apply();
+
+      book.addEventListener('pointerdown', onPointerDown);
+      window.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', release);
+      window.addEventListener('pointercancel', release);
+
+      // keyboard arrows rotate a bit
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') rotY = clamp(rotY - 5, -60, 60);
+        if (e.key === 'ArrowRight') rotY = clamp(rotY + 5, -60, 60);
+        if (e.key === 'ArrowUp') rotX = clamp(rotX - 5, -60, 60);
+        if (e.key === 'ArrowDown') rotX = clamp(rotX + 5, -60, 60);
+        apply();
+      });
+    })();
+  </script>
 
 </body>
 

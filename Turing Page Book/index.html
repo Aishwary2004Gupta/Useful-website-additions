@@ -50,6 +50,39 @@
     </div>
   </div>
 
+  <!-- Preload images and enable animations only when all images finished loading -->
+  <script>
+    (function(){
+      const urls = [
+        'https://picsum.photos/420/300?random=1',
+        'https://picsum.photos/420/300?random=2',
+        'https://picsum.photos/420/300?random=3',
+        'https://picsum.photos/420/300?random=4',
+        'https://picsum.photos/420/300?random=5'
+      ];
+      let loaded = 0;
+      const finishOne = () => {
+        loaded++;
+        if (loaded === urls.length) {
+          document.documentElement.classList.add('images-loaded');
+        }
+      };
+      urls.forEach(u => {
+        const img = new Image();
+        img.onload = finishOne;
+        img.onerror = finishOne; // don't block if one fails
+        img.src = u;
+      });
+      // In case of very fast cache hits, ensure we still enable animations shortly after.
+      setTimeout(() => {
+        if (!document.documentElement.classList.contains('images-loaded')) {
+          // if some images didn't call onload, still allow animations after 2s
+          // (this avoids locking the page indefinitely)
+          document.documentElement.classList.add('images-loaded');
+        }
+      }, 2000);
+    })();
+  </script>
 </body>
 
 </html>

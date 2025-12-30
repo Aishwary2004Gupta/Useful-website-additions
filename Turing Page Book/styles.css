@@ -1,4 +1,11 @@
 @import url("https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap");
+:root {
+  --img1: url("https://picsum.photos/420/300?random=1");
+  --img2: url("https://picsum.photos/420/300?random=2");
+  --img3: url("https://picsum.photos/420/300?random=3");
+  --img4: url("https://picsum.photos/420/300?random=4");
+  --img5: url("https://picsum.photos/420/300?random=5");
+}
 * {
   padding: 0;
   margin: 0 auto;
@@ -19,46 +26,27 @@ body {
   animation: preLoad 1s steps(1);
   width: 1px;
   height: 1px;
+  /* visible until images ready */
+  display: block;
 }
-@-webkit-keyframes preLoad {
-  0% {
-    background-image: url("https://picsum.photos/420/300?random=1");
-  }
-  10% {
-    background-image: url("https://picsum.photos/420/300?random=2");
-  }
-  20% {
-    background-image: url("https://picsum.photos/420/300?random=3");
-  }
-  30% {
-    background-image: url("https://picsum.photos/420/300?random=4");
-  }
-  40% {
-    background-image: url("https://picsum.photos/420/300?random=5");
-  }
-  100% {
-    display: none;
-  }
+.images-loaded .imgLoader {
+  display: none;
 }
-@keyframes preLoad {
-  0% {
-    background-image: url("https://picsum.photos/420/300?random=1");
-  }
-  10% {
-    background-image: url("https://picsum.photos/420/300?random=2");
-  }
-  20% {
-    background-image: url("https://picsum.photos/420/300?random=3");
-  }
-  30% {
-    background-image: url("https://picsum.photos/420/300?random=4");
-  }
-  40% {
-    background-image: url("https://picsum.photos/420/300?random=5");
-  }
-  100% {
-    display: none;
-  }
+
+/* Pause animations until images are loaded to avoid mid-load redraws */
+.book *, .page, .flip, .pages, .flips {
+  -webkit-animation-play-state: paused !important;
+  animation-play-state: paused !important;
+}
+.images-loaded .book *, .images-loaded .page, .images-loaded .flip, .images-loaded .pages, .images-loaded .flips {
+  -webkit-animation-play-state: running !important;
+  animation-play-state: running !important;
+}
+
+/* make background painting smoother */
+.page, .flip::after {
+  background-repeat: no-repeat;
+  will-change: transform, background-position;
 }
 
 .container {
@@ -145,39 +133,35 @@ body {
   background-size: 420px 300px;
   background-position: 100% -2px;
 }
+@-webkit-keyframes preLoad {
+  0% { background-image: var(--img1); }
+  10% { background-image: var(--img2); }
+  20% { background-image: var(--img3); }
+  30% { background-image: var(--img4); }
+  40% { background-image: var(--img5); }
+  100% { display: none; }
+}
+@keyframes preLoad {
+  0% { background-image: var(--img1); }
+  10% { background-image: var(--img2); }
+  20% { background-image: var(--img3); }
+  30% { background-image: var(--img4); }
+  40% { background-image: var(--img5); }
+  100% { display: none; }
+}
 @-webkit-keyframes nextPage {
-  0% {
-    background-image: url("https://picsum.photos/420/300?random=1");
-  }
-  20% {
-    background-image: url("https://picsum.photos/420/300?random=2");
-  }
-  40% {
-    background-image: url("https://picsum.photos/420/300?random=3");
-  }
-  60% {
-    background-image: url("https://picsum.photos/420/300?random=4");
-  }
-  80% {
-    background-image: url("https://picsum.photos/420/300?random=5");
-  }
+  0% { background-image: var(--img1); }
+  20% { background-image: var(--img2); }
+  40% { background-image: var(--img3); }
+  60% { background-image: var(--img4); }
+  80% { background-image: var(--img5); }
 }
 @keyframes nextPage {
-  0% {
-    background-image: url("https://picsum.photos/420/300?random=1");
-  }
-  20% {
-    background-image: url("https://picsum.photos/420/300?random=2");
-  }
-  40% {
-    background-image: url("https://picsum.photos/420/300?random=3");
-  }
-  60% {
-    background-image: url("https://picsum.photos/420/300?random=4");
-  }
-  80% {
-    background-image: url("https://picsum.photos/420/300?random=5");
-  }
+  0% { background-image: var(--img1); }
+  20% { background-image: var(--img2); }
+  40% { background-image: var(--img3); }
+  60% { background-image: var(--img4); }
+  80% { background-image: var(--img5); }
 }
 
 .gap {
@@ -320,109 +304,28 @@ body {
 }
 
 @-webkit-keyframes nextFlip1 {
-  0% {
-    background-image: url("https://picsum.photos/420/300?random=1");
-    background-position: -178px -2px;
-    transform: rotateY(0deg);
-  }
-  10% {
-    background-image: url("https://picsum.photos/420/300?random=2");
-    background-position: -210px -2px;
-    transform: rotateY(180deg);
-  }
-  20% {
-    background-image: url("https://picsum.photos/420/300?random=2");
-    background-position: -178px -2px;
-    transform: rotateY(0deg);
-  }
-  30% {
-    background-image: url("https://picsum.photos/420/300?random=3");
-    background-position: -210px -2px;
-    transform: rotateY(180deg);
-  }
-  40% {
-    background-image: url("https://picsum.photos/420/300?random=3");
-    background-position: -178px -2px;
-    transform: rotateY(0deg);
-  }
-  50% {
-    background-image: url("https://picsum.photos/420/300?random=4");
-    background-position: -210px -2px;
-    transform: rotateY(180deg);
-  }
-  60% {
-    background-image: url("https://picsum.photos/420/300?random=4");
-    background-position: -178px -2px;
-    transform: rotateY(0deg);
-  }
-  70% {
-    background-image: url("https://picsum.photos/420/300?random=5");
-    background-position: -210px -2px;
-    transform: rotateY(180deg);
-  }
-  80% {
-    background-image: url("https://picsum.photos/420/300?random=5");
-    background-position: -178px -2px;
-    transform: rotateY(0deg);
-  }
-  90% {
-    background-image: url("https://picsum.photos/420/300?random=1");
-    background-position: -210px -2px;
-    transform: rotateY(180deg);
-  }
+  0% { background-image: var(--img1); background-position: -178px -2px; transform: rotateY(0deg); }
+  10% { background-image: var(--img2); background-position: -210px -2px; transform: rotateY(180deg); }
+  20% { background-image: var(--img2); background-position: -178px -2px; transform: rotateY(0deg); }
+  30% { background-image: var(--img3); background-position: -210px -2px; transform: rotateY(180deg); }
+  40% { background-image: var(--img3); background-position: -178px -2px; transform: rotateY(0deg); }
+  50% { background-image: var(--img4); background-position: -210px -2px; transform: rotateY(180deg); }
+  60% { background-image: var(--img4); background-position: -178px -2px; transform: rotateY(0deg); }
+  70% { background-image: var(--img5); background-position: -210px -2px; transform: rotateY(180deg); }
+  80% { background-image: var(--img5); background-position: -178px -2px; transform: rotateY(0deg); }
+  90% { background-image: var(--img1); background-position: -210px -2px; transform: rotateY(180deg); }
 }
-
 @keyframes nextFlip1 {
-  0% {
-    background-image: url("https://picsum.photos/420/300?random=1");
-    background-position: -178px -2px;
-    transform: rotateY(0deg);
-  }
-  10% {
-    background-image: url("https://picsum.photos/420/300?random=2");
-    background-position: -210px -2px;
-    transform: rotateY(180deg);
-  }
-  20% {
-    background-image: url("https://picsum.photos/420/300?random=2");
-    background-position: -178px -2px;
-    transform: rotateY(0deg);
-  }
-  30% {
-    background-image: url("https://picsum.photos/420/300?random=3");
-    background-position: -210px -2px;
-    transform: rotateY(180deg);
-  }
-  40% {
-    background-image: url("https://picsum.photos/420/300?random=3");
-    background-position: -178px -2px;
-    transform: rotateY(0deg);
-  }
-  50% {
-    background-image: url("https://picsum.photos/420/300?random=4");
-    background-position: -210px -2px;
-    transform: rotateY(180deg);
-  }
-  60% {
-    background-image: url("https://picsum.photos/420/300?random=4");
-    background-position: -178px -2px;
-    transform: rotateY(0deg);
-  }
-  70% {
-    background-image: url("https://picsum.photos/420/300?random=5");
-    background-position: -210px -2px;
-    transform: rotateY(180deg);
-  }
-  80% {
-    background-image: url("https://picsum.photos/420/300?random=5");
-    background-position: -178px -2px;
-    transform: rotateY(0deg);
-  }
-  90% {
-    background-image: url("https://picsum.photos/420/300?random=1");
-    background-position: -210px -2px;
-    transform: rotateY(180deg);
-  }
+  0% { background-image: var(--img1); background-position: -178px -2px; transform: rotateY(0deg); }
+  10% { background-image: var(--img2); background-position: -210px -2px; transform: rotateY(180deg); }
+  20% { background-image: var(--img2); background-position: -178px -2px; transform: rotateY(0deg); }
+  30% { background-image: var(--img3); background-position: -210px -2px; transform: rotateY(180deg); }
+  40% { background-image: var(--img3); background-position: -178px -2px; transform: rotateY(0deg); }
+  50% { background-image: var(--img4); background-position: -210px -2px; transform: rotateY(180deg); }
+  60% { background-image: var(--img4); background-position: -178px -2px; transform: rotateY(0deg); }
+  70% { background-image: var(--img5); background-position: -210px -2px; transform: rotateY(180deg); }
+  80% { background-image: var(--img5); background-position: -178px -2px; transform: rotateY(0deg); }
+  90% { background-image: var(--img1); background-position: -210px -2px; transform: rotateY(180deg); }
 }
 @-webkit-keyframes nextFlip2 {
   0% {

@@ -87,12 +87,30 @@ body {
   text-align: left;
 }
 
+.scene {
+  /* perspective moved to the scene so rotating the book feels natural */
+  perspective: 1200px;
+  perspective-origin: 50% 40%;
+  display: inline-block;
+  width: 420px;
+  height: 420px;
+}
+
 .book {
   position: relative;
-  perspective: 630px;
-  perspective-origin: center 50px;
-  transform: scale(1.2);
+  transform-style: preserve-3d;
+  transform-origin: center center;
+  /* keep the scale used previously */
+  /* scale is preserved and combined with rotation in JS */
+  transition: transform 220ms ease;
+  will-change: transform;
+  cursor: grab;
   filter: drop-shadow(0px 10px 5px rgba(0, 0, 0, 0.25));
+}
+.book.dragging {
+  transition: none;
+  cursor: grabbing;
+  /* minor smoothing while dragging handled by JS */
 }
 
 .page {

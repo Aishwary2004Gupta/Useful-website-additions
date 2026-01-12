@@ -40,13 +40,14 @@ footer {
 }
 
 button {
-  padding: .4rem .9rem;
+  padding: 0.4rem 0.9rem;
   border-radius: 18px;
   border: 2px solid #fef4b8;
   background: transparent;
   color: #fef4b8;
   cursor: pointer;
-  transition: background-color 220ms ease, color 220ms ease, border-color 220ms ease, transform 120ms ease;
+  transition: background-color 220ms ease, color 220ms ease,
+    border-color 220ms ease, transform 120ms ease;
 }
 
 button:hover,

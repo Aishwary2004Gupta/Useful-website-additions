@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ctx.font = `bold ${fontSize}px Test Söhne, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("softhorizon", bgCanvas.width / 2, bgCanvas.height / 2);
+    ctx.fillText("Aishwary", bgCanvas.width / 2, bgCanvas.height / 2);
   }
   drawBackground();
 

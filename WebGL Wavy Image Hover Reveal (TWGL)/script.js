@@ -25,8 +25,8 @@ class Ting {
         x: 0,
         y: 0
       },
-      updatePosition: function(evt) {
-        var e = evt || window.event;
+      updatePosition: function(e) {
+        var e = event || window.event;
         this.x = e.clientX - this.origin.x;
         this.y = (e.clientY - this.origin.y) * -1;
       },

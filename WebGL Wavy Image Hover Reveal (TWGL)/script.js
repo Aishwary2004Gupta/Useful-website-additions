@@ -53,7 +53,7 @@ class Ting {
       {
         darkTexture: {
           src:
-            "https://images.unsplash.com/photo-1706064985163-773cb50cd78b?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            "https://plus.unsplash.com/premium_photo-1721475188278-9f1ff9201f74?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
         }
       },
       (err, textures, sources) => {

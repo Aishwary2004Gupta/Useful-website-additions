@@ -1,0 +1,22 @@
+body {
+  margin: 0;
+  overflow: hidden;
+  background: white;
+}
+
+.canvas-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100vh;
+}
+
+.canvas-inner {
+  perspective: 75px;
+}
+
+canvas {
+  width: 512px;
+  height: 512px;
+}

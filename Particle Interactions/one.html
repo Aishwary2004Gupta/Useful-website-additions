@@ -23,6 +23,15 @@
       const ctx = canvas.getContext("2d");
       let particles = [];
       const mouse = { x: null, y: null };
+      
+      // Store text info for shadow
+      let textInfo = {
+        text1: "Let's",
+        text2: "Connect 🙋🏻‍♂️",
+        fontSize: 80,
+        x: 0,
+        y: 0
+      };
 
       // Set canvas size
       function initCanvas() {
@@ -38,23 +47,26 @@
         tempCanvas.width = canvas.width;
         tempCanvas.height = canvas.height;
 
-        // Text styling
-        const fontSize = Math.min(window.innerWidth / 15, 80);
-        tempCtx.font = `bold ${fontSize}px Times-New-Roman`;
+        // BIGGER Text styling - increased from /15 to /8 and min from 80 to 150
+        const fontSize = Math.min(window.innerWidth / 6, 180);
+        textInfo.fontSize = fontSize;
+        
+        tempCtx.font = `bold ${fontSize}px "Arial Black", Arial, sans-serif`;
         tempCtx.fillStyle = "white";
         tempCtx.textBaseline = "middle";
         tempCtx.textAlign = "center";
 
         // Calculate positions
-        const text1 = "Let's";
-        const text2 = "Connect 🙋🏻‍♂️";
-
         const x = canvas.width / 2;
         const y = canvas.height / 2;
+        
+        // Store for shadow drawing
+        textInfo.x = x;
+        textInfo.y = y;
 
         // Draw text
-        tempCtx.fillText(text1, x, y - fontSize);
-        tempCtx.fillText(text2, x, y + fontSize);
+        tempCtx.fillText(textInfo.text1, x, y - fontSize * 0.7);
+        tempCtx.fillText(textInfo.text2, x, y + fontSize * 0.7);
 
         // Create particles from text pixels
         const imageData = tempCtx.getImageData(
@@ -65,20 +77,23 @@
         );
         const data = imageData.data;
         particles = [];
-        for (let y = 0; y < tempCanvas.height; y += 2) {
-          // Reduced spacing for more density
-          for (let x = 0; x < tempCanvas.width; x += 2) {
+        
+        // Adjust spacing based on font size for consistent density
+        const spacing = Math.max(2, Math.floor(fontSize / 50));
+        
+        for (let y = 0; y < tempCanvas.height; y += spacing) {
+          for (let x = 0; x < tempCanvas.width; x += spacing) {
             const index = (y * tempCanvas.width + x) * 4;
             if (data[index + 3] > 128) {
               particles.push({
-                x: Math.random() * canvas.width, // Reduced initial spread
+                x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height,
                 originX: x,
                 originY: y,
-                size: 0.7, // Increased particle size //Math.random() * 2
+                size: Math.max(1, spacing / 2), // Scale particle size with spacing
                 vx: 0,
                 vy: 0,
-                friction: Math.random() * 0.01 + 0.95, // Increased friction for more stability
+                friction: Math.random() * 0.01 + 0.95,
                 ease: Math.random() * 0.1 + 0.02,
               });
             }
@@ -86,9 +101,40 @@
         }
       }
 
+      // Draw the shadow/ghost text behind particles
+      function drawShadowText() {
+        const fontSize = textInfo.fontSize;
+        const x = textInfo.x;
+        const y = textInfo.y;
+        
+        ctx.save();
+        
+        // Shadow text styling - subtle but readable
+        ctx.font = `bold ${fontSize}px "Arial Black", Arial, sans-serif`;
+        ctx.textBaseline = "middle";
+        ctx.textAlign = "center";
+        
+        // Option 1: Solid dark shadow with slight transparency
+        ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
+        ctx.fillText(textInfo.text1, x, y - fontSize * 0.7);
+        ctx.fillText(textInfo.text2, x, y + fontSize * 0.7);
+        
+        // Option 2: Add stroke/outline for better visibility
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+        ctx.lineWidth = 1;
+        ctx.strokeText(textInfo.text1, x, y - fontSize * 0.7);
+        ctx.strokeText(textInfo.text2, x, y + fontSize * 0.7);
+        
+        ctx.restore();
+      }
+
       function animate() {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.8)"; // Darker background for better contrast
+        // Clear with dark background
+        ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw shadow text FIRST (behind particles)
+        drawShadowText();
 
         particles.forEach((particle) => {
           // Mouse interaction
@@ -96,11 +142,14 @@
           const dy = mouse.y - particle.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
 
-          if (distance < 120) {
-            const force = (120 - distance) / 120;
+          // Increased interaction radius for bigger text
+          const interactionRadius = 150;
+          
+          if (distance < interactionRadius) {
+            const force = (interactionRadius - distance) / interactionRadius;
             const angle = Math.atan2(dy, dx);
-            particle.vx -= Math.cos(angle) * force * 5;
-            particle.vy -= Math.sin(angle) * force * 5;
+            particle.vx -= Math.cos(angle) * force * 6;
+            particle.vy -= Math.sin(angle) * force * 6;
           }
 
           // Return to position
@@ -117,10 +166,13 @@
           particle.x += particle.vx;
           particle.y += particle.vy;
 
-          // Draw particle
+          // Draw particle with glow effect
           ctx.beginPath();
           ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(1, 1 - dist / 100)})`;
+          
+          // Brighter particles
+          const alpha = Math.min(1, 1 - dist / 150);
+          ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
           ctx.fill();
         });
 
@@ -131,6 +183,12 @@
       window.addEventListener("mousemove", (e) => {
         mouse.x = e.clientX;
         mouse.y = e.clientY;
+      });
+      
+      // Touch support
+      window.addEventListener("touchmove", (e) => {
+        mouse.x = e.touches[0].clientX;
+        mouse.y = e.touches[0].clientY;
       });
 
       window.addEventListener("resize", () => {

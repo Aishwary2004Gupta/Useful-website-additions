@@ -1,5 +1,5 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.module.js";
-import { Pane } from "https://cdn.skypack.dev/tweakpane@4.0.4";
+import { Pane } from "https://esm.sh/tweakpane@4.0.4";
 
 const style = document.createElement('style');
 style.innerHTML = `

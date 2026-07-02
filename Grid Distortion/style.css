@@ -1,22 +1,30 @@
 html,
-      body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        overflow: hidden;
-        background: #111;
-      }
-      .distortion-container {
-        width: 100%;
-        height: 100%;
-        position: relative;
-      }
-      canvas {
-        display: block;
-      }
-      .tp-dfwv {
-        position: absolute !important;
-        top: 10px;
-        left: 10px;
-        z-index: 10;
-      }
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #111;
+}
+.distortion-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+canvas {
+  display: block;
+}
+.tp-dfwv {
+  position: absolute !important;
+  top: 10px;
+  left: 10px;
+  z-index: 10;
+}
+
+@media (max-width: 600px) {
+  .tp-dfwv {
+    transform: scale(0.8);
+    right: 10px !important;
+    top: 10px !important;
+  }
+}

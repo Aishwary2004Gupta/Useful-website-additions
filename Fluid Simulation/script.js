@@ -1,11 +1,11 @@
 // script.js
 
-import {
-  simulationVertexShader,
-  simulationFragmentShader,
-  renderVertexShader,
-  renderFragmentShader,
-} from "./shaders.js";
+// import {
+//   simulationVertexShader,
+//   simulationFragmentShader,
+//   renderVertexShader,
+//   renderFragmentShader,
+// } from "./shaders.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   // Basic three.js setup

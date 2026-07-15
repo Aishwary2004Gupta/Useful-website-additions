@@ -66,14 +66,6 @@ void main() {
             pressure += 2.0 * (1.0 - dist / 0.02);  // Increased intensity
         }
     }
-
-    if (resetProgress > 0.0) {
-      float rp = clamp(resetProgress, 0.0, 1.0);
-      pressure = mix(pressure, 0.0, rp);
-      vel = mix(vel, 0.0, rp);
-      pressure *= (1.0 - 0.5 * rp);
-      vel *= (1.0 - 0.5 * rp);
-    }
     
     gl_FragColor = vec4(pressure, pVel, 
         (p_right - p_left) / 2.0, 

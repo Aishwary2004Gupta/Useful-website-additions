@@ -1,4 +1,4 @@
-Note: shader variable/ uniform names are case-sensitive and must match the JS side.
+// Note: shader variable/ uniform names are case-sensitive and must match the JS side.
 
 export const simulationVertexShader = `
 varying vec2 vUv;

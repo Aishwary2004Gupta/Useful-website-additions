@@ -22,6 +22,7 @@ uniform vec2 resolution;
 uniform float time;
 uniform int frame;
 varying vec2 vUv;
+// uniform float resetProgress; // NEW: 0..1, when >0 damps the sim toward calm
 
 const float delta = 1.4;  
 
@@ -64,6 +65,14 @@ void main() {
         if(dist <= 0.02) {  // Smaller radius for more precise ripples
             pressure += 2.0 * (1.0 - dist / 0.02);  // Increased intensity
         }
+    }
+
+    if (resetProgress > 0.0) {
+      float rp = clamp(resetProgress, 0.0, 1.0);
+      pressure = mix(pressure, 0.0, rp);
+      vel = mix(vel, 0.0, rp);
+      pressure *= (1.0 - 0.5 * rp);
+      vel *= (1.0 - 0.5 * rp);
     }
     
     gl_FragColor = vec4(pressure, pVel, 

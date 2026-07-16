@@ -21,8 +21,8 @@ import {
 // uniform vec2 resolution;
 // uniform float time;
 // uniform int frame;
-// uniform float uMouseActive;
 // varying vec2 vUv;
+// // uniform float resetProgress; // NEW: 0..1, when >0 damps the sim toward calm
 
 // const float delta = 1.4;  
 
@@ -55,14 +55,15 @@ import {
 //     pressure += delta * pVel;
     
 //     pVel -= 0.005 * delta * pressure;
+    
 //     pVel *= 1.0 - 0.002 * delta;
 //     pressure *= 0.999;
     
 //     vec2 mouseUV = mouse / resolution;
-//     if(mouse.x > 0.0 && uMouseActive > 0.0) {
+//     if(mouse.x > 0.0) {
 //         float dist = distance(uv, mouseUV);
-//         if(dist <= 0.02) {  // Size of the ripple
-//             pressure += uMouseActive * 2.5 * (1.0 - dist / 0.02);  // Dynamic ripple intensity
+//         if(dist <= 0.02) {  // Smaller radius for more precise ripples
+//             pressure += 2.0 * (1.0 - dist / 0.02);  // Increased intensity
 //         }
 //     }
     
@@ -127,9 +128,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let rtB = new THREE.WebGLRenderTarget(res.x, res.y, options);
 
   // mouse state
-  const mouse = new THREE.Vector2(-1000, -1000);
-  const mousePrev = new THREE.Vector2(-1000, -1000);
-  let mouseActive = 0.0; // dynamic multiplier based on movement/clicks
+  const mouse = new THREE.Vector2(-1, -1);
+  const mousePrev = new THREE.Vector2(-1, -1);
 
   // Create a canvas texture as the background (text)
   const bgCanvas = document.createElement("canvas");
@@ -154,6 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
   bgTexture.magFilter = THREE.LinearFilter;
   bgTexture.format = THREE.RGBAFormat;
   bgTexture.needsUpdate = true;
+  // ensure edge sampling doesn't wrap (safe sampling when we offset UVs)
   bgTexture.wrapS = THREE.ClampToEdgeWrapping;
   bgTexture.wrapT = THREE.ClampToEdgeWrapping;
 
@@ -165,7 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
     mousePrev: { value: mousePrev },
     time: { value: 0.0 },
     frame: { value: 0 },
-    uMouseActive: { value: 0.0 }
+    resetProgress: { value: 0.0 }, // NEW: drives smooth reset in the shader
   };
 
   const simMaterial = new THREE.ShaderMaterial({
@@ -192,6 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const plane = new THREE.PlaneGeometry(2, 2);
   const simQuad = new THREE.Mesh(plane, simMaterial);
   const renderQuad = new THREE.Mesh(plane, renderMaterial);
+  // avoid any depth interactions and ensure they always render full screen
   simQuad.frustumCulled = false;
   renderQuad.frustumCulled = false;
   simMaterial.depthTest = false;
@@ -199,70 +201,66 @@ document.addEventListener("DOMContentLoaded", () => {
   simScene.add(simQuad);
   scene.add(renderQuad);
 
-  // Clear render target to empty state
+  // initialize render target with zero texture to avoid NaNs
   function clearRenderTarget(rt) {
     const old = renderer.getRenderTarget();
     renderer.setRenderTarget(rt);
-    renderer.setClearColor(new THREE.Color(0, 0, 0), 0.0);
+    // set a clean clear color and clear
+    renderer.setClearColor(new THREE.Color(0, 0, 0), 1.0);
     renderer.clear(true, true, true);
     renderer.setRenderTarget(old);
   }
   clearRenderTarget(rtA);
   clearRenderTarget(rtB);
 
-  // Helper function to update coordinates
-  function updateMouseCoords(clientX, clientY) {
+  // mouse events (normalized to pixels)
+  window.addEventListener("mousemove", (e) => {
     const dpr = window.devicePixelRatio || 1;
-    mousePrev.copy(mouse);
-    mouse.x = clientX * dpr;
-    mouse.y = (window.innerHeight - clientY) * dpr;
-  }
+    mousePrev.x = mouse.x; mousePrev.y = mouse.y;
+    mouse.x = e.clientX * dpr;
+    // flip Y so shader coords match canvas texel orientation
+    mouse.y = (window.innerHeight - e.clientY) * dpr;
+  });
 
-  // Pointer Move (Works on movement without needing left-click down)
-  window.addEventListener("pointermove", (e) => {
-    const dpr = window.devicePixelRatio || 1;
-    const currentX = e.clientX * dpr;
-    const currentY = (window.innerHeight - e.clientY) * dpr;
-    
-    let speed = 0;
-    if (mouse.x > 0.0) {
-      speed = Math.hypot(currentX - mouse.x, currentY - mouse.y);
+  // add touch support
+  function handleTouch(e) {
+    if (e.touches && e.touches.length > 0) {
+      const t = e.touches[0];
+      const dpr = window.devicePixelRatio || 1;
+      mousePrev.x = mouse.x; mousePrev.y = mouse.y;
+      mouse.x = t.clientX * dpr;
+      mouse.y = (window.innerHeight - t.clientY) * dpr;
     }
-    
-    updateMouseCoords(e.clientX, e.clientY);
-    
-    // Scale up intensity smoothly based on movement speed
-    mouseActive = Math.min(1.5, mouseActive + speed * 0.01 + 0.08);
+  }
+  window.addEventListener("touchstart", handleTouch, { passive: true });
+  window.addEventListener("touchmove", handleTouch, { passive: true });
+  window.addEventListener("mouseleave", () => {
+    mouse.set(-1, -1);
+    mousePrev.set(-1, -1);
+  });
+  window.addEventListener("touchend", () => {
+    mouse.set(-1, -1);
+    mousePrev.set(-1, -1);
   });
 
-  // Pointer Down (Creates an instant ripple on Click or Tap)
-  window.addEventListener("pointerdown", (e) => {
-    // Ignore clicks on header & footer elements
-    if (e.target.closest('button') || e.target.closest('a')) return;
-    
-    updateMouseCoords(e.clientX, e.clientY);
-    mouseActive = 2.0; // Strong burst on click!
-  });
+  // hook up reset button (rename made in HTML)
+  const resetBtn = document.querySelector('button');
+  let resetting = false;
+  let resetStart = 0;
+  const resetTotal = 1200; // ms total for 0 -> 1 -> 0 triangular animation
 
-  // Reset pointer when leaving window
-  window.addEventListener("pointerleave", () => {
-    mouse.set(-1000, -1000);
-    mousePrev.set(-1000, -1000);
-    mouseActive = 0.0;
-  });
-
-  // Reset Shader Button Logic (Instantly clears simulation states)
-  const resetBtn = document.getElementById('reset-btn');
   resetBtn.addEventListener('click', () => {
-    clearRenderTarget(rtA);
-    clearRenderTarget(rtB);
-    simUniforms.frame.value = 0;
-    mouse.set(-1000, -1000);
-    mousePrev.set(-1000, -1000);
-    mouseActive = 0.0;
+    if (resetting) return;
+    // start resetting
+    resetting = true;
+    resetStart = performance.now();
+    resetBtn.disabled = true;
+    // ignore further mouse input during reset
+    mouse.set(-1, -1);
+    mousePrev.set(-1, -1);
   });
 
-  // Handle resizing
+  // handle resize
   function onResize() {
     const dpr = window.devicePixelRatio || 1;
     const w = Math.max(1, Math.floor(window.innerWidth * dpr));
@@ -270,57 +268,73 @@ document.addEventListener("DOMContentLoaded", () => {
     res.set(w, h);
 
     renderer.setSize(window.innerWidth, window.innerHeight);
+    // recreate RTs to match new size (dispose old)
     rtA.dispose(); rtB.dispose();
     rtA = new THREE.WebGLRenderTarget(res.x, res.y, options);
     rtB = new THREE.WebGLRenderTarget(res.x, res.y, options);
 
+    // keep uniforms pointing to the new textures & resolution
     simUniforms.resolution.value = res;
     simUniforms.textureA.value = rtA.texture;
+    simUniforms.resetProgress.value = simUniforms.resetProgress.value || 0.0;
     renderUniforms.resolution.value = res;
     renderUniforms.textureA.value = rtA.texture;
 
+    // redraw background canvas texture for new size
     bgCanvas.width = w; bgCanvas.height = h;
     drawBackground();
     bgTexture.needsUpdate = true;
 
+    // clear new RTs
     clearRenderTarget(rtA);
     clearRenderTarget(rtB);
   }
   window.addEventListener("resize", onResize);
 
-  // Animation Loop
+  // animation
   let frame = 0;
   function step() {
     const now = performance.now();
     simUniforms.time.value = now / 1000;
     simUniforms.frame.value = frame++;
 
-    // Decay the mouse activity smoothly over frames so ripple trail fades naturally
-    mouseActive *= 0.93;
-    if (mouseActive < 0.01) mouseActive = 0.0;
-    simUniforms.uMouseActive.value = mouseActive;
+    // If resetting, compute triangular smooth progress (0 -> 1 -> 0) using sin(pi * t)
+    if (resetting) {
+      const t = (now - resetStart) / resetTotal;
+      if (t >= 1.0) {
+        // finished
+        simUniforms.resetProgress.value = 0.0;
+        resetting = false;
+        resetBtn.disabled = false;
+      } else {
+        // sin(pi * t) goes 0 -> 1 -> 0 as t goes 0..1 (peak at t=0.5)
+        simUniforms.resetProgress.value = Math.sin(Math.PI * Math.min(1.0, Math.max(0.0, t)));
+      }
+    }
 
+    // feed previous state
     simUniforms.textureA.value = rtA.texture;
     simUniforms.mouse.value = mouse;
     simUniforms.mousePrev.value = mousePrev;
 
-    // Simulation pass (into rtB)
+    // simulation pass: render simScene into rtB
     renderer.setRenderTarget(rtB);
     renderer.clear();
     renderer.render(simScene, camera);
 
-    // Final render pass (to screen)
+    // render pass: use rtB as the sim texture to shade the visible scene
     renderUniforms.textureA.value = rtB.texture;
     renderUniforms.textureB.value = bgTexture;
     renderer.setRenderTarget(null);
     renderer.clear();
     renderer.render(scene, camera);
 
-    // Swap targets
+    // swap RTs
     const tmp = rtA; rtA = rtB; rtB = tmp;
 
     requestAnimationFrame(step);
   }
 
+  // start
   requestAnimationFrame(step);
 });

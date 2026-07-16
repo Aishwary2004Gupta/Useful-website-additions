@@ -3,14 +3,15 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Fluid Ripple Shader</title>
+    <title>Fluid Ripple</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <nav>
       <div class="logo"><p>Fluid Simulation</p></div>
       <div class="nav-items">
-        <button id="reset-btn"><b>Reset Shader</b></button>
+        <!-- <p>Product</p><p>Product</p><p>Product</p> -->
+        <button><b>Reset Shader</b></button>
       </div>
     </nav>
 
@@ -29,8 +30,10 @@
       </div>
     </footer>
 
-    <!-- THREE r128 (global THREE) -->
+    <!-- THREE r128 (module not required, we use the global) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script type="module" src="script.js"></script>
   </body>
 </html>
+
+<!-- make sure that it also make the wave whn clicked and moved not with houlding the left click and moving -->

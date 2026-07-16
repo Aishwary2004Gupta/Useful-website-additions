@@ -1,12 +1,3 @@
-// script.js
-
-// import {
-//   simulationVertexShader,
-//   simulationFragmentShader,
-//   renderVertexShader,
-//   renderFragmentShader,
-// } from "./shaders.js";
-
 const simulationVertexShader = `
 varying vec2 vUv;
 void main() {

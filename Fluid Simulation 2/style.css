@@ -28,11 +28,11 @@ footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  pointer-events: none; /* Let pointer events fall through to the canvas */
+  pointer-events: none; /* Passes events to canvas */
 }
 
 nav *, footer * {
-  pointer-events: auto; /* Re-enable pointer events for controls */
+  pointer-events: auto; /* Activates control panels */
 }
 
 nav {
@@ -52,11 +52,9 @@ button {
   cursor: pointer;
   transition: background-color 220ms ease, color 220ms ease,
     border-color 220ms ease, transform 120ms ease;
-}
-
-button a {
-  color: inherit;
-  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 button:hover,
@@ -69,6 +67,12 @@ button:focus {
 
 button:active {
   transform: translateY(1.5px) scale(0.96);
+}
+
+/* Ensure link covers entire button bounds */
+footer a {
+  display: inline-flex;
+  outline: none;
 }
 
 canvas {

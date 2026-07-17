@@ -4,7 +4,7 @@ void main() {
     vUv = uv;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }
-`
+`;
 
 const simulationFragmentShader = `
 uniform sampler2D textureA;
@@ -13,6 +13,8 @@ uniform vec2 resolution;
 uniform float time;
 uniform int frame;
 uniform float uMouseActive;
+uniform float resetProgress;     // Goes from 0.0 -> 1.0 during reset
+uniform float backtrackIntensity; // Controls the physics reversal delay
 varying vec2 vUv;
 
 const float delta = 1.4;  
@@ -39,21 +41,33 @@ void main() {
     if (uv.y <= texelSize.y) p_down = p_up;
     if (uv.y >= 1.0 - texelSize.y) p_up = p_down;
     
-    // Enhanced wave equation matching ShaderToy
+    // Wave equation propagation
     pVel += delta * (-2.0 * pressure + p_right + p_left) / 4.0;
     pVel += delta * (-2.0 * pressure + p_up + p_down) / 4.0;
     
     pressure += delta * pVel;
     
     pVel -= 0.005 * delta * pressure;
-    pVel *= 1.0 - 0.002 * delta;
-    pressure *= 0.999;
+    
+    // BACKTRACKING DELAY:
+    // When backtrackIntensity is active, we reverse the velocity direction (negative feedback)
+    // to pull current waves backward like an elastic band before dissolving them.
+    pVel = mix(pVel, -pVel * 0.6, backtrackIntensity);
+    
+    // SMOOTH DISSOLUTION:
+    // Progressive dampening scales as resetProgress peaks
+    float currentDampening = mix(0.002, 0.2, resetProgress);
+    float pressureDecay = mix(0.999, 0.8, resetProgress);
+    
+    pVel *= 1.0 - currentDampening * delta;
+    pressure *= pressureDecay;
     
     vec2 mouseUV = mouse / resolution;
     if(mouse.x > 0.0 && uMouseActive > 0.0) {
         float dist = distance(uv, mouseUV);
-        if(dist <= 0.02) {  // Size of the ripple
-            pressure += uMouseActive * 2.5 * (1.0 - dist / 0.02);  // Dynamic ripple intensity
+        if(dist <= 0.02) {  
+            // Completely block user input during reset transitions
+            pressure += uMouseActive * 2.5 * (1.0 - dist / 0.02) * (1.0 - resetProgress);
         }
     }
     
@@ -61,7 +75,7 @@ void main() {
         (p_right - p_left) / 2.0, 
         (p_up - p_down) / 2.0);
 }
-`
+`;
 
 const renderVertexShader = `
 varying vec2 vUv;
@@ -69,7 +83,7 @@ void main() {
     vUv = uv;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }
-`
+`;
 
 const renderFragmentShader = `
 uniform sampler2D textureA;
@@ -88,10 +102,9 @@ void main() {
     
     gl_FragColor = color + vec4(specular);
 }
-`
+`;
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Basic three.js setup
   const scene = new THREE.Scene();
   const simScene = new THREE.Scene();
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -101,10 +114,8 @@ document.addEventListener("DOMContentLoaded", () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
-  // resolution in pixels (for shaders)
   let res = new THREE.Vector2(window.innerWidth * window.devicePixelRatio, window.innerHeight * window.devicePixelRatio);
 
-  // create two render targets (ping-pong)
   const options = {
     format: THREE.RGBAFormat,
     type: (renderer.capabilities.isWebGL2 ? THREE.FloatType : THREE.UnsignedByteType),
@@ -117,12 +128,15 @@ document.addEventListener("DOMContentLoaded", () => {
   let rtA = new THREE.WebGLRenderTarget(res.x, res.y, options);
   let rtB = new THREE.WebGLRenderTarget(res.x, res.y, options);
 
-  // mouse state
   const mouse = new THREE.Vector2(-1000, -1000);
   const mousePrev = new THREE.Vector2(-1000, -1000);
-  let mouseActive = 0.0; // dynamic multiplier based on movement/clicks
+  let mouseActive = 0.0; 
 
-  // Create a canvas texture as the background (text)
+  // Reset Timing Controls
+  let isResetting = false;
+  let resetTimeStart = 0;
+  const resetDuration = 1100; // Longer duration to showcase both backtrack & smooth settle
+
   const bgCanvas = document.createElement("canvas");
   bgCanvas.width = res.x;
   bgCanvas.height = res.y;
@@ -148,7 +162,6 @@ document.addEventListener("DOMContentLoaded", () => {
   bgTexture.wrapS = THREE.ClampToEdgeWrapping;
   bgTexture.wrapT = THREE.ClampToEdgeWrapping;
 
-  // simulation material
   const simUniforms = {
     textureA: { value: rtA.texture },
     resolution: { value: res },
@@ -156,7 +169,9 @@ document.addEventListener("DOMContentLoaded", () => {
     mousePrev: { value: mousePrev },
     time: { value: 0.0 },
     frame: { value: 0 },
-    uMouseActive: { value: 0.0 }
+    uMouseActive: { value: 0.0 },
+    resetProgress: { value: 0.0 },
+    backtrackIntensity: { value: 0.0 }
   };
 
   const simMaterial = new THREE.ShaderMaterial({
@@ -165,7 +180,6 @@ document.addEventListener("DOMContentLoaded", () => {
     fragmentShader: simulationFragmentShader,
   });
 
-  // render material
   const renderUniforms = {
     textureA: { value: rtA.texture },
     textureB: { value: bgTexture },
@@ -179,7 +193,6 @@ document.addEventListener("DOMContentLoaded", () => {
     fragmentShader: renderFragmentShader,
   });
 
-  // full-screen quads
   const plane = new THREE.PlaneGeometry(2, 2);
   const simQuad = new THREE.Mesh(plane, simMaterial);
   const renderQuad = new THREE.Mesh(plane, renderMaterial);
@@ -190,7 +203,6 @@ document.addEventListener("DOMContentLoaded", () => {
   simScene.add(simQuad);
   scene.add(renderQuad);
 
-  // Clear render target to empty state
   function clearRenderTarget(rt) {
     const old = renderer.getRenderTarget();
     renderer.setRenderTarget(rt);
@@ -201,7 +213,6 @@ document.addEventListener("DOMContentLoaded", () => {
   clearRenderTarget(rtA);
   clearRenderTarget(rtB);
 
-  // Helper function to update coordinates
   function updateMouseCoords(clientX, clientY) {
     const dpr = window.devicePixelRatio || 1;
     mousePrev.copy(mouse);
@@ -209,8 +220,9 @@ document.addEventListener("DOMContentLoaded", () => {
     mouse.y = (window.innerHeight - clientY) * dpr;
   }
 
-  // Pointer Move (Works on movement without needing left-click down)
+  // Trails on hover
   window.addEventListener("pointermove", (e) => {
+    if (isResetting) return;
     const dpr = window.devicePixelRatio || 1;
     const currentX = e.clientX * dpr;
     const currentY = (window.innerHeight - e.clientY) * dpr;
@@ -221,39 +233,36 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     updateMouseCoords(e.clientX, e.clientY);
-    
-    // Scale up intensity smoothly based on movement speed
     mouseActive = Math.min(1.5, mouseActive + speed * 0.01 + 0.08);
   });
 
-  // Pointer Down (Creates an instant ripple on Click or Tap)
+  // Splash on click
   window.addEventListener("pointerdown", (e) => {
-    // Ignore clicks on header & footer elements
+    if (isResetting) return;
     if (e.target.closest('button') || e.target.closest('a')) return;
     
     updateMouseCoords(e.clientX, e.clientY);
-    mouseActive = 2.0; // Strong burst on click!
+    mouseActive = 2.0; 
   });
 
-  // Reset pointer when leaving window
   window.addEventListener("pointerleave", () => {
     mouse.set(-1000, -1000);
     mousePrev.set(-1000, -1000);
     mouseActive = 0.0;
   });
 
-  // Reset Shader Button Logic (Instantly clears simulation states)
+  // Backtracking Spring Reset Logic
   const resetBtn = document.getElementById('reset-btn');
   resetBtn.addEventListener('click', () => {
-    clearRenderTarget(rtA);
-    clearRenderTarget(rtB);
-    simUniforms.frame.value = 0;
+    if (isResetting) return;
+    isResetting = true;
+    resetTimeStart = performance.now();
+    
+    mouseActive = 0.0;
     mouse.set(-1000, -1000);
     mousePrev.set(-1000, -1000);
-    mouseActive = 0.0;
   });
 
-  // Handle resizing
   function onResize() {
     const dpr = window.devicePixelRatio || 1;
     const w = Math.max(1, Math.floor(window.innerWidth * dpr));
@@ -279,35 +288,66 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   window.addEventListener("resize", onResize);
 
-  // Animation Loop
   let frame = 0;
   function step() {
     const now = performance.now();
     simUniforms.time.value = now / 1000;
     simUniforms.frame.value = frame++;
 
-    // Decay the mouse activity smoothly over frames so ripple trail fades naturally
-    mouseActive *= 0.93;
-    if (mouseActive < 0.01) mouseActive = 0.0;
+    if (isResetting) {
+      const elapsed = now - resetTimeStart;
+      const progress = Math.min(1.0, elapsed / resetDuration);
+      
+      // PHASE 1: Backtrack Delay (0.0 -> 0.35 of cycle duration)
+      // Velocity pulls back in reverse direction
+      if (progress < 0.35) {
+        const backtrackProgress = progress / 0.35;
+        // Ease-in-out cubic for momentum reversal
+        simUniforms.backtrackIntensity.value = Math.sin(backtrackProgress * Math.PI);
+        simUniforms.resetProgress.value = backtrackProgress * 0.15;
+      } 
+      // PHASE 2: Ultimate smooth dampening settle (0.35 -> 1.0)
+      else {
+        const decayProgress = (progress - 0.35) / 0.65;
+        simUniforms.backtrackIntensity.value = 0.0;
+        // Bell curve shape settling back down to 0
+        simUniforms.resetProgress.value = Math.sin(decayProgress * Math.PI) * 0.9 + 0.1;
+      }
+
+      if (progress >= 1.0) {
+        isResetting = false;
+        simUniforms.resetProgress.value = 0.0;
+        simUniforms.backtrackIntensity.value = 0.0;
+        clearRenderTarget(rtA);
+        clearRenderTarget(rtB);
+      }
+    } else {
+      simUniforms.resetProgress.value = 0.0;
+      simUniforms.backtrackIntensity.value = 0.0;
+    }
+
+    if (!isResetting) {
+      mouseActive *= 0.93;
+      if (mouseActive < 0.01) mouseActive = 0.0;
+    }
     simUniforms.uMouseActive.value = mouseActive;
 
     simUniforms.textureA.value = rtA.texture;
     simUniforms.mouse.value = mouse;
     simUniforms.mousePrev.value = mousePrev;
 
-    // Simulation pass (into rtB)
+    // Simulation calculation pass
     renderer.setRenderTarget(rtB);
     renderer.clear();
     renderer.render(simScene, camera);
 
-    // Final render pass (to screen)
+    // Render texture pass
     renderUniforms.textureA.value = rtB.texture;
     renderUniforms.textureB.value = bgTexture;
     renderer.setRenderTarget(null);
     renderer.clear();
     renderer.render(scene, camera);
 
-    // Swap targets
     const tmp = rtA; rtA = rtB; rtB = tmp;
 
     requestAnimationFrame(step);

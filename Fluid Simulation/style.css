@@ -17,6 +17,7 @@ body {
   background: #0b0f1a;
   color: #fef4b8;
   overflow: hidden;
+  user-select: none;
 }
 
 nav,
@@ -29,6 +30,11 @@ footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
+    pointer-events: none; /* Let pointer events fall through to the canvas */
+}
+
+nav *, footer * {
+  pointer-events: auto; /* Re-enable pointer events for controls */
 }
 
 nav {
@@ -48,6 +54,12 @@ button {
   cursor: pointer;
   transition: background-color 220ms ease, color 220ms ease,
     border-color 220ms ease, transform 120ms ease;
+}
+
+
+button a {
+  color: inherit;
+  text-decoration: none;
 }
 
 button:hover,

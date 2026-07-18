@@ -244,8 +244,8 @@ document.addEventListener("DOMContentLoaded", () => {
     mouseActive = Math.min(
       1.5,
       mouseActive +
-        0.08 +
-        Math.min(distance * 0.01, 0.5)
+      0.08 +
+      Math.min(distance * 0.01, 0.5)
     );
   }
 
@@ -414,9 +414,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const idleTarget = resetting
       ? 1.0
       : clamp01(
-          (timeSincePointerMove - idleDelay) /
-            idleFadeDuration
-        );
+        (timeSincePointerMove - idleDelay) /
+        idleFadeDuration
+      );
 
     const idleBlend =
       1.0 -

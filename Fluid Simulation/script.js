@@ -139,6 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
       mousePrev.x = mouse.x; mousePrev.y = mouse.y;
       mouse.x = t.clientX * dpr;
       mouse.y = (window.innerHeight - t.clientY) * dpr;
+      lastMouseMove = performance.now();
     }
   }
   window.addEventListener("touchstart", handleTouch, { passive: true });

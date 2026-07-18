@@ -13,6 +13,7 @@ uniform vec2 resolution;
 uniform float time;
 uniform int frame;
 uniform float uMouseActive;
+uniform float resetProgress; // Smooth reset multiplier (0.0 to 1.0)
 varying vec2 vUv;
 
 const float delta = 1.4;  
@@ -49,11 +50,16 @@ void main() {
     pVel *= 1.0 - 0.002 * delta;
     pressure *= 0.999;
     
+    // Apply dynamic reset dampening (damps liquid energy smoothly to clear waves)
+    pVel *= (1.0 - resetProgress * 0.15);
+    pressure *= (1.0 - resetProgress * 0.15);
+    
     vec2 mouseUV = mouse / resolution;
     if(mouse.x > 0.0 && uMouseActive > 0.0) {
         float dist = distance(uv, mouseUV);
         if(dist <= 0.02) {  // Size of the ripple
-            pressure += uMouseActive * 2.5 * (1.0 - dist / 0.02);  // Dynamic ripple intensity
+            // Suppress input dynamically as reset progress peaks
+            pressure += uMouseActive * 2.5 * (1.0 - dist / 0.02) * (1.0 - resetProgress);
         }
     }
     
@@ -156,7 +162,8 @@ document.addEventListener("DOMContentLoaded", () => {
     mousePrev: { value: mousePrev },
     time: { value: 0.0 },
     frame: { value: 0 },
-    uMouseActive: { value: 0.0 }
+    uMouseActive: { value: 0.0 },
+    resetProgress: { value: 0.0 }, // Dynamic uniform to handle the smooth reset curve
   };
 
   const simMaterial = new THREE.ShaderMaterial({
@@ -211,6 +218,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Pointer Move (Works on movement without needing left-click down)
   window.addEventListener("pointermove", (e) => {
+    if (resetting) return;
     const dpr = window.devicePixelRatio || 1;
     const currentX = e.clientX * dpr;
     const currentY = (window.innerHeight - e.clientY) * dpr;
@@ -228,6 +236,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Pointer Down (Creates an instant ripple on Click or Tap)
   window.addEventListener("pointerdown", (e) => {
+    if (resetting) return;
     // Ignore clicks on header & footer elements
     if (e.target.closest('button') || e.target.closest('a')) return;
     
@@ -242,12 +251,20 @@ document.addEventListener("DOMContentLoaded", () => {
     mouseActive = 0.0;
   });
 
-  // Reset Shader Button Logic (Instantly clears simulation states)
+  // Smooth Reset States
   const resetBtn = document.getElementById('reset-btn');
+  let resetting = false;
+  let resetStart = 0;
+  const resetTotal = 1200; // ms total for smooth 0 -> 1 -> 0 wave decay curve
+
+  // Smooth Reset Button Logic
   resetBtn.addEventListener('click', () => {
-    clearRenderTarget(rtA);
-    clearRenderTarget(rtB);
-    simUniforms.frame.value = 0;
+    if (resetting) return;
+    resetting = true;
+    resetStart = performance.now();
+    resetBtn.disabled = true;
+
+    // Reset interaction tracking immediately
     mouse.set(-1000, -1000);
     mousePrev.set(-1000, -1000);
     mouseActive = 0.0;
@@ -267,6 +284,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     simUniforms.resolution.value = res;
     simUniforms.textureA.value = rtA.texture;
+    simUniforms.resetProgress.value = simUniforms.resetProgress.value || 0.0;
     renderUniforms.resolution.value = res;
     renderUniforms.textureA.value = rtA.texture;
 
@@ -286,9 +304,27 @@ document.addEventListener("DOMContentLoaded", () => {
     simUniforms.time.value = now / 1000;
     simUniforms.frame.value = frame++;
 
-    // Decay the mouse activity smoothly over frames so ripple trail fades naturally
-    mouseActive *= 0.93;
-    if (mouseActive < 0.01) mouseActive = 0.0;
+    // Compute smooth dampening progress (0 -> 1 -> 0)
+    if (resetting) {
+      const t = (now - resetStart) / resetTotal;
+      if (t >= 1.0) {
+        simUniforms.resetProgress.value = 0.0;
+        resetting = false;
+        resetBtn.disabled = false;
+        // Clean sweep targets to fully lock initial zero state
+        clearRenderTarget(rtA);
+        clearRenderTarget(rtB);
+      } else {
+        // sin(pi * t) goes 0 -> 1 -> 0 as t goes 0..1 (peak absorption at center)
+        simUniforms.resetProgress.value = Math.sin(Math.PI * Math.min(1.0, Math.max(0.0, t)));
+      }
+    }
+
+    if (!resetting) {
+      // Decay the mouse activity smoothly over frames so ripple trail fades naturally
+      mouseActive *= 0.93;
+      if (mouseActive < 0.01) mouseActive = 0.0;
+    }
     simUniforms.uMouseActive.value = mouseActive;
 
     simUniforms.textureA.value = rtA.texture;

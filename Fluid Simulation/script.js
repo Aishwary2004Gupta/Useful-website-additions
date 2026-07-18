@@ -122,14 +122,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // mouse events (normalized to pixels)
   window.addEventListener("mousemove", (e) => {
-  const dpr = window.devicePixelRatio || 1;
-
-  mousePrev.copy(mouse);
-  mouse.x = e.clientX * dpr;
-  mouse.y = (window.innerHeight - e.clientY) * dpr;
-
-  lastMouseMove = performance.now();
-});
+    const dpr = window.devicePixelRatio || 1;
+    mousePrev.x = mouse.x; mousePrev.y = mouse.y;
+    mouse.x = e.clientX * dpr;
+    // flip Y so shader coords match canvas texel orientation
+    mouse.y = (window.innerHeight - e.clientY) * dpr;
+  });
 
   // add touch support
   function handleTouch(e) {
@@ -139,7 +137,6 @@ document.addEventListener("DOMContentLoaded", () => {
       mousePrev.x = mouse.x; mousePrev.y = mouse.y;
       mouse.x = t.clientX * dpr;
       mouse.y = (window.innerHeight - t.clientY) * dpr;
-      lastMouseMove = performance.now();
     }
   }
   window.addEventListener("touchstart", handleTouch, { passive: true });
@@ -152,11 +149,6 @@ document.addEventListener("DOMContentLoaded", () => {
     mouse.set(-1, -1);
     mousePrev.set(-1, -1);
   });
-
-  let lastMouseMove = performance.now();
-let idleReset = 0;
-const idleDelay = 300;      // ms before settling starts
-const idleSpeed = 0.02;     // larger = settles faster
 
   // hook up reset button (rename made in HTML)
   const resetBtn = document.querySelector('button');

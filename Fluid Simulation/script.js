@@ -122,12 +122,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // mouse events (normalized to pixels)
   window.addEventListener("mousemove", (e) => {
-    const dpr = window.devicePixelRatio || 1;
-    mousePrev.x = mouse.x; mousePrev.y = mouse.y;
-    mouse.x = e.clientX * dpr;
-    // flip Y so shader coords match canvas texel orientation
-    mouse.y = (window.innerHeight - e.clientY) * dpr;
-  });
+  const dpr = window.devicePixelRatio || 1;
+
+  mousePrev.copy(mouse);
+  mouse.x = e.clientX * dpr;
+  mouse.y = (window.innerHeight - e.clientY) * dpr;
+
+  lastMouseMove = performance.now();
+});
 
   // add touch support
   function handleTouch(e) {

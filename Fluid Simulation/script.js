@@ -150,6 +150,11 @@ document.addEventListener("DOMContentLoaded", () => {
     mousePrev.set(-1, -1);
   });
 
+  let lastMouseMove = performance.now();
+let idleReset = 0;
+const idleDelay = 300;      // ms before settling starts
+const idleSpeed = 0.02;     // larger = settles faster
+
   // hook up reset button (rename made in HTML)
   const resetBtn = document.querySelector('button');
   let resetting = false;

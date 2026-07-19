@@ -6,6 +6,7 @@ body {
   align-items: center;
   background-color: #f0f0f0;
 }
+
 .input__container {
   position: relative;
   background: #f59b9b;
@@ -37,11 +38,9 @@ body {
   bottom: 0;
   z-index: -1;
   transform: translateZ(-50px);
-  background: linear-gradient(
-    45deg,
-    rgba(255, 107, 107, 0.4) 0%,
-    rgba(255, 107, 107, 0.1) 100%
-  );
+  background: linear-gradient(45deg,
+      rgba(255, 107, 107, 0.4) 0%,
+      rgba(255, 107, 107, 0.1) 100%);
   filter: blur(20px);
 }
 

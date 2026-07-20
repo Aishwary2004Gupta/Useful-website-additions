@@ -677,17 +677,8 @@
       Demo image. Replace IMAGE_SRC with your own .png/.jpg/.webp/.svg URL.
     */
       function createDemoImage() {
-        const svg = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600">
-          <rect width="600" height="600" fill="transparent"/>
-          <path fill="#111"
-            d="M300 55c44 85 103 126 190 145-66 57-97 119-100 205-45-72-104-107-190-128 66-54 99-116 100-222z"/>
-          <circle cx="300" cy="300" r="85" fill="#fff"/>
-        </svg>
-      `;
-
-        return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
-      }
+  return "https://cdn.prod.website-files.com/5e51c674258ffe10d286d30a/5e5357c17371bbccb99ecadf_peep-53.svg";
+}
 
       const logo = new DitheredLogo(
         document.getElementById("ditheredLogo"),

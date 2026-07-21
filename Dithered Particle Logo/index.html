@@ -1,47 +1,166 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dithered Particle Logo</title>
+    <title>Color Dithered Particle Image</title>
 
     <style>
       :root {
-        --particle-color: #111111;
-        --page-background: #f7f7f4;
+        color-scheme: light;
+
+        --page-background: #f5f6f8;
+        --page-glow: #ffffff;
+        --text-color: #12151a;
+        --muted-color: #6d7480;
+        --particle-color: #111318;
+
+        --surface: rgba(255, 255, 255, 0.8);
+        --surface-hover: #ffffff;
+        --border: rgba(18, 21, 26, 0.14);
+        --shadow: 0 12px 32px rgba(20, 24, 34, 0.1);
+        --active-background: #171b23;
+        --active-color: #ffffff;
+        --focus-ring: rgba(36, 99, 235, 0.45);
+      }
+
+      html[data-theme="dark"] {
+        color-scheme: dark;
+
+        --page-background: #090c11;
+        --page-glow: #171d29;
+        --text-color: #f4f6fa;
+        --muted-color: #a3acbb;
+        --particle-color: #f5f7fb;
+
+        --surface: rgba(24, 30, 42, 0.78);
+        --surface-hover: #212a3a;
+        --border: rgba(240, 245, 255, 0.14);
+        --shadow: 0 12px 38px rgba(0, 0, 0, 0.32);
+        --active-background: #edf2ff;
+        --active-color: #10141b;
+        --focus-ring: rgba(135, 170, 255, 0.58);
       }
 
       * {
         box-sizing: border-box;
       }
 
+      html,
+      body {
+        min-height: 100%;
+      }
+
       body {
         min-height: 100vh;
         margin: 0;
+        padding: 86px 20px 32px;
         display: grid;
         place-items: center;
-        overflow: hidden;
+        overflow-x: hidden;
+        color: var(--text-color);
         background: radial-gradient(
           circle at 50% 30%,
-          #ffffff 0%,
-          var(--page-background) 62%
+          var(--page-glow) 0%,
+          var(--page-background) 65%
         );
-        font-family: Arial, sans-serif;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        transition:
+          color 220ms ease,
+          background 220ms ease;
+      }
+
+      .theme-toggle {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 42px;
+        padding: 0 14px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        color: var(--text-color);
+        background: var(--surface);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(14px);
+        cursor: pointer;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 700;
+        transition:
+          transform 180ms ease,
+          background 180ms ease;
+      }
+
+      .theme-toggle:hover {
+        background: var(--surface-hover);
+        transform: translateY(-1px);
+      }
+
+      .theme-icon {
+        width: 17px;
+        text-align: center;
+        font-size: 16px;
       }
 
       .demo {
+        width: min(100%, 780px);
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 24px;
+        text-align: center;
       }
 
-      /* Equivalent to: relative h-60 w-60 text-black */
+      .eyebrow {
+        margin: 0 0 10px;
+        color: var(--muted-color);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(28px, 4vw, 42px);
+        letter-spacing: -0.055em;
+      }
+
+      .description {
+        max-width: 450px;
+        margin: 14px 0 24px;
+        color: var(--muted-color);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
       .dithered-logo {
         position: relative;
-        width: 420px;
-        height: 420px;
+        isolation: isolate;
+        width: clamp(300px, 48vw, 500px);
+        aspect-ratio: 1;
         color: var(--particle-color);
+      }
+
+      .dithered-logo::before {
+        position: absolute;
+        z-index: -1;
+        inset: 10%;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(89, 125, 232, 0.15) 0%,
+          transparent 70%
+        );
+        filter: blur(28px);
+        content: "";
+        pointer-events: none;
       }
 
       .dithered-logo canvas {
@@ -50,76 +169,215 @@
         display: block;
         width: 100%;
         height: 100%;
+        cursor: crosshair;
         touch-action: none;
-        cursor: pointer;
       }
 
       .controls {
         display: flex;
+        flex-wrap: wrap;
         align-items: center;
+        justify-content: center;
         gap: 10px;
-        color: #333;
-        font-size: 14px;
+        margin-top: 12px;
       }
 
-      .controls label {
-        padding: 10px 14px;
-        border: 1px solid #d5d5d5;
-        border-radius: 8px;
-        background: white;
+      .upload-button,
+      .mode-toggle {
+        min-height: 42px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(14px);
+      }
+
+      .upload-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 15px;
+        border-radius: 10px;
+        color: var(--text-color);
         cursor: pointer;
+        font-size: 13px;
+        font-weight: 700;
+        transition:
+          transform 180ms ease,
+          background 180ms ease;
       }
 
-      .controls input {
+      .upload-button:hover {
+        background: var(--surface-hover);
+        transform: translateY(-1px);
+      }
+
+      .upload-button input {
         display: none;
       }
 
+      .mode-toggle {
+        display: inline-flex;
+        padding: 3px;
+        border-radius: 10px;
+      }
+
+      .mode-button {
+        min-height: 34px;
+        padding: 0 12px;
+        border: 0;
+        border-radius: 7px;
+        color: var(--muted-color);
+        background: transparent;
+        cursor: pointer;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 750;
+        transition:
+          color 180ms ease,
+          background 180ms ease;
+      }
+
+      .mode-button[aria-pressed="true"] {
+        color: var(--active-color);
+        background: var(--active-background);
+      }
+
+      .status {
+        min-height: 18px;
+        margin: 13px 0 0;
+        color: var(--muted-color);
+        font-size: 12px;
+      }
+
+      .status[data-state="error"] {
+        color: #e15454;
+      }
+
+      button:focus-visible,
+      label:focus-within,
+      canvas:focus-visible {
+        outline: 3px solid var(--focus-ring);
+        outline-offset: 3px;
+      }
+
       @media (max-width: 640px) {
+        body {
+          padding: 82px 16px 24px;
+        }
+
+        .theme-toggle {
+          top: 15px;
+          right: 15px;
+        }
+
         .dithered-logo {
-          width: min(82vw, 330px);
-          height: min(82vw, 330px);
+          width: min(90vw, 390px);
+        }
+
+        .description {
+          margin-bottom: 12px;
         }
       }
     </style>
   </head>
+
   <body>
+    <button class="theme-toggle" id="themeToggle" type="button">
+      <span class="theme-icon" id="themeIcon">☾</span>
+      <span id="themeLabel">Dark mode</span>
+    </button>
+
     <main class="demo">
+      <p class="eyebrow">Interactive canvas</p>
+      <h1>Color Dither Portrait</h1>
+
+      <p class="description">
+        Upload an image to preserve its colors. Move the cursor over the image
+        and click or tap to create a particle ripple.
+      </p>
+
       <div class="dithered-logo" id="ditheredLogo">
-        <canvas id="particleCanvas"></canvas>
+        <canvas
+          id="particleCanvas"
+          tabindex="0"
+          aria-label="Interactive dithered particle portrait"
+        ></canvas>
       </div>
 
       <div class="controls">
-        <label>
+        <label class="upload-button">
           Upload image
           <input type="file" id="imagePicker" accept="image/*" />
         </label>
+
+        <div class="mode-toggle" role="group" aria-label="Image color mode">
+          <button
+            class="mode-button"
+            id="colorModeButton"
+            type="button"
+            aria-pressed="true"
+          >
+            Color
+          </button>
+
+          <button
+            class="mode-button"
+            id="bwModeButton"
+            type="button"
+            aria-pressed="false"
+          >
+            Black &amp; White
+          </button>
+        </div>
       </div>
+
+      <p class="status" id="status" role="status">
+        Loading image…
+      </p>
     </main>
 
     <script>
-      /*
-      
-
-      Example:
-      const IMAGE_SRC = "./logo.png";
-
-      
-    */
       const IMAGE_SRC = createDemoImage();
 
       const DEFAULTS = {
-        gridSize: 200,
-        scale: 0.5,
-        dotScale: 1,
+        gridSize: 270,
+        mobileGridSize: 210,
+
+        /*
+          Prevents huge uploaded images from generating too many particles.
+          Increase this if the device is powerful.
+        */
+        maxParticles: 24000,
+        maxParticlesMobile: 14000,
+
+        scale: 0.86,
+        dotScale: 0.9,
+
         invert: true,
-        cornerRadius: 0.2,
-        threshold: 180,
-        contrast: 0,
-        gamma: 1,
-        blur: 3.75,
+        cornerRadius: 0.16,
+
+        threshold: 168,
+        contrast: 14,
+        gamma: 1.04,
+        blur: 1.15,
+
+        alphaThreshold: 20,
         diffusionStrength: 1,
         serpentine: true,
+
+        /*
+          "color" = preserve image RGB colors
+          "mono" = use the current CSS text color
+        */
+        colorMode: "color",
         particleColor: "currentColor",
+
+        /*
+          Colors are grouped into 16 levels per RGB channel.
+          This preserves the original appearance while keeping rendering smooth.
+        */
+        colorLevels: 16,
+        maxRipples: 3,
       };
 
       const RIPPLE_SPEED = 225;
@@ -138,20 +396,35 @@
         constructor(container, imageSrc, options = {}) {
           this.container = container;
           this.canvas = container.querySelector("canvas");
-          this.ctx = this.canvas.getContext("2d");
+
+          this.ctx = this.canvas.getContext("2d", {
+            alpha: true,
+            desynchronized: true,
+          });
 
           this.config = { ...DEFAULTS, ...options };
           this.imageSrc = imageSrc;
+          this.colorMode = this.config.colorMode;
 
           this.system = null;
           this.cursor = { x: 0, y: 0, active: false };
           this.ripples = [];
+
+          this.width = 0;
+          this.height = 0;
+          this.dpr = 1;
+
           this.animationFrame = 0;
           this.running = false;
-          this.lastWidth = 0;
-          this.lastHeight = 0;
+          this.resizeTimer = null;
+          this.loadVersion = 0;
 
-          this.resizeObserver = new ResizeObserver(() => this.handleResize());
+          this.monochromeColor = "#111111";
+          this.statusElement = document.getElementById("status");
+
+          this.handleResize = this.handleResize.bind(this);
+
+          this.resizeObserver = new ResizeObserver(this.handleResize);
           this.resizeObserver.observe(this.container);
 
           this.bindEvents();
@@ -171,10 +444,10 @@
           });
 
           this.canvas.addEventListener("pointerleave", (event) => {
-            if (event.pointerType === "mouse") {
-              this.cursor.active = false;
-              this.startLoop();
-            }
+            if (event.pointerType !== "mouse") return;
+
+            this.cursor.active = false;
+            this.startLoop();
           });
 
           this.canvas.addEventListener("pointercancel", () => {
@@ -185,11 +458,10 @@
           this.canvas.addEventListener("pointerup", (event) => {
             const rect = this.canvas.getBoundingClientRect();
 
-            this.ripples.push({
-              x: event.clientX - rect.left,
-              y: event.clientY - rect.top,
-              start: performance.now(),
-            });
+            this.addRipple(
+              event.clientX - rect.left,
+              event.clientY - rect.top,
+            );
 
             if (event.pointerType !== "mouse") {
               this.cursor.active = false;
@@ -197,18 +469,69 @@
 
             this.startLoop();
           });
+
+          this.canvas.addEventListener("keydown", (event) => {
+            if (event.key !== "Enter" && event.key !== " ") return;
+
+            event.preventDefault();
+            this.addRipple(this.width / 2, this.height / 2);
+            this.startLoop();
+          });
+        }
+
+        setStatus(message, state = "ready") {
+          if (!this.statusElement) return;
+
+          this.statusElement.textContent = message;
+          this.statusElement.dataset.state = state;
+        }
+
+        setColorMode(mode) {
+          if (mode !== "color" && mode !== "mono") return;
+
+          this.colorMode = mode;
+          this.drawParticles();
+        }
+
+        refreshMonochromeColor() {
+          this.monochromeColor =
+            this.config.particleColor === "currentColor"
+              ? getComputedStyle(this.container).color
+              : this.config.particleColor;
+        }
+
+        addRipple(x, y) {
+          this.ripples.push({
+            x,
+            y,
+            start: performance.now(),
+          });
+
+          if (this.ripples.length > this.config.maxRipples) {
+            this.ripples.shift();
+          }
         }
 
         async rebuild(newImageSrc = this.imageSrc) {
           this.imageSrc = newImageSrc;
+          const requestVersion = ++this.loadVersion;
+
+          this.setStatus("Processing image details…");
 
           try {
             const image = await this.fetchImage(this.imageSrc);
-            const rect = this.canvas.getBoundingClientRect();
+
+            if (requestVersion !== this.loadVersion) return;
+
+            const isMobile = window.matchMedia("(max-width: 640px)").matches;
+
+            const gridSize = isMobile
+              ? Math.min(this.config.gridSize, this.config.mobileGridSize)
+              : this.config.gridSize;
 
             const processed = this.toGrayscaleGrid(
               image,
-              this.config.gridSize,
+              gridSize,
               this.config.contrast,
               this.config.gamma,
               this.config.blur,
@@ -222,6 +545,7 @@
                 threshold: this.config.threshold,
                 serpentine: this.config.serpentine,
                 diffusionStrength: this.config.diffusionStrength,
+                alphaThreshold: this.config.alphaThreshold,
               },
               processed.alpha,
             );
@@ -233,26 +557,32 @@
                 processed.height,
                 this.config.cornerRadius,
                 processed.alpha,
+                this.config.alphaThreshold,
               );
             }
 
+            const particleLimit = isMobile
+              ? this.config.maxParticlesMobile
+              : this.config.maxParticles;
+
+            points = this.limitPoints(points, particleLimit);
+
             const scaleFactor = Math.max(
               0.5,
-              (Math.min(rect.width, rect.height) * this.config.scale) /
+              (Math.min(this.width, this.height) * this.config.scale) /
                 Math.max(processed.width, processed.height),
             );
 
             const originX = Math.round(
-              (rect.width - processed.width * scaleFactor) / 2,
+              (this.width - processed.width * scaleFactor) / 2,
             );
 
             const originY = Math.round(
-              (rect.height - processed.height * scaleFactor) / 2,
+              (this.height - processed.height * scaleFactor) / 2,
             );
 
-            const isMobile = window.matchMedia("(max-width: 640px)").matches;
             const responsiveDotScale = isMobile
-              ? this.config.dotScale * 0.8
+              ? this.config.dotScale * 0.88
               : this.config.dotScale;
 
             this.system = this.initParticles(
@@ -261,11 +591,23 @@
               responsiveDotScale,
               originX,
               originY,
+              processed.sourcePixels,
+              processed.width,
             );
 
-            this.startLoop();
+            this.refreshMonochromeColor();
+            this.drawParticles();
+
+            this.setStatus(
+              `Ready · ${this.system.count.toLocaleString()} particles`,
+            );
           } catch (error) {
             console.error("Could not process image:", error);
+
+            this.setStatus(
+              "Image could not be loaded. Try uploading a local image.",
+              "error",
+            );
           }
         }
 
@@ -274,77 +616,90 @@
             const image = new Image();
 
             /*
-            External images need CORS headers:
-            Access-Control-Allow-Origin: *
-          */
+              External images require CORS permission.
+              Local uploaded images always work.
+            */
             image.crossOrigin = "anonymous";
+
             image.onload = () => resolve(image);
-            image.onerror = reject;
+            image.onerror = () =>
+              reject(new Error("The image could not be loaded."));
+
             image.src = src;
           });
         }
 
         toGrayscaleGrid(image, maxDim, contrast, gamma, blur) {
           const aspect = image.naturalWidth / image.naturalHeight;
-          const outW = aspect >= 1 ? maxDim : Math.round(maxDim * aspect);
-          const outH = aspect >= 1 ? Math.round(maxDim / aspect) : maxDim;
 
-          /* Keep original alpha channel */
-          const alphaCanvas = document.createElement("canvas");
-          alphaCanvas.width = outW;
-          alphaCanvas.height = outH;
+          const outW =
+            aspect >= 1 ? maxDim : Math.max(1, Math.round(maxDim * aspect));
 
-          const alphaCtx = alphaCanvas.getContext("2d");
-          alphaCtx.imageSmoothingEnabled = true;
-          alphaCtx.imageSmoothingQuality = "high";
-          alphaCtx.drawImage(image, 0, 0, outW, outH);
+          const outH =
+            aspect >= 1
+              ? Math.max(1, Math.round(maxDim / aspect))
+              : maxDim;
 
-          const alphaData = alphaCtx.getImageData(0, 0, outW, outH).data;
+          /*
+            This canvas preserves the original image RGB values.
+            These colors will be assigned to the final particles.
+          */
+          const colorCanvas = document.createElement("canvas");
+          colorCanvas.width = outW;
+          colorCanvas.height = outH;
 
-          /* Blur source image before processing */
+          const colorCtx = colorCanvas.getContext("2d");
+          colorCtx.imageSmoothingEnabled = true;
+          colorCtx.imageSmoothingQuality = "high";
+          colorCtx.drawImage(image, 0, 0, outW, outH);
+
+          const sourcePixels = colorCtx.getImageData(
+            0,
+            0,
+            outW,
+            outH,
+          ).data;
+
+          /*
+            A separate blurred canvas is used only for dither calculations.
+            The original color canvas above remains sharp.
+          */
           const pad = Math.ceil(blur * 3);
 
-          const sourceCanvas = document.createElement("canvas");
-          sourceCanvas.width = image.naturalWidth + pad * 2;
-          sourceCanvas.height = image.naturalHeight + pad * 2;
+          const blurCanvas = document.createElement("canvas");
+          blurCanvas.width = outW + pad * 2;
+          blurCanvas.height = outH + pad * 2;
 
-          const sourceCtx = sourceCanvas.getContext("2d");
+          const blurCtx = blurCanvas.getContext("2d");
+          blurCtx.imageSmoothingEnabled = true;
+          blurCtx.imageSmoothingQuality = "high";
 
           if (blur > 0) {
-            sourceCtx.filter = `blur(${blur}px)`;
+            blurCtx.filter = `blur(${blur}px)`;
           }
 
-          sourceCtx.drawImage(
-            image,
+          blurCtx.drawImage(image, pad, pad, outW, outH);
+          blurCtx.filter = "none";
+
+          const processCanvas = document.createElement("canvas");
+          processCanvas.width = outW;
+          processCanvas.height = outH;
+
+          const processCtx = processCanvas.getContext("2d");
+          processCtx.drawImage(
+            blurCanvas,
             pad,
             pad,
-            image.naturalWidth,
-            image.naturalHeight,
-          );
-
-          sourceCtx.filter = "none";
-
-          const canvas = document.createElement("canvas");
-          canvas.width = outW;
-          canvas.height = outH;
-
-          const ctx = canvas.getContext("2d");
-          ctx.imageSmoothingEnabled = true;
-          ctx.imageSmoothingQuality = "high";
-
-          ctx.drawImage(
-            sourceCanvas,
-            pad,
-            pad,
-            image.naturalWidth,
-            image.naturalHeight,
+            outW,
+            outH,
             0,
             0,
             outW,
             outH,
           );
 
-          const pixelData = ctx.getImageData(0, 0, outW, outH).data;
+          const pixels = processCtx.getImageData(0, 0, outW, outH).data;
+
           const grayscale = new Uint8Array(outW * outH);
           const alpha = new Uint8Array(outW * outH);
 
@@ -356,15 +711,17 @@
               const pixelIndex = (y * outW + x) * 4;
               const index = y * outW + x;
 
-              const blurAlpha = pixelData[pixelIndex + 3] / 255;
-              alpha[index] = alphaData[pixelIndex + 3];
+              const blurredAlpha = pixels[pixelIndex + 3] / 255;
+
+              /* Alpha is taken from the sharp original source image. */
+              alpha[index] = sourcePixels[pixelIndex + 3];
 
               let luma =
-                blurAlpha > 0.01
-                  ? (0.299 * pixelData[pixelIndex] +
-                      0.587 * pixelData[pixelIndex + 1] +
-                      0.114 * pixelData[pixelIndex + 2]) /
-                    blurAlpha
+                blurredAlpha > 0.01
+                  ? (0.299 * pixels[pixelIndex] +
+                      0.587 * pixels[pixelIndex + 1] +
+                      0.114 * pixels[pixelIndex + 2]) /
+                    blurredAlpha
                   : 0;
 
               if (contrast !== 0) {
@@ -379,7 +736,13 @@
             }
           }
 
-          return { grayscale, alpha, width: outW, height: outH };
+          return {
+            grayscale,
+            alpha,
+            sourcePixels,
+            width: outW,
+            height: outH,
+          };
         }
 
         errorDiffusionDither(grayscale, width, height, config, alpha) {
@@ -400,7 +763,7 @@
             for (let x = startX; x !== endX; x += step) {
               const index = y * width + x;
 
-              if (alpha[index] < 128) continue;
+              if (alpha[index] < config.alphaThreshold) continue;
 
               const oldValue = errors[index];
               const newValue = oldValue > config.threshold ? 255 : 0;
@@ -411,16 +774,22 @@
               }
 
               const spread = (nextX, nextY, weight) => {
-                if (nextX < 0 || nextX >= width || nextY < 0 || nextY >= height)
+                if (
+                  nextX < 0 ||
+                  nextX >= width ||
+                  nextY < 0 ||
+                  nextY >= height
+                ) {
                   return;
+                }
 
                 const nextIndex = nextY * width + nextX;
-                if (alpha[nextIndex] < 128) return;
+
+                if (alpha[nextIndex] < config.alphaThreshold) return;
 
                 errors[nextIndex] += error * weight;
               };
 
-              /* Floyd-Steinberg error diffusion */
               spread(x + step, y, 7 / 16);
               spread(x - step, y + 1, 3 / 16);
               spread(x, y + 1, 5 / 16);
@@ -433,7 +802,7 @@
 
         buildRoundedMask(width, height, radiusPercent) {
           const radius = Math.round(radiusPercent * Math.min(width, height));
-          const mask = new Set();
+          const mask = new Uint8Array(width * height);
 
           for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
@@ -454,7 +823,7 @@
               }
 
               if (inside) {
-                mask.add(y * width + x);
+                mask[y * width + x] = 1;
               }
             }
           }
@@ -462,20 +831,32 @@
           return mask;
         }
 
-        applyMaskInversion(points, gridW, gridH, cornerRadius, alpha) {
+        applyMaskInversion(
+          points,
+          gridW,
+          gridH,
+          cornerRadius,
+          alpha,
+          alphaThreshold,
+        ) {
           const mask = this.buildRoundedMask(gridW, gridH, cornerRadius);
-          const filled = new Set();
+          const filled = new Uint8Array(gridW * gridH);
 
           for (let i = 0; i < points.length; i += 2) {
             const x = Math.round(points[i]);
             const y = Math.round(points[i + 1]);
-            filled.add(y * gridW + x);
+
+            filled[y * gridW + x] = 1;
           }
 
           const result = [];
 
-          for (const index of mask) {
-            if (!filled.has(index) && alpha[index] >= 128) {
+          for (let index = 0; index < mask.length; index++) {
+            if (
+              mask[index] === 1 &&
+              filled[index] === 0 &&
+              alpha[index] >= alphaThreshold
+            ) {
               result.push(index % gridW, Math.floor(index / gridW));
             }
           }
@@ -483,7 +864,60 @@
           return new Float32Array(result);
         }
 
-        initParticles(points, scaleFactor, dotScale, originX, originY) {
+        limitPoints(points, maximumParticles) {
+          const count = points.length / 2;
+
+          if (count <= maximumParticles) {
+            return points;
+          }
+
+          /*
+            Reservoir sampling keeps particles distributed through the image,
+            while protecting performance on large uploaded photographs.
+          */
+          const selected = new Uint32Array(maximumParticles);
+
+          for (let i = 0; i < maximumParticles; i++) {
+            selected[i] = i;
+          }
+
+          let seed = 123456789;
+
+          for (let i = maximumParticles; i < count; i++) {
+            seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+
+            const randomIndex = Math.floor(
+              (seed / 4294967296) * (i + 1),
+            );
+
+            if (randomIndex < maximumParticles) {
+              selected[randomIndex] = i;
+            }
+          }
+
+          selected.sort();
+
+          const result = new Float32Array(maximumParticles * 2);
+
+          for (let i = 0; i < maximumParticles; i++) {
+            const pointIndex = selected[i];
+
+            result[i * 2] = points[pointIndex * 2];
+            result[i * 2 + 1] = points[pointIndex * 2 + 1];
+          }
+
+          return result;
+        }
+
+        initParticles(
+          points,
+          scaleFactor,
+          dotScale,
+          originX,
+          originY,
+          sourcePixels,
+          gridWidth,
+        ) {
           const count = points.length / 2;
 
           const baseX = new Float32Array(count);
@@ -491,9 +925,91 @@
           const offsetX = new Float32Array(count);
           const offsetY = new Float32Array(count);
 
+          /*
+            Group same/similar colors together.
+            This is much faster than changing the canvas fill color
+            separately for every single particle.
+          */
+          const colorMap = new Map();
+          const levels = this.config.colorLevels - 1;
+
+          const alphaLists = Array.from(
+            { length: this.config.colorLevels },
+            () => [],
+          );
+
           for (let i = 0; i < count; i++) {
-            baseX[i] = originX + points[i * 2] * scaleFactor;
-            baseY[i] = originY + points[i * 2 + 1] * scaleFactor;
+            const pointX = points[i * 2] | 0;
+            const pointY = points[i * 2 + 1] | 0;
+
+            baseX[i] = originX + pointX * scaleFactor;
+            baseY[i] = originY + pointY * scaleFactor;
+
+            const pixelIndex = (pointY * gridWidth + pointX) * 4;
+
+            const red = sourcePixels[pixelIndex];
+            const green = sourcePixels[pixelIndex + 1];
+            const blue = sourcePixels[pixelIndex + 2];
+            const alpha = sourcePixels[pixelIndex + 3];
+
+            const rLevel = Math.round((red / 255) * levels);
+            const gLevel = Math.round((green / 255) * levels);
+            const bLevel = Math.round((blue / 255) * levels);
+
+            const alphaLevel = Math.max(
+              1,
+              Math.round((alpha / 255) * levels),
+            );
+
+            const colorKey =
+              (alphaLevel << 12) |
+              (rLevel << 8) |
+              (gLevel << 4) |
+              bLevel;
+
+            let bucket = colorMap.get(colorKey);
+
+            if (!bucket) {
+              bucket = {
+                ids: [],
+                red: 0,
+                green: 0,
+                blue: 0,
+                alphaLevel,
+              };
+
+              colorMap.set(colorKey, bucket);
+            }
+
+            bucket.ids.push(i);
+            bucket.red += red;
+            bucket.green += green;
+            bucket.blue += blue;
+
+            alphaLists[alphaLevel].push(i);
+          }
+
+          const colorBuckets = Array.from(colorMap.values()).map((bucket) => {
+            const total = bucket.ids.length;
+
+            return {
+              ids: Uint32Array.from(bucket.ids),
+              alpha: bucket.alphaLevel / levels,
+              color: `rgb(${Math.round(bucket.red / total)}, ${Math.round(
+                bucket.green / total,
+              )}, ${Math.round(bucket.blue / total)})`,
+            };
+          });
+
+          const opacityBuckets = [];
+
+          for (let alphaLevel = 1; alphaLevel <= levels; alphaLevel++) {
+            if (alphaLists[alphaLevel].length === 0) continue;
+
+            opacityBuckets.push({
+              ids: Uint32Array.from(alphaLists[alphaLevel]),
+              alpha: alphaLevel / levels,
+            });
           }
 
           return {
@@ -502,6 +1018,8 @@
             baseY,
             offsetX,
             offsetY,
+            colorBuckets,
+            opacityBuckets,
             size: scaleFactor * dotScale,
           };
         }
@@ -510,7 +1028,6 @@
           const sys = this.system;
           if (!sys) return false;
 
-          /* Remove expired ripples */
           for (let i = this.ripples.length - 1; i >= 0; i--) {
             if (now - this.ripples[i].start >= RIPPLE_DURATION) {
               this.ripples.splice(i, 1);
@@ -518,7 +1035,9 @@
           }
 
           const rippleMultiplier =
-            this.ripples.length > 0 ? 1 + 0.5 * (this.ripples.length - 1) : 0;
+            this.ripples.length > 0
+              ? 1 + 0.5 * (this.ripples.length - 1)
+              : 0;
 
           let hasMotion = false;
 
@@ -526,14 +1045,18 @@
             let forceX = 0;
             let forceY = 0;
 
-            /* Cursor repulsion */
             if (this.cursor.active) {
               const vx = sys.baseX[i] + sys.offsetX[i] - this.cursor.x;
               const vy = sys.baseY[i] + sys.offsetY[i] - this.cursor.y;
+
               const distanceSquared = vx * vx + vy * vy;
 
-              if (distanceSquared > 0.1 && distanceSquared < CURSOR_RADIUS_SQ) {
+              if (
+                distanceSquared > 0.1 &&
+                distanceSquared < CURSOR_RADIUS_SQ
+              ) {
                 const distance = Math.sqrt(distanceSquared);
+
                 const force =
                   Math.pow(1 - distance / CURSOR_RADIUS, 3) * CURSOR_FORCE;
 
@@ -542,7 +1065,6 @@
               }
             }
 
-            /* Click/touch ripple force */
             for (const ripple of this.ripples) {
               const elapsed = now - ripple.start;
               const radius = (elapsed / 1000) * RIPPLE_SPEED;
@@ -571,8 +1093,13 @@
             sys.offsetX[i] += (forceX - sys.offsetX[i]) * LERP_FACTOR;
             sys.offsetY[i] += (forceY - sys.offsetY[i]) * LERP_FACTOR;
 
-            if (Math.abs(sys.offsetX[i]) < SNAP_THRESHOLD) sys.offsetX[i] = 0;
-            if (Math.abs(sys.offsetY[i]) < SNAP_THRESHOLD) sys.offsetY[i] = 0;
+            if (Math.abs(sys.offsetX[i]) < SNAP_THRESHOLD) {
+              sys.offsetX[i] = 0;
+            }
+
+            if (Math.abs(sys.offsetY[i]) < SNAP_THRESHOLD) {
+              sys.offsetY[i] = 0;
+            }
 
             if (sys.offsetX[i] !== 0 || sys.offsetY[i] !== 0) {
               hasMotion = true;
@@ -582,41 +1109,70 @@
           return hasMotion || this.ripples.length > 0 || this.cursor.active;
         }
 
-        getParticleColor() {
-          if (this.config.particleColor === "currentColor") {
-            return getComputedStyle(this.container).color;
-          }
-
-          return this.config.particleColor;
-        }
-
         drawParticles() {
           const sys = this.system;
-          if (!sys) return;
+          if (!sys || !this.ctx) return;
 
-          const dpr = window.devicePixelRatio || 1;
-          const rect = this.canvas.getBoundingClientRect();
+          this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-          this.ctx.clearRect(0, 0, rect.width * dpr, rect.height * dpr);
+          const size = sys.size * this.dpr;
+          const padding = 0.18 * this.dpr;
+          const paddedSize = 0.36 * this.dpr;
 
-          this.ctx.fillStyle = this.getParticleColor();
-          this.ctx.globalAlpha = 1;
+          /*
+            COLOR MODE:
+            Draw particles using their sampled image colors.
+          */
+          if (this.colorMode === "color") {
+            for (const bucket of sys.colorBuckets) {
+              this.ctx.fillStyle = bucket.color;
+              this.ctx.globalAlpha = bucket.alpha;
 
-          const size = sys.size * dpr;
-          const padding = 0.25 * dpr;
-          const paddedSize = 0.5 * dpr;
+              for (let j = 0; j < bucket.ids.length; j++) {
+                const i = bucket.ids[j];
 
-          for (let i = 0; i < sys.count; i++) {
-            const x = (sys.baseX[i] + sys.offsetX[i]) * dpr;
-            const y = (sys.baseY[i] + sys.offsetY[i]) * dpr;
+                const x = (sys.baseX[i] + sys.offsetX[i]) * this.dpr;
+                const y = (sys.baseY[i] + sys.offsetY[i]) * this.dpr;
 
-            this.ctx.fillRect(
-              x - padding,
-              y - padding,
-              size + paddedSize,
-              size + paddedSize,
-            );
+                this.ctx.fillRect(
+                  x - padding,
+                  y - padding,
+                  size + paddedSize,
+                  size + paddedSize,
+                );
+              }
+            }
           }
+
+          /*
+            BLACK & WHITE MODE:
+            Draw every particle in one theme-aware color.
+            Light theme = black
+            Dark theme = white
+          */
+          else {
+            this.ctx.fillStyle = this.monochromeColor;
+
+            for (const bucket of sys.opacityBuckets) {
+              this.ctx.globalAlpha = bucket.alpha;
+
+              for (let j = 0; j < bucket.ids.length; j++) {
+                const i = bucket.ids[j];
+
+                const x = (sys.baseX[i] + sys.offsetX[i]) * this.dpr;
+                const y = (sys.baseY[i] + sys.offsetY[i]) * this.dpr;
+
+                this.ctx.fillRect(
+                  x - padding,
+                  y - padding,
+                  size + paddedSize,
+                  size + paddedSize,
+                );
+              }
+            }
+          }
+
+          this.ctx.globalAlpha = 1;
         }
 
         startLoop() {
@@ -626,6 +1182,7 @@
 
           const animate = (now) => {
             const needsMoreFrames = this.stepParticles(now);
+
             this.drawParticles();
 
             if (needsMoreFrames) {
@@ -640,47 +1197,127 @@
 
         handleResize() {
           const rect = this.canvas.getBoundingClientRect();
-          const dpr = window.devicePixelRatio || 1;
 
-          this.canvas.width = Math.max(1, Math.round(rect.width * dpr));
-          this.canvas.height = Math.max(1, Math.round(rect.height * dpr));
+          const width = Math.max(1, Math.round(rect.width));
+          const height = Math.max(1, Math.round(rect.height));
+
+          /*
+            Caps DPR to 2 for smoother animation on very high-DPI screens.
+          */
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+          const sizeChanged = width !== this.width || height !== this.height;
+
+          const canvasWidth = Math.round(width * dpr);
+          const canvasHeight = Math.round(height * dpr);
+
+          if (
+            !sizeChanged &&
+            this.canvas.width === canvasWidth &&
+            this.canvas.height === canvasHeight
+          ) {
+            return;
+          }
+
+          this.width = width;
+          this.height = height;
+          this.dpr = dpr;
+
+          this.canvas.width = canvasWidth;
+          this.canvas.height = canvasHeight;
 
           if (this.system) {
             this.drawParticles();
           }
 
-          const width = Math.round(rect.width);
-          const height = Math.round(rect.height);
-
-          if (
-            this.lastWidth !== 0 &&
-            (width !== this.lastWidth || height !== this.lastHeight)
-          ) {
+          if (sizeChanged && this.system) {
             clearTimeout(this.resizeTimer);
 
             this.resizeTimer = setTimeout(() => {
               this.rebuild();
-            }, 150);
+            }, 180);
           }
-
-          this.lastWidth = width;
-          this.lastHeight = height;
         }
 
         destroy() {
           cancelAnimationFrame(this.animationFrame);
+          clearTimeout(this.resizeTimer);
           this.resizeObserver.disconnect();
         }
       }
 
-      /*
-      Demo image. Replace IMAGE_SRC with your own .png/.jpg/.webp/.svg URL.
-    */
       function createDemoImage() {
         return "https://cdn.prod.website-files.com/5e51c674258ffe10d286d30a/5e5352709588e06bd47b75e0_peep-19.svg";
+
+        /*
+          If CORS causes an issue, download the SVG and use:
+
+          return "./peep-19.svg";
+        */
       }
 
-      const logo = new DitheredLogo(
+      const themeToggle = document.getElementById("themeToggle");
+      const themeLabel = document.getElementById("themeLabel");
+      const themeIcon = document.getElementById("themeIcon");
+
+      const colorModeButton = document.getElementById("colorModeButton");
+      const bwModeButton = document.getElementById("bwModeButton");
+
+      let logo = null;
+
+      function applyTheme(theme, save = false) {
+        document.documentElement.dataset.theme = theme;
+
+        const isDark = theme === "dark";
+
+        themeLabel.textContent = isDark ? "Light mode" : "Dark mode";
+        themeIcon.textContent = isDark ? "☀" : "☾";
+
+        if (save) {
+          try {
+            localStorage.setItem("dither-theme", theme);
+          } catch {
+            /* Ignore localStorage errors. */
+          }
+        }
+
+        if (logo) {
+          logo.refreshMonochromeColor();
+          logo.drawParticles();
+        }
+      }
+
+      function setColorMode(mode) {
+        colorModeButton.setAttribute(
+          "aria-pressed",
+          String(mode === "color"),
+        );
+
+        bwModeButton.setAttribute("aria-pressed", String(mode === "mono"));
+
+        logo.setColorMode(mode);
+      }
+
+      const savedTheme = localStorage.getItem("dither-theme");
+
+      const initialTheme =
+        savedTheme ||
+        (window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light");
+
+      applyTheme(initialTheme);
+
+      themeToggle.addEventListener("click", () => {
+        const nextTheme =
+          document.documentElement.dataset.theme === "dark"
+            ? "light"
+            : "dark";
+
+        applyTheme(nextTheme, true);
+      });
+
+      logo = new DitheredLogo(
         document.getElementById("ditheredLogo"),
         IMAGE_SRC,
         {
@@ -704,19 +1341,40 @@
           alphaThreshold: 20,
           diffusionStrength: 1,
           serpentine: true,
+
+          colorMode: "color",
+          colorLevels: 16,
           particleColor: "currentColor",
         },
       );
 
-      /* Load a user-selected image */
+      colorModeButton.addEventListener("click", () => {
+        setColorMode("color");
+      });
+
+      bwModeButton.addEventListener("click", () => {
+        setColorMode("mono");
+      });
+
+      let activeObjectUrl = null;
+
       document
         .getElementById("imagePicker")
         .addEventListener("change", (event) => {
           const file = event.target.files[0];
+
           if (!file) return;
 
-          const objectUrl = URL.createObjectURL(file);
-          logo.rebuild(objectUrl);
+          if (activeObjectUrl) {
+            URL.revokeObjectURL(activeObjectUrl);
+          }
+
+          activeObjectUrl = URL.createObjectURL(file);
+
+          logo.rebuild(activeObjectUrl);
+
+          /* Allows selecting the same file again later. */
+          event.target.value = "";
         });
     </script>
   </body>

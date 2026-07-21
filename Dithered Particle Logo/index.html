@@ -75,14 +75,18 @@
         place-items: center;
         color: var(--text-color);
         font-family:
-          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-          "Segoe UI", sans-serif;
-        background:
-          radial-gradient(
-            circle at 50% 35%,
-            var(--page-glow) 0%,
-            var(--page-background) 64%
-          );
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        background: radial-gradient(
+          circle at 50% 35%,
+          var(--page-glow) 0%,
+          var(--page-background) 64%
+        );
         transition:
           background 280ms ease,
           color 280ms ease;
@@ -310,7 +314,9 @@
 
       <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true">
         <circle cx="12" cy="12" r="4" />
-        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+        <path
+          d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
+        />
       </svg>
 
       <span id="themeLabel">Dark mode</span>
@@ -346,9 +352,7 @@
         </label>
       </div>
 
-      <p class="status" id="status" role="status">
-        Loading particle portrait…
-      </p>
+      <p class="status" id="status" role="status">Loading particle portrait…</p>
     </main>
 
     <script>
@@ -485,10 +489,7 @@
         onPointerUp(event) {
           const rect = this.canvas.getBoundingClientRect();
 
-          this.addRipple(
-            event.clientX - rect.left,
-            event.clientY - rect.top,
-          );
+          this.addRipple(event.clientX - rect.left, event.clientY - rect.top);
 
           if (event.pointerType !== "mouse") {
             this.cursor.active = false;
@@ -660,9 +661,7 @@
             aspect >= 1 ? maxDim : Math.max(1, Math.round(maxDim * aspect));
 
           const outH =
-            aspect >= 1
-              ? Math.max(1, Math.round(maxDim / aspect))
-              : maxDim;
+            aspect >= 1 ? Math.max(1, Math.round(maxDim / aspect)) : maxDim;
 
           /* Sharp alpha mask keeps SVG/image edges clean. */
           const alphaCanvas = document.createElement("canvas");
@@ -903,9 +902,7 @@
           for (let i = maximumParticles; i < count; i++) {
             seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
 
-            const randomIndex = Math.floor(
-              (seed / 4294967296) * (i + 1),
-            );
+            const randomIndex = Math.floor((seed / 4294967296) * (i + 1));
 
             if (randomIndex < maximumParticles) {
               selected[randomIndex] = i;
@@ -961,9 +958,7 @@
           }
 
           const rippleMultiplier =
-            this.ripples.length > 0
-              ? 1 + 0.5 * (this.ripples.length - 1)
-              : 0;
+            this.ripples.length > 0 ? 1 + 0.5 * (this.ripples.length - 1) : 0;
 
           let hasMotion = false;
 
@@ -978,10 +973,7 @@
 
               const distanceSquared = vx * vx + vy * vy;
 
-              if (
-                distanceSquared > 0.1 &&
-                distanceSquared < CURSOR_RADIUS_SQ
-              ) {
+              if (distanceSquared > 0.1 && distanceSquared < CURSOR_RADIUS_SQ) {
                 const distance = Math.sqrt(distanceSquared);
 
                 const force =
@@ -1098,8 +1090,7 @@
           */
           const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-          const cssSizeChanged =
-            width !== this.width || height !== this.height;
+          const cssSizeChanged = width !== this.width || height !== this.height;
 
           const requiredCanvasWidth = Math.round(width * dpr);
           const requiredCanvasHeight = Math.round(height * dpr);
@@ -1139,7 +1130,10 @@
 
           this.canvas.removeEventListener("pointermove", this.onPointerMove);
           this.canvas.removeEventListener("pointerleave", this.onPointerLeave);
-          this.canvas.removeEventListener("pointercancel", this.onPointerCancel);
+          this.canvas.removeEventListener(
+            "pointercancel",
+            this.onPointerCancel,
+          );
           this.canvas.removeEventListener("pointerup", this.onPointerUp);
           this.canvas.removeEventListener("keydown", this.onKeyDown);
         }
@@ -1189,9 +1183,7 @@
 
       themeToggle.addEventListener("click", () => {
         const nextTheme =
-          document.documentElement.dataset.theme === "dark"
-            ? "light"
-            : "dark";
+          document.documentElement.dataset.theme === "dark" ? "light" : "dark";
 
         applyTheme(nextTheme, true);
       });

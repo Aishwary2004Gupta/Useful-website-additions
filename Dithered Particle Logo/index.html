@@ -65,8 +65,13 @@
           var(--page-background) 65%
         );
         font-family:
-          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-          "Segoe UI", sans-serif;
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
         transition:
           color 220ms ease,
           background 220ms ease;
@@ -331,9 +336,7 @@
         </div>
       </div>
 
-      <p class="status" id="status" role="status">
-        Loading image…
-      </p>
+      <p class="status" id="status" role="status">Loading image…</p>
     </main>
 
     <script>
@@ -458,10 +461,7 @@
           this.canvas.addEventListener("pointerup", (event) => {
             const rect = this.canvas.getBoundingClientRect();
 
-            this.addRipple(
-              event.clientX - rect.left,
-              event.clientY - rect.top,
-            );
+            this.addRipple(event.clientX - rect.left, event.clientY - rect.top);
 
             if (event.pointerType !== "mouse") {
               this.cursor.active = false;
@@ -636,9 +636,7 @@
             aspect >= 1 ? maxDim : Math.max(1, Math.round(maxDim * aspect));
 
           const outH =
-            aspect >= 1
-              ? Math.max(1, Math.round(maxDim / aspect))
-              : maxDim;
+            aspect >= 1 ? Math.max(1, Math.round(maxDim / aspect)) : maxDim;
 
           /*
             This canvas preserves the original image RGB values.
@@ -653,12 +651,7 @@
           colorCtx.imageSmoothingQuality = "high";
           colorCtx.drawImage(image, 0, 0, outW, outH);
 
-          const sourcePixels = colorCtx.getImageData(
-            0,
-            0,
-            outW,
-            outH,
-          ).data;
+          const sourcePixels = colorCtx.getImageData(0, 0, outW, outH).data;
 
           /*
             A separate blurred canvas is used only for dither calculations.
@@ -886,9 +879,7 @@
           for (let i = maximumParticles; i < count; i++) {
             seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
 
-            const randomIndex = Math.floor(
-              (seed / 4294967296) * (i + 1),
-            );
+            const randomIndex = Math.floor((seed / 4294967296) * (i + 1));
 
             if (randomIndex < maximumParticles) {
               selected[randomIndex] = i;
@@ -956,16 +947,10 @@
             const gLevel = Math.round((green / 255) * levels);
             const bLevel = Math.round((blue / 255) * levels);
 
-            const alphaLevel = Math.max(
-              1,
-              Math.round((alpha / 255) * levels),
-            );
+            const alphaLevel = Math.max(1, Math.round((alpha / 255) * levels));
 
             const colorKey =
-              (alphaLevel << 12) |
-              (rLevel << 8) |
-              (gLevel << 4) |
-              bLevel;
+              (alphaLevel << 12) | (rLevel << 8) | (gLevel << 4) | bLevel;
 
             let bucket = colorMap.get(colorKey);
 
@@ -1035,9 +1020,7 @@
           }
 
           const rippleMultiplier =
-            this.ripples.length > 0
-              ? 1 + 0.5 * (this.ripples.length - 1)
-              : 0;
+            this.ripples.length > 0 ? 1 + 0.5 * (this.ripples.length - 1) : 0;
 
           let hasMotion = false;
 
@@ -1051,10 +1034,7 @@
 
               const distanceSquared = vx * vx + vy * vy;
 
-              if (
-                distanceSquared > 0.1 &&
-                distanceSquared < CURSOR_RADIUS_SQ
-              ) {
+              if (distanceSquared > 0.1 && distanceSquared < CURSOR_RADIUS_SQ) {
                 const distance = Math.sqrt(distanceSquared);
 
                 const force =
@@ -1142,7 +1122,7 @@
                 );
               }
             }
-          }
+          } else {
 
           /*
             BLACK & WHITE MODE:
@@ -1150,7 +1130,6 @@
             Light theme = black
             Dark theme = white
           */
-          else {
             this.ctx.fillStyle = this.monochromeColor;
 
             for (const bucket of sys.opacityBuckets) {
@@ -1288,10 +1267,7 @@
       }
 
       function setColorMode(mode) {
-        colorModeButton.setAttribute(
-          "aria-pressed",
-          String(mode === "color"),
-        );
+        colorModeButton.setAttribute("aria-pressed", String(mode === "color"));
 
         bwModeButton.setAttribute("aria-pressed", String(mode === "mono"));
 
@@ -1310,9 +1286,7 @@
 
       themeToggle.addEventListener("click", () => {
         const nextTheme =
-          document.documentElement.dataset.theme === "dark"
-            ? "light"
-            : "dark";
+          document.documentElement.dataset.theme === "dark" ? "light" : "dark";
 
         applyTheme(nextTheme, true);
       });

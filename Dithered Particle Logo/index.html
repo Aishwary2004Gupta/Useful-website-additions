@@ -1,47 +1,209 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dithered Particle Logo</title>
+    <title>Dithered Particle Portrait</title>
+
+    <script>
+      /* Prevent a light-theme flash before the page loads. */
+      try {
+        const savedTheme = localStorage.getItem("dither-theme");
+        const systemPrefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)",
+        ).matches;
+
+        document.documentElement.dataset.theme =
+          savedTheme || (systemPrefersDark ? "dark" : "light");
+      } catch {
+        document.documentElement.dataset.theme = "light";
+      }
+    </script>
 
     <style>
       :root {
-        --particle-color: #111111;
-        --page-background: #f7f7f4;
+        color-scheme: light;
+
+        --page-background: #f4f5f7;
+        --page-glow: #ffffff;
+        --text-color: #16181d;
+        --muted-text: #676d78;
+        --particle-color: #111318;
+
+        --button-background: rgba(255, 255, 255, 0.78);
+        --button-hover: #ffffff;
+        --button-border: rgba(20, 24, 32, 0.13);
+        --button-shadow: 0 10px 28px rgba(20, 24, 32, 0.08);
+
+        --logo-glow: rgba(78, 98, 145, 0.14);
+        --focus-ring: rgba(37, 99, 235, 0.45);
+      }
+
+      html[data-theme="dark"] {
+        color-scheme: dark;
+
+        --page-background: #0a0d12;
+        --page-glow: #171d29;
+        --text-color: #f1f4f9;
+        --muted-text: #a1a9b8;
+        --particle-color: #f2f5fa;
+
+        --button-background: rgba(22, 28, 39, 0.76);
+        --button-hover: #202838;
+        --button-border: rgba(235, 240, 250, 0.13);
+        --button-shadow: 0 10px 32px rgba(0, 0, 0, 0.3);
+
+        --logo-glow: rgba(108, 145, 255, 0.16);
+        --focus-ring: rgba(130, 170, 255, 0.55);
       }
 
       * {
         box-sizing: border-box;
       }
 
+      html {
+        min-height: 100%;
+        background: var(--page-background);
+      }
+
       body {
         min-height: 100vh;
         margin: 0;
+        padding: 28px;
+        overflow-x: hidden;
         display: grid;
         place-items: center;
-        overflow: hidden;
-        background: radial-gradient(
-          circle at 50% 30%,
-          #ffffff 0%,
-          var(--page-background) 62%
-        );
-        font-family: Arial, sans-serif;
+        color: var(--text-color);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        background:
+          radial-gradient(
+            circle at 50% 35%,
+            var(--page-glow) 0%,
+            var(--page-background) 64%
+          );
+        transition:
+          background 280ms ease,
+          color 280ms ease;
+      }
+
+      .theme-toggle {
+        position: fixed;
+        top: 22px;
+        right: 22px;
+        z-index: 10;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        min-height: 42px;
+        padding: 0 14px;
+        border: 1px solid var(--button-border);
+        border-radius: 999px;
+        color: var(--text-color);
+        background: var(--button-background);
+        box-shadow: var(--button-shadow);
+        backdrop-filter: blur(14px);
+        cursor: pointer;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        transition:
+          background 180ms ease,
+          border-color 180ms ease,
+          transform 180ms ease;
+      }
+
+      .theme-toggle:hover {
+        background: var(--button-hover);
+        transform: translateY(-1px);
+      }
+
+      .theme-toggle:focus-visible,
+      .controls label:focus-within,
+      canvas:focus-visible {
+        outline: 3px solid var(--focus-ring);
+        outline-offset: 3px;
+      }
+
+      .theme-toggle svg {
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .icon-sun {
+        display: none;
+      }
+
+      html[data-theme="dark"] .icon-sun {
+        display: block;
+      }
+
+      html[data-theme="dark"] .icon-moon {
+        display: none;
       }
 
       .demo {
+        width: min(100%, 760px);
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 24px;
+        text-align: center;
       }
 
-      /* Equivalent to: relative h-60 w-60 text-black */
+      .eyebrow {
+        margin: 0 0 10px;
+        color: var(--muted-text);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0;
+        color: var(--text-color);
+        font-size: clamp(26px, 4vw, 42px);
+        font-weight: 750;
+        letter-spacing: -0.05em;
+      }
+
+      .description {
+        max-width: 430px;
+        margin: 14px 0 28px;
+        color: var(--muted-text);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
       .dithered-logo {
         position: relative;
-        width: 420px;
-        height: 420px;
+        isolation: isolate;
+        width: clamp(300px, 48vw, 500px);
+        aspect-ratio: 1;
         color: var(--particle-color);
+      }
+
+      .dithered-logo::before {
+        position: absolute;
+        z-index: -1;
+        inset: 12%;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          var(--logo-glow) 0%,
+          transparent 70%
+        );
+        filter: blur(24px);
+        content: "";
+        pointer-events: none;
+        transition: background 280ms ease;
       }
 
       .dithered-logo canvas {
@@ -51,75 +213,183 @@
         width: 100%;
         height: 100%;
         touch-action: none;
-        cursor: pointer;
+        cursor: crosshair;
       }
 
       .controls {
         display: flex;
         align-items: center;
-        gap: 10px;
-        color: #333;
-        font-size: 14px;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 10px;
       }
 
       .controls label {
-        padding: 10px 14px;
-        border: 1px solid #d5d5d5;
-        border-radius: 8px;
-        background: white;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 42px;
+        padding: 0 15px;
+        border: 1px solid var(--button-border);
+        border-radius: 10px;
+        color: var(--text-color);
+        background: var(--button-background);
+        box-shadow: var(--button-shadow);
         cursor: pointer;
+        font-size: 13px;
+        font-weight: 650;
+        transition:
+          background 180ms ease,
+          border-color 180ms ease,
+          transform 180ms ease;
+      }
+
+      .controls label:hover {
+        background: var(--button-hover);
+        transform: translateY(-1px);
+      }
+
+      .controls svg {
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
       }
 
       .controls input {
         display: none;
       }
 
+      .status {
+        min-height: 20px;
+        margin: 14px 0 0;
+        color: var(--muted-text);
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .status[data-state="error"] {
+        color: #e05252;
+      }
+
       @media (max-width: 640px) {
+        body {
+          padding: 86px 18px 24px;
+        }
+
+        .theme-toggle {
+          top: 16px;
+          right: 16px;
+        }
+
         .dithered-logo {
-          width: min(82vw, 330px);
-          height: min(82vw, 330px);
+          width: min(88vw, 380px);
+        }
+
+        .description {
+          margin-bottom: 14px;
         }
       }
     </style>
   </head>
+
   <body>
+    <button
+      class="theme-toggle"
+      id="themeToggle"
+      type="button"
+      aria-label="Switch to dark mode"
+      aria-pressed="false"
+    >
+      <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.7 6.7 0 0 0 9.8 9.8Z" />
+      </svg>
+
+      <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="4" />
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+      </svg>
+
+      <span id="themeLabel">Dark mode</span>
+    </button>
+
     <main class="demo">
+      <p class="eyebrow">Interactive canvas</p>
+      <h1>Dithered Portrait</h1>
+      <p class="description">
+        Move your cursor around the portrait. Click or tap it to create a
+        particle ripple.
+      </p>
+
       <div class="dithered-logo" id="ditheredLogo">
-        <canvas id="particleCanvas"></canvas>
+        <canvas
+          id="particleCanvas"
+          tabindex="0"
+          role="img"
+          aria-label="Interactive dithered particle portrait"
+        ></canvas>
       </div>
 
       <div class="controls">
         <label>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 16V3" />
+            <path d="m7 8 5-5 5 5" />
+            <path d="M5 21h14" />
+          </svg>
+
           Upload image
           <input type="file" id="imagePicker" accept="image/*" />
         </label>
       </div>
+
+      <p class="status" id="status" role="status">
+        Loading particle portrait…
+      </p>
     </main>
 
     <script>
-      /*
-      
-
-      Example:
-      const IMAGE_SRC = "./logo.png";
-
-      
-    */
       const IMAGE_SRC = createDemoImage();
 
+      /*
+        Tuned for a sharper, more detailed output.
+
+        gridSize:
+          Higher value = more detail.
+          Keep this below ~300 to retain smooth movement.
+
+        blur:
+          Lower blur gives sharper face/clothes detail.
+
+        scale:
+          0.86 keeps the portrait inside the canvas without clipping.
+      */
       const DEFAULTS = {
-        gridSize: 200,
-        scale: 0.5,
-        dotScale: 1,
+        gridSize: 270,
+        mobileGridSize: 210,
+
+        maxParticles: 24000,
+        maxParticlesMobile: 14000,
+
+        scale: 0.86,
+        dotScale: 0.9,
+
         invert: true,
-        cornerRadius: 0.2,
-        threshold: 180,
-        contrast: 0,
-        gamma: 1,
-        blur: 3.75,
+        cornerRadius: 0.16,
+
+        threshold: 168,
+        contrast: 14,
+        gamma: 1.04,
+        blur: 1.15,
+
+        alphaThreshold: 20,
         diffusionStrength: 1,
         serpentine: true,
         particleColor: "currentColor",
+        maxRipples: 3,
       };
 
       const RIPPLE_SPEED = 225;
@@ -138,7 +408,11 @@
         constructor(container, imageSrc, options = {}) {
           this.container = container;
           this.canvas = container.querySelector("canvas");
-          this.ctx = this.canvas.getContext("2d");
+
+          this.ctx = this.canvas.getContext("2d", {
+            alpha: true,
+            desynchronized: true,
+          });
 
           this.config = { ...DEFAULTS, ...options };
           this.imageSrc = imageSrc;
@@ -146,13 +420,32 @@
           this.system = null;
           this.cursor = { x: 0, y: 0, active: false };
           this.ripples = [];
+
+          this.width = 0;
+          this.height = 0;
+          this.dpr = 1;
+
           this.animationFrame = 0;
           this.running = false;
-          this.lastWidth = 0;
-          this.lastHeight = 0;
+          this.resizeTimer = null;
+          this.loadVersion = 0;
+          this.resolvedParticleColor = "#111";
 
-          this.resizeObserver = new ResizeObserver(() => this.handleResize());
+          this.statusElement = document.getElementById("status");
+
+          this.onPointerMove = this.onPointerMove.bind(this);
+          this.onPointerLeave = this.onPointerLeave.bind(this);
+          this.onPointerCancel = this.onPointerCancel.bind(this);
+          this.onPointerUp = this.onPointerUp.bind(this);
+          this.onKeyDown = this.onKeyDown.bind(this);
+          this.handleResize = this.handleResize.bind(this);
+
+          this.resizeObserver = new ResizeObserver(this.handleResize);
           this.resizeObserver.observe(this.container);
+
+          window.addEventListener("resize", this.handleResize, {
+            passive: true,
+          });
 
           this.bindEvents();
           this.handleResize();
@@ -160,55 +453,109 @@
         }
 
         bindEvents() {
-          this.canvas.addEventListener("pointermove", (event) => {
-            const rect = this.canvas.getBoundingClientRect();
+          this.canvas.addEventListener("pointermove", this.onPointerMove);
+          this.canvas.addEventListener("pointerleave", this.onPointerLeave);
+          this.canvas.addEventListener("pointercancel", this.onPointerCancel);
+          this.canvas.addEventListener("pointerup", this.onPointerUp);
+          this.canvas.addEventListener("keydown", this.onKeyDown);
+        }
 
-            this.cursor.x = event.clientX - rect.left;
-            this.cursor.y = event.clientY - rect.top;
-            this.cursor.active = true;
+        onPointerMove(event) {
+          const rect = this.canvas.getBoundingClientRect();
 
-            this.startLoop();
-          });
+          this.cursor.x = event.clientX - rect.left;
+          this.cursor.y = event.clientY - rect.top;
+          this.cursor.active = true;
 
-          this.canvas.addEventListener("pointerleave", (event) => {
-            if (event.pointerType === "mouse") {
-              this.cursor.active = false;
-              this.startLoop();
-            }
-          });
+          this.startLoop();
+        }
 
-          this.canvas.addEventListener("pointercancel", () => {
+        onPointerLeave(event) {
+          if (event.pointerType !== "mouse") return;
+
+          this.cursor.active = false;
+          this.startLoop();
+        }
+
+        onPointerCancel() {
+          this.cursor.active = false;
+          this.startLoop();
+        }
+
+        onPointerUp(event) {
+          const rect = this.canvas.getBoundingClientRect();
+
+          this.addRipple(
+            event.clientX - rect.left,
+            event.clientY - rect.top,
+          );
+
+          if (event.pointerType !== "mouse") {
             this.cursor.active = false;
-            this.startLoop();
+          }
+
+          this.startLoop();
+        }
+
+        onKeyDown(event) {
+          if (event.key !== "Enter" && event.key !== " ") return;
+
+          event.preventDefault();
+          this.addRipple(this.width / 2, this.height / 2);
+          this.startLoop();
+        }
+
+        addRipple(x, y) {
+          this.ripples.push({
+            x,
+            y,
+            start: performance.now(),
           });
 
-          this.canvas.addEventListener("pointerup", (event) => {
-            const rect = this.canvas.getBoundingClientRect();
+          if (this.ripples.length > this.config.maxRipples) {
+            this.ripples.shift();
+          }
+        }
 
-            this.ripples.push({
-              x: event.clientX - rect.left,
-              y: event.clientY - rect.top,
-              start: performance.now(),
-            });
+        setStatus(message, state = "ready") {
+          if (!this.statusElement) return;
 
-            if (event.pointerType !== "mouse") {
-              this.cursor.active = false;
-            }
+          this.statusElement.textContent = message;
+          this.statusElement.dataset.state = state;
+        }
 
-            this.startLoop();
-          });
+        refreshParticleColor() {
+          this.resolvedParticleColor =
+            this.config.particleColor === "currentColor"
+              ? getComputedStyle(this.container).color
+              : this.config.particleColor;
+        }
+
+        redraw() {
+          this.refreshParticleColor();
+          this.drawParticles();
         }
 
         async rebuild(newImageSrc = this.imageSrc) {
           this.imageSrc = newImageSrc;
+          const requestVersion = ++this.loadVersion;
+
+          this.setStatus("Processing image details…");
 
           try {
             const image = await this.fetchImage(this.imageSrc);
-            const rect = this.canvas.getBoundingClientRect();
+
+            if (requestVersion !== this.loadVersion) return;
+
+            const isMobile = window.matchMedia("(max-width: 640px)").matches;
+
+            const gridSize = isMobile
+              ? Math.min(this.config.gridSize, this.config.mobileGridSize)
+              : this.config.gridSize;
 
             const processed = this.toGrayscaleGrid(
               image,
-              this.config.gridSize,
+              gridSize,
               this.config.contrast,
               this.config.gamma,
               this.config.blur,
@@ -222,6 +569,7 @@
                 threshold: this.config.threshold,
                 serpentine: this.config.serpentine,
                 diffusionStrength: this.config.diffusionStrength,
+                alphaThreshold: this.config.alphaThreshold,
               },
               processed.alpha,
             );
@@ -233,26 +581,32 @@
                 processed.height,
                 this.config.cornerRadius,
                 processed.alpha,
+                this.config.alphaThreshold,
               );
             }
 
+            const particleLimit = isMobile
+              ? this.config.maxParticlesMobile
+              : this.config.maxParticles;
+
+            points = this.limitPoints(points, particleLimit);
+
             const scaleFactor = Math.max(
               0.5,
-              (Math.min(rect.width, rect.height) * this.config.scale) /
+              (Math.min(this.width, this.height) * this.config.scale) /
                 Math.max(processed.width, processed.height),
             );
 
             const originX = Math.round(
-              (rect.width - processed.width * scaleFactor) / 2,
+              (this.width - processed.width * scaleFactor) / 2,
             );
 
             const originY = Math.round(
-              (rect.height - processed.height * scaleFactor) / 2,
+              (this.height - processed.height * scaleFactor) / 2,
             );
 
-            const isMobile = window.matchMedia("(max-width: 640px)").matches;
             const responsiveDotScale = isMobile
-              ? this.config.dotScale * 0.8
+              ? this.config.dotScale * 0.88
               : this.config.dotScale;
 
             this.system = this.initParticles(
@@ -263,9 +617,19 @@
               originY,
             );
 
-            this.startLoop();
+            this.refreshParticleColor();
+            this.drawParticles();
+
+            this.setStatus(
+              `Ready · ${this.system.count.toLocaleString()} particles`,
+            );
           } catch (error) {
             console.error("Could not process image:", error);
+
+            this.setStatus(
+              "Could not load the image. Try uploading a local image file.",
+              "error",
+            );
           }
         }
 
@@ -274,22 +638,33 @@
             const image = new Image();
 
             /*
-            External images need CORS headers:
-            Access-Control-Allow-Origin: *
-          */
+              Remote images must allow CORS.
+
+              If this URL fails, download the SVG and use:
+              const IMAGE_SRC = "./peep-19.svg";
+            */
             image.crossOrigin = "anonymous";
+
             image.onload = () => resolve(image);
-            image.onerror = reject;
+            image.onerror = () =>
+              reject(new Error("The image could not be loaded."));
+
             image.src = src;
           });
         }
 
         toGrayscaleGrid(image, maxDim, contrast, gamma, blur) {
           const aspect = image.naturalWidth / image.naturalHeight;
-          const outW = aspect >= 1 ? maxDim : Math.round(maxDim * aspect);
-          const outH = aspect >= 1 ? Math.round(maxDim / aspect) : maxDim;
 
-          /* Keep original alpha channel */
+          const outW =
+            aspect >= 1 ? maxDim : Math.max(1, Math.round(maxDim * aspect));
+
+          const outH =
+            aspect >= 1
+              ? Math.max(1, Math.round(maxDim / aspect))
+              : maxDim;
+
+          /* Sharp alpha mask keeps SVG/image edges clean. */
           const alphaCanvas = document.createElement("canvas");
           alphaCanvas.width = outW;
           alphaCanvas.height = outH;
@@ -301,50 +676,49 @@
 
           const alphaData = alphaCtx.getImageData(0, 0, outW, outH).data;
 
-          /* Blur source image before processing */
+          /*
+            Blur is applied at processing resolution instead of original image
+            resolution. This avoids huge memory usage for large uploaded images.
+          */
           const pad = Math.ceil(blur * 3);
 
-          const sourceCanvas = document.createElement("canvas");
-          sourceCanvas.width = image.naturalWidth + pad * 2;
-          sourceCanvas.height = image.naturalHeight + pad * 2;
+          const blurCanvas = document.createElement("canvas");
+          blurCanvas.width = outW + pad * 2;
+          blurCanvas.height = outH + pad * 2;
 
-          const sourceCtx = sourceCanvas.getContext("2d");
+          const blurCtx = blurCanvas.getContext("2d");
+          blurCtx.imageSmoothingEnabled = true;
+          blurCtx.imageSmoothingQuality = "high";
 
           if (blur > 0) {
-            sourceCtx.filter = `blur(${blur}px)`;
+            blurCtx.filter = `blur(${blur}px)`;
           }
 
-          sourceCtx.drawImage(
-            image,
+          blurCtx.drawImage(image, pad, pad, outW, outH);
+          blurCtx.filter = "none";
+
+          const processCanvas = document.createElement("canvas");
+          processCanvas.width = outW;
+          processCanvas.height = outH;
+
+          const processCtx = processCanvas.getContext("2d");
+          processCtx.imageSmoothingEnabled = true;
+          processCtx.imageSmoothingQuality = "high";
+
+          processCtx.drawImage(
+            blurCanvas,
             pad,
             pad,
-            image.naturalWidth,
-            image.naturalHeight,
-          );
-
-          sourceCtx.filter = "none";
-
-          const canvas = document.createElement("canvas");
-          canvas.width = outW;
-          canvas.height = outH;
-
-          const ctx = canvas.getContext("2d");
-          ctx.imageSmoothingEnabled = true;
-          ctx.imageSmoothingQuality = "high";
-
-          ctx.drawImage(
-            sourceCanvas,
-            pad,
-            pad,
-            image.naturalWidth,
-            image.naturalHeight,
+            outW,
+            outH,
             0,
             0,
             outW,
             outH,
           );
 
-          const pixelData = ctx.getImageData(0, 0, outW, outH).data;
+          const pixelData = processCtx.getImageData(0, 0, outW, outH).data;
+
           const grayscale = new Uint8Array(outW * outH);
           const alpha = new Uint8Array(outW * outH);
 
@@ -379,7 +753,12 @@
             }
           }
 
-          return { grayscale, alpha, width: outW, height: outH };
+          return {
+            grayscale,
+            alpha,
+            width: outW,
+            height: outH,
+          };
         }
 
         errorDiffusionDither(grayscale, width, height, config, alpha) {
@@ -400,7 +779,7 @@
             for (let x = startX; x !== endX; x += step) {
               const index = y * width + x;
 
-              if (alpha[index] < 128) continue;
+              if (alpha[index] < config.alphaThreshold) continue;
 
               const oldValue = errors[index];
               const newValue = oldValue > config.threshold ? 255 : 0;
@@ -411,11 +790,18 @@
               }
 
               const spread = (nextX, nextY, weight) => {
-                if (nextX < 0 || nextX >= width || nextY < 0 || nextY >= height)
+                if (
+                  nextX < 0 ||
+                  nextX >= width ||
+                  nextY < 0 ||
+                  nextY >= height
+                ) {
                   return;
+                }
 
                 const nextIndex = nextY * width + nextX;
-                if (alpha[nextIndex] < 128) return;
+
+                if (alpha[nextIndex] < config.alphaThreshold) return;
 
                 errors[nextIndex] += error * weight;
               };
@@ -433,7 +819,7 @@
 
         buildRoundedMask(width, height, radiusPercent) {
           const radius = Math.round(radiusPercent * Math.min(width, height));
-          const mask = new Set();
+          const mask = new Uint8Array(width * height);
 
           for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
@@ -454,7 +840,7 @@
               }
 
               if (inside) {
-                mask.add(y * width + x);
+                mask[y * width + x] = 1;
               }
             }
           }
@@ -462,25 +848,82 @@
           return mask;
         }
 
-        applyMaskInversion(points, gridW, gridH, cornerRadius, alpha) {
+        applyMaskInversion(
+          points,
+          gridW,
+          gridH,
+          cornerRadius,
+          alpha,
+          alphaThreshold,
+        ) {
           const mask = this.buildRoundedMask(gridW, gridH, cornerRadius);
-          const filled = new Set();
+          const filled = new Uint8Array(gridW * gridH);
 
           for (let i = 0; i < points.length; i += 2) {
             const x = Math.round(points[i]);
             const y = Math.round(points[i + 1]);
-            filled.add(y * gridW + x);
+
+            filled[y * gridW + x] = 1;
           }
 
           const result = [];
 
-          for (const index of mask) {
-            if (!filled.has(index) && alpha[index] >= 128) {
+          for (let index = 0; index < mask.length; index++) {
+            if (
+              mask[index] === 1 &&
+              filled[index] === 0 &&
+              alpha[index] >= alphaThreshold
+            ) {
               result.push(index % gridW, Math.floor(index / gridW));
             }
           }
 
           return new Float32Array(result);
+        }
+
+        /*
+          Keeps motion smooth if an uploaded image produces too many particles.
+          It only applies when the image exceeds the configured particle limit.
+        */
+        limitPoints(points, maximumParticles) {
+          const count = points.length / 2;
+
+          if (count <= maximumParticles) {
+            return points;
+          }
+
+          const selected = new Uint32Array(maximumParticles);
+
+          for (let i = 0; i < maximumParticles; i++) {
+            selected[i] = i;
+          }
+
+          let seed = 123456789;
+
+          for (let i = maximumParticles; i < count; i++) {
+            seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+
+            const randomIndex = Math.floor(
+              (seed / 4294967296) * (i + 1),
+            );
+
+            if (randomIndex < maximumParticles) {
+              selected[randomIndex] = i;
+            }
+          }
+
+          selected.sort();
+
+          const result = new Float32Array(maximumParticles * 2);
+
+          for (let i = 0; i < maximumParticles; i++) {
+            const pointIndex = selected[i];
+
+            result[i * 2] = points[pointIndex * 2];
+            result[i * 2 + 1] = points[pointIndex * 2 + 1];
+          }
+
+          return result;
         }
 
         initParticles(points, scaleFactor, dotScale, originX, originY) {
@@ -508,9 +951,9 @@
 
         stepParticles(now) {
           const sys = this.system;
+
           if (!sys) return false;
 
-          /* Remove expired ripples */
           for (let i = this.ripples.length - 1; i >= 0; i--) {
             if (now - this.ripples[i].start >= RIPPLE_DURATION) {
               this.ripples.splice(i, 1);
@@ -518,7 +961,9 @@
           }
 
           const rippleMultiplier =
-            this.ripples.length > 0 ? 1 + 0.5 * (this.ripples.length - 1) : 0;
+            this.ripples.length > 0
+              ? 1 + 0.5 * (this.ripples.length - 1)
+              : 0;
 
           let hasMotion = false;
 
@@ -530,10 +975,15 @@
             if (this.cursor.active) {
               const vx = sys.baseX[i] + sys.offsetX[i] - this.cursor.x;
               const vy = sys.baseY[i] + sys.offsetY[i] - this.cursor.y;
+
               const distanceSquared = vx * vx + vy * vy;
 
-              if (distanceSquared > 0.1 && distanceSquared < CURSOR_RADIUS_SQ) {
+              if (
+                distanceSquared > 0.1 &&
+                distanceSquared < CURSOR_RADIUS_SQ
+              ) {
                 const distance = Math.sqrt(distanceSquared);
+
                 const force =
                   Math.pow(1 - distance / CURSOR_RADIUS, 3) * CURSOR_FORCE;
 
@@ -542,7 +992,7 @@
               }
             }
 
-            /* Click/touch ripple force */
+            /* Click/tap ripple */
             for (const ripple of this.ripples) {
               const elapsed = now - ripple.start;
               const radius = (elapsed / 1000) * RIPPLE_SPEED;
@@ -550,6 +1000,7 @@
 
               const dx = sys.baseX[i] - ripple.x;
               const dy = sys.baseY[i] - ripple.y;
+
               const distance = Math.sqrt(dx * dx + dy * dy);
 
               if (distance < 0.1) continue;
@@ -571,8 +1022,13 @@
             sys.offsetX[i] += (forceX - sys.offsetX[i]) * LERP_FACTOR;
             sys.offsetY[i] += (forceY - sys.offsetY[i]) * LERP_FACTOR;
 
-            if (Math.abs(sys.offsetX[i]) < SNAP_THRESHOLD) sys.offsetX[i] = 0;
-            if (Math.abs(sys.offsetY[i]) < SNAP_THRESHOLD) sys.offsetY[i] = 0;
+            if (Math.abs(sys.offsetX[i]) < SNAP_THRESHOLD) {
+              sys.offsetX[i] = 0;
+            }
+
+            if (Math.abs(sys.offsetY[i]) < SNAP_THRESHOLD) {
+              sys.offsetY[i] = 0;
+            }
 
             if (sys.offsetX[i] !== 0 || sys.offsetY[i] !== 0) {
               hasMotion = true;
@@ -582,33 +1038,23 @@
           return hasMotion || this.ripples.length > 0 || this.cursor.active;
         }
 
-        getParticleColor() {
-          if (this.config.particleColor === "currentColor") {
-            return getComputedStyle(this.container).color;
-          }
-
-          return this.config.particleColor;
-        }
-
         drawParticles() {
           const sys = this.system;
-          if (!sys) return;
 
-          const dpr = window.devicePixelRatio || 1;
-          const rect = this.canvas.getBoundingClientRect();
+          if (!sys || !this.ctx) return;
 
-          this.ctx.clearRect(0, 0, rect.width * dpr, rect.height * dpr);
+          this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-          this.ctx.fillStyle = this.getParticleColor();
+          this.ctx.fillStyle = this.resolvedParticleColor;
           this.ctx.globalAlpha = 1;
 
-          const size = sys.size * dpr;
-          const padding = 0.25 * dpr;
-          const paddedSize = 0.5 * dpr;
+          const size = sys.size * this.dpr;
+          const padding = 0.18 * this.dpr;
+          const paddedSize = 0.36 * this.dpr;
 
           for (let i = 0; i < sys.count; i++) {
-            const x = (sys.baseX[i] + sys.offsetX[i]) * dpr;
-            const y = (sys.baseY[i] + sys.offsetY[i]) * dpr;
+            const x = (sys.baseX[i] + sys.offsetX[i]) * this.dpr;
+            const y = (sys.baseY[i] + sys.offsetY[i]) * this.dpr;
 
             this.ctx.fillRect(
               x - padding,
@@ -626,6 +1072,7 @@
 
           const animate = (now) => {
             const needsMoreFrames = this.stepParticles(now);
+
             this.drawParticles();
 
             if (needsMoreFrames) {
@@ -640,74 +1087,160 @@
 
         handleResize() {
           const rect = this.canvas.getBoundingClientRect();
-          const dpr = window.devicePixelRatio || 1;
 
-          this.canvas.width = Math.max(1, Math.round(rect.width * dpr));
-          this.canvas.height = Math.max(1, Math.round(rect.height * dpr));
+          const width = Math.max(1, Math.round(rect.width));
+          const height = Math.max(1, Math.round(rect.height));
+
+          /*
+            DPR is intentionally capped at 2.
+            This keeps high-DPI screens sharp while preventing expensive
+            canvas rendering on devices with DPR 3 or 4.
+          */
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+          const cssSizeChanged =
+            width !== this.width || height !== this.height;
+
+          const requiredCanvasWidth = Math.round(width * dpr);
+          const requiredCanvasHeight = Math.round(height * dpr);
+
+          const pixelSizeChanged =
+            this.canvas.width !== requiredCanvasWidth ||
+            this.canvas.height !== requiredCanvasHeight;
+
+          if (!cssSizeChanged && !pixelSizeChanged) return;
+
+          this.width = width;
+          this.height = height;
+          this.dpr = dpr;
+
+          this.canvas.width = requiredCanvasWidth;
+          this.canvas.height = requiredCanvasHeight;
 
           if (this.system) {
             this.drawParticles();
           }
 
-          const width = Math.round(rect.width);
-          const height = Math.round(rect.height);
-
-          if (
-            this.lastWidth !== 0 &&
-            (width !== this.lastWidth || height !== this.lastHeight)
-          ) {
+          if (cssSizeChanged && this.system) {
             clearTimeout(this.resizeTimer);
 
             this.resizeTimer = setTimeout(() => {
               this.rebuild();
-            }, 150);
+            }, 180);
           }
-
-          this.lastWidth = width;
-          this.lastHeight = height;
         }
 
         destroy() {
           cancelAnimationFrame(this.animationFrame);
+          clearTimeout(this.resizeTimer);
+
           this.resizeObserver.disconnect();
+          window.removeEventListener("resize", this.handleResize);
+
+          this.canvas.removeEventListener("pointermove", this.onPointerMove);
+          this.canvas.removeEventListener("pointerleave", this.onPointerLeave);
+          this.canvas.removeEventListener("pointercancel", this.onPointerCancel);
+          this.canvas.removeEventListener("pointerup", this.onPointerUp);
+          this.canvas.removeEventListener("keydown", this.onKeyDown);
         }
       }
 
       /*
-      Demo image. Replace IMAGE_SRC with your own .png/.jpg/.webp/.svg URL.
-    */
+        If CORS blocks this image, download the SVG and use:
+
+        return "./peep-19.svg";
+      */
       function createDemoImage() {
         return "https://cdn.prod.website-files.com/5e51c674258ffe10d286d30a/5e5352709588e06bd47b75e0_peep-19.svg";
       }
 
-      const logo = new DitheredLogo(
+      let logo = null;
+
+      const themeToggle = document.getElementById("themeToggle");
+      const themeLabel = document.getElementById("themeLabel");
+
+      function applyTheme(theme, saveTheme = false) {
+        document.documentElement.dataset.theme = theme;
+
+        const isDark = theme === "dark";
+
+        themeToggle.setAttribute("aria-pressed", String(isDark));
+        themeToggle.setAttribute(
+          "aria-label",
+          isDark ? "Switch to light mode" : "Switch to dark mode",
+        );
+
+        themeLabel.textContent = isDark ? "Light mode" : "Dark mode";
+
+        if (saveTheme) {
+          try {
+            localStorage.setItem("dither-theme", theme);
+          } catch {
+            /* Ignore storage errors. */
+          }
+        }
+
+        if (logo) {
+          requestAnimationFrame(() => logo.redraw());
+        }
+      }
+
+      applyTheme(document.documentElement.dataset.theme || "light");
+
+      themeToggle.addEventListener("click", () => {
+        const nextTheme =
+          document.documentElement.dataset.theme === "dark"
+            ? "light"
+            : "dark";
+
+        applyTheme(nextTheme, true);
+      });
+
+      logo = new DitheredLogo(
         document.getElementById("ditheredLogo"),
         IMAGE_SRC,
         {
-          gridSize: 200,
-          scale: 1.2,
-          dotScale: 1,
+          gridSize: 270,
+          mobileGridSize: 210,
+
+          maxParticles: 24000,
+          maxParticlesMobile: 14000,
+
+          scale: 0.86,
+          dotScale: 0.9,
+
           invert: true,
-          cornerRadius: 0.2,
-          threshold: 180,
-          contrast: 0,
-          gamma: 1,
-          blur: 3.75,
+          cornerRadius: 0.16,
+
+          threshold: 168,
+          contrast: 14,
+          gamma: 1.04,
+          blur: 1.15,
+
+          alphaThreshold: 20,
           diffusionStrength: 1,
           serpentine: true,
           particleColor: "currentColor",
         },
       );
 
-      /* Load a user-selected image */
+      let activeObjectUrl = null;
+
       document
         .getElementById("imagePicker")
         .addEventListener("change", (event) => {
           const file = event.target.files[0];
+
           if (!file) return;
 
-          const objectUrl = URL.createObjectURL(file);
-          logo.rebuild(objectUrl);
+          if (activeObjectUrl) {
+            URL.revokeObjectURL(activeObjectUrl);
+          }
+
+          activeObjectUrl = URL.createObjectURL(file);
+          logo.rebuild(activeObjectUrl);
+
+          event.target.value = "";
         });
     </script>
   </body>

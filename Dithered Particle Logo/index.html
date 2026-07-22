@@ -89,36 +89,6 @@
         cursor: pointer;
       }
 
-      .preview-container {
-        position: absolute;
-        inset: 0;
-        overflow: hidden;
-        pointer-events: none;
-      }
-
-      .preview-container img {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        opacity: 0;
-        transform: translateX(100%);
-        transition: transform 0.55s ease, opacity 0.35s ease;
-        will-change: transform, opacity;
-      }
-
-      .preview-container img.current,
-      .preview-container img.slide-in {
-        opacity: 1;
-        transform: translateX(0);
-      }
-
-      .preview-container img.slide-out {
-        opacity: 0;
-        transform: translateX(-100%);
-      }
-
       /* ── Controls ── */
       .controls {
         display: flex;
@@ -214,7 +184,6 @@
     <main class="demo">
       <div class="dithered-logo" id="ditheredLogo">
         <canvas id="particleCanvas"></canvas>
-        <div class="preview-container" id="previewContainer"></div>
       </div>
 
       <div class="controls">
@@ -236,21 +205,6 @@
         </label>
 
         <div class="divider"></div>
-
-        <button class="btn" id="nextImageBtn">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M5 12h14" />
-            <path d="m13 6 6 6-6 6" />
-          </svg>
-          Next
-        </button>
 
         <button class="btn" id="bwBtn">
           <svg
@@ -303,61 +257,9 @@
       const LERP = 0.12;
       const SNAP = 0.01;
 
-      /* ═══════ Demo image sources ═══════ */
-      const IMAGE_SOURCES = [
-        "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/Background.jpg",
-        "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/heaven.jpg",
-        "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/Background3.jpg",
-      ];
-      const PREVIEW_DURATION = 550;
-      let currentImageIndex = 0;
-      let previewAnimating = false;
-
+      /* ═══════ Demo image ═══════ */
       function createDemoImage() {
-        return IMAGE_SOURCES[currentImageIndex];
-      }
-
-      function nextDemoImage() {
-        currentImageIndex = (currentImageIndex + 1) % IMAGE_SOURCES.length;
-        return IMAGE_SOURCES[currentImageIndex];
-      }
-
-      function setPreviewImage(src) {
-        const previewContainer = document.getElementById("previewContainer");
-        previewContainer.innerHTML = "";
-        const img = document.createElement("img");
-        img.src = src;
-        img.alt = "Preview image";
-        img.className = "current";
-        previewContainer.appendChild(img);
-      }
-
-      function showPreviewSlide(nextSrc) {
-        if (previewAnimating) return;
-        const previewContainer = document.getElementById("previewContainer");
-        const currentImg = previewContainer.querySelector("img.current");
-        const nextImg = document.createElement("img");
-
-        previewAnimating = true;
-        nextImg.src = nextSrc;
-        nextImg.alt = "Preview image";
-        nextImg.className = "preview-image";
-        previewContainer.appendChild(nextImg);
-
-        nextImg.onload = () => {
-          requestAnimationFrame(() => {
-            nextImg.classList.add("slide-in", "current");
-            if (currentImg) {
-              currentImg.classList.add("slide-out");
-              currentImg.classList.remove("current");
-            }
-          });
-        };
-
-        setTimeout(() => {
-          if (currentImg) currentImg.remove();
-          previewAnimating = false;
-        }, PREVIEW_DURATION + 50);
+        return "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/Background.jpg";
       }
 
       /* ═══════ DitheredLogo ═══════ */
@@ -872,18 +774,10 @@
         document.getElementById("ditheredLogo"),
         createDemoImage(),
       );
-      setPreviewImage(createDemoImage());
 
       /* ── B&W / Color toggle ── */
-      const nextImageBtn = document.getElementById("nextImageBtn");
       const bwBtn = document.getElementById("bwBtn");
       const colorBtn = document.getElementById("colorBtn");
-
-      nextImageBtn.addEventListener("click", () => {
-        const nextSrc = nextDemoImage();
-        showPreviewSlide(nextSrc);
-        logo.rebuild(nextSrc);
-      });
 
       bwBtn.addEventListener("click", () => {
         bwBtn.classList.add("active");

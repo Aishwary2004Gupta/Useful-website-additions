@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
@@ -180,7 +180,6 @@
   </head>
 
   <body>
-
     <main class="demo">
       <div class="dithered-logo" id="ditheredLogo">
         <canvas id="particleCanvas"></canvas>
@@ -269,7 +268,7 @@
           this.cv = container.querySelector("canvas");
           this.cx = this.cv.getContext("2d");
           this.cfg = {
-            gridSize: 340, /* Increased for larger canvas */
+            gridSize: 340 /* Increased for larger canvas */,
             scale: 0.86,
             dotScale: 0.9,
             invert: true,

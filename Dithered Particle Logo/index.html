@@ -206,6 +206,21 @@
 
         <div class="divider"></div>
 
+        <button class="btn" id="nextImageBtn">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M5 12h14" />
+            <path d="m13 6 6 6-6 6" />
+          </svg>
+          Next
+        </button>
+
         <button class="btn" id="bwBtn">
           <svg
             viewBox="0 0 24 24"
@@ -257,9 +272,21 @@
       const LERP = 0.12;
       const SNAP = 0.01;
 
-      /* ═══════ Demo image ═══════ */
+      /* ═══════ Demo image sources ═══════ */
+      const IMAGE_SOURCES = [
+        "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/Background.jpg",
+        "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/heaven.jpg",
+        "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/Background3.jpg",
+      ];
+      let currentImageIndex = 0;
+
       function createDemoImage() {
-        return "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/Background.jpg";
+        return IMAGE_SOURCES[currentImageIndex];
+      }
+
+      function nextDemoImage() {
+        currentImageIndex = (currentImageIndex + 1) % IMAGE_SOURCES.length;
+        return IMAGE_SOURCES[currentImageIndex];
       }
 
       /* ═══════ DitheredLogo ═══════ */
@@ -776,8 +803,13 @@
       );
 
       /* ── B&W / Color toggle ── */
+      const nextImageBtn = document.getElementById("nextImageBtn");
       const bwBtn = document.getElementById("bwBtn");
       const colorBtn = document.getElementById("colorBtn");
+
+      nextImageBtn.addEventListener("click", () => {
+        logo.rebuild(nextDemoImage());
+      });
 
       bwBtn.addEventListener("click", () => {
         bwBtn.classList.add("active");

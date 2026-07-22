@@ -3,21 +3,46 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dithered Particle Logo</title>
+    <title>Dithered Particle Canvas</title>
+
+    <!-- Detect system dark/light preference automatically -->
+    <script>
+      (function () {
+        var t = localStorage.getItem("dp-theme");
+        if (t) document.documentElement.setAttribute("data-theme", t);
+        else if (
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches
+        )
+          document.documentElement.setAttribute("data-theme", "dark");
+      })();
+    </script>
 
     <style>
       :root,
       [data-theme="light"] {
         --particle: #111111;
         --bg: #f5f5f0;
-        --bg-spot: rgba(255, 255, 255, 0.55);
+        --bg-spot: rgba(255, 255, 255, 0.65);
         --surface: #ffffff;
         --surface-hover: #f2f2ef;
         --border: #e0e0dd;
         --text: #1a1a1a;
         --text-sub: #999;
-        --shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-        --shadow-up: 0 6px 20px rgba(0, 0, 0, 0.1);
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        --shadow-up: 0 8px 24px rgba(0, 0, 0, 0.08);
+      }
+      [data-theme="dark"] {
+        --particle: #e2e2e2;
+        --bg: #0a0a0a;
+        --bg-spot: rgba(30, 30, 30, 0.7);
+        --surface: #161616;
+        --surface-hover: #1e1e1e;
+        --border: #2a2a2a;
+        --text: #e2e2e2;
+        --text-sub: #555;
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+        --shadow-up: 0 8px 24px rgba(0, 0, 0, 0.45);
       }
 
       *,
@@ -33,16 +58,19 @@
         display: grid;
         place-items: center;
         overflow: hidden;
-        padding: 12px;
+        padding: 10px;
         background-color: var(--bg);
         background-image: radial-gradient(
           ellipse at 50% 32%,
           var(--bg-spot),
-          transparent 68%
+          transparent 75%
         );
         font-family:
           -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         color: var(--text);
+        transition:
+          background-color 0.5s ease,
+          color 0.4s ease;
         -webkit-font-smoothing: antialiased;
       }
 
@@ -51,17 +79,20 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 24px;
+        gap: 20px;
         width: 100%;
+        max-width: 1200px;
+        height: 96vh;
+        justify-content: center;
       }
 
-      /* ── LARGER CANVAS ── */
+      /* ── MAXIMIZED CANVAS CONTAINER ── */
       .dithered-logo {
         position: relative;
-        width: min(95vmin, 900px);
-        height: min(95vmin, 900px);
-        max-width: 96vw;
-        max-height: 96vh;
+        width: min(92vmin, 820px);
+        height: min(92vmin, 820px);
+        max-width: 95vw;
+        max-height: 76vh;
         color: var(--particle);
       }
       .dithered-logo canvas {
@@ -81,7 +112,8 @@
         gap: 10px;
         flex-wrap: wrap;
         justify-content: center;
-        padding: 0 10px;
+        padding: 4px;
+        z-index: 10;
       }
 
       .btn {
@@ -139,18 +171,20 @@
         font-size: 13px;
         color: var(--text-sub);
         letter-spacing: 0.02em;
+        transition: color 0.4s ease;
       }
 
       @media (max-width: 640px) {
-        body {
-          padding: 8px;
+        .demo {
+          gap: 16px;
+          height: auto;
         }
         .dithered-logo {
-          width: min(96vw, 600px);
-          height: min(96vw, 600px);
+          width: min(94vw, 550px);
+          height: min(94vw, 550px);
         }
         .btn {
-          padding: 9px 14px;
+          padding: 8px 14px;
           font-size: 13px;
         }
       }
@@ -223,7 +257,7 @@
     </main>
 
     <script>
-      /* ═══════ Constants ═══════ */
+      /* ═══════ Interactive Physical Constants ═══════ */
       const RIPPLE_SPEED = 225;
       const RIPPLE_WIDTH = 37;
       const RIPPLE_FORCE = 20;
@@ -234,21 +268,21 @@
       const LERP = 0.12;
       const SNAP = 0.01;
 
-      /* ═══════ Demo image ═══════ */
+      /* ═══════ Demo background image ═══════ */
       function createDemoImage() {
         return "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/Background.jpg";
       }
 
-      /* ═══════ DitheredLogo ═══════ */
+      /* ═══════ DitheredLogo Class ═══════ */
       class DitheredLogo {
         constructor(container, imageSrc, config = {}) {
           this.el = container;
           this.cv = container.querySelector("canvas");
           this.cx = this.cv.getContext("2d");
           this.cfg = {
-            gridSize: 420, /* Increased for larger canvas */
-            scale: 0.86,
-            dotScale: 0.9,
+            gridSize: 380, /* Increased to 380 for crisp detail in larger resolution */
+            scale: 0.88,
+            dotScale: 0.95,
             invert: true,
             cornerRadius: 0.16,
             threshold: 168,
@@ -262,7 +296,7 @@
           };
           this.src = imageSrc;
           this.sys = null;
-          this.monochrome = false; /* Default to color mode */
+          this.monochrome = false; /* COLOR IS NOW DEFAULT ON LOAD */
           this.cursor = { x: 0, y: 0, on: false };
           this.ripples = [];
           this.raf = 0;
@@ -273,6 +307,16 @@
 
           this.ro = new ResizeObserver(() => this._resize());
           this.ro.observe(this.el);
+
+          this.mo = new MutationObserver(() => {
+            requestAnimationFrame(() => {
+              if (this.sys) this._draw();
+            });
+          });
+          this.mo.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ["data-theme", "class", "style"],
+          });
 
           this._bind();
           this._resize();
@@ -634,7 +678,7 @@
               if (band < RIPPLE_WIDTH) {
                 const wf = (1 - band / RIPPLE_WIDTH) * life * RIPPLE_FORCE * rm;
                 fx += (dx / d) * wf;
-                fy += (dy / d) * wf;
+                fy += (vy / d) * wf;
               }
             }
 
@@ -732,6 +776,7 @@
         destroy() {
           cancelAnimationFrame(this.raf);
           this.ro.disconnect();
+          this.mo.disconnect();
         }
       }
 

@@ -5,18 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dithered Particle Logo</title>
 
-    <script>
-      (function () {
-        var t = localStorage.getItem("dp-theme");
-        if (t) document.documentElement.setAttribute("data-theme", t);
-        else if (
-          window.matchMedia &&
-          window.matchMedia("(prefers-color-scheme: dark)").matches
-        )
-          document.documentElement.setAttribute("data-theme", "dark");
-      })();
-    </script>
-
     <style>
       :root,
       [data-theme="light"] {
@@ -71,53 +59,6 @@
           background-color 0.5s ease,
           color 0.4s ease;
         -webkit-font-smoothing: antialiased;
-      }
-
-      /* ── Theme toggle ── */
-      .theme-toggle {
-        position: fixed;
-        top: 18px;
-        right: 18px;
-        z-index: 100;
-        width: 44px;
-        height: 44px;
-        display: grid;
-        place-items: center;
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        background: var(--surface);
-        color: var(--text);
-        cursor: pointer;
-        box-shadow: var(--shadow);
-        transition: all 0.25s ease;
-      }
-      .theme-toggle:hover {
-        background: var(--surface-hover);
-        box-shadow: var(--shadow-up);
-        transform: scale(1.06);
-      }
-      .theme-toggle:active {
-        transform: scale(0.94);
-      }
-      .theme-toggle svg {
-        width: 20px;
-        height: 20px;
-        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-      [data-theme="dark"] .theme-toggle svg {
-        transform: rotate(180deg);
-      }
-      .theme-toggle .moon {
-        display: block;
-      }
-      .theme-toggle .sun {
-        display: none;
-      }
-      [data-theme="dark"] .theme-toggle .moon {
-        display: none;
-      }
-      [data-theme="dark"] .theme-toggle .sun {
-        display: block;
       }
 
       /* ── Layout ── */
@@ -239,38 +180,6 @@
   </head>
 
   <body>
-    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
-      <svg
-        class="moon"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-      </svg>
-      <svg
-        class="sun"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <circle cx="12" cy="12" r="5" />
-        <line x1="12" y1="1" x2="12" y2="3" />
-        <line x1="12" y1="21" x2="12" y2="23" />
-        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-        <line x1="1" y1="12" x2="3" y2="12" />
-        <line x1="21" y1="12" x2="23" y2="12" />
-        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-      </svg>
-    </button>
 
     <main class="demo">
       <div class="dithered-logo" id="ditheredLogo">
@@ -297,7 +206,7 @@
 
         <div class="divider"></div>
 
-        <button class="btn active" id="bwBtn">
+        <button class="btn" id="bwBtn">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -312,7 +221,7 @@
           B&amp;W
         </button>
 
-        <button class="btn" id="colorBtn">
+        <button class="btn active" id="colorBtn">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -376,7 +285,7 @@
           };
           this.src = imageSrc;
           this.sys = null;
-          this.monochrome = true;
+          this.monochrome = false;
           this.cursor = { x: 0, y: 0, on: false };
           this.ripples = [];
           this.raf = 0;
@@ -865,15 +774,6 @@
         document.getElementById("ditheredLogo"),
         createDemoImage(),
       );
-
-      /* ── Theme toggle ── */
-      document.getElementById("themeToggle").addEventListener("click", () => {
-        const html = document.documentElement;
-        const next =
-          html.getAttribute("data-theme") === "dark" ? "light" : "dark";
-        html.setAttribute("data-theme", next);
-        localStorage.setItem("dp-theme", next);
-      });
 
       /* ── B&W / Color toggle ── */
       const bwBtn = document.getElementById("bwBtn");

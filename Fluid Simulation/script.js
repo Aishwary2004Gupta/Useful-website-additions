@@ -75,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let idleProgress = 0.0;
 
   const idleDelay = 300;
-  const idleFadeDuration = 1;
+  const idleFadeDuration = 1800;
   const idleResponse = 5.0;
 
   // Reset-button state

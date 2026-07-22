@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
@@ -63,9 +63,12 @@
           var(--bg-spot),
           transparent 75%
         );
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         color: var(--text);
-        transition: background-color 0.5s cubic-bezier(0.25, 1, 0.5, 1), color 0.4s ease;
+        transition:
+          background-color 0.5s cubic-bezier(0.25, 1, 0.5, 1),
+          color 0.4s ease;
         -webkit-font-smoothing: antialiased;
         padding: 20px;
       }
@@ -247,10 +250,26 @@
 
   <body>
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
-      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg
+        class="moon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
       </svg>
-      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg
+        class="sun"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
         <circle cx="12" cy="12" r="5" />
         <line x1="12" y1="1" x2="12" y2="3" />
         <line x1="12" y1="21" x2="12" y2="23" />
@@ -270,7 +289,14 @@
 
       <div class="controls">
         <label class="btn btn-upload" id="uploadBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
             <polyline points="17 8 12 3 7 8" />
             <line x1="12" y1="3" x2="12" y2="15" />
@@ -282,7 +308,14 @@
         <div class="divider"></div>
 
         <button class="btn active" id="bwBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <circle cx="12" cy="12" r="10" />
             <path d="M12 2a10 10 0 0 1 0 20z" fill="currentColor" />
           </svg>
@@ -290,18 +323,29 @@
         </button>
 
         <button class="btn" id="colorBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <circle cx="13.5" cy="6.5" r="2.5" />
             <circle cx="17.5" cy="10.5" r="2.5" />
             <circle cx="8.5" cy="7.5" r="2.5" />
             <circle cx="6.5" cy="12" r="2.5" />
-            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.5-.7 1.5-1.5 0-.4-.1-.7-.4-1-.2-.3-.4-.6-.4-1 0-.8.7-1.5 1.5-1.5H16c3.3 0 6-2.7 6-6 0-5.5-4.5-9-10-9z" />
+            <path
+              d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.5-.7 1.5-1.5 0-.4-.1-.7-.4-1-.2-.3-.4-.6-.4-1 0-.8.7-1.5 1.5-1.5H16c3.3 0 6-2.7 6-6 0-5.5-4.5-9-10-9z"
+            />
           </svg>
           Original Color
         </button>
       </div>
 
-      <p class="hint">Move cursor inside to push particles • Click/Tap to trigger ripples</p>
+      <p class="hint">
+        Move cursor inside to push particles • Click/Tap to trigger ripples
+      </p>
     </main>
 
     <script>
@@ -327,9 +371,9 @@
           this.cv = container.querySelector("canvas");
           this.cx = this.cv.getContext("2d");
           this.cfg = {
-            gridSize: 310,            // Increased resolution to match larger canvas size perfectly
-            scale: 0.88,              // Slightly tighter bounding scale
-            dotScale: 0.95,           // Finely balanced size for pristine dither patterns
+            gridSize: 310, // Increased resolution to match larger canvas size perfectly
+            scale: 0.88, // Slightly tighter bounding scale
+            dotScale: 0.95, // Finely balanced size for pristine dither patterns
             invert: true,
             cornerRadius: 0.16,
             threshold: 168,
@@ -449,7 +493,17 @@
           const fx = fc.getContext("2d");
           fx.imageSmoothingEnabled = true;
           fx.imageSmoothingQuality = "high";
-          fx.drawImage(sc, pad, pad, img.naturalWidth, img.naturalHeight, 0, 0, w, h);
+          fx.drawImage(
+            sc,
+            pad,
+            pad,
+            img.naturalWidth,
+            img.naturalHeight,
+            0,
+            0,
+            w,
+            h,
+          );
           const px = fx.getImageData(0, 0, w, h).data;
 
           const gs = new Uint8Array(w * h);
@@ -469,10 +523,15 @@
               colors[idx * 3 + 1] = ad[pi + 1];
               colors[idx * 3 + 2] = ad[pi + 2];
 
-              let l = ba > 0.01 ? (0.299 * px[pi] + 0.587 * px[pi + 1] + 0.114 * px[pi + 2]) / ba : 0;
+              let l =
+                ba > 0.01
+                  ? (0.299 * px[pi] + 0.587 * px[pi + 1] + 0.114 * px[pi + 2]) /
+                    ba
+                  : 0;
 
               if (C.contrast) l = cf * (l - 128) + 128;
-              if (C.gamma !== 1) l = 255 * Math.pow(Math.max(0, l / 255), 1 / C.gamma);
+              if (C.gamma !== 1)
+                l = 255 * Math.pow(Math.max(0, l / 255), 1 / C.gamma);
 
               gs[idx] = Math.max(0, Math.min(255, Math.round(l)));
             }
@@ -541,7 +600,8 @@
 
           const out = [];
           for (const idx of mask)
-            if (!filled.has(idx) && alpha[idx] >= 128) out.push(idx % w, Math.floor(idx / w));
+            if (!filled.has(idx) && alpha[idx] >= 128)
+              out.push(idx % w, Math.floor(idx / w));
 
           return new Float32Array(out);
         }
@@ -578,7 +638,14 @@
 
             if (!bucketMap[key]) {
               bucketMap[key] = {
-                css: "rgb(" + ((qr << 3) | 4) + "," + ((qg << 3) | 4) + "," + ((qb << 3) | 4) + ")",
+                css:
+                  "rgb(" +
+                  ((qr << 3) | 4) +
+                  "," +
+                  ((qg << 3) | 4) +
+                  "," +
+                  ((qb << 3) | 4) +
+                  ")",
                 ids: [],
               };
             }
@@ -623,14 +690,22 @@
 
             const sf = Math.max(
               0.5,
-              (Math.min(rect.width, rect.height) * this.cfg.scale) / Math.max(g.w, g.h)
+              (Math.min(rect.width, rect.height) * this.cfg.scale) /
+                Math.max(g.w, g.h),
             );
             const originX = Math.round((rect.width - g.w * sf) / 2);
             const originY = Math.round((rect.height - g.h * sf) / 2);
             const mobile = matchMedia("(max-width:640px)").matches;
             const ds = mobile ? this.cfg.dotScale * 0.8 : this.cfg.dotScale;
 
-            this.sys = this._initParticles(pts, sf, ds, originX, originY, pColors);
+            this.sys = this._initParticles(
+              pts,
+              sf,
+              ds,
+              originX,
+              originY,
+              pColors,
+            );
             this._loop();
           } catch (err) {
             console.error("DitheredLogo failed to build:", err);
@@ -642,13 +717,16 @@
           if (!s) return false;
 
           for (let i = this.ripples.length - 1; i >= 0; i--)
-            if (now - this.ripples[i].t >= RIPPLE_DURATION) this.ripples.splice(i, 1);
+            if (now - this.ripples[i].t >= RIPPLE_DURATION)
+              this.ripples.splice(i, 1);
 
-          const rm = this.ripples.length > 0 ? 1 + 0.5 * (this.ripples.length - 1) : 0;
+          const rm =
+            this.ripples.length > 0 ? 1 + 0.5 * (this.ripples.length - 1) : 0;
           let motion = false;
 
           for (let i = 0; i < s.n; i++) {
-            let fx = 0, fy = 0;
+            let fx = 0,
+              fy = 0;
 
             if (this.cursor.on) {
               const vx = s.bx[i] + s.ox[i] - this.cursor.x;
@@ -772,13 +850,14 @@
       /* ═══════ Initialization & Bindings ═══════ */
       const logo = new DitheredLogo(
         document.getElementById("ditheredLogo"),
-        createDemoImage()
+        createDemoImage(),
       );
 
       /* Dark mode event */
       document.getElementById("themeToggle").addEventListener("click", () => {
         const html = document.documentElement;
-        const next = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        const next =
+          html.getAttribute("data-theme") === "dark" ? "light" : "dark";
         html.setAttribute("data-theme", next);
         localStorage.setItem("dp-theme", next);
       });

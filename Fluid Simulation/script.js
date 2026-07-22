@@ -412,7 +412,7 @@ document.addEventListener("DOMContentLoaded", () => {
       now - lastPointerMove;
 
     const idleTarget = resetting
-      ? 1.0
+      ? 0.0
       : clamp01(
         (timeSincePointerMove - idleDelay) /
         idleFadeDuration

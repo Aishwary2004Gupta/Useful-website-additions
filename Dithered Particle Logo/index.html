@@ -3,8 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dithered Particle Logo</title>
+    <title>Dithered Particle Canvas</title>
 
+    <!-- Detect system dark/light preference automatically -->
     <script>
       (function () {
         var t = localStorage.getItem("dp-theme");
@@ -22,26 +23,26 @@
       [data-theme="light"] {
         --particle: #111111;
         --bg: #f5f5f0;
-        --bg-spot: rgba(255, 255, 255, 0.55);
+        --bg-spot: rgba(255, 255, 255, 0.65);
         --surface: #ffffff;
         --surface-hover: #f2f2ef;
         --border: #e0e0dd;
         --text: #1a1a1a;
         --text-sub: #999;
-        --shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-        --shadow-up: 0 6px 20px rgba(0, 0, 0, 0.1);
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        --shadow-up: 0 8px 24px rgba(0, 0, 0, 0.08);
       }
       [data-theme="dark"] {
         --particle: #e2e2e2;
         --bg: #0a0a0a;
-        --bg-spot: rgba(30, 30, 30, 0.6);
+        --bg-spot: rgba(30, 30, 30, 0.7);
         --surface: #161616;
         --surface-hover: #1e1e1e;
         --border: #2a2a2a;
         --text: #e2e2e2;
         --text-sub: #555;
-        --shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-        --shadow-up: 0 6px 20px rgba(0, 0, 0, 0.4);
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+        --shadow-up: 0 8px 24px rgba(0, 0, 0, 0.45);
       }
 
       *,
@@ -57,12 +58,12 @@
         display: grid;
         place-items: center;
         overflow: hidden;
-        padding: 20px;
+        padding: 10px;
         background-color: var(--bg);
         background-image: radial-gradient(
           ellipse at 50% 32%,
           var(--bg-spot),
-          transparent 68%
+          transparent 75%
         );
         font-family:
           -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -73,69 +74,25 @@
         -webkit-font-smoothing: antialiased;
       }
 
-      /* ── Theme toggle ── */
-      .theme-toggle {
-        position: fixed;
-        top: 18px;
-        right: 18px;
-        z-index: 100;
-        width: 44px;
-        height: 44px;
-        display: grid;
-        place-items: center;
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        background: var(--surface);
-        color: var(--text);
-        cursor: pointer;
-        box-shadow: var(--shadow);
-        transition: all 0.25s ease;
-      }
-      .theme-toggle:hover {
-        background: var(--surface-hover);
-        box-shadow: var(--shadow-up);
-        transform: scale(1.06);
-      }
-      .theme-toggle:active {
-        transform: scale(0.94);
-      }
-      .theme-toggle svg {
-        width: 20px;
-        height: 20px;
-        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-      [data-theme="dark"] .theme-toggle svg {
-        transform: rotate(180deg);
-      }
-      .theme-toggle .moon {
-        display: block;
-      }
-      .theme-toggle .sun {
-        display: none;
-      }
-      [data-theme="dark"] .theme-toggle .moon {
-        display: none;
-      }
-      [data-theme="dark"] .theme-toggle .sun {
-        display: block;
-      }
-
       /* ── Layout ── */
       .demo {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 28px;
+        gap: 20px;
         width: 100%;
+        max-width: 1200px;
+        height: 96vh;
+        justify-content: center;
       }
 
-      /* ── LARGER CANVAS ── */
+      /* ── MAXIMIZED CANVAS CONTAINER ── */
       .dithered-logo {
         position: relative;
-        width: min(80vmin, 720px);
-        height: min(80vmin, 720px);
-        max-width: 90vw;
-        max-height: 90vh;
+        width: min(92vmin, 820px);
+        height: min(92vmin, 820px);
+        max-width: 95vw;
+        max-height: 76vh;
         color: var(--particle);
       }
       .dithered-logo canvas {
@@ -155,7 +112,8 @@
         gap: 10px;
         flex-wrap: wrap;
         justify-content: center;
-        padding: 0 10px;
+        padding: 4px;
+        z-index: 10;
       }
 
       .btn {
@@ -217,21 +175,16 @@
       }
 
       @media (max-width: 640px) {
-        body {
-          padding: 10px;
+        .demo {
+          gap: 16px;
+          height: auto;
         }
         .dithered-logo {
-          width: min(92vw, 520px);
-          height: min(92vw, 520px);
-        }
-        .theme-toggle {
-          top: 12px;
-          right: 12px;
-          width: 40px;
-          height: 40px;
+          width: min(94vw, 550px);
+          height: min(94vw, 550px);
         }
         .btn {
-          padding: 9px 14px;
+          padding: 8px 14px;
           font-size: 13px;
         }
       }
@@ -239,39 +192,6 @@
   </head>
 
   <body>
-    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
-      <svg
-        class="moon"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-      </svg>
-      <svg
-        class="sun"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <circle cx="12" cy="12" r="5" />
-        <line x1="12" y1="1" x2="12" y2="3" />
-        <line x1="12" y1="21" x2="12" y2="23" />
-        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-        <line x1="1" y1="12" x2="3" y2="12" />
-        <line x1="21" y1="12" x2="23" y2="12" />
-        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-      </svg>
-    </button>
-
     <main class="demo">
       <div class="dithered-logo" id="ditheredLogo">
         <canvas id="particleCanvas"></canvas>
@@ -297,7 +217,7 @@
 
         <div class="divider"></div>
 
-        <button class="btn active" id="bwBtn">
+        <button class="btn" id="bwBtn">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -312,7 +232,7 @@
           B&amp;W
         </button>
 
-        <button class="btn" id="colorBtn">
+        <button class="btn active" id="colorBtn">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -337,7 +257,7 @@
     </main>
 
     <script>
-      /* ═══════ Constants ═══════ */
+      /* ═══════ Interactive Physical Constants ═══════ */
       const RIPPLE_SPEED = 225;
       const RIPPLE_WIDTH = 37;
       const RIPPLE_FORCE = 20;
@@ -348,21 +268,21 @@
       const LERP = 0.12;
       const SNAP = 0.01;
 
-      /* ═══════ Demo image ═══════ */
+      /* ═══════ Demo background image ═══════ */
       function createDemoImage() {
         return "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/Background.jpg";
       }
 
-      /* ═══════ DitheredLogo ═══════ */
+      /* ═══════ DitheredLogo Class ═══════ */
       class DitheredLogo {
         constructor(container, imageSrc, config = {}) {
           this.el = container;
           this.cv = container.querySelector("canvas");
           this.cx = this.cv.getContext("2d");
           this.cfg = {
-            gridSize: 340, /* Increased for larger canvas */
-            scale: 0.86,
-            dotScale: 0.9,
+            gridSize: 380, /* Crisis-sharp detail at maximum display scale */
+            scale: 0.88,
+            dotScale: 0.95,
             invert: true,
             cornerRadius: 0.16,
             threshold: 168,
@@ -376,7 +296,7 @@
           };
           this.src = imageSrc;
           this.sys = null;
-          this.monochrome = true;
+          this.monochrome = false; /* ORIGINAL COLOR ACTIVE BY DEFAULT */
           this.cursor = { x: 0, y: 0, on: false };
           this.ripples = [];
           this.raf = 0;
@@ -472,7 +392,7 @@
           ax.drawImage(img, 0, 0, w, h);
           const ad = ax.getImageData(0, 0, w, h).data;
 
-          /* Blurred source for luminance */
+          /* Blurred source for dither luminance mapping */
           const pad = Math.ceil(C.blur * 3);
           const sc = document.createElement("canvas");
           sc.width = img.naturalWidth + pad * 2;
@@ -514,7 +434,7 @@
 
               alpha[idx] = ad[pi + 3];
 
-              /* Store original RGB from non-blurred image */
+              /* Store original RGB colors safely */
               colors[idx * 3] = ad[pi];
               colors[idx * 3 + 1] = ad[pi + 1];
               colors[idx * 3 + 2] = ad[pi + 2];
@@ -758,7 +678,7 @@
               if (band < RIPPLE_WIDTH) {
                 const wf = (1 - band / RIPPLE_WIDTH) * life * RIPPLE_FORCE * rm;
                 fx += (dx / d) * wf;
-                fy += (dy / d) * wf;
+                fy += (vy / d) * wf;
               }
             }
 
@@ -865,15 +785,6 @@
         document.getElementById("ditheredLogo"),
         createDemoImage(),
       );
-
-      /* ── Theme toggle ── */
-      document.getElementById("themeToggle").addEventListener("click", () => {
-        const html = document.documentElement;
-        const next =
-          html.getAttribute("data-theme") === "dark" ? "light" : "dark";
-        html.setAttribute("data-theme", next);
-        localStorage.setItem("dp-theme", next);
-      });
 
       /* ── B&W / Color toggle ── */
       const bwBtn = document.getElementById("bwBtn");

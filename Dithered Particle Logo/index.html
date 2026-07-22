@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
@@ -22,26 +22,26 @@
       [data-theme="light"] {
         --particle: #111111;
         --bg: #f5f5f0;
-        --bg-spot: rgba(255, 255, 255, 0.55);
+        --bg-spot: rgba(255, 255, 255, 0.6);
         --surface: #ffffff;
         --surface-hover: #f2f2ef;
         --border: #e0e0dd;
         --text: #1a1a1a;
-        --text-sub: #999;
-        --shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-        --shadow-up: 0 6px 20px rgba(0, 0, 0, 0.1);
+        --text-sub: #8a8a85;
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        --shadow-up: 0 8px 30px rgba(0, 0, 0, 0.08);
       }
       [data-theme="dark"] {
         --particle: #e2e2e2;
         --bg: #0a0a0a;
-        --bg-spot: rgba(30, 30, 30, 0.6);
-        --surface: #161616;
+        --bg-spot: rgba(30, 30, 30, 0.65);
+        --surface: #151515;
         --surface-hover: #1e1e1e;
-        --border: #2a2a2a;
+        --border: #262626;
         --text: #e2e2e2;
-        --text-sub: #555;
-        --shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-        --shadow-up: 0 6px 20px rgba(0, 0, 0, 0.4);
+        --text-sub: #6e6e6a;
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        --shadow-up: 0 8px 30px rgba(0, 0, 0, 0.45);
       }
 
       *,
@@ -56,52 +56,50 @@
         min-height: 100vh;
         display: grid;
         place-items: center;
-        overflow: hidden;
+        overflow-x: hidden;
         background-color: var(--bg);
         background-image: radial-gradient(
-          ellipse at 50% 32%,
+          ellipse at 50% 35%,
           var(--bg-spot),
-          transparent 68%
+          transparent 75%
         );
-        font-family:
-          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         color: var(--text);
-        transition:
-          background-color 0.5s ease,
-          color 0.4s ease;
+        transition: background-color 0.5s cubic-bezier(0.25, 1, 0.5, 1), color 0.4s ease;
         -webkit-font-smoothing: antialiased;
+        padding: 20px;
       }
 
       /* ── Theme toggle ── */
       .theme-toggle {
         position: fixed;
-        top: 18px;
-        right: 18px;
+        top: 20px;
+        right: 20px;
         z-index: 100;
-        width: 44px;
-        height: 44px;
+        width: 48px;
+        height: 48px;
         display: grid;
         place-items: center;
         border: 1px solid var(--border);
-        border-radius: 12px;
+        border-radius: 14px;
         background: var(--surface);
         color: var(--text);
         cursor: pointer;
         box-shadow: var(--shadow);
-        transition: all 0.25s ease;
+        transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
       }
       .theme-toggle:hover {
         background: var(--surface-hover);
         box-shadow: var(--shadow-up);
-        transform: scale(1.06);
+        transform: scale(1.05);
       }
       .theme-toggle:active {
-        transform: scale(0.94);
+        transform: scale(0.95);
       }
       .theme-toggle svg {
         width: 20px;
         height: 20px;
-        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
       }
       [data-theme="dark"] .theme-toggle svg {
         transform: rotate(180deg);
@@ -124,14 +122,19 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 24px;
+        gap: 32px;
+        width: 100%;
+        max-width: 800px;
       }
 
+      /* LARGER CANVAS WRAPPER: Responsive scaling up to 600px */
       .dithered-logo {
         position: relative;
-        width: 440px;
-        height: 440px;
+        width: min(85vw, 600px);
+        height: min(85vw, 600px);
         color: var(--particle);
+        background: transparent;
+        transition: transform 0.2s ease;
       }
       .dithered-logo canvas {
         position: absolute;
@@ -147,83 +150,96 @@
       .controls {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
         flex-wrap: wrap;
         justify-content: center;
+        background: var(--surface);
+        padding: 8px 16px;
+        border-radius: 18px;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
       }
 
       .btn {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        padding: 9px 16px;
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        background: var(--surface);
+        gap: 8px;
+        padding: 10px 18px;
+        border: 1px solid transparent;
+        border-radius: 12px;
+        background: transparent;
         color: var(--text);
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 500;
         cursor: pointer;
-        box-shadow: var(--shadow);
-        transition: all 0.22s ease;
+        transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
         user-select: none;
         -webkit-user-select: none;
       }
       .btn:hover {
         background: var(--surface-hover);
-        box-shadow: var(--shadow-up);
-        transform: translateY(-1px);
-      }
-      .btn:active {
-        transform: translateY(0);
       }
       .btn input {
         display: none;
       }
       .btn svg {
-        width: 14px;
-        height: 14px;
-        opacity: 0.5;
+        width: 16px;
+        height: 16px;
+        opacity: 0.6;
         flex-shrink: 0;
       }
 
       .btn.active {
-        border-color: var(--text);
         background: var(--text);
         color: var(--bg);
       }
       .btn.active svg {
-        opacity: 0.85;
+        opacity: 0.9;
+      }
+
+      /* Specific Upload Button Style to distinguish from mode toggles */
+      .btn-upload {
+        border: 1px solid var(--border);
+        background: var(--surface);
+      }
+      .btn-upload:hover {
+        background: var(--surface-hover);
+        border-color: var(--text-sub);
       }
 
       .divider {
         width: 1px;
-        height: 28px;
+        height: 24px;
         background: var(--border);
         margin: 0 4px;
       }
 
       .hint {
-        font-size: 12px;
+        font-size: 13px;
         color: var(--text-sub);
         letter-spacing: 0.02em;
+        text-align: center;
         transition: color 0.4s ease;
       }
 
       @media (max-width: 640px) {
-        .dithered-logo {
-          width: min(86vw, 350px);
-          height: min(86vw, 350px);
+        .demo {
+          gap: 24px;
         }
         .theme-toggle {
-          top: 12px;
-          right: 12px;
-          width: 40px;
-          height: 40px;
+          top: 14px;
+          right: 14px;
+          width: 42px;
+          height: 42px;
+        }
+        .controls {
+          padding: 6px 12px;
+          border-radius: 14px;
         }
         .btn {
-          padding: 8px 13px;
-          font-size: 12.5px;
+          padding: 8px 14px;
+          font-size: 13px;
+          border-radius: 10px;
         }
       }
     </style>
@@ -231,26 +247,10 @@
 
   <body>
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
-      <svg
-        class="moon"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
       </svg>
-      <svg
-        class="sun"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="5" />
         <line x1="12" y1="1" x2="12" y2="3" />
         <line x1="12" y1="21" x2="12" y2="23" />
@@ -269,91 +269,67 @@
       </div>
 
       <div class="controls">
-        <label class="btn" id="uploadBtn">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
+        <label class="btn btn-upload" id="uploadBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
             <polyline points="17 8 12 3 7 8" />
             <line x1="12" y1="3" x2="12" y2="15" />
           </svg>
-          Upload
+          Upload Image
           <input type="file" id="imagePicker" accept="image/*" />
         </label>
 
         <div class="divider"></div>
 
         <button class="btn active" id="bwBtn">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10" />
             <path d="M12 2a10 10 0 0 1 0 20z" fill="currentColor" />
           </svg>
-          B&amp;W
+          Black &amp; White
         </button>
 
         <button class="btn" id="colorBtn">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="13.5" cy="6.5" r="2.5" />
             <circle cx="17.5" cy="10.5" r="2.5" />
             <circle cx="8.5" cy="7.5" r="2.5" />
             <circle cx="6.5" cy="12" r="2.5" />
-            <path
-              d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.5-.7 1.5-1.5 0-.4-.1-.7-.4-1-.2-.3-.4-.6-.4-1 0-.8.7-1.5 1.5-1.5H16c3.3 0 6-2.7 6-6 0-5.5-4.5-9-10-9z"
-            />
+            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.5-.7 1.5-1.5 0-.4-.1-.7-.4-1-.2-.3-.4-.6-.4-1 0-.8.7-1.5 1.5-1.5H16c3.3 0 6-2.7 6-6 0-5.5-4.5-9-10-9z" />
           </svg>
-          Color
+          Original Color
         </button>
       </div>
 
-      <p class="hint">Hover &amp; click to interact with particles</p>
+      <p class="hint">Move cursor inside to push particles • Click/Tap to trigger ripples</p>
     </main>
 
     <script>
-      /* ═══════ Constants ═══════ */
-      const RIPPLE_SPEED = 225;
-      const RIPPLE_WIDTH = 37;
-      const RIPPLE_FORCE = 20;
-      const RIPPLE_DURATION = 675;
-      const CURSOR_RADIUS = 100;
+      /* ═══════ Interactive Physics Constants ═══════ */
+      const RIPPLE_SPEED = 230;
+      const RIPPLE_WIDTH = 38;
+      const RIPPLE_FORCE = 22;
+      const RIPPLE_DURATION = 680;
+      const CURSOR_RADIUS = 110;
       const CURSOR_RADIUS_SQ = CURSOR_RADIUS * CURSOR_RADIUS;
-      const CURSOR_FORCE = 40;
+      const CURSOR_FORCE = 42;
       const LERP = 0.12;
       const SNAP = 0.01;
 
-      /* ═══════ Demo image ═══════ */
       function createDemoImage() {
         return "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/Background.jpg";
       }
 
-      /* ═══════ DitheredLogo ═══════ */
+      /* ═══════ DitheredLogo System ═══════ */
       class DitheredLogo {
         constructor(container, imageSrc, config = {}) {
           this.el = container;
           this.cv = container.querySelector("canvas");
           this.cx = this.cv.getContext("2d");
           this.cfg = {
-            gridSize: 270,
-            scale: 0.86,
-            dotScale: 0.9,
+            gridSize: 310,            // Increased resolution to match larger canvas size perfectly
+            scale: 0.88,              // Slightly tighter bounding scale
+            dotScale: 0.95,           // Finely balanced size for pristine dither patterns
             invert: true,
             cornerRadius: 0.16,
             threshold: 168,
@@ -394,7 +370,6 @@
           this.rebuild();
         }
 
-        /* ── Pointer events ── */
         _bind() {
           const c = this.cv;
           c.addEventListener("pointermove", (e) => {
@@ -426,7 +401,6 @@
           });
         }
 
-        /* ── Toggle monochrome / color ── */
         setColorMode(useColor) {
           this.monochrome = !useColor;
           if (this.sys) {
@@ -435,7 +409,6 @@
           }
         }
 
-        /* ── Image loader ── */
         _img(src) {
           return new Promise((ok, no) => {
             const i = new Image();
@@ -446,14 +419,12 @@
           });
         }
 
-        /* ── Grayscale grid + original colors ── */
         _gray(img) {
           const C = this.cfg;
           const asp = img.naturalWidth / img.naturalHeight;
           const w = asp >= 1 ? C.gridSize : Math.round(C.gridSize * asp);
           const h = asp >= 1 ? Math.round(C.gridSize / asp) : C.gridSize;
 
-          /* Original (no blur) for alpha + color */
           const ac = document.createElement("canvas");
           ac.width = w;
           ac.height = h;
@@ -463,7 +434,6 @@
           ax.drawImage(img, 0, 0, w, h);
           const ad = ax.getImageData(0, 0, w, h).data;
 
-          /* Blurred source for luminance */
           const pad = Math.ceil(C.blur * 3);
           const sc = document.createElement("canvas");
           sc.width = img.naturalWidth + pad * 2;
@@ -479,17 +449,7 @@
           const fx = fc.getContext("2d");
           fx.imageSmoothingEnabled = true;
           fx.imageSmoothingQuality = "high";
-          fx.drawImage(
-            sc,
-            pad,
-            pad,
-            img.naturalWidth,
-            img.naturalHeight,
-            0,
-            0,
-            w,
-            h,
-          );
+          fx.drawImage(sc, pad, pad, img.naturalWidth, img.naturalHeight, 0, 0, w, h);
           const px = fx.getImageData(0, 0, w, h).data;
 
           const gs = new Uint8Array(w * h);
@@ -505,29 +465,21 @@
 
               alpha[idx] = ad[pi + 3];
 
-              /* Store original RGB from non-blurred image */
               colors[idx * 3] = ad[pi];
               colors[idx * 3 + 1] = ad[pi + 1];
               colors[idx * 3 + 2] = ad[pi + 2];
 
-              let l =
-                ba > 0.01
-                  ? (0.299 * px[pi] + 0.587 * px[pi + 1] + 0.114 * px[pi + 2]) /
-                    ba
-                  : 0;
+              let l = ba > 0.01 ? (0.299 * px[pi] + 0.587 * px[pi + 1] + 0.114 * px[pi + 2]) / ba : 0;
 
               if (C.contrast) l = cf * (l - 128) + 128;
-              if (C.gamma !== 1)
-                l = 255 * Math.pow(Math.max(0, l / 255), 1 / C.gamma);
+              if (C.gamma !== 1) l = 255 * Math.pow(Math.max(0, l / 255), 1 / C.gamma);
 
               gs[idx] = Math.max(0, Math.min(255, Math.round(l)));
             }
           }
-
           return { gs, alpha, colors, w, h };
         }
 
-        /* ── Floyd-Steinberg dithering ── */
         _dither(g) {
           const C = this.cfg;
           const { gs, alpha, w, h } = g;
@@ -566,7 +518,6 @@
           return new Float32Array(pos);
         }
 
-        /* ── Rounded mask inversion ── */
         _invert(pts, w, h, alpha) {
           const r = Math.round(this.cfg.cornerRadius * Math.min(w, h));
           const mask = new Set();
@@ -590,13 +541,11 @@
 
           const out = [];
           for (const idx of mask)
-            if (!filled.has(idx) && alpha[idx] >= 128)
-              out.push(idx % w, Math.floor(idx / w));
+            if (!filled.has(idx) && alpha[idx] >= 128) out.push(idx % w, Math.floor(idx / w));
 
           return new Float32Array(out);
         }
 
-        /* ── Extract per-particle colors from grid ── */
         _extractColors(positions, gridColors, gridW) {
           const count = positions.length / 2;
           const pColors = new Uint8Array(count * 3);
@@ -613,7 +562,6 @@
           return pColors;
         }
 
-        /* ── Build color buckets for batched rendering ── */
         _buildColorBuckets(pColors, count) {
           const bucketMap = {};
 
@@ -622,7 +570,7 @@
             const g = pColors[i * 3 + 1];
             const b = pColors[i * 3 + 2];
 
-            /* Quantize to 5 bits per channel (32 levels, ~1.6% error) */
+            /* Quantize to 5-bits per channel for blazing fast batched GPU draws */
             const qr = r >> 3;
             const qg = g >> 3;
             const qb = b >> 3;
@@ -630,24 +578,15 @@
 
             if (!bucketMap[key]) {
               bucketMap[key] = {
-                css:
-                  "rgb(" +
-                  ((qr << 3) | 4) +
-                  "," +
-                  ((qg << 3) | 4) +
-                  "," +
-                  ((qb << 3) | 4) +
-                  ")",
+                css: "rgb(" + ((qr << 3) | 4) + "," + ((qg << 3) | 4) + "," + ((qb << 3) | 4) + ")",
                 ids: [],
               };
             }
             bucketMap[key].ids.push(i);
           }
-
           return Object.values(bucketMap);
         }
 
-        /* ── Init particle system ── */
         _initParticles(positions, sf, ds, ox, oy, pColors) {
           const n = positions.length / 2;
           const bx = new Float32Array(n);
@@ -669,7 +608,6 @@
           };
         }
 
-        /* ── Rebuild pipeline ── */
         async rebuild(newSrc) {
           if (newSrc) this.src = newSrc;
 
@@ -681,49 +619,36 @@
             let pts = this._dither(g);
             if (this.cfg.invert) pts = this._invert(pts, g.w, g.h, g.alpha);
 
-            /* Extract original colors for each particle position */
             const pColors = this._extractColors(pts, g.colors, g.w);
 
             const sf = Math.max(
               0.5,
-              (Math.min(rect.width, rect.height) * this.cfg.scale) /
-                Math.max(g.w, g.h),
+              (Math.min(rect.width, rect.height) * this.cfg.scale) / Math.max(g.w, g.h)
             );
             const originX = Math.round((rect.width - g.w * sf) / 2);
             const originY = Math.round((rect.height - g.h * sf) / 2);
             const mobile = matchMedia("(max-width:640px)").matches;
             const ds = mobile ? this.cfg.dotScale * 0.8 : this.cfg.dotScale;
 
-            this.sys = this._initParticles(
-              pts,
-              sf,
-              ds,
-              originX,
-              originY,
-              pColors,
-            );
+            this.sys = this._initParticles(pts, sf, ds, originX, originY, pColors);
             this._loop();
           } catch (err) {
-            console.error("DitheredLogo:", err);
+            console.error("DitheredLogo failed to build:", err);
           }
         }
 
-        /* ── Physics step ── */
         _step(now) {
           const s = this.sys;
           if (!s) return false;
 
           for (let i = this.ripples.length - 1; i >= 0; i--)
-            if (now - this.ripples[i].t >= RIPPLE_DURATION)
-              this.ripples.splice(i, 1);
+            if (now - this.ripples[i].t >= RIPPLE_DURATION) this.ripples.splice(i, 1);
 
-          const rm =
-            this.ripples.length > 0 ? 1 + 0.5 * (this.ripples.length - 1) : 0;
+          const rm = this.ripples.length > 0 ? 1 + 0.5 * (this.ripples.length - 1) : 0;
           let motion = false;
 
           for (let i = 0; i < s.n; i++) {
-            let fx = 0,
-              fy = 0;
+            let fx = 0, fy = 0;
 
             if (this.cursor.on) {
               const vx = s.bx[i] + s.ox[i] - this.cursor.x;
@@ -731,7 +656,7 @@
               const d2 = vx * vx + vy * vy;
               if (d2 > 0.1 && d2 < CURSOR_RADIUS_SQ) {
                 const d = Math.sqrt(d2);
-                const f = (1 - d / CURSOR_RADIUS) ** 3 * CURSOR_FORCE;
+                const f = Math.pow(1 - d / CURSOR_RADIUS, 3) * CURSOR_FORCE;
                 fx += (vx / d) * f;
                 fy += (vy / d) * f;
               }
@@ -759,18 +684,15 @@
             if (Math.abs(s.oy[i]) < SNAP) s.oy[i] = 0;
             if (s.ox[i] || s.oy[i]) motion = true;
           }
-
           return motion || this.ripples.length > 0 || this.cursor.on;
         }
 
-        /* ── Resolve B&W particle color ── */
         _bwColor() {
           return this.cfg.particleColor === "currentColor"
             ? getComputedStyle(this.el).color
             : this.cfg.particleColor;
         }
 
-        /* ── Draw ── */
         _draw() {
           const s = this.sys;
           if (!s) return;
@@ -785,7 +707,6 @@
           const psz = 0.5 * dpr;
 
           if (this.monochrome) {
-            /* ── B&W: single fill style, all particles ── */
             this.cx.fillStyle = this._bwColor();
             this.cx.globalAlpha = 1;
 
@@ -795,7 +716,6 @@
               this.cx.fillRect(x - pad, y - pad, sz + psz, sz + psz);
             }
           } else {
-            /* ── Color: batched by quantized color ── */
             this.cx.globalAlpha = 1;
 
             for (const bucket of s.colorBuckets) {
@@ -812,7 +732,6 @@
           }
         }
 
-        /* ── Animation loop ── */
         _loop() {
           if (this.running || !this.sys) return;
           this.running = true;
@@ -826,7 +745,6 @@
           this.raf = requestAnimationFrame(tick);
         }
 
-        /* ── Resize ── */
         _resize() {
           const rect = this.cv.getBoundingClientRect();
           const dpr = devicePixelRatio || 1;
@@ -851,22 +769,21 @@
         }
       }
 
-      /* ═══════ Init ═══════ */
+      /* ═══════ Initialization & Bindings ═══════ */
       const logo = new DitheredLogo(
         document.getElementById("ditheredLogo"),
-        createDemoImage(),
+        createDemoImage()
       );
 
-      /* ── Theme toggle ── */
+      /* Dark mode event */
       document.getElementById("themeToggle").addEventListener("click", () => {
         const html = document.documentElement;
-        const next =
-          html.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        const next = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
         html.setAttribute("data-theme", next);
         localStorage.setItem("dp-theme", next);
       });
 
-      /* ── B&W / Color toggle ── */
+      /* Switch B&W Mode */
       const bwBtn = document.getElementById("bwBtn");
       const colorBtn = document.getElementById("colorBtn");
 
@@ -882,7 +799,7 @@
         logo.setColorMode(true);
       });
 
-      /* ── Upload ── */
+      /* Handle Image Picker */
       document.getElementById("imagePicker").addEventListener("change", (e) => {
         const f = e.target.files[0];
         if (f) logo.rebuild(URL.createObjectURL(f));

@@ -205,21 +205,6 @@
 
         <div class="divider"></div>
 
-        <button class="btn" id="nextLogoBtn">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M5 12h14" />
-            <path d="m13 6 6 6-6 6" />
-          </svg>
-          Next logo
-        </button>
-
         <button class="btn" id="bwBtn">
           <svg
             viewBox="0 0 24 24"
@@ -271,24 +256,9 @@
       const LERP = 0.12;
       const SNAP = 0.01;
 
-      /* ═══════ Brand logo sources ═══════ */
-      const BRAND_LOGOS = [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Apple_logo_rainbow.svg/1024px-Apple_logo_rainbow.svg.png",
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Spotify_icon.svg/1024px-Spotify_icon.svg.png",
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/BoAt_Logo.svg/1024px-BoAt_Logo.svg.png",
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Netflix_2015_logo.svg/1024px-Netflix_2015_logo.svg.png",
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_2015_logo.svg/1024px-Google_2015_logo.svg.png",
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Amazon_logo.svg/1024px-Amazon_logo.svg.png",
-      ];
-      let currentLogoIndex = 0;
-
+      /* ═══════ Demo image ═══════ */
       function createDemoImage() {
-        return BRAND_LOGOS[currentLogoIndex];
-      }
-
-      function nextLogoImage() {
-        currentLogoIndex = (currentLogoIndex + 1) % BRAND_LOGOS.length;
-        return BRAND_LOGOS[currentLogoIndex];
+        return "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/heaven.jpg";
       }
 
       /* ═══════ DitheredLogo ═══════ */
@@ -803,12 +773,6 @@
         document.getElementById("ditheredLogo"),
         createDemoImage(),
       );
-
-      /* ── Brand logo switcher ── */
-      const nextLogoBtn = document.getElementById("nextLogoBtn");
-      nextLogoBtn.addEventListener("click", () => {
-        logo.rebuild(nextLogoImage());
-      });
 
       /* ── B&W / Color toggle ── */
       const bwBtn = document.getElementById("bwBtn");

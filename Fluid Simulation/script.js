@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const ctx = bgCanvas.getContext("2d");
 
   function drawBackground() {
-    ctx.fillStyle = "#2798fb";
+    ctx.fillStyle = "#2798fb00";
     ctx.fillRect(
       0,
       0,

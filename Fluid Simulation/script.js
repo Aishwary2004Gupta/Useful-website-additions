@@ -74,10 +74,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Idle-state animation
   let idleProgress = 0.0;
 
-  // INCREASED VALUES FOR LONGER FADE
-  const idleDelay = 800;         // Was 300ms - Wait a bit longer before fading starts
-  const idleFadeDuration = 5000; // Was 1800ms - Takes 5 seconds to fully fade out
-  const idleResponse = 1.5;      // Was 5.0 - Lower value makes the transition much softer/slower
+  const idleDelay = 300;
+  const idleFadeDuration = 1800;
+  const idleResponse = 5.0;
 
   // Reset-button state
   let resetting = false;
@@ -436,8 +435,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (resetting) {
       mouseActive = 0.0;
     } else {
-      // Slower decay for mouse active so it doesn't snap off
-      mouseActive *= Math.exp(-4.0 * deltaTime);
+      mouseActive *= Math.exp(-9.0 * deltaTime);
 
       if (mouseActive < 0.001) {
         mouseActive = 0.0;

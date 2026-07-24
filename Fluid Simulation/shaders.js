@@ -25,7 +25,6 @@ uniform int frame;
 uniform float uMouseActive;
 uniform float resetProgress;
 uniform float idleProgress;
-uniform float idleSettleRate;
 
 varying vec2 vUv;
 
@@ -131,10 +130,8 @@ void main() {
    * Extra gradual settling while idle.
    * This pulls both values toward the original
    * calm state of zero.
-   * 
-   * Using idleSettleRate from JS for slower decay.
    */
-  float settleAmount = idleSettleRate * idle;
+  float settleAmount = 0.012 * idle;
 
   pressure *= 1.0 - settleAmount;
   vel *= 1.0 - settleAmount;

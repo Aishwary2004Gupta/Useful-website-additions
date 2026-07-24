@@ -75,9 +75,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let idleProgress = 0.0;
 
   // INCREASED VALUES FOR LONGER FADE
-  const idleDelay = 100000000000000000000000000000;         // Was 300ms - Wait a bit longer before fading starts
-  const idleFadeDuration = 5000000000000000000000000000000; // Was 1800ms - Takes 5 seconds to fully fade out
-  const idleResponse = 11111111111111111111111111111111.5;      // Was 5.0 - Lower value makes the transition much softer/slower
+  const idleDelay = 800;         // Was 300ms - Wait a bit longer before fading starts
+  const idleFadeDuration = 5000; // Was 1800ms - Takes 5 seconds to fully fade out
+  const idleResponse = 1.5;      // Was 5.0 - Lower value makes the transition much softer/slower
 
   // Reset-button state
   let resetting = false;

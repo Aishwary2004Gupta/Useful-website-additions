@@ -222,14 +222,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const dpr = window.devicePixelRatio || 1;
     const currentX = e.clientX * dpr;
     const currentY = (window.innerHeight - e.clientY) * dpr;
-    
+
     let speed = 0;
     if (mouse.x > 0.0) {
       speed = Math.hypot(currentX - mouse.x, currentY - mouse.y);
     }
-    
+
     updateMouseCoords(e.clientX, e.clientY);
-    
+
     // Scale up intensity smoothly based on movement speed
     mouseActive = Math.min(1.5, mouseActive + speed * 0.01 + 0.08);
   });
@@ -239,7 +239,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (resetting) return;
     // Ignore clicks on header & footer elements
     if (e.target.closest('button') || e.target.closest('a')) return;
-    
+
     updateMouseCoords(e.clientX, e.clientY);
     mouseActive = 2.0; // Strong burst on click!
   });

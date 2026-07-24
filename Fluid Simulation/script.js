@@ -71,12 +71,13 @@ document.addEventListener("DOMContentLoaded", () => {
   let mouseActive = 0.0;
   let lastPointerMove = performance.now();
 
-  // Idle-state animation
+  // Idle-state animation - SLOWER FADE
   let idleProgress = 0.0;
 
-  const idleDelay = 300;
-  const idleFadeDuration = 1800;
-  const idleResponse = 5.0;
+  const idleDelay = 400;           // Wait 400ms before starting fade
+  const idleFadeDuration = 5000;   // 5 seconds for full fade (was 1800)
+  const idleResponse = 3.0;        // Smoother transition (was 5.0)
+  const idleSettleRate = 0.006;    // Slower decay in shader (was 0.012)
 
   // Reset-button state
   let resetting = false;
@@ -136,6 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
     uMouseActive: { value: 0.0 },
     resetProgress: { value: 0.0 },
     idleProgress: { value: 0.0 },
+    idleSettleRate: { value: idleSettleRate },
   };
 
   const simMaterial = new THREE.ShaderMaterial({
@@ -366,6 +368,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     simUniforms.resolution.value = res;
     simUniforms.textureA.value = rtA.texture;
+    simUniforms.idleSettleRate.value = idleSettleRate;
 
     renderUniforms.resolution.value = res;
     renderUniforms.textureA.value = rtA.texture;

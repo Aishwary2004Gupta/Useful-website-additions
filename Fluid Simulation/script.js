@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const ctx = bgCanvas.getContext("2d");
 
   function drawBackground() {
-    ctx.fillStyle = "#fb752700";
+    ctx.fillStyle = "#fb7427";
     ctx.fillRect(
       0,
       0,
@@ -103,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const fontSize = Math.round(250 * getDpr());
 
-    ctx.fillStyle = "#fef3b800";
+    ctx.fillStyle = "#fef4b8";
     ctx.font = `bold ${fontSize}px Test Söhne, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";

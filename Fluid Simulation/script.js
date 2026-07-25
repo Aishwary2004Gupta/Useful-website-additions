@@ -109,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ctx.textBaseline = "middle";
 
     ctx.fillText(
-      "Aishwary",
+      "Simulation",
       bgCanvas.width / 2,
       bgCanvas.height / 2
     );

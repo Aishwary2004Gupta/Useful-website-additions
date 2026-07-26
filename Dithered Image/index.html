@@ -308,9 +308,19 @@
       const SNAP = 0.01;
 
       /* ═══════ Demo image ═══════ */
-      function createDemoImage() {
-        return "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/mountainVally.png";
-      }
+      const images = [
+    "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/mountainVally.png",
+
+    "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/background.jpg",
+
+    "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/clouds.png"
+];
+
+let currentImage = 0;
+
+function createDemoImage(){
+    return images[currentImage];
+}
 
       /* ═══════ DitheredLogo ═══════ */
       class DitheredLogo {

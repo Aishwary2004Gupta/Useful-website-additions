@@ -835,6 +835,39 @@ function createDemoImage(){
         createDemoImage(),
       );
 
+      const viewer = document.getElementById("ditheredLogo");
+
+function changeImage(direction){
+
+    currentImage =
+        (currentImage + direction + images.length) %
+        images.length;
+
+    viewer.animate([
+        {
+            opacity:0,
+            transform:`translateX(${direction>0?-80:80}px)`
+        },
+        {
+            opacity:1,
+            transform:"translateX(0px)"
+        }
+    ],{
+        duration:350,
+        easing:"ease"
+    });
+
+    logo.rebuild(images[currentImage]);
+}
+
+document
+    .getElementById("nextImage")
+    .onclick = () => changeImage(1);
+
+document
+    .getElementById("prevImage")
+    .onclick = () => changeImage(-1);
+
       /* ── B&W / Color toggle ── */
       const bwBtn = document.getElementById("bwBtn");
       const colorBtn = document.getElementById("colorBtn");

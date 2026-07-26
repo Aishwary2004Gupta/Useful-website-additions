@@ -19,18 +19,6 @@
         --shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
         --shadow-up: 0 6px 20px rgba(0, 0, 0, 0.1);
       }
-      [data-theme="dark"] {
-        --particle: #e2e2e2;
-        --bg: #0a0a0a;
-        --bg-spot: rgba(30, 30, 30, 0.6);
-        --surface: #161616;
-        --surface-hover: #1e1e1e;
-        --border: #2a2a2a;
-        --text: #e2e2e2;
-        --text-sub: #555;
-        --shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-        --shadow-up: 0 6px 20px rgba(0, 0, 0, 0.4);
-      }
 
       *,
       *::before,
@@ -55,9 +43,6 @@
         font-family:
           -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         color: var(--text);
-        transition:
-          background-color 0.5s ease,
-          color 0.4s ease;
         -webkit-font-smoothing: antialiased;
       }
 
@@ -70,7 +55,14 @@
         width: 100%;
       }
 
-      /* ── LARGER CANVAS ── */
+      /* ── Stage: canvas + arrows ── */
+      .stage {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
       .dithered-logo {
         position: relative;
         width: min(80vmin, 720px);
@@ -79,6 +71,10 @@
         max-height: 90vh;
         color: var(--particle);
       }
+
+      /* IMPORTANT: only opacity is animated.
+         A CSS transform would change getBoundingClientRect()
+         and break the cursor / ripple coordinate mapping. */
       .dithered-logo canvas {
         position: absolute;
         inset: 0;
@@ -87,6 +83,71 @@
         height: 100%;
         touch-action: none;
         cursor: pointer;
+        opacity: 1;
+        transition: opacity 0.28s ease;
+      }
+      .dithered-logo.fading canvas {
+        opacity: 0;
+      }
+
+      /* ── Arrows ── */
+      .nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 5;
+        width: 64px;
+        height: 64px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--border);
+        border-radius: 50%;
+        background: var(--surface);
+        color: var(--text);
+        cursor: pointer;
+        box-shadow: var(--shadow-up);
+        transition:
+          background 0.2s ease,
+          box-shadow 0.2s ease,
+          scale 0.18s ease;
+      }
+      .nav:hover {
+        background: var(--surface-hover);
+        scale: 1.08;
+      }
+      .nav:active {
+        scale: 0.94;
+      }
+      .nav svg {
+        width: 28px;
+        height: 28px;
+        stroke-width: 2.4;
+      }
+      .nav.prev {
+        left: -34px;
+      }
+      .nav.next {
+        right: -34px;
+      }
+
+      /* ── Dots ── */
+      .dots {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+      }
+      .dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 99px;
+        border: none;
+        background: var(--border);
+        cursor: pointer;
+        transition: all 0.25s ease;
+      }
+      .dot.active {
+        background: var(--text);
+        width: 26px;
       }
 
       /* ── Controls ── */
@@ -133,7 +194,6 @@
         opacity: 0.5;
         flex-shrink: 0;
       }
-
       .btn.active {
         border-color: var(--text);
         background: var(--text);
@@ -154,7 +214,6 @@
         font-size: 13px;
         color: var(--text-sub);
         letter-spacing: 0.02em;
-        transition: color 0.4s ease;
       }
 
       @media (max-width: 640px) {
@@ -162,58 +221,26 @@
           padding: 10px;
         }
         .dithered-logo {
-          width: min(92vw, 520px);
-          height: min(92vw, 520px);
+          width: min(84vw, 520px);
+          height: min(84vw, 520px);
         }
-        .theme-toggle {
-          top: 12px;
-          right: 12px;
-          width: 40px;
-          height: 40px;
+        .nav {
+          width: 46px;
+          height: 46px;
+        }
+        .nav svg {
+          width: 20px;
+          height: 20px;
+        }
+        .nav.prev {
+          left: -8px;
+        }
+        .nav.next {
+          right: -8px;
         }
         .btn {
           padding: 9px 14px;
           font-size: 13px;
-        }
-      }
-
-      .viewer {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 30px;
-      }
-
-      .arrow {
-        width: 70px;
-        height: 70px;
-        border: none;
-        border-radius: 50%;
-        cursor: pointer;
-        font-size: 34px;
-        background: white;
-        color: #111;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
-        transition: 0.25s;
-      }
-
-      .arrow:hover {
-        transform: scale(1.08);
-      }
-
-      .arrow:active {
-        transform: scale(0.95);
-      }
-
-      @media (max-width: 700px) {
-        .viewer {
-          gap: 10px;
-        }
-
-        .arrow {
-          width: 50px;
-          height: 50px;
-          font-size: 24px;
         }
       }
     </style>
@@ -221,15 +248,37 @@
 
   <body>
     <main class="demo">
-      <div class="viewer">
-        <button class="arrow left" id="prevImage">&#10094;</button>
+      <div class="stage">
+        <button class="nav prev" id="prevBtn" aria-label="Previous image">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
 
         <div class="dithered-logo" id="ditheredLogo">
           <canvas id="particleCanvas"></canvas>
         </div>
 
-        <button class="arrow right" id="nextImage">&#10095;</button>
+        <button class="nav next" id="nextBtn" aria-label="Next image">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
       </div>
+
+      <div class="dots" id="dots"></div>
 
       <div class="controls">
         <label class="btn" id="uploadBtn">
@@ -302,29 +351,21 @@
       const LERP = 0.12;
       const SNAP = 0.01;
 
-      /* ═══════ Demo image ═══════ */
-      const images = [
+      /* ═══════ Gallery — 3 images ═══════ */
+      const GALLERY = [
         "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/mountainVally.png",
-
         "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/Background.jpg",
-
-        "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/heaven.jpg",
+        "https://cdn.prod.website-files.com/5e51c674258ffe10d286d30a/5e5352709588e06bd47b75e0_peep-19.svg",
       ];
 
-      let currentImage = 0;
-
-      function createDemoImage() {
-        return images[currentImage];
-      }
-
-      /* ═══════ DitheredLogo ═══════ */
+      /* ═══════ DitheredLogo (unchanged logic) ═══════ */
       class DitheredLogo {
         constructor(container, imageSrc, config = {}) {
           this.el = container;
           this.cv = container.querySelector("canvas");
           this.cx = this.cv.getContext("2d");
           this.cfg = {
-            gridSize: 340 /* Increased for larger canvas */,
+            gridSize: 340,
             scale: 1,
             dotScale: 1,
             invert: true,
@@ -351,16 +392,6 @@
 
           this.ro = new ResizeObserver(() => this._resize());
           this.ro.observe(this.el);
-
-          this.mo = new MutationObserver(() => {
-            requestAnimationFrame(() => {
-              if (this.sys) this._draw();
-            });
-          });
-          this.mo.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ["data-theme", "class", "style"],
-          });
 
           this._bind();
           this._resize();
@@ -399,7 +430,6 @@
           });
         }
 
-        /* ── Toggle monochrome / color ── */
         setColorMode(useColor) {
           this.monochrome = !useColor;
           if (this.sys) {
@@ -408,25 +438,24 @@
           }
         }
 
-        /* ── Image loader ── */
         _img(src) {
           return new Promise((ok, no) => {
             const i = new Image();
             i.crossOrigin = "anonymous";
             i.onload = () => ok(i);
-            i.onerror = no;
+            i.onerror = () => no(new Error("Failed to load: " + src));
             i.src = src;
           });
         }
 
-        /* ── Grayscale grid + original colors ── */
         _gray(img) {
           const C = this.cfg;
-          const asp = img.naturalWidth / img.naturalHeight;
+          const iw = img.naturalWidth || img.width;
+          const ih = img.naturalHeight || img.height;
+          const asp = iw / ih;
           const w = asp >= 1 ? C.gridSize : Math.round(C.gridSize * asp);
           const h = asp >= 1 ? Math.round(C.gridSize / asp) : C.gridSize;
 
-          /* Original (no blur) for alpha + color */
           const ac = document.createElement("canvas");
           ac.width = w;
           ac.height = h;
@@ -436,14 +465,13 @@
           ax.drawImage(img, 0, 0, w, h);
           const ad = ax.getImageData(0, 0, w, h).data;
 
-          /* Blurred source for luminance */
           const pad = Math.ceil(C.blur * 3);
           const sc = document.createElement("canvas");
-          sc.width = img.naturalWidth + pad * 2;
-          sc.height = img.naturalHeight + pad * 2;
+          sc.width = iw + pad * 2;
+          sc.height = ih + pad * 2;
           const sx = sc.getContext("2d");
           if (C.blur > 0) sx.filter = `blur(${C.blur}px)`;
-          sx.drawImage(img, pad, pad, img.naturalWidth, img.naturalHeight);
+          sx.drawImage(img, pad, pad, iw, ih);
           sx.filter = "none";
 
           const fc = document.createElement("canvas");
@@ -452,17 +480,7 @@
           const fx = fc.getContext("2d");
           fx.imageSmoothingEnabled = true;
           fx.imageSmoothingQuality = "high";
-          fx.drawImage(
-            sc,
-            pad,
-            pad,
-            img.naturalWidth,
-            img.naturalHeight,
-            0,
-            0,
-            w,
-            h,
-          );
+          fx.drawImage(sc, pad, pad, iw, ih, 0, 0, w, h);
           const px = fx.getImageData(0, 0, w, h).data;
 
           const gs = new Uint8Array(w * h);
@@ -477,8 +495,6 @@
               const ba = px[pi + 3] / 255;
 
               alpha[idx] = ad[pi + 3];
-
-              /* Store original RGB from non-blurred image */
               colors[idx * 3] = ad[pi];
               colors[idx * 3 + 1] = ad[pi + 1];
               colors[idx * 3 + 2] = ad[pi + 2];
@@ -500,7 +516,6 @@
           return { gs, alpha, colors, w, h };
         }
 
-        /* ── Floyd-Steinberg dithering ── */
         _dither(g) {
           const C = this.cfg;
           const { gs, alpha, w, h } = g;
@@ -539,7 +554,6 @@
           return new Float32Array(pos);
         }
 
-        /* ── Rounded mask inversion ── */
         _invert(pts, w, h, alpha) {
           const r = Math.round(this.cfg.cornerRadius * Math.min(w, h));
           const mask = new Set();
@@ -569,7 +583,6 @@
           return new Float32Array(out);
         }
 
-        /* ── Extract per-particle colors from grid ── */
         _extractColors(positions, gridColors, gridW) {
           const count = positions.length / 2;
           const pColors = new Uint8Array(count * 3);
@@ -586,19 +599,13 @@
           return pColors;
         }
 
-        /* ── Build color buckets for batched rendering ── */
         _buildColorBuckets(pColors, count) {
           const bucketMap = {};
 
           for (let i = 0; i < count; i++) {
-            const r = pColors[i * 3];
-            const g = pColors[i * 3 + 1];
-            const b = pColors[i * 3 + 2];
-
-            /* Quantize to 5 bits per channel (32 levels, ~1.6% error) */
-            const qr = r >> 3;
-            const qg = g >> 3;
-            const qb = b >> 3;
+            const qr = pColors[i * 3] >> 3;
+            const qg = pColors[i * 3 + 1] >> 3;
+            const qb = pColors[i * 3 + 2] >> 3;
             const key = (qr << 10) | (qg << 5) | qb;
 
             if (!bucketMap[key]) {
@@ -620,7 +627,6 @@
           return Object.values(bucketMap);
         }
 
-        /* ── Init particle system ── */
         _initParticles(positions, sf, ds, ox, oy, pColors) {
           const n = positions.length / 2;
           const bx = new Float32Array(n);
@@ -642,7 +648,6 @@
           };
         }
 
-        /* ── Rebuild pipeline ── */
         async rebuild(newSrc) {
           if (newSrc) this.src = newSrc;
 
@@ -654,7 +659,6 @@
             let pts = this._dither(g);
             if (this.cfg.invert) pts = this._invert(pts, g.w, g.h, g.alpha);
 
-            /* Extract original colors for each particle position */
             const pColors = this._extractColors(pts, g.colors, g.w);
 
             const sf = Math.max(
@@ -667,6 +671,9 @@
             const mobile = matchMedia("(max-width:640px)").matches;
             const ds = mobile ? this.cfg.dotScale * 0.8 : this.cfg.dotScale;
 
+            /* clear leftover motion from previous image */
+            this.ripples.length = 0;
+
             this.sys = this._initParticles(
               pts,
               sf,
@@ -675,13 +682,15 @@
               originY,
               pColors,
             );
+            this._draw();
             this._loop();
+            return true;
           } catch (err) {
             console.error("DitheredLogo:", err);
+            return false;
           }
         }
 
-        /* ── Physics step ── */
         _step(now) {
           const s = this.sys;
           if (!s) return false;
@@ -736,14 +745,12 @@
           return motion || this.ripples.length > 0 || this.cursor.on;
         }
 
-        /* ── Resolve B&W particle color ── */
         _bwColor() {
           return this.cfg.particleColor === "currentColor"
             ? getComputedStyle(this.el).color
             : this.cfg.particleColor;
         }
 
-        /* ── Draw ── */
         _draw() {
           const s = this.sys;
           if (!s) return;
@@ -758,7 +765,6 @@
           const psz = 0.5 * dpr;
 
           if (this.monochrome) {
-            /* ── B&W: single fill style, all particles ── */
             this.cx.fillStyle = this._bwColor();
             this.cx.globalAlpha = 1;
 
@@ -768,7 +774,6 @@
               this.cx.fillRect(x - pad, y - pad, sz + psz, sz + psz);
             }
           } else {
-            /* ── Color: batched by quantized color ── */
             this.cx.globalAlpha = 1;
 
             for (const bucket of s.colorBuckets) {
@@ -785,7 +790,6 @@
           }
         }
 
-        /* ── Animation loop ── */
         _loop() {
           if (this.running || !this.sys) return;
           this.running = true;
@@ -799,7 +803,6 @@
           this.raf = requestAnimationFrame(tick);
         }
 
-        /* ── Resize ── */
         _resize() {
           const rect = this.cv.getBoundingClientRect();
           const dpr = devicePixelRatio || 1;
@@ -820,47 +823,66 @@
         destroy() {
           cancelAnimationFrame(this.raf);
           this.ro.disconnect();
-          this.mo.disconnect();
         }
       }
 
       /* ═══════ Init ═══════ */
-      const logo = new DitheredLogo(
-        document.getElementById("ditheredLogo"),
-        createDemoImage(),
-      );
+      const stage = document.getElementById("ditheredLogo");
+      const logo = new DitheredLogo(stage, GALLERY[0]);
 
-      const viewer = document.getElementById("ditheredLogo");
+      /* ═══════ Carousel ═══════ */
+      let index = 0;
+      let busy = false;
 
-      function changeImage(direction) {
-        currentImage =
-          (currentImage + direction + images.length) % images.length;
+      const dotsBox = document.getElementById("dots");
+      GALLERY.forEach((_, i) => {
+        const d = document.createElement("button");
+        d.className = "dot" + (i === 0 ? " active" : "");
+        d.setAttribute("aria-label", "Image " + (i + 1));
+        d.addEventListener("click", () => show(i));
+        dotsBox.appendChild(d);
+      });
 
-        viewer.animate(
-          [
-            {
-              opacity: 0,
-              transform: `translateX(${direction > 0 ? -80 : 80}px)`,
-            },
-            {
-              opacity: 1,
-              transform: "translateX(0px)",
-            },
-          ],
-          {
-            duration: 350,
-            easing: "ease",
-          },
+      function syncDots() {
+        [...dotsBox.children].forEach((d, i) =>
+          d.classList.toggle("active", i === index),
         );
-
-        logo.rebuild(images[currentImage]);
       }
 
-      document.getElementById("nextImage").onclick = () => changeImage(1);
+      async function show(i) {
+        if (busy || i === index) return;
+        busy = true;
+        index = i;
 
-      document.getElementById("prevImage").onclick = () => changeImage(-1);
+        /* fade out (opacity only — rect stays identical) */
+        stage.classList.add("fading");
+        await new Promise((r) => setTimeout(r, 280));
 
-      /* ── B&W / Color toggle ── */
+        await logo.rebuild(GALLERY[index]);
+        syncDots();
+
+        stage.classList.remove("fading");
+        busy = false;
+      }
+
+      document
+        .getElementById("nextBtn")
+        .addEventListener("click", () => show((index + 1) % GALLERY.length));
+
+      document
+        .getElementById("prevBtn")
+        .addEventListener("click", () =>
+          show((index - 1 + GALLERY.length) % GALLERY.length),
+        );
+
+      /* keyboard arrows */
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowRight") show((index + 1) % GALLERY.length);
+        if (e.key === "ArrowLeft")
+          show((index - 1 + GALLERY.length) % GALLERY.length);
+      });
+
+      /* ═══════ B&W / Color ═══════ */
       const bwBtn = document.getElementById("bwBtn");
       const colorBtn = document.getElementById("colorBtn");
 
@@ -876,10 +898,18 @@
         logo.setColorMode(true);
       });
 
-      /* ── Upload ── */
+      /* ═══════ Upload — adds to gallery ═══════ */
       document.getElementById("imagePicker").addEventListener("change", (e) => {
         const f = e.target.files[0];
-        if (f) logo.rebuild(URL.createObjectURL(f));
+        if (!f) return;
+        GALLERY.push(URL.createObjectURL(f));
+
+        const d = document.createElement("button");
+        d.className = "dot";
+        d.addEventListener("click", () => show(GALLERY.length - 1));
+        dotsBox.appendChild(d);
+
+        show(GALLERY.length - 1);
       });
     </script>
   </body>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -75,7 +75,7 @@
         overflow: hidden;
         border-radius: 12px;
       }
-      
+
       .dithered-logo canvas {
         position: absolute;
         inset: 0;
@@ -84,8 +84,9 @@
         height: 100%;
         touch-action: none;
         cursor: pointer;
-        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
-                    opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transition:
+          transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+          opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       }
 
       /* Slide animations */
@@ -93,7 +94,7 @@
         transform: translateX(-100%) scale(0.9);
         opacity: 0;
       }
-      
+
       .dithered-logo canvas.slide-in-right {
         transform: translateX(100%) scale(0.9);
         opacity: 0;
@@ -118,12 +119,12 @@
         transition: all 0.25s ease;
         backdrop-filter: blur(8px);
       }
-      
+
       .nav-arrow:hover {
         transform: translateY(-50%) scale(1.1);
         background: var(--surface);
       }
-      
+
       .nav-arrow:active {
         transform: translateY(-50%) scale(0.95);
       }
@@ -139,12 +140,12 @@
         width: 70px;
         height: 70px;
       }
-      
+
       .nav-arrow.next svg {
         width: 28px;
         height: 28px;
       }
-      
+
       .nav-arrow.prev {
         left: -30px;
       }
@@ -159,16 +160,16 @@
         gap: 8px;
         z-index: 10;
       }
-      
+
       .indicator {
         width: 8px;
         height: 8px;
         border-radius: 50%;
-        background: rgba(0,0,0,0.2);
+        background: rgba(0, 0, 0, 0.2);
         cursor: pointer;
         transition: all 0.3s ease;
       }
-      
+
       .indicator.active {
         background: var(--text);
         width: 24px;
@@ -275,7 +276,14 @@
       <div class="carousel-wrapper">
         <!-- Previous Arrow -->
         <button class="nav-arrow prev" id="prevBtn" aria-label="Previous image">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <polyline points="15 18 9 12 15 6"></polyline>
           </svg>
         </button>
@@ -287,7 +295,14 @@
 
         <!-- Big Next Arrow -->
         <button class="nav-arrow next" id="nextBtn" aria-label="Next image">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <polyline points="9 18 15 12 9 6"></polyline>
           </svg>
         </button>
@@ -295,7 +310,14 @@
 
       <div class="controls">
         <label class="btn" id="uploadBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
             <polyline points="17 8 12 3 7 8" />
             <line x1="12" y1="3" x2="12" y2="15" />
@@ -307,7 +329,14 @@
         <div class="divider"></div>
 
         <button class="btn" id="bwBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <circle cx="12" cy="12" r="10" />
             <path d="M12 2a10 10 0 0 1 0 20z" fill="currentColor" />
           </svg>
@@ -315,12 +344,21 @@
         </button>
 
         <button class="btn active" id="colorBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <circle cx="13.5" cy="6.5" r="2.5" />
             <circle cx="17.5" cy="10.5" r="2.5" />
             <circle cx="8.5" cy="7.5" r="2.5" />
             <circle cx="6.5" cy="12" r="2.5" />
-            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.5-.7 1.5-1.5 0-.4-.1-.7-.4-1-.2-.3-.4-.6-.4-1 0-.8.7-1.5 1.5-1.5H16c3.3 0 6-2.7 6-6 0-5.5-4.5-9-10-9z" />
+            <path
+              d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.5-.7 1.5-1.5 0-.4-.1-.7-.4-1-.2-.3-.4-.6-.4-1 0-.8.7-1.5 1.5-1.5H16c3.3 0 6-2.7 6-6 0-5.5-4.5-9-10-9z"
+            />
           </svg>
           Color
         </button>
@@ -334,9 +372,9 @@
       const images = [
         "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/mountainVally.png",
         "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/space.png",
-        "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/abstract.png"
+        "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/abstract.png",
       ];
-      
+
       let currentImageIndex = 0;
       let isAnimating = false;
 
@@ -833,61 +871,61 @@
       const logo = new DitheredLogo(document.getElementById("ditheredLogo"));
 
       /* ═══════ Carousel Logic ═══════ */
-      const canvas = document.getElementById('particleCanvas');
-      const indicatorsContainer = document.getElementById('indicators');
-      
+      const canvas = document.getElementById("particleCanvas");
+      const indicatorsContainer = document.getElementById("indicators");
+
       // Create indicators
       images.forEach((_, idx) => {
-        const dot = document.createElement('div');
-        dot.className = 'indicator' + (idx === 0 ? ' active' : '');
+        const dot = document.createElement("div");
+        dot.className = "indicator" + (idx === 0 ? " active" : "");
         dot.onclick = () => goToSlide(idx);
         indicatorsContainer.appendChild(dot);
       });
-      
+
       function updateIndicators() {
-        document.querySelectorAll('.indicator').forEach((dot, idx) => {
-          dot.classList.toggle('active', idx === currentImageIndex);
+        document.querySelectorAll(".indicator").forEach((dot, idx) => {
+          dot.classList.toggle("active", idx === currentImageIndex);
         });
       }
-      
+
       function goToSlide(index) {
         if (isAnimating || index === currentImageIndex) return;
         isAnimating = true;
-        
+
         // Slide out
-        canvas.classList.add('slide-out-left');
-        
+        canvas.classList.add("slide-out-left");
+
         setTimeout(() => {
           currentImageIndex = index;
           logo.setSrc(images[currentImageIndex]);
           logo.rebuild();
           updateIndicators();
-          
+
           // Reset position for slide in
-          canvas.classList.remove('slide-out-left');
-          canvas.classList.add('slide-in-right');
-          
+          canvas.classList.remove("slide-out-left");
+          canvas.classList.add("slide-in-right");
+
           requestAnimationFrame(() => {
             setTimeout(() => {
-              canvas.classList.remove('slide-in-right');
+              canvas.classList.remove("slide-in-right");
               isAnimating = false;
             }, 50);
           });
         }, 400);
       }
-      
+
       function nextSlide() {
         const next = (currentImageIndex + 1) % images.length;
         goToSlide(next);
       }
-      
+
       function prevSlide() {
         const prev = (currentImageIndex - 1 + images.length) % images.length;
         goToSlide(prev);
       }
-      
-      document.getElementById('nextBtn').addEventListener('click', nextSlide);
-      document.getElementById('prevBtn').addEventListener('click', prevSlide);
+
+      document.getElementById("nextBtn").addEventListener("click", nextSlide);
+      document.getElementById("prevBtn").addEventListener("click", prevSlide);
 
       /* ═══════ Controls ═══════ */
       const bwBtn = document.getElementById("bwBtn");

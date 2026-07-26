@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
@@ -104,7 +104,9 @@
         max-width: 90vw;
         max-height: 74vh;
         color: var(--particle);
-        transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.45s ease;
+        transition:
+          transform 0.45s cubic-bezier(0.25, 1, 0.5, 1),
+          opacity 0.45s ease;
       }
       .dithered-logo canvas {
         position: absolute;
@@ -374,8 +376,8 @@
       /* ═══════ Carousel Images Array ═══════ */
       const images = [
         "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/mountainVally.png", // Image 1 (Mountain)
-        "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?q=80&w=800&auto=format&fit=crop",    // Image 2 (Vibrant Art)
-        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop"     // Image 3 (Sunset Beach)
+        "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?q=80&w=800&auto=format&fit=crop", // Image 2 (Vibrant Art)
+        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop", // Image 3 (Sunset Beach)
       ];
       let currentIndex = 0;
       let isTransitioning = false;
@@ -387,7 +389,7 @@
           this.cv = container.querySelector("canvas");
           this.cx = this.cv.getContext("2d");
           this.cfg = {
-            gridSize: 380, /* Crisp high resolution */
+            gridSize: 380 /* Crisp high resolution */,
             scale: 0.88,
             dotScale: 0.95,
             invert: true,
@@ -516,7 +518,17 @@
           const fx = fc.getContext("2d");
           fx.imageSmoothingEnabled = true;
           fx.imageSmoothingQuality = "high";
-          fx.drawImage(sc, pad, pad, img.naturalWidth, img.naturalHeight, 0, 0, w, h);
+          fx.drawImage(
+            sc,
+            pad,
+            pad,
+            img.naturalWidth,
+            img.naturalHeight,
+            0,
+            0,
+            w,
+            h,
+          );
           const px = fx.getImageData(0, 0, w, h).data;
 
           const gs = new Uint8Array(w * h);
@@ -537,10 +549,15 @@
               colors[idx * 3 + 1] = ad[pi + 1];
               colors[idx * 3 + 2] = ad[pi + 2];
 
-              let l = ba > 0.01 ? (0.299 * px[pi] + 0.587 * px[pi + 1] + 0.114 * px[pi + 2]) / ba : 0;
+              let l =
+                ba > 0.01
+                  ? (0.299 * px[pi] + 0.587 * px[pi + 1] + 0.114 * px[pi + 2]) /
+                    ba
+                  : 0;
 
               if (C.contrast) l = cf * (l - 128) + 128;
-              if (C.gamma !== 1) l = 255 * Math.pow(Math.max(0, l / 255), 1 / C.gamma);
+              if (C.gamma !== 1)
+                l = 255 * Math.pow(Math.max(0, l / 255), 1 / C.gamma);
 
               gs[idx] = Math.max(0, Math.min(255, Math.round(l)));
             }
@@ -612,7 +629,8 @@
 
           const out = [];
           for (const idx of mask)
-            if (!filled.has(idx) && alpha[idx] >= 128) out.push(idx % w, Math.floor(idx / w));
+            if (!filled.has(idx) && alpha[idx] >= 128)
+              out.push(idx % w, Math.floor(idx / w));
 
           return new Float32Array(out);
         }
@@ -651,7 +669,14 @@
 
             if (!bucketMap[key]) {
               bucketMap[key] = {
-                css: "rgb(" + ((qr << 3) | 4) + "," + ((qg << 3) | 4) + "," + ((qb << 3) | 4) + ")",
+                css:
+                  "rgb(" +
+                  ((qr << 3) | 4) +
+                  "," +
+                  ((qg << 3) | 4) +
+                  "," +
+                  ((qb << 3) | 4) +
+                  ")",
                 ids: [],
               };
             }
@@ -698,14 +723,22 @@
 
             const sf = Math.max(
               0.5,
-              (Math.min(rect.width, rect.height) * this.cfg.scale) / Math.max(g.w, g.h)
+              (Math.min(rect.width, rect.height) * this.cfg.scale) /
+                Math.max(g.w, g.h),
             );
             const originX = Math.round((rect.width - g.w * sf) / 2);
             const originY = Math.round((rect.height - g.h * sf) / 2);
             const mobile = matchMedia("(max-width:640px)").matches;
             const ds = mobile ? this.cfg.dotScale * 0.8 : this.cfg.dotScale;
 
-            this.sys = this._initParticles(pts, sf, ds, originX, originY, pColors);
+            this.sys = this._initParticles(
+              pts,
+              sf,
+              ds,
+              originX,
+              originY,
+              pColors,
+            );
             this._loop();
           } catch (err) {
             console.error("DitheredLogo:", err);
@@ -718,13 +751,16 @@
           if (!s) return false;
 
           for (let i = this.ripples.length - 1; i >= 0; i--)
-            if (now - this.ripples[i].t >= RIPPLE_DURATION) this.ripples.splice(i, 1);
+            if (now - this.ripples[i].t >= RIPPLE_DURATION)
+              this.ripples.splice(i, 1);
 
-          const rm = this.ripples.length > 0 ? 1 + 0.5 * (this.ripples.length - 1) : 0;
+          const rm =
+            this.ripples.length > 0 ? 1 + 0.5 * (this.ripples.length - 1) : 0;
           let motion = false;
 
           for (let i = 0; i < s.n; i++) {
-            let fx = 0, fy = 0;
+            let fx = 0,
+              fy = 0;
 
             if (this.cursor.on) {
               const vx = s.bx[i] + s.ox[i] - this.cursor.x;
@@ -862,8 +898,10 @@
         isTransitioning = true;
 
         const logoEl = document.getElementById("ditheredLogo");
-        const outClass = direction === "next" ? "slide-out-left" : "slide-out-right";
-        const inClass = direction === "next" ? "slide-from-right" : "slide-from-left";
+        const outClass =
+          direction === "next" ? "slide-out-left" : "slide-out-right";
+        const inClass =
+          direction === "next" ? "slide-from-right" : "slide-from-left";
 
         // Step 1: Slide out current canvas
         logoEl.classList.add(outClass);
@@ -884,7 +922,7 @@
 
         // Step 4: Slide smoothly back to center
         logoEl.classList.remove(inClass);
-        
+
         isTransitioning = false;
       }
 

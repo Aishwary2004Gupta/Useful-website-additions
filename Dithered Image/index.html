@@ -176,6 +176,47 @@
           font-size: 13px;
         }
       }
+
+      .viewer{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:30px;
+}
+
+.arrow{
+    width:70px;
+    height:70px;
+    border:none;
+    border-radius:50%;
+    cursor:pointer;
+    font-size:34px;
+    background:white;
+    color:#111;
+    box-shadow:0 10px 25px rgba(0,0,0,.12);
+    transition:.25s;
+}
+
+.arrow:hover{
+    transform:scale(1.08);
+}
+
+.arrow:active{
+    transform:scale(.95);
+}
+
+@media(max-width:700px){
+
+    .viewer{
+        gap:10px;
+    }
+
+    .arrow{
+        width:50px;
+        height:50px;
+        font-size:24px;
+    }
+}
     </style>
   </head>
 

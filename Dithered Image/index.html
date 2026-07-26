@@ -1,23 +1,48 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dithered Image Carousel</title>
+    <title>Dithered Particle Canvas Slider</title>
+
+    <!-- Detect system dark/light preference automatically -->
+    <script>
+      (function () {
+        var t = localStorage.getItem("dp-theme");
+        if (t) document.documentElement.setAttribute("data-theme", t);
+        else if (
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches
+        )
+          document.documentElement.setAttribute("data-theme", "dark");
+      })();
+    </script>
 
     <style>
-      :root {
+      :root,
+      [data-theme="light"] {
         --particle: #111111;
         --bg: #f5f5f0;
-        --bg-spot: rgba(255, 255, 255, 0.55);
+        --bg-spot: rgba(255, 255, 255, 0.65);
         --surface: #ffffff;
         --surface-hover: #f2f2ef;
         --border: #e0e0dd;
         --text: #1a1a1a;
-        --text-sub: #999;
-        --shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-        --shadow-up: 0 6px 20px rgba(0, 0, 0, 0.1);
-        --arrow-bg: rgba(255, 255, 255, 0.9);
+        --text-sub: #8a8a85;
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        --shadow-up: 0 8px 24px rgba(0, 0, 0, 0.08);
+      }
+      [data-theme="dark"] {
+        --particle: #e2e2e2;
+        --bg: #0a0a0a;
+        --bg-spot: rgba(30, 30, 30, 0.7);
+        --surface: #161616;
+        --surface-hover: #1e1e1e;
+        --border: #2a2a2a;
+        --text: #e2e2e2;
+        --text-sub: #555;
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+        --shadow-up: 0 8px 24px rgba(0, 0, 0, 0.45);
       }
 
       *,
@@ -33,16 +58,19 @@
         display: grid;
         place-items: center;
         overflow: hidden;
-        padding: 20px;
+        padding: 10px;
         background-color: var(--bg);
         background-image: radial-gradient(
           ellipse at 50% 32%,
           var(--bg-spot),
-          transparent 68%
+          transparent 75%
         );
         font-family:
           -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         color: var(--text);
+        transition:
+          background-color 0.5s ease,
+          color 0.4s ease;
         -webkit-font-smoothing: antialiased;
       }
 
@@ -51,31 +79,33 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 28px;
+        gap: 20px;
         width: 100%;
-      }
-
-      /* ── Carousel Container ── */
-      .carousel-wrapper {
-        position: relative;
-        width: min(95vmin, 900px);
-        height: min(95vmin, 900px);
-        max-width: 96vw;
-        max-height: 96vh;
-        display: flex;
-        align-items: center;
+        max-width: 1200px;
+        height: 96vh;
         justify-content: center;
       }
 
-      .dithered-logo {
+      /* ── Carousel Wrapper ── */
+      .carousel-wrapper {
         position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         width: 100%;
-        height: 100%;
-        color: var(--particle);
-        overflow: hidden;
-        border-radius: 12px;
+        max-width: 960px;
       }
 
+      /* ── MAXIMIZED CANVAS CONTAINER ── */
+      .dithered-logo {
+        position: relative;
+        width: min(85vmin, 760px);
+        height: min(85vmin, 760px);
+        max-width: 90vw;
+        max-height: 74vh;
+        color: var(--particle);
+        transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.45s ease;
+      }
       .dithered-logo canvas {
         position: absolute;
         inset: 0;
@@ -84,19 +114,25 @@
         height: 100%;
         touch-action: none;
         cursor: pointer;
-        transition:
-          transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-          opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       }
 
-      /* Slide animations */
-      .dithered-logo canvas.slide-out-left {
-        transform: translateX(-100%) scale(0.9);
+      /* Sliding classes */
+      .dithered-logo.slide-out-left {
+        transform: translateX(-80px);
         opacity: 0;
       }
-
-      .dithered-logo canvas.slide-in-right {
-        transform: translateX(100%) scale(0.9);
+      .dithered-logo.slide-out-right {
+        transform: translateX(80px);
+        opacity: 0;
+      }
+      .dithered-logo.slide-from-right {
+        transition: none !important;
+        transform: translateX(80px);
+        opacity: 0;
+      }
+      .dithered-logo.slide-from-left {
+        transition: none !important;
+        transform: translateX(-80px);
         opacity: 0;
       }
 
@@ -105,101 +141,42 @@
         position: absolute;
         top: 50%;
         transform: translateY(-50%);
-        z-index: 10;
-        width: 60px;
-        height: 60px;
-        display: grid;
-        place-items: center;
-        border: 1px solid var(--border);
-        border-radius: 50%;
-        background: var(--arrow-bg);
-        color: var(--text);
-        cursor: pointer;
-        box-shadow: var(--shadow-up);
-        transition: all 0.25s ease;
-        backdrop-filter: blur(8px);
-      }
-
-      .nav-arrow:hover {
-        transform: translateY(-50%) scale(1.1);
         background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text);
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: var(--shadow);
+        transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+        z-index: 15;
       }
-
+      .nav-arrow:hover {
+        background: var(--surface-hover);
+        box-shadow: var(--shadow-up);
+        transform: translateY(-50%) scale(1.1);
+      }
       .nav-arrow:active {
         transform: translateY(-50%) scale(0.95);
       }
-
       .nav-arrow svg {
-        width: 24px;
-        height: 24px;
+        width: 22px;
+        height: 22px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
       }
-
-      /* Big right arrow as requested */
-      .nav-arrow.next {
-        right: -30px;
-        width: 70px;
-        height: 70px;
-      }
-
-      .nav-arrow.next svg {
-        width: 28px;
-        height: 28px;
-      }
-
       .nav-arrow.prev {
-        left: -30px;
+        left: -80px;
       }
-
-      /* ── Image Indicators ── */
-      .indicators {
-        position: absolute;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        display: flex;
-        gap: 8px;
-        z-index: 10;
-      }
-
-      .indicator {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: rgba(0, 0, 0, 0.2);
-        cursor: pointer;
-        transition: all 0.3s ease;
-      }
-
-      .indicator.active {
-        background: var(--text);
-        width: 24px;
-        border-radius: 4px;
-      }
-
-      @media (max-width: 640px) {
-        body {
-          padding: 10px;
-        }
-        .carousel-wrapper {
-          width: min(96vw, 600px);
-          height: min(96vw, 600px);
-        }
-        .nav-arrow {
-          width: 44px;
-          height: 44px;
-        }
-        .nav-arrow.next {
-          right: -10px;
-          width: 50px;
-          height: 50px;
-        }
-        .nav-arrow.prev {
-          left: -10px;
-        }
-        .nav-arrow svg {
-          width: 20px;
-          height: 20px;
-        }
+      .nav-arrow.next {
+        right: -80px;
       }
 
       /* ── Controls ── */
@@ -209,7 +186,8 @@
         gap: 10px;
         flex-wrap: wrap;
         justify-content: center;
-        padding: 0 10px;
+        padding: 4px;
+        z-index: 10;
       }
 
       .btn {
@@ -267,6 +245,35 @@
         font-size: 13px;
         color: var(--text-sub);
         letter-spacing: 0.02em;
+        transition: color 0.4s ease;
+      }
+
+      @media (max-width: 1024px) {
+        .nav-arrow.prev {
+          left: 10px;
+        }
+        .nav-arrow.next {
+          right: 10px;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .demo {
+          gap: 16px;
+          height: auto;
+        }
+        .dithered-logo {
+          width: min(94vw, 550px);
+          height: min(94vw, 550px);
+        }
+        .btn {
+          padding: 8px 14px;
+          font-size: 13px;
+        }
+        .nav-arrow {
+          width: 44px;
+          height: 44px;
+        }
       }
     </style>
   </head>
@@ -274,36 +281,21 @@
   <body>
     <main class="demo">
       <div class="carousel-wrapper">
-        <!-- Previous Arrow -->
-        <button class="nav-arrow prev" id="prevBtn" aria-label="Previous image">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <polyline points="15 18 9 12 15 6"></polyline>
+        <!-- Carousel Left Arrow -->
+        <button class="nav-arrow prev" id="prevBtn" aria-label="Previous Image">
+          <svg viewBox="0 0 24 24">
+            <polyline points="15 18 9 12 15 6" />
           </svg>
         </button>
 
         <div class="dithered-logo" id="ditheredLogo">
           <canvas id="particleCanvas"></canvas>
-          <div class="indicators" id="indicators"></div>
         </div>
 
-        <!-- Big Next Arrow -->
-        <button class="nav-arrow next" id="nextBtn" aria-label="Next image">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <polyline points="9 18 15 12 9 6"></polyline>
+        <!-- Carousel Right Arrow -->
+        <button class="nav-arrow next" id="nextBtn" aria-label="Next Image">
+          <svg viewBox="0 0 24 24">
+            <polyline points="9 18 15 12 9 6" />
           </svg>
         </button>
       </div>
@@ -368,17 +360,7 @@
     </main>
 
     <script>
-      /* ═══════ Image Carousel Data ═══════ */
-      const images = [
-        "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/mountainVally.png",
-        "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/background.png",
-        "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/heaven.png",
-      ];
-
-      let currentImageIndex = 0;
-      let isAnimating = false;
-
-      /* ═══════ Constants ═══════ */
+      /* ═══════ Interactive Physical Constants ═══════ */
       const RIPPLE_SPEED = 225;
       const RIPPLE_WIDTH = 37;
       const RIPPLE_FORCE = 20;
@@ -389,16 +371,25 @@
       const LERP = 0.12;
       const SNAP = 0.01;
 
-      /* ═══════ DitheredLogo ═══════ */
+      /* ═══════ Carousel Images Array ═══════ */
+      const images = [
+        "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/mountainVally.png", // Image 1 (Mountain)
+        "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?q=80&w=800&auto=format&fit=crop",    // Image 2 (Vibrant Art)
+        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop"     // Image 3 (Sunset Beach)
+      ];
+      let currentIndex = 0;
+      let isTransitioning = false;
+
+      /* ═══════ DitheredLogo Class ═══════ */
       class DitheredLogo {
-        constructor(container, config = {}) {
+        constructor(container, imageSrc, config = {}) {
           this.el = container;
           this.cv = container.querySelector("canvas");
           this.cx = this.cv.getContext("2d");
           this.cfg = {
-            gridSize: 420,
-            scale: 1,
-            dotScale: 1,
+            gridSize: 380, /* Crisp high resolution */
+            scale: 0.88,
+            dotScale: 0.95,
             invert: true,
             cornerRadius: 0.16,
             threshold: 168,
@@ -410,9 +401,9 @@
             particleColor: "currentColor",
             ...config,
           };
-          this.src = images[0];
+          this.src = imageSrc;
           this.sys = null;
-          this.monochrome = false; /* Color by default */
+          this.monochrome = false; /* ORIGINAL COLOR ACTIVE BY DEFAULT */
           this.cursor = { x: 0, y: 0, on: false };
           this.ripples = [];
           this.raf = 0;
@@ -424,13 +415,19 @@
           this.ro = new ResizeObserver(() => this._resize());
           this.ro.observe(this.el);
 
+          this.mo = new MutationObserver(() => {
+            requestAnimationFrame(() => {
+              if (this.sys) this._draw();
+            });
+          });
+          this.mo.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ["data-theme", "class", "style"],
+          });
+
           this._bind();
           this._resize();
           this.rebuild();
-        }
-
-        setSrc(src) {
-          this.src = src;
         }
 
         /* ── Pointer events ── */
@@ -454,6 +451,7 @@
             this._loop();
           });
           c.addEventListener("pointerup", (e) => {
+            if (isTransitioning) return;
             const r = c.getBoundingClientRect();
             this.ripples.push({
               x: e.clientX - r.left,
@@ -465,6 +463,7 @@
           });
         }
 
+        /* ── Toggle monochrome / color ── */
         setColorMode(useColor) {
           this.monochrome = !useColor;
           if (this.sys) {
@@ -473,6 +472,7 @@
           }
         }
 
+        /* ── Image loader ── */
         _img(src) {
           return new Promise((ok, no) => {
             const i = new Image();
@@ -483,12 +483,14 @@
           });
         }
 
+        /* ── Grayscale grid + original colors ── */
         _gray(img) {
           const C = this.cfg;
           const asp = img.naturalWidth / img.naturalHeight;
           const w = asp >= 1 ? C.gridSize : Math.round(C.gridSize * asp);
           const h = asp >= 1 ? Math.round(C.gridSize / asp) : C.gridSize;
 
+          /* Original (no blur) for alpha + color */
           const ac = document.createElement("canvas");
           ac.width = w;
           ac.height = h;
@@ -498,6 +500,7 @@
           ax.drawImage(img, 0, 0, w, h);
           const ad = ax.getImageData(0, 0, w, h).data;
 
+          /* Blurred source for dither luminance mapping */
           const pad = Math.ceil(C.blur * 3);
           const sc = document.createElement("canvas");
           sc.width = img.naturalWidth + pad * 2;
@@ -513,17 +516,7 @@
           const fx = fc.getContext("2d");
           fx.imageSmoothingEnabled = true;
           fx.imageSmoothingQuality = "high";
-          fx.drawImage(
-            sc,
-            pad,
-            pad,
-            img.naturalWidth,
-            img.naturalHeight,
-            0,
-            0,
-            w,
-            h,
-          );
+          fx.drawImage(sc, pad, pad, img.naturalWidth, img.naturalHeight, 0, 0, w, h);
           const px = fx.getImageData(0, 0, w, h).data;
 
           const gs = new Uint8Array(w * h);
@@ -538,19 +531,16 @@
               const ba = px[pi + 3] / 255;
 
               alpha[idx] = ad[pi + 3];
+
+              /* Store original RGB colors safely */
               colors[idx * 3] = ad[pi];
               colors[idx * 3 + 1] = ad[pi + 1];
               colors[idx * 3 + 2] = ad[pi + 2];
 
-              let l =
-                ba > 0.01
-                  ? (0.299 * px[pi] + 0.587 * px[pi + 1] + 0.114 * px[pi + 2]) /
-                    ba
-                  : 0;
+              let l = ba > 0.01 ? (0.299 * px[pi] + 0.587 * px[pi + 1] + 0.114 * px[pi + 2]) / ba : 0;
 
               if (C.contrast) l = cf * (l - 128) + 128;
-              if (C.gamma !== 1)
-                l = 255 * Math.pow(Math.max(0, l / 255), 1 / C.gamma);
+              if (C.gamma !== 1) l = 255 * Math.pow(Math.max(0, l / 255), 1 / C.gamma);
 
               gs[idx] = Math.max(0, Math.min(255, Math.round(l)));
             }
@@ -559,6 +549,7 @@
           return { gs, alpha, colors, w, h };
         }
 
+        /* ── Floyd-Steinberg dithering ── */
         _dither(g) {
           const C = this.cfg;
           const { gs, alpha, w, h } = g;
@@ -597,6 +588,7 @@
           return new Float32Array(pos);
         }
 
+        /* ── Rounded mask inversion ── */
         _invert(pts, w, h, alpha) {
           const r = Math.round(this.cfg.cornerRadius * Math.min(w, h));
           const mask = new Set();
@@ -620,12 +612,12 @@
 
           const out = [];
           for (const idx of mask)
-            if (!filled.has(idx) && alpha[idx] >= 128)
-              out.push(idx % w, Math.floor(idx / w));
+            if (!filled.has(idx) && alpha[idx] >= 128) out.push(idx % w, Math.floor(idx / w));
 
           return new Float32Array(out);
         }
 
+        /* ── Extract colors from grid ── */
         _extractColors(positions, gridColors, gridW) {
           const count = positions.length / 2;
           const pColors = new Uint8Array(count * 3);
@@ -642,6 +634,7 @@
           return pColors;
         }
 
+        /* ── Build color buckets for batched rendering ── */
         _buildColorBuckets(pColors, count) {
           const bucketMap = {};
 
@@ -650,6 +643,7 @@
             const g = pColors[i * 3 + 1];
             const b = pColors[i * 3 + 2];
 
+            /* Quantize to 5 bits per channel (32 levels, ~1.6% error) */
             const qr = r >> 3;
             const qg = g >> 3;
             const qb = b >> 3;
@@ -657,23 +651,16 @@
 
             if (!bucketMap[key]) {
               bucketMap[key] = {
-                css:
-                  "rgb(" +
-                  ((qr << 3) | 4) +
-                  "," +
-                  ((qg << 3) | 4) +
-                  "," +
-                  ((qb << 3) | 4) +
-                  ")",
+                css: "rgb(" + ((qr << 3) | 4) + "," + ((qg << 3) | 4) + "," + ((qb << 3) | 4) + ")",
                 ids: [],
               };
             }
             bucketMap[key].ids.push(i);
           }
-
           return Object.values(bucketMap);
         }
 
+        /* ── Init particle system ── */
         _initParticles(positions, sf, ds, ox, oy, pColors) {
           const n = positions.length / 2;
           const bx = new Float32Array(n);
@@ -695,6 +682,7 @@
           };
         }
 
+        /* ── Rebuild pipeline ── */
         async rebuild(newSrc) {
           if (newSrc) this.src = newSrc;
 
@@ -710,43 +698,33 @@
 
             const sf = Math.max(
               0.5,
-              (Math.min(rect.width, rect.height) * this.cfg.scale) /
-                Math.max(g.w, g.h),
+              (Math.min(rect.width, rect.height) * this.cfg.scale) / Math.max(g.w, g.h)
             );
             const originX = Math.round((rect.width - g.w * sf) / 2);
             const originY = Math.round((rect.height - g.h * sf) / 2);
             const mobile = matchMedia("(max-width:640px)").matches;
             const ds = mobile ? this.cfg.dotScale * 0.8 : this.cfg.dotScale;
 
-            this.sys = this._initParticles(
-              pts,
-              sf,
-              ds,
-              originX,
-              originY,
-              pColors,
-            );
+            this.sys = this._initParticles(pts, sf, ds, originX, originY, pColors);
             this._loop();
           } catch (err) {
             console.error("DitheredLogo:", err);
           }
         }
 
+        /* ── Physics step ── */
         _step(now) {
           const s = this.sys;
           if (!s) return false;
 
           for (let i = this.ripples.length - 1; i >= 0; i--)
-            if (now - this.ripples[i].t >= RIPPLE_DURATION)
-              this.ripples.splice(i, 1);
+            if (now - this.ripples[i].t >= RIPPLE_DURATION) this.ripples.splice(i, 1);
 
-          const rm =
-            this.ripples.length > 0 ? 1 + 0.5 * (this.ripples.length - 1) : 0;
+          const rm = this.ripples.length > 0 ? 1 + 0.5 * (this.ripples.length - 1) : 0;
           let motion = false;
 
           for (let i = 0; i < s.n; i++) {
-            let fx = 0,
-              fy = 0;
+            let fx = 0, fy = 0;
 
             if (this.cursor.on) {
               const vx = s.bx[i] + s.ox[i] - this.cursor.x;
@@ -754,7 +732,7 @@
               const d2 = vx * vx + vy * vy;
               if (d2 > 0.1 && d2 < CURSOR_RADIUS_SQ) {
                 const d = Math.sqrt(d2);
-                const f = (1 - d / CURSOR_RADIUS) ** 3 * CURSOR_FORCE;
+                const f = Math.pow(1 - d / CURSOR_RADIUS, 3) * CURSOR_FORCE;
                 fx += (vx / d) * f;
                 fy += (vy / d) * f;
               }
@@ -772,7 +750,7 @@
               if (band < RIPPLE_WIDTH) {
                 const wf = (1 - band / RIPPLE_WIDTH) * life * RIPPLE_FORCE * rm;
                 fx += (dx / d) * wf;
-                fy += (dy / d) * wf;
+                fy += (vy / d) * wf;
               }
             }
 
@@ -786,12 +764,14 @@
           return motion || this.ripples.length > 0 || this.cursor.on;
         }
 
+        /* ── Resolve B&W particle color ── */
         _bwColor() {
           return this.cfg.particleColor === "currentColor"
             ? getComputedStyle(this.el).color
             : this.cfg.particleColor;
         }
 
+        /* ── Draw ── */
         _draw() {
           const s = this.sys;
           if (!s) return;
@@ -831,6 +811,7 @@
           }
         }
 
+        /* ── Animation loop ── */
         _loop() {
           if (this.running || !this.sys) return;
           this.running = true;
@@ -844,6 +825,7 @@
           this.raf = requestAnimationFrame(tick);
         }
 
+        /* ── Resize ── */
         _resize() {
           const rect = this.cv.getBoundingClientRect();
           const dpr = devicePixelRatio || 1;
@@ -864,70 +846,59 @@
         destroy() {
           cancelAnimationFrame(this.raf);
           this.ro.disconnect();
+          this.mo.disconnect();
         }
       }
 
       /* ═══════ Init ═══════ */
-      const logo = new DitheredLogo(document.getElementById("ditheredLogo"));
+      const logo = new DitheredLogo(
+        document.getElementById("ditheredLogo"),
+        images[currentIndex],
+      );
 
-      /* ═══════ Carousel Logic ═══════ */
-      const canvas = document.getElementById("particleCanvas");
-      const indicatorsContainer = document.getElementById("indicators");
+      /* ── Carousel Slider Transitions ── */
+      async function slideToImage(nextIndex, direction) {
+        if (isTransitioning) return;
+        isTransitioning = true;
 
-      // Create indicators
-      images.forEach((_, idx) => {
-        const dot = document.createElement("div");
-        dot.className = "indicator" + (idx === 0 ? " active" : "");
-        dot.onclick = () => goToSlide(idx);
-        indicatorsContainer.appendChild(dot);
+        const logoEl = document.getElementById("ditheredLogo");
+        const outClass = direction === "next" ? "slide-out-left" : "slide-out-right";
+        const inClass = direction === "next" ? "slide-from-right" : "slide-from-left";
+
+        // Step 1: Slide out current canvas
+        logoEl.classList.add(outClass);
+
+        // Wait for visual exit transition
+        await new Promise((resolve) => setTimeout(resolve, 380));
+
+        // Step 2: Swap index and await dither rendering calculation
+        currentIndex = nextIndex;
+        await logo.rebuild(images[currentIndex]);
+
+        // Step 3: Instantly snap new canvas to starting side
+        logoEl.classList.remove(outClass);
+        logoEl.classList.add(inClass);
+
+        // Force browser layout update
+        logoEl.offsetHeight;
+
+        // Step 4: Slide smoothly back to center
+        logoEl.classList.remove(inClass);
+        
+        isTransitioning = false;
+      }
+
+      document.getElementById("nextBtn").addEventListener("click", () => {
+        const nextIdx = (currentIndex + 1) % images.length;
+        slideToImage(nextIdx, "next");
       });
 
-      function updateIndicators() {
-        document.querySelectorAll(".indicator").forEach((dot, idx) => {
-          dot.classList.toggle("active", idx === currentImageIndex);
-        });
-      }
+      document.getElementById("prevBtn").addEventListener("click", () => {
+        const prevIdx = (currentIndex - 1 + images.length) % images.length;
+        slideToImage(prevIdx, "prev");
+      });
 
-      function goToSlide(index) {
-        if (isAnimating || index === currentImageIndex) return;
-        isAnimating = true;
-
-        // Slide out
-        canvas.classList.add("slide-out-left");
-
-        setTimeout(() => {
-          currentImageIndex = index;
-          logo.setSrc(images[currentImageIndex]);
-          logo.rebuild();
-          updateIndicators();
-
-          // Reset position for slide in
-          canvas.classList.remove("slide-out-left");
-          canvas.classList.add("slide-in-right");
-
-          requestAnimationFrame(() => {
-            setTimeout(() => {
-              canvas.classList.remove("slide-in-right");
-              isAnimating = false;
-            }, 50);
-          });
-        }, 400);
-      }
-
-      function nextSlide() {
-        const next = (currentImageIndex + 1) % images.length;
-        goToSlide(next);
-      }
-
-      function prevSlide() {
-        const prev = (currentImageIndex - 1 + images.length) % images.length;
-        goToSlide(prev);
-      }
-
-      document.getElementById("nextBtn").addEventListener("click", nextSlide);
-      document.getElementById("prevBtn").addEventListener("click", prevSlide);
-
-      /* ═══════ Controls ═══════ */
+      /* ── B&W / Color toggle ── */
       const bwBtn = document.getElementById("bwBtn");
       const colorBtn = document.getElementById("colorBtn");
 
@@ -943,12 +914,13 @@
         logo.setColorMode(true);
       });
 
+      /* ── Upload ── */
       document.getElementById("imagePicker").addEventListener("change", (e) => {
         const f = e.target.files[0];
         if (f) {
-          const url = URL.createObjectURL(f);
-          images.push(url);
-          goToSlide(images.length - 1);
+          const objectUrl = URL.createObjectURL(f);
+          images[currentIndex] = objectUrl; // Overwrite current carousel slot with uploaded image
+          logo.rebuild(objectUrl);
         }
       });
     </script>

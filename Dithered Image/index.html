@@ -350,6 +350,27 @@
       const CURSOR_FORCE = 40;
       const LERP = 0.12;
       const SNAP = 0.01;
+      const imageCache = new Map();
+
+      function preloadImage(src) {
+        if (!src) return Promise.resolve(null);
+        if (imageCache.has(src)) return imageCache.get(src);
+
+        const promise = new Promise((resolve, reject) => {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.decoding = "async";
+          img.onload = () => resolve(img);
+          img.onerror = () => {
+            imageCache.delete(src);
+            reject(new Error("Failed to load: " + src));
+          };
+          img.src = src;
+        });
+
+        imageCache.set(src, promise);
+        return promise;
+      }
 
       /* ═══════ Gallery — 3 images ═══════ */
       const GALLERY = [
@@ -447,13 +468,7 @@
         }
 
         _img(src) {
-          return new Promise((ok, no) => {
-            const i = new Image();
-            i.crossOrigin = "anonymous";
-            i.onload = () => ok(i);
-            i.onerror = () => no(new Error("Failed to load: " + src));
-            i.src = src;
-          });
+          return preloadImage(src);
         }
 
         _gray(img) {
@@ -843,6 +858,21 @@
       let busy = false;
 
       const dotsBox = document.getElementById("dots");
+
+      function preloadGalleryAround(targetIndex) {
+        const total = GALLERY.length;
+        if (!total) return;
+
+        const neighbors = [
+          targetIndex,
+          (targetIndex + 1) % total,
+          (targetIndex - 1 + total) % total,
+        ];
+
+        neighbors.forEach((i) => {
+          preloadImage(GALLERY[i]).catch(() => {});
+        });
+      }
       GALLERY.forEach((_, i) => {
         const d = document.createElement("button");
         d.className = "dot" + (i === 0 ? " active" : "");
@@ -861,6 +891,7 @@
         if (busy || i === index) return;
         busy = true;
         index = i;
+        preloadGalleryAround(index);
 
         /* fade out (opacity only — rect stays identical) */
         stage.classList.add("fading");
@@ -910,13 +941,15 @@
       document.getElementById("imagePicker").addEventListener("change", (e) => {
         const f = e.target.files[0];
         if (!f) return;
-        GALLERY.push(URL.createObjectURL(f));
+        const uploadedUrl = URL.createObjectURL(f);
+        GALLERY.push(uploadedUrl);
 
         const d = document.createElement("button");
         d.className = "dot";
         d.addEventListener("click", () => show(GALLERY.length - 1));
         dotsBox.appendChild(d);
 
+        preloadImage(uploadedUrl).catch(() => {});
         show(GALLERY.length - 1);
       });
     </script>

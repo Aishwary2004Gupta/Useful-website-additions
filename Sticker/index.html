@@ -1,40 +1,41 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Draggable Sticker</title>
-<style>
-    * {
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Draggable Sticker</title>
+    <style>
+      * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
-    }
+      }
 
-    html, body {
+      html,
+      body {
         width: 100%;
         height: 100%;
         background: #f0f0f0;
         overflow: hidden;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
+      }
 
-    #sticker-container {
+      #sticker-container {
         position: relative;
         width: 100%;
         height: 100%;
         overflow: visible;
         perspective: 800px;
-    }
+      }
 
-    #sizing-div {
+      #sizing-div {
         position: relative;
         opacity: 0;
         pointer-events: none;
         user-select: none;
-    }
+      }
 
-    #zoom-probe {
+      #zoom-probe {
         position: absolute;
         width: 20px;
         height: 20px;
@@ -42,9 +43,9 @@
         left: 0;
         opacity: 0;
         pointer-events: none;
-    }
+      }
 
-    #sticker {
+      #sticker {
         position: absolute;
         width: 100%;
         height: 100%;
@@ -54,101 +55,101 @@
         transform-style: preserve-3d;
         will-change: transform;
         overflow: visible;
-    }
+      }
 
-    #sticker:active {
+      #sticker:active {
         cursor: grabbing;
-    }
+      }
 
-    #inner {
+      #inner {
         position: absolute;
         width: 100%;
         height: 100%;
         transform-style: preserve-3d;
         overflow: visible;
-    }
+      }
 
-    #gl-canvas {
+      #gl-canvas {
         display: block;
         pointer-events: none;
         position: absolute;
-    }
-</style>
-</head>
-<body>
+      }
+    </style>
+  </head>
+  <body>
     <div id="sticker-container">
-        <div id="sizing-div"></div>
-        <div id="zoom-probe"></div>
-        <div id="sticker">
-            <div id="inner">
-                <canvas id="gl-canvas"></canvas>
-            </div>
+      <div id="sizing-div"></div>
+      <div id="zoom-probe"></div>
+      <div id="sticker">
+        <div id="inner">
+          <canvas id="gl-canvas"></canvas>
         </div>
+      </div>
     </div>
 
-<script>
-// ============================================================================
-// Draggable Sticker — Originkit (Vanilla JS Port)
-// ============================================================================
+    <script>
+      // ============================================================================
+      // Draggable Sticker — Originkit (Vanilla JS Port)
+      // ============================================================================
 
-// Shown when no image is uploaded.
-const DEFAULT_IMAGE =
-    "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/3fb4a247-64e9-4c54-2391-86598eebfe00/w=800";
+      // Shown when no image is uploaded.
+      const DEFAULT_IMAGE =
+        "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/3fb4a247-64e9-4c54-2391-86598eebfe00/w=800";
 
-// ============================================================================
-// COMPONENT DEFAULTS
-// ============================================================================
+      // ============================================================================
+      // COMPONENT DEFAULTS
+      // ============================================================================
 
-const COMPONENT_DEFAULTS = {
-    image: {
-        src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/3fb4a247-64e9-4c54-2391-86598eebfe00/w=800",
-    },
-    imageWidth: 600,
-    imageHeight: 400,
-    tilt: 45,
-    lighting: true,
-    lightingStrength: 10,
-    lightingColor: "#ffffff",
-    sheenMode: "sheen", // "sheen" | "holo"
-    elevation: 10,
-    staticShadow: "0px 1px 2px 0px rgba(0, 0, 0, 0.30)",
-    dynamicShadow: "0px 13px 14px 0px rgba(0, 0, 0, 0.30)",
-};
+      const COMPONENT_DEFAULTS = {
+        image: {
+          src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/3fb4a247-64e9-4c54-2391-86598eebfe00/w=800",
+        },
+        imageWidth: 600,
+        imageHeight: 400,
+        tilt: 45,
+        lighting: true,
+        lightingStrength: 10,
+        lightingColor: "#ffffff",
+        sheenMode: "sheen", // "sheen" | "holo"
+        elevation: 10,
+        staticShadow: "0px 1px 2px 0px rgba(0, 0, 0, 0.30)",
+        dynamicShadow: "0px 13px 14px 0px rgba(0, 0, 0, 0.30)",
+      };
 
-// ============================================================================
-// CONSTANTS (matching original source exactly)
-// ============================================================================
+      // ============================================================================
+      // CONSTANTS (matching original source exactly)
+      // ============================================================================
 
-const RENDER_SCALE = 2;
-const PAD_BASE = 20; // Base padding in pixels
-const MESH_GRID_SIZE = 32; // Must use grid for smooth wave deformation
-const DRAG_Z_INDEX_BASE = 1000; // Base z-index for dragged stickers
+      const RENDER_SCALE = 2;
+      const PAD_BASE = 20; // Base padding in pixels
+      const MESH_GRID_SIZE = 32; // Must use grid for smooth wave deformation
+      const DRAG_Z_INDEX_BASE = 1000; // Base z-index for dragged stickers
 
-let zIndexCounter = DRAG_Z_INDEX_BASE;
+      let zIndexCounter = DRAG_Z_INDEX_BASE;
 
-function getNextZIndex() {
-    zIndexCounter += 1;
-    return zIndexCounter;
-}
+      function getNextZIndex() {
+        zIndexCounter += 1;
+        return zIndexCounter;
+      }
 
-// Tweakables from original
-const DRAG_TILT_SENSITIVITY = 3;
-const DRAG_MAX_TILT_DEG = 30;
-const DRAG_TILT_SMOOTHING = 0.05;
-const SHEEN_STRENGTH = 0.6;
-const SHEEN_TILT_SHIFT = 0.05;
-const SHEEN_TILT_DEADZONE = 0.035;
-const ANIM_SPEED = 1.92;
-const HOLO_MOTION_BUMP = 0.15;
-const HOLO_MOTION_DECAY = 0.88;
+      // Tweakables from original
+      const DRAG_TILT_SENSITIVITY = 3;
+      const DRAG_MAX_TILT_DEG = 30;
+      const DRAG_TILT_SMOOTHING = 0.05;
+      const SHEEN_STRENGTH = 0.6;
+      const SHEEN_TILT_SHIFT = 0.05;
+      const SHEEN_TILT_DEADZONE = 0.035;
+      const ANIM_SPEED = 1.92;
+      const HOLO_MOTION_BUMP = 0.15;
+      const HOLO_MOTION_DECAY = 0.88;
 
-const ELEVATION_INTERNAL_MAX = 0.3;
+      const ELEVATION_INTERNAL_MAX = 0.3;
 
-// ============================================================================
-// WebGL Shaders (from original source)
-// ============================================================================
+      // ============================================================================
+      // WebGL Shaders (from original source)
+      // ============================================================================
 
-const VERTEX_SHADER = `
+      const VERTEX_SHADER = `
 attribute vec2 aPos;
 attribute vec2 aUV;
 uniform float uPeel;
@@ -203,7 +204,7 @@ void main() {
 }
 `;
 
-const FRAGMENT_SHADER = `
+      const FRAGMENT_SHADER = `
 precision mediump float;
 uniform sampler2D uTex;
 uniform vec2 uTilt;
@@ -277,122 +278,131 @@ void main() {
 }
 `;
 
-// ============================================================================
-// UTILITIES
-// ============================================================================
+      // ============================================================================
+      // UTILITIES
+      // ============================================================================
 
-function resolveImageSource(input) {
-    if (!input) return undefined;
-    if (typeof input === "string") return input.trim() || undefined;
-    return input.src || input.url || (input.asset && input.asset.url) || undefined;
-}
+      function resolveImageSource(input) {
+        if (!input) return undefined;
+        if (typeof input === "string") return input.trim() || undefined;
+        return (
+          input.src ||
+          input.url ||
+          (input.asset && input.asset.url) ||
+          undefined
+        );
+      }
 
-// Parse a CSS color (#hex / #rgb / rgb()/rgba()) to normalized [r,g,b] 0–1.
-function parseColorToRgb(input) {
-    if (!input) return [1, 1, 1];
-    const s = input.trim();
-    const m = s.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/i);
-    if (m) return [+m[1] / 255, +m[2] / 255, +m[3] / 255];
-    let h = s.replace(/^#/, "");
-    if (h.length === 3)
-        h = h.split("").map((c) => c + c).join("");
-    if (h.length >= 6)
-        return [
+      // Parse a CSS color (#hex / #rgb / rgb()/rgba()) to normalized [r,g,b] 0–1.
+      function parseColorToRgb(input) {
+        if (!input) return [1, 1, 1];
+        const s = input.trim();
+        const m = s.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/i);
+        if (m) return [+m[1] / 255, +m[2] / 255, +m[3] / 255];
+        let h = s.replace(/^#/, "");
+        if (h.length === 3)
+          h = h
+            .split("")
+            .map((c) => c + c)
+            .join("");
+        if (h.length >= 6)
+          return [
             parseInt(h.slice(0, 2), 16) / 255,
             parseInt(h.slice(2, 4), 16) / 255,
             parseInt(h.slice(4, 6), 16) / 255,
-        ];
-    return [1, 1, 1];
-}
+          ];
+        return [1, 1, 1];
+      }
 
-// Parse a CSS box-shadow into drop-shadow parameters
-function parseBoxShadow(shadow) {
-    const result = {
-        x: 0,
-        y: 0,
-        blur: 0,
-        color: "rgba(0,0,0,0.3)",
-    };
+      // Parse a CSS box-shadow into drop-shadow parameters
+      function parseBoxShadow(shadow) {
+        const result = {
+          x: 0,
+          y: 0,
+          blur: 0,
+          color: "rgba(0,0,0,0.3)",
+        };
 
-    if (!shadow) return result;
+        if (!shadow) return result;
 
-    // Extract color (rgba, rgb, or hex)
-    const colorMatch = shadow.match(
-        /(rgba?\([^)]+\)|#[0-9a-fA-F]{3,8}|\b[a-z]+\b(?=\s*$))/i
-    );
-    if (colorMatch) {
-        result.color = colorMatch[0];
-    }
+        // Extract color (rgba, rgb, or hex)
+        const colorMatch = shadow.match(
+          /(rgba?\([^)]+\)|#[0-9a-fA-F]{3,8}|\b[a-z]+\b(?=\s*$))/i,
+        );
+        if (colorMatch) {
+          result.color = colorMatch[0];
+        }
 
-    // Extract numeric values (px values)
-    const numbers = shadow.match(/-?\d+(\.\d+)?(px)?/g);
-    if (numbers) {
-        const vals = numbers.map((n) => parseFloat(n));
-        if (vals.length >= 1) result.x = vals[0];
-        if (vals.length >= 2) result.y = vals[1];
-        if (vals.length >= 3) result.blur = vals[2];
-    }
+        // Extract numeric values (px values)
+        const numbers = shadow.match(/-?\d+(\.\d+)?(px)?/g);
+        if (numbers) {
+          const vals = numbers.map((n) => parseFloat(n));
+          if (vals.length >= 1) result.x = vals[0];
+          if (vals.length >= 2) result.y = vals[1];
+          if (vals.length >= 3) result.blur = vals[2];
+        }
 
-    return result;
-}
+        return result;
+      }
 
-function lerpShadow(a, b, t) {
-    const x = a.x + (b.x - a.x) * t;
-    const y = a.y + (b.y - a.y) * t;
-    const blur = a.blur + (b.blur - a.blur) * t;
-    const color = t > 0.5 ? b.color : a.color;
-    return `drop-shadow(${x.toFixed(2)}px ${y.toFixed(2)}px ${blur.toFixed(2)}px ${color})`;
-}
+      function lerpShadow(a, b, t) {
+        const x = a.x + (b.x - a.x) * t;
+        const y = a.y + (b.y - a.y) * t;
+        const blur = a.blur + (b.blur - a.blur) * t;
+        const color = t > 0.5 ? b.color : a.color;
+        return `drop-shadow(${x.toFixed(2)}px ${y.toFixed(2)}px ${blur.toFixed(2)}px ${color})`;
+      }
 
-// ============================================================================
-// STICKER DRAG CLASS
-// ============================================================================
+      // ============================================================================
+      // STICKER DRAG CLASS
+      // ============================================================================
 
-class StickerDrag {
-    constructor(props) {
-        this.props = { ...COMPONENT_DEFAULTS, ...props };
+      class StickerDrag {
+        constructor(props) {
+          this.props = { ...COMPONENT_DEFAULTS, ...props };
 
-        // Resolve mapped internal props
-        this.tiltSensitivity = DRAG_TILT_SENSITIVITY;
-        this.maxTilt = Math.max(1, this.props.tilt);
-        this.tiltSmoothing = this.props.tiltSmoothing != null
-            ? this.props.tiltSmoothing
-            : DRAG_TILT_SMOOTHING;
-        this.sheenStrength = this.props.lighting
+          // Resolve mapped internal props
+          this.tiltSensitivity = DRAG_TILT_SENSITIVITY;
+          this.maxTilt = Math.max(1, this.props.tilt);
+          this.tiltSmoothing =
+            this.props.tiltSmoothing != null
+              ? this.props.tiltSmoothing
+              : DRAG_TILT_SMOOTHING;
+          this.sheenStrength = this.props.lighting
             ? Math.max(1, Math.min(10, this.props.lightingStrength)) / 10
             : 0;
-        this.sheenColor = parseColorToRgb(this.props.lightingColor);
-        this.elevation =
+          this.sheenColor = parseColorToRgb(this.props.lightingColor);
+          this.elevation =
             (Math.max(1, Math.min(10, this.props.elevation)) / 10) *
             ELEVATION_INTERNAL_MAX;
-        this.sheenMode = this.props.sheenMode;
-        this.imageWidth = this.props.imageWidth;
-        this.imageHeight = this.props.imageHeight;
+          this.sheenMode = this.props.sheenMode;
+          this.imageWidth = this.props.imageWidth;
+          this.imageHeight = this.props.imageHeight;
 
-        // DOM refs
-        this.container = document.getElementById("sticker-container");
-        this.sticker = document.getElementById("sticker");
-        this.inner = document.getElementById("inner");
-        this.canvas = document.getElementById("gl-canvas");
-        this.sizingDiv = document.getElementById("sizing-div");
-        this.zoomProbe = document.getElementById("zoom-probe");
+          // DOM refs
+          this.container = document.getElementById("sticker-container");
+          this.sticker = document.getElementById("sticker");
+          this.inner = document.getElementById("inner");
+          this.canvas = document.getElementById("gl-canvas");
+          this.sizingDiv = document.getElementById("sizing-div");
+          this.zoomProbe = document.getElementById("zoom-probe");
 
-        // Sizing dimensions
-        this.sizingDimensions = { width: 400, height: 400 };
+          // Sizing dimensions
+          this.sizingDimensions = { width: 400, height: 400 };
 
-        // WebGL refs
-        this.gl = null;
-        this.program = null;
-        this.texture = null;
-        this.vbo = null;
-        this.ibo = null;
-        this.indexCount = 0;
+          // WebGL refs
+          this.gl = null;
+          this.program = null;
+          this.texture = null;
+          this.vbo = null;
+          this.ibo = null;
+          this.indexCount = 0;
 
-        // Uniform location cache
-        this.uniforms = {};
+          // Uniform location cache
+          this.uniforms = {};
 
-        // State
-        this.state = {
+          // State
+          this.state = {
             x: 0,
             y: 0,
             width: 200,
@@ -420,344 +430,379 @@ class StickerDrag {
             lastMoveY: 0,
             lastMoveT: 0,
             texReady: false,
-        };
+          };
 
-        this.animationId = null;
-        this.lastTickT = null;
+          this.animationId = null;
+          this.lastTickT = null;
 
-        // Shadow parsing
-        this.parsedStaticShadow = parseBoxShadow(this.props.staticShadow);
-        this.parsedDynamicShadow = parseBoxShadow(this.props.dynamicShadow);
+          // Shadow parsing
+          this.parsedStaticShadow = parseBoxShadow(this.props.staticShadow);
+          this.parsedDynamicShadow = parseBoxShadow(this.props.dynamicShadow);
 
-        // Resize scheduling
-        this.applyResizeTimeout = null;
-        this.SIZING_THRESHOLD = 5;
-        this.RESIZE_DEBOUNCE_MS = 180;
+          // Resize scheduling
+          this.applyResizeTimeout = null;
+          this.SIZING_THRESHOLD = 5;
+          this.RESIZE_DEBOUNCE_MS = 180;
 
-        // Bind methods
-        this.tick = this.tick.bind(this);
-        this.draw = this.draw.bind(this);
-        this.handleResize = this.handleResize.bind(this);
-        this.updateShadowCSS = this.updateShadowCSS.bind(this);
+          // Bind methods
+          this.tick = this.tick.bind(this);
+          this.draw = this.draw.bind(this);
+          this.handleResize = this.handleResize.bind(this);
+          this.updateShadowCSS = this.updateShadowCSS.bind(this);
 
-        this.init();
-    }
+          this.init();
+        }
 
-    // ------------------------------------------------------------------------
-    // INIT
-    // ------------------------------------------------------------------------
+        // ------------------------------------------------------------------------
+        // INIT
+        // ------------------------------------------------------------------------
 
-    init() {
-        this.applySizingDiv();
-        this.initWebGL();
-        this.loadImage();
-        this.attachEvents();
-        this.startResizeDetection();
-    }
+        init() {
+          this.applySizingDiv();
+          this.initWebGL();
+          this.loadImage();
+          this.attachEvents();
+          this.startResizeDetection();
+        }
 
-    applySizingDiv() {
-        const d = this.sizingDimensions;
-        this.sizingDiv.style.width = d.width + "px";
-        this.sizingDiv.style.height = d.height + "px";
-        this.sizingDiv.style.minWidth = d.width + "px";
-        this.sizingDiv.style.minHeight = d.height + "px";
-    }
+        applySizingDiv() {
+          const d = this.sizingDimensions;
+          this.sizingDiv.style.width = d.width + "px";
+          this.sizingDiv.style.height = d.height + "px";
+          this.sizingDiv.style.minWidth = d.width + "px";
+          this.sizingDiv.style.minHeight = d.height + "px";
+        }
 
-    // ------------------------------------------------------------------------
-    // WEBGL SETUP
-    // ------------------------------------------------------------------------
+        // ------------------------------------------------------------------------
+        // WEBGL SETUP
+        // ------------------------------------------------------------------------
 
-    initWebGL() {
-        const canvas = this.canvas;
-        const gl = canvas.getContext("webgl", {
+        initWebGL() {
+          const canvas = this.canvas;
+          const gl = canvas.getContext("webgl", {
             alpha: true,
             antialias: true,
             premultipliedAlpha: false,
-        });
-        if (!gl) return;
+          });
+          if (!gl) return;
 
-        this.gl = gl;
+          this.gl = gl;
 
-        const compileShader = (source, type) => {
+          const compileShader = (source, type) => {
             const shader = gl.createShader(type);
             if (!shader) return null;
             gl.shaderSource(shader, source);
             gl.compileShader(shader);
             if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-                console.error("Shader compile error:", gl.getShaderInfoLog(shader));
-                gl.deleteShader(shader);
-                return null;
+              console.error(
+                "Shader compile error:",
+                gl.getShaderInfoLog(shader),
+              );
+              gl.deleteShader(shader);
+              return null;
             }
             return shader;
-        };
+          };
 
-        const vs = compileShader(VERTEX_SHADER, gl.VERTEX_SHADER);
-        const fs = compileShader(FRAGMENT_SHADER, gl.FRAGMENT_SHADER);
-        if (!vs || !fs) return;
+          const vs = compileShader(VERTEX_SHADER, gl.VERTEX_SHADER);
+          const fs = compileShader(FRAGMENT_SHADER, gl.FRAGMENT_SHADER);
+          if (!vs || !fs) return;
 
-        const program = gl.createProgram();
-        if (!program) return;
+          const program = gl.createProgram();
+          if (!program) return;
 
-        gl.attachShader(program, vs);
-        gl.attachShader(program, fs);
-        gl.linkProgram(program);
+          gl.attachShader(program, vs);
+          gl.attachShader(program, fs);
+          gl.linkProgram(program);
 
-        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+          if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
             console.error("Program link error:", gl.getProgramInfoLog(program));
             return;
-        }
+          }
 
-        this.program = program;
+          this.program = program;
 
-        // Cache uniform locations
-        const uniformNames = [
-            "uPeel", "uLift", "uPeelAngle", "uPasting", "uScale", "uElevation",
-            "uTilt", "uSheenStrength", "uSheenColor", "uSheenTiltShift",
-            "uSheenTiltDeadzone", "uMaxTiltDeg", "uHoloMode", "uHoloMotion", "uTex"
-        ];
-        for (const name of uniformNames) {
+          // Cache uniform locations
+          const uniformNames = [
+            "uPeel",
+            "uLift",
+            "uPeelAngle",
+            "uPasting",
+            "uScale",
+            "uElevation",
+            "uTilt",
+            "uSheenStrength",
+            "uSheenColor",
+            "uSheenTiltShift",
+            "uSheenTiltDeadzone",
+            "uMaxTiltDeg",
+            "uHoloMode",
+            "uHoloMotion",
+            "uTex",
+          ];
+          for (const name of uniformNames) {
             this.uniforms[name] = gl.getUniformLocation(program, name);
-        }
-        this.aPos = gl.getAttribLocation(program, "aPos");
-        this.aUV = gl.getAttribLocation(program, "aUV");
+          }
+          this.aPos = gl.getAttribLocation(program, "aPos");
+          this.aUV = gl.getAttribLocation(program, "aUV");
 
-        // Create grid mesh (32x32 for smooth wave deformation)
-        const N = MESH_GRID_SIZE;
-        const verts = [];
-        const inds = [];
+          // Create grid mesh (32x32 for smooth wave deformation)
+          const N = MESH_GRID_SIZE;
+          const verts = [];
+          const inds = [];
 
-        for (let j = 0; j <= N; j++) {
+          for (let j = 0; j <= N; j++) {
             for (let i = 0; i <= N; i++) {
-                verts.push(
-                    (i / N) * 2 - 1,
-                    (j / N) * 2 - 1,
-                    i / N,
-                    1 - j / N // Flip V coordinate
-                );
+              verts.push(
+                (i / N) * 2 - 1,
+                (j / N) * 2 - 1,
+                i / N,
+                1 - j / N, // Flip V coordinate
+              );
             }
-        }
+          }
 
-        for (let j = 0; j < N; j++) {
+          for (let j = 0; j < N; j++) {
             for (let i = 0; i < N; i++) {
-                const a = j * (N + 1) + i;
-                inds.push(a, a + 1, a + N + 1, a + 1, a + N + 2, a + N + 1);
+              const a = j * (N + 1) + i;
+              inds.push(a, a + 1, a + N + 1, a + 1, a + N + 2, a + N + 1);
             }
+          }
+
+          const vbo = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+          gl.bufferData(
+            gl.ARRAY_BUFFER,
+            new Float32Array(verts),
+            gl.STATIC_DRAW,
+          );
+          this.vbo = vbo;
+
+          const ibo = gl.createBuffer();
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
+          gl.bufferData(
+            gl.ELEMENT_ARRAY_BUFFER,
+            new Uint16Array(inds),
+            gl.STATIC_DRAW,
+          );
+          this.ibo = ibo;
+          this.indexCount = inds.length;
+
+          // Clear immediately
+          gl.viewport(0, 0, canvas.width, canvas.height);
+          gl.clearColor(0, 0, 0, 0);
+          gl.clear(gl.COLOR_BUFFER_BIT);
         }
 
-        const vbo = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW);
-        this.vbo = vbo;
+        // ------------------------------------------------------------------------
+        // DRAW
+        // ------------------------------------------------------------------------
 
-        const ibo = gl.createBuffer();
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(inds), gl.STATIC_DRAW);
-        this.ibo = ibo;
-        this.indexCount = inds.length;
+        draw() {
+          const gl = this.gl;
+          const program = this.program;
+          const texture = this.texture;
+          const state = this.state;
 
-        // Clear immediately
-        gl.viewport(0, 0, canvas.width, canvas.height);
-        gl.clearColor(0, 0, 0, 0);
-        gl.clear(gl.COLOR_BUFFER_BIT);
-    }
+          if (!gl || !program || !texture || !state.texReady) return;
 
-    // ------------------------------------------------------------------------
-    // DRAW
-    // ------------------------------------------------------------------------
+          gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+          gl.clearColor(0, 0, 0, 0);
+          gl.clear(gl.COLOR_BUFFER_BIT);
+          gl.enable(gl.BLEND);
+          gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-    draw() {
-        const gl = this.gl;
-        const program = this.program;
-        const texture = this.texture;
-        const state = this.state;
+          gl.useProgram(program);
 
-        if (!gl || !program || !texture || !state.texReady) return;
+          gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ibo);
 
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        gl.clearColor(0, 0, 0, 0);
-        gl.clear(gl.COLOR_BUFFER_BIT);
-        gl.enable(gl.BLEND);
-        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+          gl.enableVertexAttribArray(this.aPos);
+          gl.enableVertexAttribArray(this.aUV);
+          gl.vertexAttribPointer(this.aPos, 2, gl.FLOAT, false, 16, 0);
+          gl.vertexAttribPointer(this.aUV, 2, gl.FLOAT, false, 16, 8);
 
-        gl.useProgram(program);
+          const u = this.uniforms;
+          gl.uniform1f(u.uPeel, state.peel);
+          gl.uniform1f(u.uLift, state.lift);
+          gl.uniform1f(u.uPeelAngle, state.peelAngle);
+          gl.uniform1f(u.uPasting, state.sticking ? 1.0 : 0.0);
+          gl.uniform1f(u.uScale, state.scale);
+          gl.uniform1f(u.uElevation, this.elevation);
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ibo);
+          gl.uniform2f(u.uTilt, state.currentTiltX, state.currentTiltY);
+          gl.uniform1f(u.uSheenStrength, this.sheenStrength);
+          gl.uniform3f(
+            u.uSheenColor,
+            this.sheenColor[0],
+            this.sheenColor[1],
+            this.sheenColor[2],
+          );
+          gl.uniform1f(u.uSheenTiltShift, SHEEN_TILT_SHIFT);
+          gl.uniform1f(u.uSheenTiltDeadzone, SHEEN_TILT_DEADZONE);
+          gl.uniform1f(u.uMaxTiltDeg, this.maxTilt);
+          gl.uniform1f(u.uHoloMode, this.sheenMode === "holo" ? 1.0 : 0.0);
+          gl.uniform1f(u.uHoloMotion, state.holoMotion);
 
-        gl.enableVertexAttribArray(this.aPos);
-        gl.enableVertexAttribArray(this.aUV);
-        gl.vertexAttribPointer(this.aPos, 2, gl.FLOAT, false, 16, 0);
-        gl.vertexAttribPointer(this.aUV, 2, gl.FLOAT, false, 16, 8);
+          gl.activeTexture(gl.TEXTURE0);
+          gl.bindTexture(gl.TEXTURE_2D, texture);
+          gl.uniform1i(u.uTex, 0);
 
-        const u = this.uniforms;
-        gl.uniform1f(u.uPeel, state.peel);
-        gl.uniform1f(u.uLift, state.lift);
-        gl.uniform1f(u.uPeelAngle, state.peelAngle);
-        gl.uniform1f(u.uPasting, state.sticking ? 1.0 : 0.0);
-        gl.uniform1f(u.uScale, state.scale);
-        gl.uniform1f(u.uElevation, this.elevation);
+          gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_SHORT, 0);
+        }
 
-        gl.uniform2f(u.uTilt, state.currentTiltX, state.currentTiltY);
-        gl.uniform1f(u.uSheenStrength, this.sheenStrength);
-        gl.uniform3f(u.uSheenColor, this.sheenColor[0], this.sheenColor[1], this.sheenColor[2]);
-        gl.uniform1f(u.uSheenTiltShift, SHEEN_TILT_SHIFT);
-        gl.uniform1f(u.uSheenTiltDeadzone, SHEEN_TILT_DEADZONE);
-        gl.uniform1f(u.uMaxTiltDeg, this.maxTilt);
-        gl.uniform1f(u.uHoloMode, this.sheenMode === "holo" ? 1.0 : 0.0);
-        gl.uniform1f(u.uHoloMotion, state.holoMotion);
+        // ------------------------------------------------------------------------
+        // SHADOW
+        // ------------------------------------------------------------------------
 
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.uniform1i(u.uTex, 0);
+        updateShadowCSS() {
+          const canvas = this.canvas;
+          const state = this.state;
+          if (!canvas) return;
 
-        gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_SHORT, 0);
-    }
+          const tRaw = Math.max(state.lift, state.peel);
+          const t = tRaw * tRaw * (3 - 2 * tRaw); // smoothstep easing
 
-    // ------------------------------------------------------------------------
-    // SHADOW
-    // ------------------------------------------------------------------------
-
-    updateShadowCSS() {
-        const canvas = this.canvas;
-        const state = this.state;
-        if (!canvas) return;
-
-        const tRaw = Math.max(state.lift, state.peel);
-        const t = tRaw * tRaw * (3 - 2 * tRaw); // smoothstep easing
-
-        canvas.style.filter = lerpShadow(
+          canvas.style.filter = lerpShadow(
             this.parsedStaticShadow,
             this.parsedDynamicShadow,
-            t
-        );
-    }
+            t,
+          );
+        }
 
-    // ------------------------------------------------------------------------
-    // ANIMATION TICK
-    // ------------------------------------------------------------------------
+        // ------------------------------------------------------------------------
+        // ANIMATION TICK
+        // ------------------------------------------------------------------------
 
-    tick(timestamp) {
-        const state = this.state;
+        tick(timestamp) {
+          const state = this.state;
 
-        if (this.lastTickT === null) {
+          if (this.lastTickT === null) {
             this.lastTickT = timestamp;
-        }
+          }
 
-        const dt = Math.min((timestamp - this.lastTickT) / 1000, 0.1);
-        this.lastTickT = timestamp;
+          const dt = Math.min((timestamp - this.lastTickT) / 1000, 0.1);
+          this.lastTickT = timestamp;
 
-        const step = ANIM_SPEED * dt;
-        let changed = false;
+          const step = ANIM_SPEED * dt;
+          let changed = false;
 
-        if (state.peeling) {
+          if (state.peeling) {
             if (state.peel < 1 || state.lift < 1) {
-                state.peel = Math.min(1, state.peel + step);
-                state.lift = Math.min(1, state.lift + step);
-                changed = true;
+              state.peel = Math.min(1, state.peel + step);
+              state.lift = Math.min(1, state.lift + step);
+              changed = true;
             }
-        }
+          }
 
-        if (state.sticking) {
+          if (state.sticking) {
             if (state.peel > 0 || state.lift > 0) {
-                state.peel = Math.max(0, state.peel - step);
-                state.lift = Math.max(0, state.lift - step);
-                changed = true;
+              state.peel = Math.max(0, state.peel - step);
+              state.lift = Math.max(0, state.lift - step);
+              changed = true;
             } else {
-                state.sticking = false;
+              state.sticking = false;
             }
-        }
+          }
 
-        const holoDecayActive = this.sheenMode === "holo" && state.holoMotion > 0.005;
-        if (holoDecayActive) {
+          const holoDecayActive =
+            this.sheenMode === "holo" && state.holoMotion > 0.005;
+          if (holoDecayActive) {
             state.holoMotion *= HOLO_MOTION_DECAY;
             if (state.holoMotion < 0.005) state.holoMotion = 0;
             changed = true;
-        }
+          }
 
-        if (changed) {
+          if (changed) {
             this.updateShadowCSS();
-        }
+          }
 
-        if (changed || state.held || holoDecayActive) {
+          if (changed || state.held || holoDecayActive) {
             this.draw();
-        }
+          }
 
-        if (state.held || state.peeling || state.sticking || holoDecayActive) {
+          if (
+            state.held ||
+            state.peeling ||
+            state.sticking ||
+            holoDecayActive
+          ) {
             this.animationId = requestAnimationFrame(this.tick);
-        } else {
+          } else {
             this.animationId = null;
             this.lastTickT = null;
+          }
         }
-    }
 
-    ensureTickRunning() {
-        if (this.animationId !== null) return;
-        this.lastTickT = null;
-        this.animationId = requestAnimationFrame(this.tick);
-    }
+        ensureTickRunning() {
+          if (this.animationId !== null) return;
+          this.lastTickT = null;
+          this.animationId = requestAnimationFrame(this.tick);
+        }
 
-    // ------------------------------------------------------------------------
-    // RESIZE
-    // ------------------------------------------------------------------------
+        // ------------------------------------------------------------------------
+        // RESIZE
+        // ------------------------------------------------------------------------
 
-    handleResize() {
-        const container = this.container;
-        const canvas = this.canvas;
-        const sticker = this.sticker;
-        const gl = this.gl;
-        const state = this.state;
+        handleResize() {
+          const container = this.container;
+          const canvas = this.canvas;
+          const sticker = this.sticker;
+          const gl = this.gl;
+          const state = this.state;
 
-        if (!container || !canvas || !sticker || !gl) return;
+          if (!container || !canvas || !sticker || !gl) return;
 
-        const containerWidth = container.clientWidth || 200;
-        const containerHeight = container.clientHeight || 200;
+          const containerWidth = container.clientWidth || 200;
+          const containerHeight = container.clientHeight || 200;
 
-        const width = this.imageWidth > 0 ? this.imageWidth : containerWidth;
-        const height = this.imageHeight > 0 ? this.imageHeight : containerHeight;
+          const width = this.imageWidth > 0 ? this.imageWidth : containerWidth;
+          const height =
+            this.imageHeight > 0 ? this.imageHeight : containerHeight;
 
-        const maxDim = Math.max(width, height);
-        const elevationPad = maxDim * this.elevation * 0.6;
-        const effectivePad = PAD_BASE + elevationPad;
-        const canvasWidth = width + effectivePad * 2;
-        const canvasHeight = height + effectivePad * 2;
+          const maxDim = Math.max(width, height);
+          const elevationPad = maxDim * this.elevation * 0.6;
+          const effectivePad = PAD_BASE + elevationPad;
+          const canvasWidth = width + effectivePad * 2;
+          const canvasHeight = height + effectivePad * 2;
 
-        const scaleX = width / canvasWidth;
-        const scaleY = height / canvasHeight;
-        const scale = Math.min(scaleX, scaleY);
+          const scaleX = width / canvasWidth;
+          const scaleY = height / canvasHeight;
+          const scale = Math.min(scaleX, scaleY);
 
-        const x = (containerWidth - width) / 2;
-        const y = (containerHeight - height) / 2;
+          const x = (containerWidth - width) / 2;
+          const y = (containerHeight - height) / 2;
 
-        canvas.width = Math.round(canvasWidth * RENDER_SCALE);
-        canvas.height = Math.round(canvasHeight * RENDER_SCALE);
-        canvas.style.width = `${canvasWidth}px`;
-        canvas.style.height = `${canvasHeight}px`;
+          canvas.width = Math.round(canvasWidth * RENDER_SCALE);
+          canvas.height = Math.round(canvasHeight * RENDER_SCALE);
+          canvas.style.width = `${canvasWidth}px`;
+          canvas.style.height = `${canvasHeight}px`;
 
-        canvas.style.position = "absolute";
-        canvas.style.left = `${-effectivePad}px`;
-        canvas.style.top = `${-effectivePad}px`;
+          canvas.style.position = "absolute";
+          canvas.style.left = `${-effectivePad}px`;
+          canvas.style.top = `${-effectivePad}px`;
 
-        sticker.style.width = `${width}px`;
-        sticker.style.height = `${height}px`;
-        sticker.style.left = `${x}px`;
-        sticker.style.top = `${y}px`;
+          sticker.style.width = `${width}px`;
+          sticker.style.height = `${height}px`;
+          sticker.style.left = `${x}px`;
+          sticker.style.top = `${y}px`;
 
-        state.width = width;
-        state.height = height;
-        state.x = x;
-        state.y = y;
-        state.scale = scale;
+          state.width = width;
+          state.height = height;
+          state.x = x;
+          state.y = y;
+          state.scale = scale;
 
-        gl.viewport(0, 0, canvas.width, canvas.height);
+          gl.viewport(0, 0, canvas.width, canvas.height);
 
-        if (state.texReady) {
+          if (state.texReady) {
             this.draw();
+          }
         }
-    }
 
-    scheduleResize(measuredW, measuredH) {
-        if (this.applyResizeTimeout) clearTimeout(this.applyResizeTimeout);
-        this.applyResizeTimeout = setTimeout(() => {
+        scheduleResize(measuredW, measuredH) {
+          if (this.applyResizeTimeout) clearTimeout(this.applyResizeTimeout);
+          this.applyResizeTimeout = setTimeout(() => {
             this.applyResizeTimeout = null;
             const prev = this.sizingDimensions;
             const w = Math.max(1, Math.round(measuredW)) || prev.width;
@@ -765,48 +810,49 @@ class StickerDrag {
             const dw = Math.abs(w - prev.width);
             const dh = Math.abs(h - prev.height);
             if (dw >= this.SIZING_THRESHOLD || dh >= this.SIZING_THRESHOLD) {
-                this.sizingDimensions = { width: w, height: h };
-                this.applySizingDiv();
+              this.sizingDimensions = { width: w, height: h };
+              this.applySizingDiv();
             }
             this.handleResize();
-        }, this.RESIZE_DEBOUNCE_MS);
-    }
+          }, this.RESIZE_DEBOUNCE_MS);
+        }
 
-    startResizeDetection() {
-        const container = this.container;
-        if (!container) return;
+        startResizeDetection() {
+          const container = this.container;
+          if (!container) return;
 
-        this.handleResize();
+          this.handleResize();
 
-        const ro = new ResizeObserver(() => {
+          const ro = new ResizeObserver(() => {
             const w = container.clientWidth || container.offsetWidth || 400;
             const h = container.clientHeight || container.offsetHeight || 400;
             this.scheduleResize(w, h);
-        });
-        ro.observe(container);
-        this.resizeObserver = ro;
-    }
+          });
+          ro.observe(container);
+          this.resizeObserver = ro;
+        }
 
-    // ------------------------------------------------------------------------
-    // IMAGE LOADING
-    // ------------------------------------------------------------------------
+        // ------------------------------------------------------------------------
+        // IMAGE LOADING
+        // ------------------------------------------------------------------------
 
-    loadImage() {
-        const imageSrc = resolveImageSource(this.props.image) || DEFAULT_IMAGE;
+        loadImage() {
+          const imageSrc =
+            resolveImageSource(this.props.image) || DEFAULT_IMAGE;
 
-        const gl = this.gl;
-        if (!gl || !this.program) return;
+          const gl = this.gl;
+          if (!gl || !this.program) return;
 
-        const img = new Image();
-        img.crossOrigin = "anonymous";
+          const img = new Image();
+          img.crossOrigin = "anonymous";
 
-        img.onload = () => {
+          img.onload = () => {
             const state = this.state;
 
             state.imageAspectRatio = img.width / img.height;
 
             if (this.texture) {
-                gl.deleteTexture(this.texture);
+              gl.deleteTexture(this.texture);
             }
 
             const texture = gl.createTexture();
@@ -814,9 +860,24 @@ class StickerDrag {
 
             gl.bindTexture(gl.TEXTURE_2D, texture);
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texImage2D(
+              gl.TEXTURE_2D,
+              0,
+              gl.RGBA,
+              gl.RGBA,
+              gl.UNSIGNED_BYTE,
+              img,
+            );
+            gl.texParameteri(
+              gl.TEXTURE_2D,
+              gl.TEXTURE_WRAP_S,
+              gl.CLAMP_TO_EDGE,
+            );
+            gl.texParameteri(
+              gl.TEXTURE_2D,
+              gl.TEXTURE_WRAP_T,
+              gl.CLAMP_TO_EDGE,
+            );
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
@@ -826,156 +887,169 @@ class StickerDrag {
             this.handleResize();
             this.updateShadowCSS();
             this.draw();
-        };
+          };
 
-        img.onerror = () => {
+          img.onerror = () => {
             console.error("Failed to load image");
-        };
+          };
 
-        img.src = imageSrc;
-    }
+          img.src = imageSrc;
+        }
 
-    // ------------------------------------------------------------------------
-    // POINTER / TILT SETTLING
-    // ------------------------------------------------------------------------
+        // ------------------------------------------------------------------------
+        // POINTER / TILT SETTLING
+        // ------------------------------------------------------------------------
 
-    settleTilt() {
-        const state = this.state;
-        const inner = this.inner;
+        settleTilt() {
+          const state = this.state;
+          const inner = this.inner;
 
-        const step = () => {
+          const step = () => {
             state.dragTiltX *= 0.9;
             state.dragTiltY *= 0.9;
             state.currentTiltX = state.dragTiltX;
             state.currentTiltY = state.dragTiltY;
 
             if (inner) {
-                inner.style.transform =
-                    `rotateX(${state.dragTiltX}deg) rotateY(${state.dragTiltY}deg)`;
+              inner.style.transform = `rotateX(${state.dragTiltX}deg) rotateY(${state.dragTiltY}deg)`;
             }
 
-            if (Math.abs(state.dragTiltX) > 0.1 || Math.abs(state.dragTiltY) > 0.1) {
-                requestAnimationFrame(step);
+            if (
+              Math.abs(state.dragTiltX) > 0.1 ||
+              Math.abs(state.dragTiltY) > 0.1
+            ) {
+              requestAnimationFrame(step);
             } else {
-                state.dragTiltX = 0;
-                state.dragTiltY = 0;
-                state.currentTiltX = 0;
-                state.currentTiltY = 0;
-                state.prevTiltX = 0;
-                state.prevTiltY = 0;
-                if (inner) {
-                    inner.style.transform = "";
-                }
+              state.dragTiltX = 0;
+              state.dragTiltY = 0;
+              state.currentTiltX = 0;
+              state.currentTiltY = 0;
+              state.prevTiltX = 0;
+              state.prevTiltY = 0;
+              if (inner) {
+                inner.style.transform = "";
+              }
             }
-        };
-        step();
-    }
-
-    // ------------------------------------------------------------------------
-    // POINTER DOWN (shared by mouse/touch)
-    // ------------------------------------------------------------------------
-
-    pointerDown(clientX, clientY) {
-        const state = this.state;
-        const container = this.container;
-        const sticker = this.sticker;
-        const inner = this.inner;
-        if (!container || !sticker || !inner) return;
-
-        const rect = sticker.getBoundingClientRect();
-
-        const grabOffsetX = clientX - rect.left;
-        const grabOffsetY = clientY - rect.top;
-        inner.style.transformOrigin = `${grabOffsetX}px ${grabOffsetY}px`;
-
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        const dx = clientX - centerX;
-        const dy = clientY - centerY;
-        state.peelAngle = Math.atan2(dy, dx);
-
-        state.dragStartX = clientX;
-        state.dragStartY = clientY;
-        state.dragOrigX = state.x;
-        state.dragOrigY = state.y;
-
-        state.peel = 0;
-        state.lift = 0;
-
-        state.held = true;
-        state.peeling = true;
-        state.sticking = false;
-
-        state.lastMoveX = clientX;
-        state.lastMoveY = clientY;
-        state.lastMoveT = performance.now();
-
-        container.style.zIndex = `${getNextZIndex()}`;
-
-        this.ensureTickRunning();
-    }
-
-    // ------------------------------------------------------------------------
-    // POINTER MOVE (shared)
-    // ------------------------------------------------------------------------
-
-    pointerMove(clientX, clientY) {
-        const state = this.state;
-        if (!state.held) return;
-
-        const sticker = this.sticker;
-        const inner = this.inner;
-        if (!sticker || !inner) return;
-
-        state.x = state.dragOrigX + (clientX - state.dragStartX);
-        state.y = state.dragOrigY + (clientY - state.dragStartY);
-        sticker.style.left = `${state.x}px`;
-        sticker.style.top = `${state.y}px`;
-
-        const now = performance.now();
-        const dt = Math.max(1, now - state.lastMoveT);
-        const velX = ((clientX - state.lastMoveX) / dt) * 16;
-        const velY = ((clientY - state.lastMoveY) / dt) * 16;
-        state.lastMoveX = clientX;
-        state.lastMoveY = clientY;
-        state.lastMoveT = now;
-
-        const targetTiltY = Math.max(-this.maxTilt, Math.min(this.maxTilt, velX * this.tiltSensitivity));
-        const targetTiltX = Math.max(-this.maxTilt, Math.min(this.maxTilt, -velY * this.tiltSensitivity));
-
-        state.dragTiltX += (targetTiltX - state.dragTiltX) * this.tiltSmoothing;
-        state.dragTiltY += (targetTiltY - state.dragTiltY) * this.tiltSmoothing;
-
-        state.currentTiltX = state.dragTiltX;
-        state.currentTiltY = state.dragTiltY;
-
-        if (this.sheenMode === "holo") {
-            const tiltDelta =
-                Math.abs(state.dragTiltX - state.prevTiltX) +
-                Math.abs(state.dragTiltY - state.prevTiltY);
-            state.holoMotion = Math.min(1, state.holoMotion + tiltDelta * HOLO_MOTION_BUMP);
-            state.prevTiltX = state.dragTiltX;
-            state.prevTiltY = state.dragTiltY;
+          };
+          step();
         }
 
-        inner.style.transform = `rotateX(${state.dragTiltX}deg) rotateY(${state.dragTiltY}deg)`;
-    }
+        // ------------------------------------------------------------------------
+        // POINTER DOWN (shared by mouse/touch)
+        // ------------------------------------------------------------------------
 
-    // ------------------------------------------------------------------------
-    // POINTER UP (shared)
-    // ------------------------------------------------------------------------
+        pointerDown(clientX, clientY) {
+          const state = this.state;
+          const container = this.container;
+          const sticker = this.sticker;
+          const inner = this.inner;
+          if (!container || !sticker || !inner) return;
 
-    pointerUp() {
-        const state = this.state;
-        if (!state.held) return;
+          const rect = sticker.getBoundingClientRect();
 
-        const inner = this.inner;
+          const grabOffsetX = clientX - rect.left;
+          const grabOffsetY = clientY - rect.top;
+          inner.style.transformOrigin = `${grabOffsetX}px ${grabOffsetY}px`;
 
-        state.held = false;
-        state.peeling = false;
-        state.sticking = true;
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+          const dx = clientX - centerX;
+          const dy = clientY - centerY;
+          state.peelAngle = Math.atan2(dy, dx);
 
-        if (state.peel >= 0.95 && inner) {
+          state.dragStartX = clientX;
+          state.dragStartY = clientY;
+          state.dragOrigX = state.x;
+          state.dragOrigY = state.y;
+
+          state.peel = 0;
+          state.lift = 0;
+
+          state.held = true;
+          state.peeling = true;
+          state.sticking = false;
+
+          state.lastMoveX = clientX;
+          state.lastMoveY = clientY;
+          state.lastMoveT = performance.now();
+
+          container.style.zIndex = `${getNextZIndex()}`;
+
+          this.ensureTickRunning();
+        }
+
+        // ------------------------------------------------------------------------
+        // POINTER MOVE (shared)
+        // ------------------------------------------------------------------------
+
+        pointerMove(clientX, clientY) {
+          const state = this.state;
+          if (!state.held) return;
+
+          const sticker = this.sticker;
+          const inner = this.inner;
+          if (!sticker || !inner) return;
+
+          state.x = state.dragOrigX + (clientX - state.dragStartX);
+          state.y = state.dragOrigY + (clientY - state.dragStartY);
+          sticker.style.left = `${state.x}px`;
+          sticker.style.top = `${state.y}px`;
+
+          const now = performance.now();
+          const dt = Math.max(1, now - state.lastMoveT);
+          const velX = ((clientX - state.lastMoveX) / dt) * 16;
+          const velY = ((clientY - state.lastMoveY) / dt) * 16;
+          state.lastMoveX = clientX;
+          state.lastMoveY = clientY;
+          state.lastMoveT = now;
+
+          const targetTiltY = Math.max(
+            -this.maxTilt,
+            Math.min(this.maxTilt, velX * this.tiltSensitivity),
+          );
+          const targetTiltX = Math.max(
+            -this.maxTilt,
+            Math.min(this.maxTilt, -velY * this.tiltSensitivity),
+          );
+
+          state.dragTiltX +=
+            (targetTiltX - state.dragTiltX) * this.tiltSmoothing;
+          state.dragTiltY +=
+            (targetTiltY - state.dragTiltY) * this.tiltSmoothing;
+
+          state.currentTiltX = state.dragTiltX;
+          state.currentTiltY = state.dragTiltY;
+
+          if (this.sheenMode === "holo") {
+            const tiltDelta =
+              Math.abs(state.dragTiltX - state.prevTiltX) +
+              Math.abs(state.dragTiltY - state.prevTiltY);
+            state.holoMotion = Math.min(
+              1,
+              state.holoMotion + tiltDelta * HOLO_MOTION_BUMP,
+            );
+            state.prevTiltX = state.dragTiltX;
+            state.prevTiltY = state.dragTiltY;
+          }
+
+          inner.style.transform = `rotateX(${state.dragTiltX}deg) rotateY(${state.dragTiltY}deg)`;
+        }
+
+        // ------------------------------------------------------------------------
+        // POINTER UP (shared)
+        // ------------------------------------------------------------------------
+
+        pointerUp() {
+          const state = this.state;
+          if (!state.held) return;
+
+          const inner = this.inner;
+
+          state.held = false;
+          state.peeling = false;
+          state.sticking = true;
+
+          if (state.peel >= 0.95 && inner) {
             const rect = inner.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
@@ -983,66 +1057,74 @@ class StickerDrag {
             const dy = state.lastMoveY - centerY;
             state.peelAngle = Math.atan2(-dy, -dx);
             state.peel = 1;
+          }
+
+          this.settleTilt();
+          this.ensureTickRunning();
         }
 
-        this.settleTilt();
-        this.ensureTickRunning();
-    }
+        // ------------------------------------------------------------------------
+        // EVENTS
+        // ------------------------------------------------------------------------
 
-    // ------------------------------------------------------------------------
-    // EVENTS
-    // ------------------------------------------------------------------------
-
-    attachEvents() {
-        // Mouse
-        this.sticker.addEventListener("mousedown", (e) => {
+        attachEvents() {
+          // Mouse
+          this.sticker.addEventListener("mousedown", (e) => {
             e.preventDefault();
             this.pointerDown(e.clientX, e.clientY);
-        });
+          });
 
-        window.addEventListener("mousemove", (e) => {
+          window.addEventListener("mousemove", (e) => {
             this.pointerMove(e.clientX, e.clientY);
-        });
+          });
 
-        window.addEventListener("mouseup", () => {
+          window.addEventListener("mouseup", () => {
             this.pointerUp();
-        });
+          });
 
-        // Touch
-        this.sticker.addEventListener("touchstart", (e) => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            if (!touch) return;
-            this.pointerDown(touch.clientX, touch.clientY);
-        }, { passive: false });
+          // Touch
+          this.sticker.addEventListener(
+            "touchstart",
+            (e) => {
+              e.preventDefault();
+              const touch = e.touches[0];
+              if (!touch) return;
+              this.pointerDown(touch.clientX, touch.clientY);
+            },
+            { passive: false },
+          );
 
-        window.addEventListener("touchmove", (e) => {
-            const touch = e.touches[0];
-            if (!touch) return;
-            this.pointerMove(touch.clientX, touch.clientY);
-        }, { passive: false });
+          window.addEventListener(
+            "touchmove",
+            (e) => {
+              const touch = e.touches[0];
+              if (!touch) return;
+              this.pointerMove(touch.clientX, touch.clientY);
+            },
+            { passive: false },
+          );
 
-        window.addEventListener("touchend", () => {
+          window.addEventListener("touchend", () => {
             this.pointerUp();
+          });
+        }
+      }
+
+      // ============================================================================
+      // BOOT
+      // ============================================================================
+
+      window.addEventListener("DOMContentLoaded", () => {
+        // Instantiate with component defaults (equivalent to using COMPONENT_DEFAULTS)
+        new StickerDrag({
+          // You can override any prop here, e.g.:
+          // image: "your-image-url.png",
+          // sheenMode: "holo",
+          // tilt: 45,
+          // imageWidth: 600,
+          // imageHeight: 400,
         });
-    }
-}
-
-// ============================================================================
-// BOOT
-// ============================================================================
-
-window.addEventListener("DOMContentLoaded", () => {
-    // Instantiate with component defaults (equivalent to using COMPONENT_DEFAULTS)
-    new StickerDrag({
-        // You can override any prop here, e.g.:
-        // image: "your-image-url.png",
-        // sheenMode: "holo",
-        // tilt: 45,
-        // imageWidth: 600,
-        // imageHeight: 400,
-    });
-});
-</script>
-</body>
+      });
+    </script>
+  </body>
 </html>

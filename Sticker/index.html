@@ -105,7 +105,7 @@
         lighting: true,
         lightingStrength: 10,
         lightingColor: "#ffffff",
-        sheenMode: "sheen", //holo
+        sheenMode: "sheen", // sheen | holo | rug
         elevation: 10,
         staticShadow: "0px 1px 2px 0px rgba(0, 0, 0, 0.30)",
         dynamicShadow: "0px 13px 14px 0px rgba(0, 0, 0, 0.30)",
@@ -209,6 +209,7 @@ uniform float uSheenTiltDeadzone;
 uniform float uMaxTiltDeg;
 uniform float uHoloMode;
 uniform float uHoloMotion;
+uniform float uMaterialMode;
 uniform vec3 uSheenColor;
 varying vec2 vUV;
 varying float vHi;
@@ -245,7 +246,28 @@ void main() {
 
     float gradient = fract(vUV.x * 0.5 + vUV.y * 0.5 + uTilt.x * uSheenTiltShift + uTilt.y * uSheenTiltShift);
 
-    if (uHoloMode > 0.5) {
+    if (uMaterialMode > 1.5) {
+        vec2 rugUV = vUV;
+        float weaveX = sin(rugUV.x * 88.0 + rugUV.y * 34.0) * 0.5 + 0.5;
+        float weaveY = sin(rugUV.y * 112.0 + rugUV.x * 24.0) * 0.5 + 0.5;
+        float weaveMix = smoothstep(0.12, 0.88, mix(weaveX, weaveY, 0.55));
+        float fiberPattern = pow(abs(sin(rugUV.x * 140.0) * sin(rugUV.y * 118.0)), 0.8);
+
+        vec3 rugBase = mix(
+            vec3(0.36, 0.24, 0.14),
+            vec3(0.62, 0.44, 0.25),
+            0.35 + 0.25 * weaveMix
+        );
+        vec3 rugShade = mix(
+            vec3(0.10, 0.07, 0.05),
+            vec3(0.20, 0.14, 0.10),
+            fiberPattern
+        );
+
+        c = mix(c, rugBase, 0.25 * tex.a);
+        c += rugShade * 0.08 * tex.a;
+        c *= 0.94 + 0.08 * weaveMix;
+    } else if (uHoloMode > 0.5) {
         float holoStrength = uSheenStrength * uHoloMotion;
         float distFromWhite = length(tex.rgb - vec3(1.0));
         float nonWhiteMask = smoothstep(0.06, 0.22, distFromWhite);
@@ -533,6 +555,7 @@ void main() {
             "uMaxTiltDeg",
             "uHoloMode",
             "uHoloMotion",
+            "uMaterialMode",
             "uTex",
           ];
           for (const name of uniformNames) {
@@ -638,6 +661,10 @@ void main() {
           gl.uniform1f(u.uMaxTiltDeg, this.maxTilt);
           gl.uniform1f(u.uHoloMode, this.sheenMode === "holo" ? 1.0 : 0.0);
           gl.uniform1f(u.uHoloMotion, state.holoMotion);
+          gl.uniform1f(
+            u.uMaterialMode,
+            this.sheenMode === "rug" ? 2.0 : this.sheenMode === "holo" ? 1.0 : 0.0,
+          );
 
           gl.activeTexture(gl.TEXTURE0);
           gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -1114,7 +1141,7 @@ void main() {
         new StickerDrag({
           // You can override any prop here, e.g.:
           // image: "your-image-url.png",
-          // sheenMode: "holo",
+          // sheenMode: "rug",
           // tilt: 45,
           // imageWidth: 600,
           // imageHeight: 400,

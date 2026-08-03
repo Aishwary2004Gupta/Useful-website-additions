@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Draggable Sticker with Rug Texture</title>
+    <title>Draggable Sticker</title>
     <style>
       * {
         margin: 0;
@@ -88,21 +88,8 @@
     </div>
 
     <script>
-      // ============================================================================
-      // ASSETS
-      // ============================================================================
       const DEFAULT_IMAGE =
         "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/3fb4a247-64e9-4c54-2391-86598eebfe00/w=800";
-      
-      // Rug Texture URL (Seamless noise/fabric texture)
-      const RUG_TEXTURE_URL = 
-        "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png"; // Placeholder, replaced below with a proper noise texture
-      
-      // Using a generated noise texture or a seamless fabric URL
-      const RUG_TEXTURE_SRC = "https://img.freepik.com/free-photo/white-fabric-texture_1194-6687.jpg?w=1380&t=st=1715420000~exp=1715423600~hmac=example"; 
-      // Note: If the URL above fails due to CORS, we will use a procedural noise or a reliable placeholder.
-      // For this demo, I will use a reliable placeholder noise texture from a CDN.
-      const RUG_TEXTURE = "https://cdn.pixabay.com/photo/2016/11/29/05/45/astronomy-1867616_1280.jpg"; // Starry noise, good for texture
 
       // ============================================================================
       // COMPONENT DEFAULTS
@@ -118,21 +105,20 @@
         lighting: true,
         lightingStrength: 10,
         lightingColor: "#ffffff",
-        sheenMode: "sheen", // or holo
+        sheenMode: "sheen", //holo
         elevation: 10,
         staticShadow: "0px 1px 2px 0px rgba(0, 0, 0, 0.30)",
         dynamicShadow: "0px 13px 14px 0px rgba(0, 0, 0, 0.30)",
-        rugStrength: 0.4, // New prop: 0.0 to 1.0
       };
 
       // ============================================================================
-      // CONSTANTS
+      // CONSTANTS (matching original source exactly)
       // ============================================================================
 
       const RENDER_SCALE = 2;
-      const PAD_BASE = 20;
-      const MESH_GRID_SIZE = 32;
-      const DRAG_Z_INDEX_BASE = 1000;
+      const PAD_BASE = 20; // Base padding in pixels
+      const MESH_GRID_SIZE = 32; // Must use grid for smooth wave deformation
+      const DRAG_Z_INDEX_BASE = 1000; // Base z-index for dragged stickers
 
       let zIndexCounter = DRAG_Z_INDEX_BASE;
 
@@ -141,6 +127,7 @@
         return zIndexCounter;
       }
 
+      // Tweakables from original
       const DRAG_TILT_SENSITIVITY = 3;
       const DRAG_MAX_TILT_DEG = 30;
       const DRAG_TILT_SMOOTHING = 0.05;
@@ -154,7 +141,7 @@
       const ELEVATION_INTERNAL_MAX = 0.3;
 
       // ============================================================================
-      // WEBGL SHADERS
+      // WebGL Shaders (from original source)
       // ============================================================================
 
       const VERTEX_SHADER = `
@@ -182,25 +169,32 @@ void main() {
         float proj = dot(uvCentered, peelAxis);
         float diag = 0.5 - proj;
 
+        // Peel line travels across sticker and EXITS completely
         float peelLine = -0.3 + uPeel * 2.0;
+
+        // How "lifted" is this vertex? 0 = flat, 1 = fully lifted
         float rampWidth = 0.6;
         float lifted = smoothstep(peelLine - rampWidth, peelLine, diag);
         lifted = 1.0 - lifted;
 
+        // Scale based on how lifted (uElevation controls magnitude)
         float scale = 1.0 + lifted * uElevation;
         p *= scale;
 
+        // Curve outward at the ramp (creates the bent paper look)
         float inRamp = smoothstep(peelLine - rampWidth, peelLine - rampWidth * 0.5, diag) *
                        smoothstep(peelLine + 0.05, peelLine - rampWidth * 0.3, diag);
 
         float curveAmount = uPasting > 0.5 ? 0.06 : 0.12;
         p += (-peelAxis) * inRamp * curveAmount;
 
+        // Shading on the curved ramp
         float t = smoothstep(peelLine - rampWidth, peelLine, diag);
         vHi = inRamp * 0.75 * pow(1.0 - t, 1.2);
         vSh = inRamp * 0.75 * pow(t, 1.2);
     }
 
+    // Apply scale to fit within padded canvas area
     gl_Position = vec4(p * uScale, 0.0, 1.0);
 }
 `;
@@ -208,8 +202,6 @@ void main() {
       const FRAGMENT_SHADER = `
 precision mediump float;
 uniform sampler2D uTex;
-uniform sampler2D uRugTex; // NEW: Rug Texture
-uniform float uRugStrength; // NEW: Rug Strength
 uniform vec2 uTilt;
 uniform float uSheenStrength;
 uniform float uSheenTiltShift;
@@ -245,19 +237,6 @@ void main() {
     if (tex.a < 0.01) discard;
 
     vec3 c = tex.rgb * 0.95;
-
-    // --- RUG TEXTURE BLENDING ---
-    vec4 rugSample = texture2D(uRugTex, vUV * 4.0); // Multiply UV by 4 to tile the texture
-    // Convert rug to grayscale for texture mapping
-    float rugLuma = dot(rugSample.rgb, vec3(0.299, 0.587, 0.114));
-    // Normalize rug contrast slightly
-    rugLuma = (rugLuma - 0.5) * 2.0; 
-    
-    // Apply rug texture using Overlay blend mode logic manually or mix
-    // We mix the original color with a version affected by the rug luminance
-    vec3 rugColor = c * (1.0 + rugLuma * uRugStrength);
-    c = mix(c, rugColor, uRugStrength);
-    // ----------------------------
 
     // Sheen/holo effect
     float maxTilt = max(0.001, uMaxTiltDeg);
@@ -309,6 +288,7 @@ void main() {
         );
       }
 
+      // Parse a CSS color (#hex / #rgb / rgb()/rgba()) to normalized [r,g,b] 0–1.
       function parseColorToRgb(input) {
         if (!input) return [1, 1, 1];
         const s = input.trim();
@@ -329,6 +309,7 @@ void main() {
         return [1, 1, 1];
       }
 
+      // Parse a CSS box-shadow into drop-shadow parameters
       function parseBoxShadow(shadow) {
         const result = {
           x: 0,
@@ -339,6 +320,7 @@ void main() {
 
         if (!shadow) return result;
 
+        // Extract color (rgba, rgb, or hex)
         const colorMatch = shadow.match(
           /(rgba?\([^)]+\)|#[0-9a-fA-F]{3,8}|\b[a-z]+\b(?=\s*$))/i,
         );
@@ -346,6 +328,7 @@ void main() {
           result.color = colorMatch[0];
         }
 
+        // Extract numeric values (px values)
         const numbers = shadow.match(/-?\d+(\.\d+)?(px)?/g);
         if (numbers) {
           const vals = numbers.map((n) => parseFloat(n));
@@ -373,6 +356,7 @@ void main() {
         constructor(props) {
           this.props = { ...COMPONENT_DEFAULTS, ...props };
 
+          // Resolve mapped internal props
           this.tiltSensitivity = DRAG_TILT_SENSITIVITY;
           this.maxTilt = Math.max(1, this.props.tilt);
           this.tiltSmoothing =
@@ -389,8 +373,8 @@ void main() {
           this.sheenMode = this.props.sheenMode;
           this.imageWidth = this.props.imageWidth;
           this.imageHeight = this.props.imageHeight;
-          this.rugStrength = this.props.rugStrength || 0.4;
 
+          // DOM refs
           this.container = document.getElementById("sticker-container");
           this.sticker = document.getElementById("sticker");
           this.inner = document.getElementById("inner");
@@ -398,18 +382,21 @@ void main() {
           this.sizingDiv = document.getElementById("sizing-div");
           this.zoomProbe = document.getElementById("zoom-probe");
 
+          // Sizing dimensions
           this.sizingDimensions = { width: 400, height: 400 };
 
+          // WebGL refs
           this.gl = null;
           this.program = null;
           this.texture = null;
-          this.rugTexture = null; // NEW
           this.vbo = null;
           this.ibo = null;
           this.indexCount = 0;
 
+          // Uniform location cache
           this.uniforms = {};
 
+          // State
           this.state = {
             x: 0,
             y: 0,
@@ -438,19 +425,21 @@ void main() {
             lastMoveY: 0,
             lastMoveT: 0,
             texReady: false,
-            rugTexReady: false, // NEW
           };
 
           this.animationId = null;
           this.lastTickT = null;
 
+          // Shadow parsing
           this.parsedStaticShadow = parseBoxShadow(this.props.staticShadow);
           this.parsedDynamicShadow = parseBoxShadow(this.props.dynamicShadow);
 
+          // Resize scheduling
           this.applyResizeTimeout = null;
           this.SIZING_THRESHOLD = 5;
           this.RESIZE_DEBOUNCE_MS = 180;
 
+          // Bind methods
           this.tick = this.tick.bind(this);
           this.draw = this.draw.bind(this);
           this.handleResize = this.handleResize.bind(this);
@@ -459,11 +448,14 @@ void main() {
           this.init();
         }
 
+        // ------------------------------------------------------------------------
+        // INIT
+        // ------------------------------------------------------------------------
+
         init() {
           this.applySizingDiv();
           this.initWebGL();
           this.loadImage();
-          this.loadRugTexture(); // NEW
           this.attachEvents();
           this.startResizeDetection();
         }
@@ -475,6 +467,10 @@ void main() {
           this.sizingDiv.style.minWidth = d.width + "px";
           this.sizingDiv.style.minHeight = d.height + "px";
         }
+
+        // ------------------------------------------------------------------------
+        // WEBGL SETUP
+        // ------------------------------------------------------------------------
 
         initWebGL() {
           const canvas = this.canvas;
@@ -493,7 +489,10 @@ void main() {
             gl.shaderSource(shader, source);
             gl.compileShader(shader);
             if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-              console.error("Shader compile error:", gl.getShaderInfoLog(shader));
+              console.error(
+                "Shader compile error:",
+                gl.getShaderInfoLog(shader),
+              );
               gl.deleteShader(shader);
               return null;
             }
@@ -518,6 +517,7 @@ void main() {
 
           this.program = program;
 
+          // Cache uniform locations
           const uniformNames = [
             "uPeel",
             "uLift",
@@ -534,8 +534,6 @@ void main() {
             "uHoloMode",
             "uHoloMotion",
             "uTex",
-            "uRugTex", // NEW
-            "uRugStrength", // NEW
           ];
           for (const name of uniformNames) {
             this.uniforms[name] = gl.getUniformLocation(program, name);
@@ -543,6 +541,7 @@ void main() {
           this.aPos = gl.getAttribLocation(program, "aPos");
           this.aUV = gl.getAttribLocation(program, "aUV");
 
+          // Create grid mesh (32x32 for smooth wave deformation)
           const N = MESH_GRID_SIZE;
           const verts = [];
           const inds = [];
@@ -553,7 +552,7 @@ void main() {
                 (i / N) * 2 - 1,
                 (j / N) * 2 - 1,
                 i / N,
-                1 - j / N,
+                1 - j / N, // Flip V coordinate
               );
             }
           }
@@ -567,25 +566,37 @@ void main() {
 
           const vbo = gl.createBuffer();
           gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW);
+          gl.bufferData(
+            gl.ARRAY_BUFFER,
+            new Float32Array(verts),
+            gl.STATIC_DRAW,
+          );
           this.vbo = vbo;
 
           const ibo = gl.createBuffer();
           gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
-          gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(inds), gl.STATIC_DRAW);
+          gl.bufferData(
+            gl.ELEMENT_ARRAY_BUFFER,
+            new Uint16Array(inds),
+            gl.STATIC_DRAW,
+          );
           this.ibo = ibo;
           this.indexCount = inds.length;
 
+          // Clear immediately
           gl.viewport(0, 0, canvas.width, canvas.height);
           gl.clearColor(0, 0, 0, 0);
           gl.clear(gl.COLOR_BUFFER_BIT);
         }
 
+        // ------------------------------------------------------------------------
+        // DRAW
+        // ------------------------------------------------------------------------
+
         draw() {
           const gl = this.gl;
           const program = this.program;
           const texture = this.texture;
-          const rugTexture = this.rugTexture;
           const state = this.state;
 
           if (!gl || !program || !texture || !state.texReady) return;
@@ -627,23 +638,17 @@ void main() {
           gl.uniform1f(u.uMaxTiltDeg, this.maxTilt);
           gl.uniform1f(u.uHoloMode, this.sheenMode === "holo" ? 1.0 : 0.0);
           gl.uniform1f(u.uHoloMotion, state.holoMotion);
-          
-          // NEW: Set Rug Uniforms
-          gl.uniform1f(u.uRugStrength, this.rugStrength);
 
           gl.activeTexture(gl.TEXTURE0);
           gl.bindTexture(gl.TEXTURE_2D, texture);
           gl.uniform1i(u.uTex, 0);
 
-          // NEW: Bind Rug Texture to Unit 1
-          if (rugTexture) {
-              gl.activeTexture(gl.TEXTURE1);
-              gl.bindTexture(gl.TEXTURE_2D, rugTexture);
-              gl.uniform1i(u.uRugTex, 1);
-          }
-
           gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_SHORT, 0);
         }
+
+        // ------------------------------------------------------------------------
+        // SHADOW
+        // ------------------------------------------------------------------------
 
         updateShadowCSS() {
           const canvas = this.canvas;
@@ -651,7 +656,7 @@ void main() {
           if (!canvas) return;
 
           const tRaw = Math.max(state.lift, state.peel);
-          const t = tRaw * tRaw * (3 - 2 * tRaw);
+          const t = tRaw * tRaw * (3 - 2 * tRaw); // smoothstep easing
 
           canvas.style.filter = lerpShadow(
             this.parsedStaticShadow,
@@ -659,6 +664,10 @@ void main() {
             t,
           );
         }
+
+        // ------------------------------------------------------------------------
+        // ANIMATION TICK
+        // ------------------------------------------------------------------------
 
         tick(timestamp) {
           const state = this.state;
@@ -725,6 +734,10 @@ void main() {
           this.lastTickT = null;
           this.animationId = requestAnimationFrame(this.tick);
         }
+
+        // ------------------------------------------------------------------------
+        // RESIZE
+        // ------------------------------------------------------------------------
 
         handleResize() {
           const container = this.container;
@@ -814,6 +827,10 @@ void main() {
           this.resizeObserver = ro;
         }
 
+        // ------------------------------------------------------------------------
+        // IMAGE LOADING
+        // ------------------------------------------------------------------------
+
         loadImage() {
           const imageSrc =
             resolveImageSource(this.props.image) || DEFAULT_IMAGE;
@@ -868,51 +885,15 @@ void main() {
           };
 
           img.onerror = () => {
-            console.error("Failed to load main image");
+            console.error("Failed to load image");
           };
 
           img.src = imageSrc;
         }
 
-        // NEW: Load Rug Texture
-        loadRugTexture() {
-            const gl = this.gl;
-            if (!gl || !this.program) return;
-
-            const img = new Image();
-            img.crossOrigin = "anonymous";
-
-            img.onload = () => {
-                const texture = gl.createTexture();
-                if (!texture) return;
-
-                gl.bindTexture(gl.TEXTURE_2D, texture);
-                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-                gl.texImage2D(
-                  gl.TEXTURE_2D,
-                  0,
-                  gl.RGBA,
-                  gl.RGBA,
-                  gl.UNSIGNED_BYTE,
-                  img,
-                );
-                // Set wrapping to REPEAT so we can tile it in the shader
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-                this.rugTexture = texture;
-                this.state.rugTexReady = true;
-                this.draw();
-            };
-
-            img.onerror = () => {
-                console.warn("Failed to load rug texture, continuing without it.");
-            };
-
-            img.src = RUG_TEXTURE;
-        }
+        // ------------------------------------------------------------------------
+        // POINTER / TILT SETTLING
+        // ------------------------------------------------------------------------
 
         settleTilt() {
           const state = this.state;
@@ -947,6 +928,10 @@ void main() {
           };
           step();
         }
+
+        // ------------------------------------------------------------------------
+        // POINTER DOWN (shared by mouse/touch)
+        // ------------------------------------------------------------------------
 
         pointerDown(clientX, clientY) {
           const state = this.state;
@@ -987,6 +972,10 @@ void main() {
 
           this.ensureTickRunning();
         }
+
+        // ------------------------------------------------------------------------
+        // POINTER MOVE (shared)
+        // ------------------------------------------------------------------------
 
         pointerMove(clientX, clientY) {
           const state = this.state;
@@ -1041,6 +1030,10 @@ void main() {
           inner.style.transform = `rotateX(${state.dragTiltX}deg) rotateY(${state.dragTiltY}deg)`;
         }
 
+        // ------------------------------------------------------------------------
+        // POINTER UP (shared)
+        // ------------------------------------------------------------------------
+
         pointerUp() {
           const state = this.state;
           if (!state.held) return;
@@ -1065,7 +1058,12 @@ void main() {
           this.ensureTickRunning();
         }
 
+        // ------------------------------------------------------------------------
+        // EVENTS
+        // ------------------------------------------------------------------------
+
         attachEvents() {
+          // Mouse
           this.sticker.addEventListener("mousedown", (e) => {
             e.preventDefault();
             this.pointerDown(e.clientX, e.clientY);
@@ -1079,6 +1077,7 @@ void main() {
             this.pointerUp();
           });
 
+          // Touch
           this.sticker.addEventListener(
             "touchstart",
             (e) => {
@@ -1106,9 +1105,19 @@ void main() {
         }
       }
 
+      // ============================================================================
+      // BOOT
+      // ============================================================================
+
       window.addEventListener("DOMContentLoaded", () => {
+        // Instantiate with component defaults (equivalent to using COMPONENT_DEFAULTS)
         new StickerDrag({
-          rugStrength: 0.5, // Adjust this value (0.0 to 1.0) to control texture intensity
+          // You can override any prop here, e.g.:
+          // image: "your-image-url.png",
+          // sheenMode: "holo",
+          // tilt: 45,
+          // imageWidth: 600,
+          // imageHeight: 400,
         });
       });
     </script>

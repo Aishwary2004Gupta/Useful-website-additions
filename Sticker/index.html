@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Draggable Sticker on Rug</title>
+    <title>Draggable Sticker</title>
     <style>
       * {
         margin: 0;
@@ -15,29 +15,9 @@
       body {
         width: 100%;
         height: 100%;
-        background: #d8cfc2;
+        background: #f0f0f0;
         overflow: hidden;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      }
-
-      /* Floor backdrop so the rug reads as sitting on a surface */
-      #floor {
-        position: fixed;
-        inset: 0;
-        background:
-          radial-gradient(
-            ellipse at 50% 40%,
-            rgba(255, 255, 255, 0.25),
-            rgba(0, 0, 0, 0.08) 80%
-          ),
-          repeating-linear-gradient(
-            90deg,
-            #cbb79a 0px,
-            #cbb79a 46px,
-            #c2ad8e 46px,
-            #c2ad8e 48px
-          );
-        z-index: 0;
       }
 
       #sticker-container {
@@ -46,7 +26,6 @@
         height: 100%;
         overflow: visible;
         perspective: 800px;
-        z-index: 2;
       }
 
       #sizing-div {
@@ -95,33 +74,9 @@
         pointer-events: none;
         position: absolute;
       }
-
-      /* ---------- RUG NODE ---------- */
-      #rug-container {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) rotateX(52deg) rotateZ(-8deg);
-        transform-style: preserve-3d;
-        z-index: 1;
-        pointer-events: none;
-        filter: drop-shadow(0 40px 45px rgba(0, 0, 0, 0.45));
-      }
-
-      #rug-canvas {
-        display: block;
-        border-radius: 6px;
-      }
     </style>
   </head>
   <body>
-    <div id="floor"></div>
-
-    <!-- NEW: Rug texture node -->
-    <div id="rug-container">
-      <canvas id="rug-canvas"></canvas>
-    </div>
-
     <div id="sticker-container">
       <div id="sizing-div"></div>
       <div id="zoom-probe"></div>
@@ -133,248 +88,12 @@
     </div>
 
     <script>
-      // ============================================================================
-      // RUG TEXTURE NODE
-      // Procedurally draws a woven rug with a border pattern + fringe.
-      // ============================================================================
-
-      class RugNode {
-        constructor(props = {}) {
-          this.props = {
-            width: 640,
-            height: 420,
-            baseColor: "#8f2f2a", // deep rug red
-            weaveColor: "#a33f38",
-            borderColor: "#e9d7a8", // cream border
-            accentColor: "#2c4a63", // navy accents
-            fringeColor: "#e9dcc0",
-            ...props,
-          };
-
-          this.container = document.getElementById("rug-container");
-          this.canvas = document.getElementById("rug-canvas");
-          this.ctx = this.canvas.getContext("2d");
-
-          this.render();
-        }
-
-        render() {
-          const { width, height } = this.props;
-          const dpr = Math.min(window.devicePixelRatio || 1, 2);
-
-          const fringe = 26; // fringe length on left/right ends
-          const totalW = width + fringe * 2;
-
-          this.canvas.width = Math.round(totalW * dpr);
-          this.canvas.height = Math.round(height * dpr);
-          this.canvas.style.width = totalW + "px";
-          this.canvas.style.height = height + "px";
-
-          const ctx = this.ctx;
-          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-          ctx.clearRect(0, 0, totalW, height);
-
-          const ox = fringe; // rug body x-origin
-
-          this.drawFringe(ctx, ox, width, height, fringe);
-          this.drawBody(ctx, ox, width, height);
-          this.drawWeave(ctx, ox, width, height);
-          this.drawBorders(ctx, ox, width, height);
-          this.drawCentralPattern(ctx, ox, width, height);
-          this.drawWear(ctx, ox, width, height);
-        }
-
-        // Rounded rect helper
-        rr(ctx, x, y, w, h, r) {
-          ctx.beginPath();
-          ctx.moveTo(x + r, y);
-          ctx.arcTo(x + w, y, x + w, y + h, r);
-          ctx.arcTo(x + w, y + h, x, y + h, r);
-          ctx.arcTo(x, y + h, x, y, r);
-          ctx.arcTo(x, y, x + w, y, r);
-          ctx.closePath();
-        }
-
-        drawFringe(ctx, ox, w, h, fringe) {
-          ctx.save();
-          ctx.strokeStyle = this.props.fringeColor;
-          ctx.lineWidth = 2;
-          ctx.lineCap = "round";
-          const strands = 40;
-          for (let i = 0; i < strands; i++) {
-            const y = (i + 0.5) * (h / strands);
-            const wob = Math.sin(i * 1.3) * 3;
-            // left fringe
-            ctx.beginPath();
-            ctx.moveTo(ox, y);
-            ctx.lineTo(ox - fringe + 4, y + wob);
-            ctx.stroke();
-            // right fringe
-            ctx.beginPath();
-            ctx.moveTo(ox + w, y);
-            ctx.lineTo(ox + w + fringe - 4, y - wob);
-            ctx.stroke();
-          }
-          ctx.restore();
-        }
-
-        drawBody(ctx, ox, w, h) {
-          ctx.save();
-          this.rr(ctx, ox, 0, w, h, 6);
-          const grad = ctx.createLinearGradient(ox, 0, ox + w, h);
-          grad.addColorStop(0, this.props.baseColor);
-          grad.addColorStop(0.5, this.props.weaveColor);
-          grad.addColorStop(1, this.props.baseColor);
-          ctx.fillStyle = grad;
-          ctx.fill();
-          ctx.restore();
-        }
-
-        drawWeave(ctx, ox, w, h) {
-          // Fine woven thread texture (vertical + horizontal micro lines)
-          ctx.save();
-          this.rr(ctx, ox, 0, w, h, 6);
-          ctx.clip();
-
-          ctx.globalAlpha = 0.06;
-          ctx.strokeStyle = "#000";
-          ctx.lineWidth = 1;
-          for (let x = 0; x < w; x += 3) {
-            ctx.beginPath();
-            ctx.moveTo(ox + x, 0);
-            ctx.lineTo(ox + x, h);
-            ctx.stroke();
-          }
-          ctx.globalAlpha = 0.05;
-          ctx.strokeStyle = "#fff";
-          for (let y = 0; y < h; y += 3) {
-            ctx.beginPath();
-            ctx.moveTo(ox, y + 1);
-            ctx.lineTo(ox + w, y + 1);
-            ctx.stroke();
-          }
-          ctx.restore();
-        }
-
-        drawBorders(ctx, ox, w, h) {
-          ctx.save();
-          // Outer cream border
-          ctx.lineWidth = 18;
-          ctx.strokeStyle = this.props.borderColor;
-          this.rr(ctx, ox + 12, 12, w - 24, h - 24, 4);
-          ctx.stroke();
-
-          // Navy accent line
-          ctx.lineWidth = 4;
-          ctx.strokeStyle = this.props.accentColor;
-          this.rr(ctx, ox + 26, 26, w - 52, h - 52, 3);
-          ctx.stroke();
-
-          // Dashed decorative band inside border
-          ctx.lineWidth = 3;
-          ctx.strokeStyle = this.props.baseColor;
-          ctx.setLineDash([8, 6]);
-          this.rr(ctx, ox + 12, 12, w - 24, h - 24, 4);
-          ctx.stroke();
-          ctx.setLineDash([]);
-          ctx.restore();
-        }
-
-        drawCentralPattern(ctx, ox, w, h) {
-          ctx.save();
-          this.rr(ctx, ox + 34, 34, w - 68, h - 68, 3);
-          ctx.clip();
-
-          const cx = ox + w / 2;
-          const cy = h / 2;
-
-          // Central medallion (diamond)
-          const drawDiamond = (dx, dy, r, color, fill) => {
-            ctx.beginPath();
-            ctx.moveTo(dx, dy - r);
-            ctx.lineTo(dx + r * 0.7, dy);
-            ctx.lineTo(dx, dy + r);
-            ctx.lineTo(dx - r * 0.7, dy);
-            ctx.closePath();
-            if (fill) {
-              ctx.fillStyle = color;
-              ctx.fill();
-            } else {
-              ctx.strokeStyle = color;
-              ctx.lineWidth = 3;
-              ctx.stroke();
-            }
-          };
-
-          drawDiamond(cx, cy, 90, this.props.accentColor, true);
-          drawDiamond(cx, cy, 74, this.props.borderColor, true);
-          drawDiamond(cx, cy, 58, this.props.baseColor, true);
-          drawDiamond(cx, cy, 40, this.props.borderColor, false);
-          drawDiamond(cx, cy, 20, this.props.accentColor, true);
-
-          // Corner motifs
-          const corners = [
-            [ox + 70, 70],
-            [ox + w - 70, 70],
-            [ox + 70, h - 70],
-            [ox + w - 70, h - 70],
-          ];
-          for (const [px, py] of corners) {
-            drawDiamond(px, py, 26, this.props.borderColor, false);
-            drawDiamond(px, py, 12, this.props.accentColor, true);
-          }
-
-          // Scattered dot motifs along the field
-          ctx.fillStyle = this.props.borderColor;
-          for (let gx = -2; gx <= 2; gx++) {
-            for (let gy = -1; gy <= 1; gy++) {
-              if (gx === 0 && gy === 0) continue;
-              const px = cx + gx * 55;
-              const py = cy + gy * 70;
-              ctx.beginPath();
-              ctx.arc(px, py, 4, 0, Math.PI * 2);
-              ctx.fill();
-            }
-          }
-          ctx.restore();
-        }
-
-        drawWear(ctx, ox, w, h) {
-          // Soft vignette + light streaks to fake pile depth and wear
-          ctx.save();
-          this.rr(ctx, ox, 0, w, h, 6);
-          ctx.clip();
-
-          const vg = ctx.createRadialGradient(
-            ox + w / 2,
-            h / 2,
-            h * 0.2,
-            ox + w / 2,
-            h / 2,
-            h * 0.75,
-          );
-          vg.addColorStop(0, "rgba(0,0,0,0)");
-          vg.addColorStop(1, "rgba(0,0,0,0.28)");
-          ctx.fillStyle = vg;
-          ctx.fillRect(ox, 0, w, h);
-
-          // Diagonal sheen band (pile catching light)
-          const sheen = ctx.createLinearGradient(ox, 0, ox + w, h);
-          sheen.addColorStop(0.35, "rgba(255,255,255,0)");
-          sheen.addColorStop(0.5, "rgba(255,255,255,0.08)");
-          sheen.addColorStop(0.65, "rgba(255,255,255,0)");
-          ctx.fillStyle = sheen;
-          ctx.fillRect(ox, 0, w, h);
-          ctx.restore();
-        }
-      }
-
-      // ============================================================================
-      // DEFAULTS + CONSTANTS  (sticker, unchanged)
-      // ============================================================================
-
       const DEFAULT_IMAGE =
         "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/3fb4a247-64e9-4c54-2391-86598eebfe00/w=800";
+
+      // ============================================================================
+      // COMPONENT DEFAULTS
+      // ============================================================================
 
       const COMPONENT_DEFAULTS = {
         image: {
@@ -386,23 +105,29 @@
         lighting: true,
         lightingStrength: 10,
         lightingColor: "#ffffff",
-        sheenMode: "sheen",
+        sheenMode: "sheen", //holo
         elevation: 10,
         staticShadow: "0px 1px 2px 0px rgba(0, 0, 0, 0.30)",
         dynamicShadow: "0px 13px 14px 0px rgba(0, 0, 0, 0.30)",
       };
 
+      // ============================================================================
+      // CONSTANTS (matching original source exactly)
+      // ============================================================================
+
       const RENDER_SCALE = 2;
-      const PAD_BASE = 20;
-      const MESH_GRID_SIZE = 32;
-      const DRAG_Z_INDEX_BASE = 1000;
+      const PAD_BASE = 20; // Base padding in pixels
+      const MESH_GRID_SIZE = 32; // Must use grid for smooth wave deformation
+      const DRAG_Z_INDEX_BASE = 1000; // Base z-index for dragged stickers
 
       let zIndexCounter = DRAG_Z_INDEX_BASE;
+
       function getNextZIndex() {
         zIndexCounter += 1;
         return zIndexCounter;
       }
 
+      // Tweakables from original
       const DRAG_TILT_SENSITIVITY = 3;
       const DRAG_MAX_TILT_DEG = 30;
       const DRAG_TILT_SMOOTHING = 0.05;
@@ -412,10 +137,11 @@
       const ANIM_SPEED = 1.92;
       const HOLO_MOTION_BUMP = 0.15;
       const HOLO_MOTION_DECAY = 0.88;
+
       const ELEVATION_INTERNAL_MAX = 0.3;
 
       // ============================================================================
-      // WebGL Shaders (unchanged)
+      // WebGL Shaders (from original source)
       // ============================================================================
 
       const VERTEX_SHADER = `
@@ -442,20 +168,33 @@ void main() {
         vec2 uvCentered = aUV - vec2(0.5);
         float proj = dot(uvCentered, peelAxis);
         float diag = 0.5 - proj;
+
+        // Peel line travels across sticker and EXITS completely
         float peelLine = -0.3 + uPeel * 2.0;
+
+        // How "lifted" is this vertex? 0 = flat, 1 = fully lifted
         float rampWidth = 0.6;
         float lifted = smoothstep(peelLine - rampWidth, peelLine, diag);
         lifted = 1.0 - lifted;
+
+        // Scale based on how lifted (uElevation controls magnitude)
         float scale = 1.0 + lifted * uElevation;
         p *= scale;
+
+        // Curve outward at the ramp (creates the bent paper look)
         float inRamp = smoothstep(peelLine - rampWidth, peelLine - rampWidth * 0.5, diag) *
                        smoothstep(peelLine + 0.05, peelLine - rampWidth * 0.3, diag);
+
         float curveAmount = uPasting > 0.5 ? 0.06 : 0.12;
         p += (-peelAxis) * inRamp * curveAmount;
+
+        // Shading on the curved ramp
         float t = smoothstep(peelLine - rampWidth, peelLine, diag);
         vHi = inRamp * 0.75 * pow(1.0 - t, 1.2);
         vSh = inRamp * 0.75 * pow(t, 1.2);
     }
+
+    // Apply scale to fit within padded canvas area
     gl_Position = vec4(p * uScale, 0.0, 1.0);
 }
 `;
@@ -496,11 +235,16 @@ vec3 hsl2rgb(float h, float s, float l) {
 void main() {
     vec4 tex = texture2D(uTex, vUV);
     if (tex.a < 0.01) discard;
+
     vec3 c = tex.rgb * 0.95;
+
+    // Sheen/holo effect
     float maxTilt = max(0.001, uMaxTiltDeg);
     float tiltMag = clamp(length(uTilt) / maxTilt, 0.0, 1.0);
     float tiltGate = smoothstep(uSheenTiltDeadzone, 1.0, tiltMag);
+
     float gradient = fract(vUV.x * 0.5 + vUV.y * 0.5 + uTilt.x * uSheenTiltShift + uTilt.y * uSheenTiltShift);
+
     if (uHoloMode > 0.5) {
         float holoStrength = uSheenStrength * uHoloMotion;
         float distFromWhite = length(tex.rgb - vec3(1.0));
@@ -512,20 +256,25 @@ void main() {
         float sheen = smoothstep(0.2, 0.5, gradient) * (1.0 - smoothstep(0.5, 0.8, gradient));
         c = mix(c, uSheenColor, sheen * effectStrength * tex.a);
     }
+
+    // Peel/paste lighting
     float hiW = clamp(vHi, 0.0, 1.0) * 0.55;
     float shW = clamp(vSh, 0.0, 1.0) * 0.60;
+
     vec3 hi = overlayBlend(c, vec3(1.0));
     c = mix(c, hi, hiW);
+
     vec3 sh = overlayBlend(c, vec3(0.0));
     c = mix(c, sh, shW);
     c *= (1.0 - shW * 0.35);
+
     c = clamp(c, 0.0, 1.0);
     gl_FragColor = vec4(c, tex.a);
 }
 `;
 
       // ============================================================================
-      // UTILITIES (unchanged)
+      // UTILITIES
       // ============================================================================
 
       function resolveImageSource(input) {
@@ -539,6 +288,7 @@ void main() {
         );
       }
 
+      // Parse a CSS color (#hex / #rgb / rgb()/rgba()) to normalized [r,g,b] 0–1.
       function parseColorToRgb(input) {
         if (!input) return [1, 1, 1];
         const s = input.trim();
@@ -559,13 +309,26 @@ void main() {
         return [1, 1, 1];
       }
 
+      // Parse a CSS box-shadow into drop-shadow parameters
       function parseBoxShadow(shadow) {
-        const result = { x: 0, y: 0, blur: 0, color: "rgba(0,0,0,0.3)" };
+        const result = {
+          x: 0,
+          y: 0,
+          blur: 0,
+          color: "rgba(0,0,0,0.3)",
+        };
+
         if (!shadow) return result;
+
+        // Extract color (rgba, rgb, or hex)
         const colorMatch = shadow.match(
           /(rgba?\([^)]+\)|#[0-9a-fA-F]{3,8}|\b[a-z]+\b(?=\s*$))/i,
         );
-        if (colorMatch) result.color = colorMatch[0];
+        if (colorMatch) {
+          result.color = colorMatch[0];
+        }
+
+        // Extract numeric values (px values)
         const numbers = shadow.match(/-?\d+(\.\d+)?(px)?/g);
         if (numbers) {
           const vals = numbers.map((n) => parseFloat(n));
@@ -573,6 +336,7 @@ void main() {
           if (vals.length >= 2) result.y = vals[1];
           if (vals.length >= 3) result.blur = vals[2];
         }
+
         return result;
       }
 
@@ -585,12 +349,14 @@ void main() {
       }
 
       // ============================================================================
-      // STICKER DRAG CLASS (unchanged)
+      // STICKER DRAG CLASS
       // ============================================================================
 
       class StickerDrag {
         constructor(props) {
           this.props = { ...COMPONENT_DEFAULTS, ...props };
+
+          // Resolve mapped internal props
           this.tiltSensitivity = DRAG_TILT_SENSITIVITY;
           this.maxTilt = Math.max(1, this.props.tilt);
           this.tiltSmoothing =
@@ -608,6 +374,7 @@ void main() {
           this.imageWidth = this.props.imageWidth;
           this.imageHeight = this.props.imageHeight;
 
+          // DOM refs
           this.container = document.getElementById("sticker-container");
           this.sticker = document.getElementById("sticker");
           this.inner = document.getElementById("inner");
@@ -615,16 +382,21 @@ void main() {
           this.sizingDiv = document.getElementById("sizing-div");
           this.zoomProbe = document.getElementById("zoom-probe");
 
+          // Sizing dimensions
           this.sizingDimensions = { width: 400, height: 400 };
 
+          // WebGL refs
           this.gl = null;
           this.program = null;
           this.texture = null;
           this.vbo = null;
           this.ibo = null;
           this.indexCount = 0;
+
+          // Uniform location cache
           this.uniforms = {};
 
+          // State
           this.state = {
             x: 0,
             y: 0,
@@ -658,13 +430,16 @@ void main() {
           this.animationId = null;
           this.lastTickT = null;
 
+          // Shadow parsing
           this.parsedStaticShadow = parseBoxShadow(this.props.staticShadow);
           this.parsedDynamicShadow = parseBoxShadow(this.props.dynamicShadow);
 
+          // Resize scheduling
           this.applyResizeTimeout = null;
           this.SIZING_THRESHOLD = 5;
           this.RESIZE_DEBOUNCE_MS = 180;
 
+          // Bind methods
           this.tick = this.tick.bind(this);
           this.draw = this.draw.bind(this);
           this.handleResize = this.handleResize.bind(this);
@@ -672,6 +447,10 @@ void main() {
 
           this.init();
         }
+
+        // ------------------------------------------------------------------------
+        // INIT
+        // ------------------------------------------------------------------------
 
         init() {
           this.applySizingDiv();
@@ -689,6 +468,10 @@ void main() {
           this.sizingDiv.style.minHeight = d.height + "px";
         }
 
+        // ------------------------------------------------------------------------
+        // WEBGL SETUP
+        // ------------------------------------------------------------------------
+
         initWebGL() {
           const canvas = this.canvas;
           const gl = canvas.getContext("webgl", {
@@ -697,6 +480,7 @@ void main() {
             premultipliedAlpha: false,
           });
           if (!gl) return;
+
           this.gl = gl;
 
           const compileShader = (source, type) => {
@@ -721,15 +505,19 @@ void main() {
 
           const program = gl.createProgram();
           if (!program) return;
+
           gl.attachShader(program, vs);
           gl.attachShader(program, fs);
           gl.linkProgram(program);
+
           if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
             console.error("Program link error:", gl.getProgramInfoLog(program));
             return;
           }
+
           this.program = program;
 
+          // Cache uniform locations
           const uniformNames = [
             "uPeel",
             "uLift",
@@ -747,22 +535,34 @@ void main() {
             "uHoloMotion",
             "uTex",
           ];
-          for (const name of uniformNames)
+          for (const name of uniformNames) {
             this.uniforms[name] = gl.getUniformLocation(program, name);
+          }
           this.aPos = gl.getAttribLocation(program, "aPos");
           this.aUV = gl.getAttribLocation(program, "aUV");
 
+          // Create grid mesh (32x32 for smooth wave deformation)
           const N = MESH_GRID_SIZE;
           const verts = [];
           const inds = [];
-          for (let j = 0; j <= N; j++)
-            for (let i = 0; i <= N; i++)
-              verts.push((i / N) * 2 - 1, (j / N) * 2 - 1, i / N, 1 - j / N);
-          for (let j = 0; j < N; j++)
+
+          for (let j = 0; j <= N; j++) {
+            for (let i = 0; i <= N; i++) {
+              verts.push(
+                (i / N) * 2 - 1,
+                (j / N) * 2 - 1,
+                i / N,
+                1 - j / N, // Flip V coordinate
+              );
+            }
+          }
+
+          for (let j = 0; j < N; j++) {
             for (let i = 0; i < N; i++) {
               const a = j * (N + 1) + i;
               inds.push(a, a + 1, a + N + 1, a + 1, a + N + 2, a + N + 1);
             }
+          }
 
           const vbo = gl.createBuffer();
           gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
@@ -783,16 +583,22 @@ void main() {
           this.ibo = ibo;
           this.indexCount = inds.length;
 
+          // Clear immediately
           gl.viewport(0, 0, canvas.width, canvas.height);
           gl.clearColor(0, 0, 0, 0);
           gl.clear(gl.COLOR_BUFFER_BIT);
         }
+
+        // ------------------------------------------------------------------------
+        // DRAW
+        // ------------------------------------------------------------------------
 
         draw() {
           const gl = this.gl;
           const program = this.program;
           const texture = this.texture;
           const state = this.state;
+
           if (!gl || !program || !texture || !state.texReady) return;
 
           gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -800,10 +606,12 @@ void main() {
           gl.clear(gl.COLOR_BUFFER_BIT);
           gl.enable(gl.BLEND);
           gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
           gl.useProgram(program);
 
           gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
           gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ibo);
+
           gl.enableVertexAttribArray(this.aPos);
           gl.enableVertexAttribArray(this.aUV);
           gl.vertexAttribPointer(this.aPos, 2, gl.FLOAT, false, 16, 0);
@@ -816,6 +624,7 @@ void main() {
           gl.uniform1f(u.uPasting, state.sticking ? 1.0 : 0.0);
           gl.uniform1f(u.uScale, state.scale);
           gl.uniform1f(u.uElevation, this.elevation);
+
           gl.uniform2f(u.uTilt, state.currentTiltX, state.currentTiltY);
           gl.uniform1f(u.uSheenStrength, this.sheenStrength);
           gl.uniform3f(
@@ -833,15 +642,22 @@ void main() {
           gl.activeTexture(gl.TEXTURE0);
           gl.bindTexture(gl.TEXTURE_2D, texture);
           gl.uniform1i(u.uTex, 0);
+
           gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_SHORT, 0);
         }
+
+        // ------------------------------------------------------------------------
+        // SHADOW
+        // ------------------------------------------------------------------------
 
         updateShadowCSS() {
           const canvas = this.canvas;
           const state = this.state;
           if (!canvas) return;
+
           const tRaw = Math.max(state.lift, state.peel);
-          const t = tRaw * tRaw * (3 - 2 * tRaw);
+          const t = tRaw * tRaw * (3 - 2 * tRaw); // smoothstep easing
+
           canvas.style.filter = lerpShadow(
             this.parsedStaticShadow,
             this.parsedDynamicShadow,
@@ -849,25 +665,39 @@ void main() {
           );
         }
 
+        // ------------------------------------------------------------------------
+        // ANIMATION TICK
+        // ------------------------------------------------------------------------
+
         tick(timestamp) {
           const state = this.state;
-          if (this.lastTickT === null) this.lastTickT = timestamp;
+
+          if (this.lastTickT === null) {
+            this.lastTickT = timestamp;
+          }
+
           const dt = Math.min((timestamp - this.lastTickT) / 1000, 0.1);
           this.lastTickT = timestamp;
+
           const step = ANIM_SPEED * dt;
           let changed = false;
 
-          if (state.peeling && (state.peel < 1 || state.lift < 1)) {
-            state.peel = Math.min(1, state.peel + step);
-            state.lift = Math.min(1, state.lift + step);
-            changed = true;
+          if (state.peeling) {
+            if (state.peel < 1 || state.lift < 1) {
+              state.peel = Math.min(1, state.peel + step);
+              state.lift = Math.min(1, state.lift + step);
+              changed = true;
+            }
           }
+
           if (state.sticking) {
             if (state.peel > 0 || state.lift > 0) {
               state.peel = Math.max(0, state.peel - step);
               state.lift = Math.max(0, state.lift - step);
               changed = true;
-            } else state.sticking = false;
+            } else {
+              state.sticking = false;
+            }
           }
 
           const holoDecayActive =
@@ -878,8 +708,13 @@ void main() {
             changed = true;
           }
 
-          if (changed) this.updateShadowCSS();
-          if (changed || state.held || holoDecayActive) this.draw();
+          if (changed) {
+            this.updateShadowCSS();
+          }
+
+          if (changed || state.held || holoDecayActive) {
+            this.draw();
+          }
 
           if (
             state.held ||
@@ -900,16 +735,22 @@ void main() {
           this.animationId = requestAnimationFrame(this.tick);
         }
 
+        // ------------------------------------------------------------------------
+        // RESIZE
+        // ------------------------------------------------------------------------
+
         handleResize() {
           const container = this.container;
           const canvas = this.canvas;
           const sticker = this.sticker;
           const gl = this.gl;
           const state = this.state;
+
           if (!container || !canvas || !sticker || !gl) return;
 
           const containerWidth = container.clientWidth || 200;
           const containerHeight = container.clientHeight || 200;
+
           const width = this.imageWidth > 0 ? this.imageWidth : containerWidth;
           const height =
             this.imageHeight > 0 ? this.imageHeight : containerHeight;
@@ -931,6 +772,7 @@ void main() {
           canvas.height = Math.round(canvasHeight * RENDER_SCALE);
           canvas.style.width = `${canvasWidth}px`;
           canvas.style.height = `${canvasHeight}px`;
+
           canvas.style.position = "absolute";
           canvas.style.left = `${-effectivePad}px`;
           canvas.style.top = `${-effectivePad}px`;
@@ -947,7 +789,10 @@ void main() {
           state.scale = scale;
 
           gl.viewport(0, 0, canvas.width, canvas.height);
-          if (state.texReady) this.draw();
+
+          if (state.texReady) {
+            this.draw();
+          }
         }
 
         scheduleResize(measuredW, measuredH) {
@@ -970,7 +815,9 @@ void main() {
         startResizeDetection() {
           const container = this.container;
           if (!container) return;
+
           this.handleResize();
+
           const ro = new ResizeObserver(() => {
             const w = container.clientWidth || container.offsetWidth || 400;
             const h = container.clientHeight || container.offsetHeight || 400;
@@ -980,20 +827,32 @@ void main() {
           this.resizeObserver = ro;
         }
 
+        // ------------------------------------------------------------------------
+        // IMAGE LOADING
+        // ------------------------------------------------------------------------
+
         loadImage() {
           const imageSrc =
             resolveImageSource(this.props.image) || DEFAULT_IMAGE;
+
           const gl = this.gl;
           if (!gl || !this.program) return;
 
           const img = new Image();
           img.crossOrigin = "anonymous";
+
           img.onload = () => {
             const state = this.state;
+
             state.imageAspectRatio = img.width / img.height;
-            if (this.texture) gl.deleteTexture(this.texture);
+
+            if (this.texture) {
+              gl.deleteTexture(this.texture);
+            }
+
             const texture = gl.createTexture();
             if (!texture) return;
+
             gl.bindTexture(gl.TEXTURE_2D, texture);
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
             gl.texImage2D(
@@ -1016,26 +875,40 @@ void main() {
             );
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
             this.texture = texture;
             state.texReady = true;
+
             this.handleResize();
             this.updateShadowCSS();
             this.draw();
           };
-          img.onerror = () => console.error("Failed to load image");
+
+          img.onerror = () => {
+            console.error("Failed to load image");
+          };
+
           img.src = imageSrc;
         }
+
+        // ------------------------------------------------------------------------
+        // POINTER / TILT SETTLING
+        // ------------------------------------------------------------------------
 
         settleTilt() {
           const state = this.state;
           const inner = this.inner;
+
           const step = () => {
             state.dragTiltX *= 0.9;
             state.dragTiltY *= 0.9;
             state.currentTiltX = state.dragTiltX;
             state.currentTiltY = state.dragTiltY;
-            if (inner)
+
+            if (inner) {
               inner.style.transform = `rotateX(${state.dragTiltX}deg) rotateY(${state.dragTiltY}deg)`;
+            }
+
             if (
               Math.abs(state.dragTiltX) > 0.1 ||
               Math.abs(state.dragTiltY) > 0.1
@@ -1048,11 +921,17 @@ void main() {
               state.currentTiltY = 0;
               state.prevTiltX = 0;
               state.prevTiltY = 0;
-              if (inner) inner.style.transform = "";
+              if (inner) {
+                inner.style.transform = "";
+              }
             }
           };
           step();
         }
+
+        // ------------------------------------------------------------------------
+        // POINTER DOWN (shared by mouse/touch)
+        // ------------------------------------------------------------------------
 
         pointerDown(clientX, clientY) {
           const state = this.state;
@@ -1060,39 +939,57 @@ void main() {
           const sticker = this.sticker;
           const inner = this.inner;
           if (!container || !sticker || !inner) return;
+
           const rect = sticker.getBoundingClientRect();
+
           const grabOffsetX = clientX - rect.left;
           const grabOffsetY = clientY - rect.top;
           inner.style.transformOrigin = `${grabOffsetX}px ${grabOffsetY}px`;
+
           const centerX = rect.left + rect.width / 2;
           const centerY = rect.top + rect.height / 2;
-          state.peelAngle = Math.atan2(clientY - centerY, clientX - centerX);
+          const dx = clientX - centerX;
+          const dy = clientY - centerY;
+          state.peelAngle = Math.atan2(dy, dx);
+
           state.dragStartX = clientX;
           state.dragStartY = clientY;
           state.dragOrigX = state.x;
           state.dragOrigY = state.y;
+
           state.peel = 0;
           state.lift = 0;
+
           state.held = true;
           state.peeling = true;
           state.sticking = false;
+
           state.lastMoveX = clientX;
           state.lastMoveY = clientY;
           state.lastMoveT = performance.now();
+
           container.style.zIndex = `${getNextZIndex()}`;
+
           this.ensureTickRunning();
         }
+
+        // ------------------------------------------------------------------------
+        // POINTER MOVE (shared)
+        // ------------------------------------------------------------------------
 
         pointerMove(clientX, clientY) {
           const state = this.state;
           if (!state.held) return;
+
           const sticker = this.sticker;
           const inner = this.inner;
           if (!sticker || !inner) return;
+
           state.x = state.dragOrigX + (clientX - state.dragStartX);
           state.y = state.dragOrigY + (clientY - state.dragStartY);
           sticker.style.left = `${state.x}px`;
           sticker.style.top = `${state.y}px`;
+
           const now = performance.now();
           const dt = Math.max(1, now - state.lastMoveT);
           const velX = ((clientX - state.lastMoveX) / dt) * 16;
@@ -1100,6 +997,7 @@ void main() {
           state.lastMoveX = clientX;
           state.lastMoveY = clientY;
           state.lastMoveT = now;
+
           const targetTiltY = Math.max(
             -this.maxTilt,
             Math.min(this.maxTilt, velX * this.tiltSensitivity),
@@ -1108,12 +1006,15 @@ void main() {
             -this.maxTilt,
             Math.min(this.maxTilt, -velY * this.tiltSensitivity),
           );
+
           state.dragTiltX +=
             (targetTiltX - state.dragTiltX) * this.tiltSmoothing;
           state.dragTiltY +=
             (targetTiltY - state.dragTiltY) * this.tiltSmoothing;
+
           state.currentTiltX = state.dragTiltX;
           state.currentTiltY = state.dragTiltY;
+
           if (this.sheenMode === "holo") {
             const tiltDelta =
               Math.abs(state.dragTiltX - state.prevTiltX) +
@@ -1125,57 +1026,82 @@ void main() {
             state.prevTiltX = state.dragTiltX;
             state.prevTiltY = state.dragTiltY;
           }
+
           inner.style.transform = `rotateX(${state.dragTiltX}deg) rotateY(${state.dragTiltY}deg)`;
         }
+
+        // ------------------------------------------------------------------------
+        // POINTER UP (shared)
+        // ------------------------------------------------------------------------
 
         pointerUp() {
           const state = this.state;
           if (!state.held) return;
+
           const inner = this.inner;
+
           state.held = false;
           state.peeling = false;
           state.sticking = true;
+
           if (state.peel >= 0.95 && inner) {
             const rect = inner.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
-            state.peelAngle = Math.atan2(
-              -(state.lastMoveY - centerY),
-              -(state.lastMoveX - centerX),
-            );
+            const dx = state.lastMoveX - centerX;
+            const dy = state.lastMoveY - centerY;
+            state.peelAngle = Math.atan2(-dy, -dx);
             state.peel = 1;
           }
+
           this.settleTilt();
           this.ensureTickRunning();
         }
 
+        // ------------------------------------------------------------------------
+        // EVENTS
+        // ------------------------------------------------------------------------
+
         attachEvents() {
+          // Mouse
           this.sticker.addEventListener("mousedown", (e) => {
             e.preventDefault();
             this.pointerDown(e.clientX, e.clientY);
           });
-          window.addEventListener("mousemove", (e) =>
-            this.pointerMove(e.clientX, e.clientY),
-          );
-          window.addEventListener("mouseup", () => this.pointerUp());
+
+          window.addEventListener("mousemove", (e) => {
+            this.pointerMove(e.clientX, e.clientY);
+          });
+
+          window.addEventListener("mouseup", () => {
+            this.pointerUp();
+          });
+
+          // Touch
           this.sticker.addEventListener(
             "touchstart",
             (e) => {
               e.preventDefault();
-              const t = e.touches[0];
-              if (t) this.pointerDown(t.clientX, t.clientY);
+              const touch = e.touches[0];
+              if (!touch) return;
+              this.pointerDown(touch.clientX, touch.clientY);
             },
             { passive: false },
           );
+
           window.addEventListener(
             "touchmove",
             (e) => {
-              const t = e.touches[0];
-              if (t) this.pointerMove(t.clientX, t.clientY);
+              const touch = e.touches[0];
+              if (!touch) return;
+              this.pointerMove(touch.clientX, touch.clientY);
             },
             { passive: false },
           );
-          window.addEventListener("touchend", () => this.pointerUp());
+
+          window.addEventListener("touchend", () => {
+            this.pointerUp();
+          });
         }
       }
 
@@ -1184,19 +1110,15 @@ void main() {
       // ============================================================================
 
       window.addEventListener("DOMContentLoaded", () => {
-        // NEW: create the rug texture node behind the sticker
-        new RugNode({
-          width: 680,
-          height: 460,
-          baseColor: "#8f2f2a",
-          weaveColor: "#a33f38",
-          borderColor: "#e9d7a8",
-          accentColor: "#2c4a63",
-          fringeColor: "#e9dcc0",
+        // Instantiate with component defaults (equivalent to using COMPONENT_DEFAULTS)
+        new StickerDrag({
+          // You can override any prop here, e.g.:
+          // image: "your-image-url.png",
+          // sheenMode: "holo",
+          // tilt: 45,
+          // imageWidth: 600,
+          // imageHeight: 400,
         });
-
-        // Sticker (unchanged)
-        new StickerDrag({});
       });
     </script>
   </body>

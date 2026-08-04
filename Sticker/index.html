@@ -24,8 +24,7 @@
         position: fixed;
         inset: 0;
         background-color: #8a8680;
-        background-image:
-          url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.18'/%3E%3C/svg%3E");
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.18'/%3E%3C/svg%3E");
         z-index: 0;
       }
 
@@ -45,20 +44,30 @@
         );
         z-index: 5;
         box-shadow:
-          inset 0 2px 4px rgba(255,255,255,0.06),
-          0 -4px 20px rgba(0,0,0,0.35);
+          inset 0 2px 4px rgba(255, 255, 255, 0.06),
+          0 -4px 20px rgba(0, 0, 0, 0.35);
       }
       .table::before {
         content: "";
         position: absolute;
-        top: 0; left: 10%; right: 10%;
+        top: 0;
+        left: 10%;
+        right: 10%;
         height: 20%;
-        background: linear-gradient(90deg, transparent, rgba(0,0,0,0.15), transparent);
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(0, 0, 0, 0.15),
+          transparent
+        );
       }
       .table-legs::after {
         content: "";
         position: fixed;
-        bottom: -40px; left: 15%; width: 24px; height: 60px;
+        bottom: -40px;
+        left: 15%;
+        width: 24px;
+        height: 60px;
         background: linear-gradient(90deg, #3d342c, #524539);
         transform: skewX(-12deg);
         z-index: 4;
@@ -66,7 +75,10 @@
       .table-legs::before {
         content: "";
         position: fixed;
-        bottom: -40px; right: 18%; width: 26px; height: 65px;
+        bottom: -40px;
+        right: 18%;
+        width: 26px;
+        height: 65px;
         background: linear-gradient(90deg, #4a3f36, #3d342c);
         transform: skewX(14deg);
         z-index: 4;
@@ -82,8 +94,16 @@
         height: min(74vh, 600px);
         /* Dark charcoal/navy felt surface */
         background:
-          radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.04), transparent 55%),
-          radial-gradient(ellipse at 80% 75%, rgba(0,0,0,0.08), transparent 50%),
+          radial-gradient(
+            ellipse at 30% 20%,
+            rgba(255, 255, 255, 0.04),
+            transparent 55%
+          ),
+          radial-gradient(
+            ellipse at 80% 75%,
+            rgba(0, 0, 0, 0.08),
+            transparent 50%
+          ),
           linear-gradient(
             170deg,
             #2a3040 0%,
@@ -99,10 +119,10 @@
         border-bottom: 22px solid #584235;
         border-radius: 3px;
         box-shadow:
-          0 30px 70px rgba(0,0,0,0.45),
-          0 12px 28px rgba(0,0,0,0.28),
-          inset 0 1px 0 rgba(255,255,255,0.06),
-          inset 0 -1px 0 rgba(0,0,0,0.2);
+          0 30px 70px rgba(0, 0, 0, 0.45),
+          0 12px 28px rgba(0, 0, 0, 0.28),
+          inset 0 1px 0 rgba(255, 255, 255, 0.06),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.2);
         z-index: 2;
         display: flex;
         flex-direction: column;
@@ -117,10 +137,26 @@
         pointer-events: none;
         border-radius: 3px;
         background:
-          radial-gradient(circle at 8px 8px, rgba(255,255,255,0.15) 0%, transparent 45%),
-          radial-gradient(circle at calc(100% - 8px) 8px, rgba(255,255,255,0.07) 0%, transparent 40%),
-          radial-gradient(circle at 8px calc(100% - 8px), rgba(0,0,0,0.12) 0%, transparent 40%),
-          radial-gradient(circle at calc(100% - 8px) calc(100% - 8px), rgba(0,0,0,0.18) 0%, transparent 40%);
+          radial-gradient(
+            circle at 8px 8px,
+            rgba(255, 255, 255, 0.15) 0%,
+            transparent 45%
+          ),
+          radial-gradient(
+            circle at calc(100% - 8px) 8px,
+            rgba(255, 255, 255, 0.07) 0%,
+            transparent 40%
+          ),
+          radial-gradient(
+            circle at 8px calc(100% - 8px),
+            rgba(0, 0, 0, 0.12) 0%,
+            transparent 40%
+          ),
+          radial-gradient(
+            circle at calc(100% - 8px) calc(100% - 8px),
+            rgba(0, 0, 0, 0.18) 0%,
+            transparent 40%
+          );
         z-index: 1;
       }
 
@@ -132,8 +168,11 @@
         position: relative;
         overflow: visible;
         /* Subtle grid of tiny dots like pin board fabric */
-        background-image:
-          radial-gradient(circle, rgba(255,255,255,0.03) 0.5px, transparent 0.5px);
+        background-image: radial-gradient(
+          circle,
+          rgba(255, 255, 255, 0.03) 0.5px,
+          transparent 0.5px
+        );
         background-size: 6px 6px;
       }
 
@@ -144,7 +183,7 @@
         inset: 0;
         background: linear-gradient(
           125deg,
-          rgba(255,255,255,0.04) 0%,
+          rgba(255, 255, 255, 0.04) 0%,
           transparent 35%
         );
         pointer-events: none;
@@ -172,7 +211,9 @@
         overflow: visible;
         pointer-events: auto;
       }
-      .sticker-instance:active { cursor: grabbing; }
+      .sticker-instance:active {
+        cursor: grabbing;
+      }
 
       .sticker-inner {
         position: absolute;
@@ -195,9 +236,12 @@
         width: 72px;
         height: 140px;
         z-index: 6;
-        filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3));
+        filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
       }
-      .plant-deco svg { width: 100%; height: 100%; }
+      .plant-deco svg {
+        width: 100%;
+        height: 100%;
+      }
 
       /* Book stack decoration */
       .books-deco {
@@ -208,12 +252,13 @@
         flex-direction: column;
         gap: 3px;
         z-index: 6;
-        filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));
+        filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
       }
       .book-spine {
-        width: 54px; height: 11px;
+        width: 54px;
+        height: 11px;
         border-radius: 1px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
       }
     </style>
   </head>
@@ -231,21 +276,65 @@
     <!-- Decorations -->
     <div class="plant-deco">
       <svg viewBox="0 0 64 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M32 124 C32 124 24 94 18 78 S8 52 12 38 S26 16 32 12" stroke="#2d5a27" stroke-width="3" fill="none"/>
-        <path d="M32 124 C32 124 40 92 44 76 S56 50 52 36 S38 14 32 10" stroke="#3d6f35" stroke-width="2.5" fill="none"/>
-        <ellipse cx="20" cy="36" rx="14" ry="9" fill="#4a8540" opacity="0.9"/>
-        <ellipse cx="44" cy="40" rx="12" ry="8" fill="#529a47" opacity="0.85"/>
-        <ellipse cx="28" cy="62" rx="16" ry="10" fill="#3d7a35" opacity="0.88"/>
-        <ellipse cx="48" cy="66" rx="13" ry="8" fill="#4a8c40" opacity="0.82"/>
-        <rect x="28" y="118" width="8" height="10" rx="2" fill="#6b4a33"/>
+        <path
+          d="M32 124 C32 124 24 94 18 78 S8 52 12 38 S26 16 32 12"
+          stroke="#2d5a27"
+          stroke-width="3"
+          fill="none"
+        />
+        <path
+          d="M32 124 C32 124 40 92 44 76 S56 50 52 36 S38 14 32 10"
+          stroke="#3d6f35"
+          stroke-width="2.5"
+          fill="none"
+        />
+        <ellipse cx="20" cy="36" rx="14" ry="9" fill="#4a8540" opacity="0.9" />
+        <ellipse cx="44" cy="40" rx="12" ry="8" fill="#529a47" opacity="0.85" />
+        <ellipse
+          cx="28"
+          cy="62"
+          rx="16"
+          ry="10"
+          fill="#3d7a35"
+          opacity="0.88"
+        />
+        <ellipse cx="48" cy="66" rx="13" ry="8" fill="#4a8c40" opacity="0.82" />
+        <rect x="28" y="118" width="8" height="10" rx="2" fill="#6b4a33" />
       </svg>
     </div>
     <div class="books-deco">
-      <div class="book-spine" style="background:linear-gradient(180deg,#e8e4dc,#d4cfc4);"></div>
-      <div class="book-spine" style="width:50px;background:linear-gradient(180deg,#c4d4e4,#a8bcd0);"></div>
-      <div class="book-spine" style="width:56px;background:linear-gradient(180deg,#e4d4c4,#d0bc9e);"></div>
-      <div class="book-spine" style="width:52px;background:linear-gradient(180deg,#dcdce4,#c4c4d0);"></div>
-      <div class="book-spine" style="width:48px;background:linear-gradient(180deg,#ddd8cc,#c8c2b4);"></div>
+      <div
+        class="book-spine"
+        style="background: linear-gradient(180deg, #e8e4dc, #d4cfc4)"
+      ></div>
+      <div
+        class="book-spine"
+        style="
+          width: 50px;
+          background: linear-gradient(180deg, #c4d4e4, #a8bcd0);
+        "
+      ></div>
+      <div
+        class="book-spine"
+        style="
+          width: 56px;
+          background: linear-gradient(180deg, #e4d4c4, #d0bc9e);
+        "
+      ></div>
+      <div
+        class="book-spine"
+        style="
+          width: 52px;
+          background: linear-gradient(180deg, #dcdce4, #c4c4d0);
+        "
+      ></div>
+      <div
+        class="book-spine"
+        style="
+          width: 48px;
+          background: linear-gradient(180deg, #ddd8cc, #c8c2b4);
+        "
+      ></div>
     </div>
 
     <script>
@@ -332,257 +421,753 @@ void main(){
       // UTILS
       // ============================================================================
       const resolveImageSource = (input) => {
-        if(!input)return;if(typeof input==="string")return input.trim()||undefined;
-        return input.src||input.url||(input.asset&&input.asset.url)||undefined;
+        if (!input) return;
+        if (typeof input === "string") return input.trim() || undefined;
+        return (
+          input.src ||
+          input.url ||
+          (input.asset && input.asset.url) ||
+          undefined
+        );
       };
-      const parseColorToRgb=(i)=>{
-        if(!i)return[1,1,1];const s=i.trim(),m=s.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/i);
-        if(m)return[+m[1]/255,+m[2]/255,+m[3]/255];
-        let h=s.replace(/^#/,"");if(h.length===3)h=h.split("").map(c=>c+c).join("");
-        return h.length>=6?[parseInt(h.slice(0,2),16)/255,parseInt(h.slice(2,4),16)/255,parseInt(h.slice(4,6),16)/255]:[1,1,1];
+      const parseColorToRgb = (i) => {
+        if (!i) return [1, 1, 1];
+        const s = i.trim(),
+          m = s.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/i);
+        if (m) return [+m[1] / 255, +m[2] / 255, +m[3] / 255];
+        let h = s.replace(/^#/, "");
+        if (h.length === 3)
+          h = h
+            .split("")
+            .map((c) => c + c)
+            .join("");
+        return h.length >= 6
+          ? [
+              parseInt(h.slice(0, 2), 16) / 255,
+              parseInt(h.slice(2, 4), 16) / 255,
+              parseInt(h.slice(4, 6), 16) / 255,
+            ]
+          : [1, 1, 1];
       };
-      const parseBoxShadow=(sh)=>{
-        const r={x:0,y:0,blur:0,color:"rgba(0,0,0,0.3)"};
-        if(!sh)return r;
-        const cm=sh.match(/(rgba?\([^)]+\)|#[0-9a-fA-F]{3,8}|\b[a-z]+\b(?=\s*$))/i);
-        if(cm)r.color=cm[0];const nums=sh.match(/-?\d+(\.\d+)?(px)?/g);
-        if(nums){const v=nums.map(n=>parseFloat(n));if(v.length>=1)r.x=v[0];if(v.length>=2)r.y=v[1];if(v.length>=3)r.blur=v[2];}
+      const parseBoxShadow = (sh) => {
+        const r = { x: 0, y: 0, blur: 0, color: "rgba(0,0,0,0.3)" };
+        if (!sh) return r;
+        const cm = sh.match(
+          /(rgba?\([^)]+\)|#[0-9a-fA-F]{3,8}|\b[a-z]+\b(?=\s*$))/i,
+        );
+        if (cm) r.color = cm[0];
+        const nums = sh.match(/-?\d+(\.\d+)?(px)?/g);
+        if (nums) {
+          const v = nums.map((n) => parseFloat(n));
+          if (v.length >= 1) r.x = v[0];
+          if (v.length >= 2) r.y = v[1];
+          if (v.length >= 3) r.blur = v[2];
+        }
         return r;
       };
-      const lerpShadow=(a,b,t)=>`drop-shadow(${(a.x+(b.x-a.x)*t).toFixed(2)}px ${(a.y+(b.y-a.y)*t).toFixed(2)}px ${(a.blur+(b.blur-a.blur)*t).toFixed(2)}px ${t>.5?b.color:a.color})`;
+      const lerpShadow = (a, b, t) =>
+        `drop-shadow(${(a.x + (b.x - a.x) * t).toFixed(2)}px ${(a.y + (b.y - a.y) * t).toFixed(2)}px ${(a.blur + (b.blur - a.blur) * t).toFixed(2)}px ${t > 0.5 ? b.color : a.color})`;
 
       // ============================================================================
       // STICKER CLASS — creates own DOM, supports multiples
       // ============================================================================
-      const DEF={imageWidth:200,imageHeight:150,tilt:45,lighting:true,lightingStrength:10,lightingColor:"#fff",sheenMode:"sheen",elevation:8,staticShadow:"0px 2px 5px rgba(0,0,0,0.25)",dynamicShadow:"0px 14px 18px rgba(0,0,0,0.35)"};
+      const DEF = {
+        imageWidth: 200,
+        imageHeight: 150,
+        tilt: 45,
+        lighting: true,
+        lightingStrength: 10,
+        lightingColor: "#fff",
+        sheenMode: "sheen",
+        elevation: 8,
+        staticShadow: "0px 2px 5px rgba(0,0,0,0.25)",
+        dynamicShadow: "0px 14px 18px rgba(0,0,0,0.35)",
+      };
 
-      class StickerDrag{
-        static _id=0;
-        constructor(containerEl,props={}){
-          this.id=++StickerDrag._id;
-          this.cEl=containerEl; // parent container
-          this.p={...DEF,...props};
+      class StickerDrag {
+        static _id = 0;
+        constructor(containerEl, props = {}) {
+          this.id = ++StickerDrag._id;
+          this.cEl = containerEl; // parent container
+          this.p = { ...DEF, ...props };
 
-          this.tiltSen=DRAG_TILT_SENSITIVITY;this.maxTilt=Math.max(1,this.p.tilt);
-          this.tSmooth=this.p.tiltSmoothing??DRAG_TILT_SMOOTHING;
-          this.shStr=this.p.lighting?Math.max(1,Math.min(10,this.p.lightingStrength))/10:0;
-          this.shCol=parseColorToRgb(this.p.lightingColor);
-          this.elev=(Math.max(1,Math.min(10,this.p.elevation))/10)*ELEVATION_INTERNAL_MAX;
-          this.sheen=this.p.sheenMode;this.w=this.p.imageWidth;this.h=this.p.imageHeight;
+          this.tiltSen = DRAG_TILT_SENSITIVITY;
+          this.maxTilt = Math.max(1, this.p.tilt);
+          this.tSmooth = this.p.tiltSmoothing ?? DRAG_TILT_SMOOTHING;
+          this.shStr = this.p.lighting
+            ? Math.max(1, Math.min(10, this.p.lightingStrength)) / 10
+            : 0;
+          this.shCol = parseColorToRgb(this.p.lightingColor);
+          this.elev =
+            (Math.max(1, Math.min(10, this.p.elevation)) / 10) *
+            ELEVATION_INTERNAL_MAX;
+          this.sheen = this.p.sheenMode;
+          this.w = this.p.imageWidth;
+          this.h = this.p.imageHeight;
 
           this._buildDOM();
-          this.gl=null;this.prog=null;this.tex=null;this.vbo=null;this.ibo=null;this.ic=0;this.u={};
-          this.st={
-            x:this.p.initialX||0,y:this.p.initialY||0,w:200,h:200,ar:null,sc:1,
-            held:false,peling:false,sticking:false,dSX:0,dSY:0,dOX:0,dOY:0,
-            peel:0,lift:0,pAng:-Math.PI/4,dTX:0,dTY:0,cTX:0,cTY:0,pTX:0,pTY:0,
-            holo:0,lMX:0,lMY:0,lMT:0,ready:false
+          this.gl = null;
+          this.prog = null;
+          this.tex = null;
+          this.vbo = null;
+          this.ibo = null;
+          this.ic = 0;
+          this.u = {};
+          this.st = {
+            x: this.p.initialX || 0,
+            y: this.p.initialY || 0,
+            w: 200,
+            h: 200,
+            ar: null,
+            sc: 1,
+            held: false,
+            peling: false,
+            sticking: false,
+            dSX: 0,
+            dSY: 0,
+            dOX: 0,
+            dOY: 0,
+            peel: 0,
+            lift: 0,
+            pAng: -Math.PI / 4,
+            dTX: 0,
+            dTY: 0,
+            cTX: 0,
+            cTY: 0,
+            pTX: 0,
+            pTY: 0,
+            holo: 0,
+            lMX: 0,
+            lMY: 0,
+            lMT: 0,
+            ready: false,
           };
-          this.raf=null;this.lTT=null;
-          this.pSS=parseBoxShadow(this.p.staticShadow);this.pDS=parseBoxShadow(this.p.dynamicShadow);
-          this.art=null;this.SZTH=5;this.RDB=150;
+          this.raf = null;
+          this.lTT = null;
+          this.pSS = parseBoxShadow(this.p.staticShadow);
+          this.pDS = parseBoxShadow(this.p.dynamicShadow);
+          this.art = null;
+          this.SZTH = 5;
+          this.RDB = 150;
 
           this.init();
         }
 
-        _buildDOM(){
-          const w=document.createElement("div");
-          w.className="sticker-instance";w.id=`si-${this.id}`;
-          const i=document.createElement("div");i.className="sticker-inner";
-          const cv=document.createElement("canvas");cv.className="sticker-canvas";
-          i.appendChild(cv);w.appendChild(i);
+        _buildDOM() {
+          const w = document.createElement("div");
+          w.className = "sticker-instance";
+          w.id = `si-${this.id}`;
+          const i = document.createElement("div");
+          i.className = "sticker-inner";
+          const cv = document.createElement("canvas");
+          cv.className = "sticker-canvas";
+          i.appendChild(cv);
+          w.appendChild(i);
           this.cEl.appendChild(w);
-          this.el=w;this.inn=i;this.can=cv;
+          this.el = w;
+          this.inn = i;
+          this.can = cv;
         }
 
-        init(){this._initGL();this._loadImg();this._evts();this._resize();
-          this.ro=new ResizeObserver(()=>{const cw=this.cEl.clientWidth||900,ch=this.cEl.clientHeight||500;this._sched(cw,ch)});
+        init() {
+          this._initGL();
+          this._loadImg();
+          this._evts();
+          this._resize();
+          this.ro = new ResizeObserver(() => {
+            const cw = this.cEl.clientWidth || 900,
+              ch = this.cEl.clientHeight || 500;
+            this._sched(cw, ch);
+          });
           this.ro.observe(this.cEl);
         }
 
-        _initGL(){
-          const cv=this.can,gl=cv.getContext("webgl",{alpha:true,antialias:true,premultipliedAlpha:false});
-          if(!gl)return;this.gl=gl;
-          const cs=(src,tp)=>{
-            const sh=gl.createShader(tp);if(!sh)return null;gl.shaderSource(sh,src);gl.compileShader(sh);
-            if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS)){console.error(gl.getShaderInfoLog(sh));gl.deleteShader(sh);return null;}
+        _initGL() {
+          const cv = this.can,
+            gl = cv.getContext("webgl", {
+              alpha: true,
+              antialias: true,
+              premultipliedAlpha: false,
+            });
+          if (!gl) return;
+          this.gl = gl;
+          const cs = (src, tp) => {
+            const sh = gl.createShader(tp);
+            if (!sh) return null;
+            gl.shaderSource(sh, src);
+            gl.compileShader(sh);
+            if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+              console.error(gl.getShaderInfoLog(sh));
+              gl.deleteShader(sh);
+              return null;
+            }
             return sh;
           };
-          const vs=cs(VERTEX_SHADER,gl.VERTEX_SHADER),fs=cs(FRAGMENT_SHADER,gl.FRAGMENT_SHADER);
-          if(!vs||!fs)return;
-          const pr=gl.createProgram();gl.attachShader(pr,vs);gl.attachShader(pr,fs);gl.linkProgram(pr);
-          if(!gl.getProgramParameter(pr,gl.LINK_STATUS)){console.error(gl.getProgramInfoLog(pr));return;}
-          this.prog=pr;
-          ["uPeel","uLift","uPeelAngle","uPasting","uScale","uElevation","uTilt","uSheenStrength","uSheenColor",
-            "uSheenTiltShift","uSheenTiltDeadzone","uMaxTiltDeg","uEffectMode","uHoloMotion","uTex","uAspect"
-          ].forEach(n=>{this.u[n]=gl.getUniformLocation(pr,n)});
-          this.ap=gl.getAttribLocation(pr,"aPos");this.auv=gl.getAttribLocation(pr,"aUV");
+          const vs = cs(VERTEX_SHADER, gl.VERTEX_SHADER),
+            fs = cs(FRAGMENT_SHADER, gl.FRAGMENT_SHADER);
+          if (!vs || !fs) return;
+          const pr = gl.createProgram();
+          gl.attachShader(pr, vs);
+          gl.attachShader(pr, fs);
+          gl.linkProgram(pr);
+          if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) {
+            console.error(gl.getProgramInfoLog(pr));
+            return;
+          }
+          this.prog = pr;
+          [
+            "uPeel",
+            "uLift",
+            "uPeelAngle",
+            "uPasting",
+            "uScale",
+            "uElevation",
+            "uTilt",
+            "uSheenStrength",
+            "uSheenColor",
+            "uSheenTiltShift",
+            "uSheenTiltDeadzone",
+            "uMaxTiltDeg",
+            "uEffectMode",
+            "uHoloMotion",
+            "uTex",
+            "uAspect",
+          ].forEach((n) => {
+            this.u[n] = gl.getUniformLocation(pr, n);
+          });
+          this.ap = gl.getAttribLocation(pr, "aPos");
+          this.auv = gl.getAttribLocation(pr, "aUV");
 
-          const N=MESH_GRID_SIZE,v=[],ind=[];
-          for(let j=0;j<=N;j++)for(let i=0;i<=N;i++)v.push((i/N)*2-1,(j/N)*2-1,i/N,1-j/N);
-          for(let j=0;j<N;j++)for(let i=0;i<N;i++){const a=j*(N+1)+i;ind.push(a,a+1,a+N+1,a+1,a+N+2,a+N+1);}
-          const vb=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,vb);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(v),gl.STATIC_DRAW);this.vbo=vb;
-          const ib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(ind),gl.STATIC_DRAW);this.ibo=ib;
-          this.ic=ind.length;
+          const N = MESH_GRID_SIZE,
+            v = [],
+            ind = [];
+          for (let j = 0; j <= N; j++)
+            for (let i = 0; i <= N; i++)
+              v.push((i / N) * 2 - 1, (j / N) * 2 - 1, i / N, 1 - j / N);
+          for (let j = 0; j < N; j++)
+            for (let i = 0; i < N; i++) {
+              const a = j * (N + 1) + i;
+              ind.push(a, a + 1, a + N + 1, a + 1, a + N + 2, a + N + 1);
+            }
+          const vb = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, vb);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(v), gl.STATIC_DRAW);
+          this.vbo = vb;
+          const ib = gl.createBuffer();
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib);
+          gl.bufferData(
+            gl.ELEMENT_ARRAY_BUFFER,
+            new Uint16Array(ind),
+            gl.STATIC_DRAW,
+          );
+          this.ibo = ib;
+          this.ic = ind.length;
         }
 
-        draw(){
-          const gl=this.gl,p=this.prog,t=this.tex,s=this.st;if(!gl||!p||!t||!s.ready)return;
-          gl.viewport(0,0,this.can.width,this.can.height);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);
-          gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.useProgram(p);
-          gl.bindBuffer(gl.ARRAY_BUFFER,this.vbo);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,this.ibo);
-          gl.enableVertexAttribArray(this.ap);gl.enableVertexAttribArray(this.auv);
-          gl.vertexAttribPointer(this.ap,2,gl.FLOAT,false,16,0);gl.vertexAttribPointer(this.auv,2,gl.FLOAT,false,16,8);
-          const u=this.u;
-          gl.uniform1f(u.uPeel,s.peel);gl.uniform1f(u.uLift,s.lift);gl.uniform1f(u.uPeelAngle,s.pAng);
-          gl.uniform1f(u.uPasting,s.sticking?1:0);gl.uniform1f(u.uScale,s.sc);gl.uniform1f(u.uElevation,this.elev);
-          gl.uniform2f(u.uTilt,s.cTX,s.cTY);gl.uniform1f(u.uSheenStrength,this.shStr);
-          gl.uniform3f(u.uSheenColor,this.shCol[0],this.shCol[1],this.shCol[2]);
-          gl.uniform1f(u.uSheenTiltShift,SHEEN_TILT_SHIFT);gl.uniform1f(u.uSheenTiltDeadzone,SHEEN_TILT_DEADZONE);
-          gl.uniform1f(u.uMaxTiltDeg,this.maxTilt);
-          let em=0;if(this.sheen==="holo")em=1;else if(this.sheen==="rug")em=2;
-          gl.uniform1f(u.uEffectMode,em);gl.uniform1f(u.uHoloMotion,s.holo);gl.uniform1f(u.uAspect,s.w/s.h||1);
-          gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,t);gl.uniform1i(u.uTex,0);
-          gl.drawElements(gl.TRIANGLES,this.ic,gl.UNSIGNED_SHORT,0);
+        draw() {
+          const gl = this.gl,
+            p = this.prog,
+            t = this.tex,
+            s = this.st;
+          if (!gl || !p || !t || !s.ready) return;
+          gl.viewport(0, 0, this.can.width, this.can.height);
+          gl.clearColor(0, 0, 0, 0);
+          gl.clear(gl.COLOR_BUFFER_BIT);
+          gl.enable(gl.BLEND);
+          gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+          gl.useProgram(p);
+          gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ibo);
+          gl.enableVertexAttribArray(this.ap);
+          gl.enableVertexAttribArray(this.auv);
+          gl.vertexAttribPointer(this.ap, 2, gl.FLOAT, false, 16, 0);
+          gl.vertexAttribPointer(this.auv, 2, gl.FLOAT, false, 16, 8);
+          const u = this.u;
+          gl.uniform1f(u.uPeel, s.peel);
+          gl.uniform1f(u.uLift, s.lift);
+          gl.uniform1f(u.uPeelAngle, s.pAng);
+          gl.uniform1f(u.uPasting, s.sticking ? 1 : 0);
+          gl.uniform1f(u.uScale, s.sc);
+          gl.uniform1f(u.uElevation, this.elev);
+          gl.uniform2f(u.uTilt, s.cTX, s.cTY);
+          gl.uniform1f(u.uSheenStrength, this.shStr);
+          gl.uniform3f(
+            u.uSheenColor,
+            this.shCol[0],
+            this.shCol[1],
+            this.shCol[2],
+          );
+          gl.uniform1f(u.uSheenTiltShift, SHEEN_TILT_SHIFT);
+          gl.uniform1f(u.uSheenTiltDeadzone, SHEEN_TILT_DEADZONE);
+          gl.uniform1f(u.uMaxTiltDeg, this.maxTilt);
+          let em = 0;
+          if (this.sheen === "holo") em = 1;
+          else if (this.sheen === "rug") em = 2;
+          gl.uniform1f(u.uEffectMode, em);
+          gl.uniform1f(u.uHoloMotion, s.holo);
+          gl.uniform1f(u.uAspect, s.w / s.h || 1);
+          gl.activeTexture(gl.TEXTURE0);
+          gl.bindTexture(gl.TEXTURE_2D, t);
+          gl.uniform1i(u.uTex, 0);
+          gl.drawElements(gl.TRIANGLES, this.ic, gl.UNSIGNED_SHORT, 0);
         }
 
-        _upCSS(){
-          const tr=Math.max(this.st.lift,this.st.peel),t=tr*tr*(3-2*tr);
-          this.can.style.filter=lerpShadow(this.pSS,this.pDS,t);
+        _upCSS() {
+          const tr = Math.max(this.st.lift, this.st.peel),
+            t = tr * tr * (3 - 2 * tr);
+          this.can.style.filter = lerpShadow(this.pSS, this.pDS, t);
         }
 
-        tick(ts){
-          const s=this.st;if(this.lTT===null)this.lTT=ts;
-          const dt=Math.min((ts-this.lTT)/1000,0.1);this.lTT=ts;const stp=ANIM_SPEED*dt;let ch=false;
-          if(s.peling){if(s.peel<1||s.lift<1){s.peel=Math.min(1,s.peel+stp);s.lift=Math.min(1,s.lift+stp);ch=true;}}
-          if(s.sticking){if(s.peel>0||s.lift>0){s.peel=Math.max(0,s.peel-stp);s.lift=Math.max(0,s.lift-stp);ch=true;}else s.sticking=false;}
-          const hd=this.sheen==="holo"&&s.holo>0.005;
-          if(hd){s.holo*=HOLO_MOTION_DECAY;if(s.holo<0.005)s.holo=0;ch=true;}
-          if(ch)this._upCSS();if(ch||s.held||hd)this.draw();
-          if(s.held||s.peling||s.sticking||hd){this.raf=requestAnimationFrame(this.tick);}else{this.raf=null;this.lTT=null;}
+        tick(ts) {
+          const s = this.st;
+          if (this.lTT === null) this.lTT = ts;
+          const dt = Math.min((ts - this.lTT) / 1000, 0.1);
+          this.lTT = ts;
+          const stp = ANIM_SPEED * dt;
+          let ch = false;
+          if (s.peling) {
+            if (s.peel < 1 || s.lift < 1) {
+              s.peel = Math.min(1, s.peel + stp);
+              s.lift = Math.min(1, s.lift + stp);
+              ch = true;
+            }
+          }
+          if (s.sticking) {
+            if (s.peel > 0 || s.lift > 0) {
+              s.peel = Math.max(0, s.peel - stp);
+              s.lift = Math.max(0, s.lift - stp);
+              ch = true;
+            } else s.sticking = false;
+          }
+          const hd = this.sheen === "holo" && s.holo > 0.005;
+          if (hd) {
+            s.holo *= HOLO_MOTION_DECAY;
+            if (s.holo < 0.005) s.holo = 0;
+            ch = true;
+          }
+          if (ch) this._upCSS();
+          if (ch || s.held || hd) this.draw();
+          if (s.held || s.peling || s.sticking || hd) {
+            this.raf = requestAnimationFrame(this.tick);
+          } else {
+            this.raf = null;
+            this.lTT = null;
+          }
         }
-        ensureTick(){if(this.raf!==null)return;this.lTT=null;this.raf=requestAnimationFrame(this.tick);}
-
-        _resize(){
-          const ct=this.cEl,cv=this.can,se=this.el,gl=this.gl,s=this.st;
-          if(!ct||!cv||!se||!gl)return;
-          const cw=ct.clientWidth||900,ch=ct.clientHeight||500,w=this.w>0?this.w:cw,h=this.h>0?this.h:ch;
-          const md=Math.max(w,h),ep=md*this.elev*.6,pad=PAD_BASE+ep,cw2=w+pad*2,ch2=h+pad*2;
-          const sx=w/cw2,sy=h/ch2,sc=Math.min(sx,sy),x=(cw-w)/2,y=(ch-h)/2;
-          cv.width=Math.round(cw2*RENDER_SCALE);cv.height=Math.round(ch2*RENDER_SCALE);
-          cv.style.width=cw2+"px";cv.style.height=ch2+"px";cv.style.position="absolute";cv.style.left=(-pad)+"px";cv.style.top=(-pad+"px");
-          se.style.width=w+"px";se.style.height=h+"px";se.style.left=x+"px";se.style.top=y+"px";
-          s.w=w;s.h=h;s.x=x;s.y=y;s.sc=sc;gl.viewport(0,0,cv.width,cv.height);if(s.ready)this.draw();
+        ensureTick() {
+          if (this.raf !== null) return;
+          this.lTT = null;
+          this.raf = requestAnimationFrame(this.tick);
         }
-        _sched(mw,mh){if(this.art)clearTimeout(this.art);this.art=setTimeout(()=>{this.art=null;this._resize()},this.RDB);}
 
-        _loadImg(){
-          const src=resolveImageSource(this.p.image)||"https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/3fb4a247-64e9-4c54-2391-86598eebfe00/w=800";
-          const gl=this.gl;if(!gl||!this.prog)return;
-          const im=new Image();im.crossOrigin="anonymous";
-          im.onload=()=>{
-            this.st.ar=im.width/im.height;
-            if(this.tex)gl.deleteTexture(this.tex);
-            const tx=gl.createTexture();if(!tx)return;
-            gl.bindTexture(gl.TEXTURE_2D,tx);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);
-            gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,im);
-            gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
-            this.tex=tx;this.st.ready=true;this._resize();this._upCSS();this.draw();
+        _resize() {
+          const ct = this.cEl,
+            cv = this.can,
+            se = this.el,
+            gl = this.gl,
+            s = this.st;
+          if (!ct || !cv || !se || !gl) return;
+          const cw = ct.clientWidth || 900,
+            ch = ct.clientHeight || 500,
+            w = this.w > 0 ? this.w : cw,
+            h = this.h > 0 ? this.h : ch;
+          const md = Math.max(w, h),
+            ep = md * this.elev * 0.6,
+            pad = PAD_BASE + ep,
+            cw2 = w + pad * 2,
+            ch2 = h + pad * 2;
+          const sx = w / cw2,
+            sy = h / ch2,
+            sc = Math.min(sx, sy),
+            x = (cw - w) / 2,
+            y = (ch - h) / 2;
+          cv.width = Math.round(cw2 * RENDER_SCALE);
+          cv.height = Math.round(ch2 * RENDER_SCALE);
+          cv.style.width = cw2 + "px";
+          cv.style.height = ch2 + "px";
+          cv.style.position = "absolute";
+          cv.style.left = -pad + "px";
+          cv.style.top = -pad + "px";
+          se.style.width = w + "px";
+          se.style.height = h + "px";
+          se.style.left = x + "px";
+          se.style.top = y + "px";
+          s.w = w;
+          s.h = h;
+          s.x = x;
+          s.y = y;
+          s.sc = sc;
+          gl.viewport(0, 0, cv.width, cv.height);
+          if (s.ready) this.draw();
+        }
+        _sched(mw, mh) {
+          if (this.art) clearTimeout(this.art);
+          this.art = setTimeout(() => {
+            this.art = null;
+            this._resize();
+          }, this.RDB);
+        }
+
+        _loadImg() {
+          const src =
+            resolveImageSource(this.p.image) ||
+            "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/3fb4a247-64e9-4c54-2391-86598eebfe00/w=800";
+          const gl = this.gl;
+          if (!gl || !this.prog) return;
+          const im = new Image();
+          im.crossOrigin = "anonymous";
+          im.onload = () => {
+            this.st.ar = im.width / im.height;
+            if (this.tex) gl.deleteTexture(this.tex);
+            const tx = gl.createTexture();
+            if (!tx) return;
+            gl.bindTexture(gl.TEXTURE_2D, tx);
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+            gl.texImage2D(
+              gl.TEXTURE_2D,
+              0,
+              gl.RGBA,
+              gl.RGBA,
+              gl.UNSIGNED_BYTE,
+              im,
+            );
+            gl.texParameteri(
+              gl.TEXTURE_2D,
+              gl.TEXTURE_WRAP_S,
+              gl.CLAMP_TO_EDGE,
+            );
+            gl.texParameteri(
+              gl.TEXTURE_2D,
+              gl.TEXTURE_WRAP_T,
+              gl.CLAMP_TO_EDGE,
+            );
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            this.tex = tx;
+            this.st.ready = true;
+            this._resize();
+            this._upCSS();
+            this.draw();
           };
-          im.src=src;
+          im.src = src;
         }
 
-        setTilt(){
-          const s=this.st,inn=this.inn;
-          const go=()=>{
-            s.dTX*=.9;s.dTY*=.9;s.cTX=s.dTX;s.cTY=s.dTY;
-            if(inn)inn.style.transform=`rotateX(${s.dTX}deg) rotateY(${s.dTY}deg)`;
-            if(Math.abs(s.dTX)>.1||Math.abs(s.dTY)>.1){requestAnimationFrame(go);}
-            else{s.dTX=0;s.dTY=0;s.cTX=0;s.cTY=0;s.pTX=0;s.pTY=0;if(inn)inn.style.transform="";}
+        setTilt() {
+          const s = this.st,
+            inn = this.inn;
+          const go = () => {
+            s.dTX *= 0.9;
+            s.dTY *= 0.9;
+            s.cTX = s.dTX;
+            s.cTY = s.dTY;
+            if (inn)
+              inn.style.transform = `rotateX(${s.dTX}deg) rotateY(${s.dTY}deg)`;
+            if (Math.abs(s.dTX) > 0.1 || Math.abs(s.dTY) > 0.1) {
+              requestAnimationFrame(go);
+            } else {
+              s.dTX = 0;
+              s.dTY = 0;
+              s.cTX = 0;
+              s.cTY = 0;
+              s.pTX = 0;
+              s.pTY = 0;
+              if (inn) inn.style.transform = "";
+            }
           };
           go();
         }
 
-        pd(cx,cy){
-          const s=this.st,se=this.el,inn=this.inn;if(!se||!inn)return;
-          const rc=se.getBoundingClientRect();inn.style.transformOrigin=(cx-rc.left)+"px "+(cy-rc.top)+"px";
-          const cx2=rc.left+rc.width/2,cy2=rc.top+rc.height/2;
-          s.pAng=Math.atan2(cy-cy2,cx-cx2);s.dSX=cx;s.dSY=cy;s.dOX=s.x;s.dOY=s.y;
-          s.peel=0;s.lift=0;s.held=true;s.peling=true;s.sticking=false;
-          s.lMX=cx;s.lMY=cy;s.lMT=performance.now();se.style.zIndex=getNextZIndex();this.ensureTick();
+        pd(cx, cy) {
+          const s = this.st,
+            se = this.el,
+            inn = this.inn;
+          if (!se || !inn) return;
+          const rc = se.getBoundingClientRect();
+          inn.style.transformOrigin =
+            cx - rc.left + "px " + (cy - rc.top) + "px";
+          const cx2 = rc.left + rc.width / 2,
+            cy2 = rc.top + rc.height / 2;
+          s.pAng = Math.atan2(cy - cy2, cx - cx2);
+          s.dSX = cx;
+          s.dSY = cy;
+          s.dOX = s.x;
+          s.dOY = s.y;
+          s.peel = 0;
+          s.lift = 0;
+          s.held = true;
+          s.peling = true;
+          s.sticking = false;
+          s.lMX = cx;
+          s.lMY = cy;
+          s.lMT = performance.now();
+          se.style.zIndex = getNextZIndex();
+          this.ensureTick();
         }
-        pm(cx,cy){
-          const s=this.st;if(!s.held)return;const se=this.el,inn=this.inn;if(!se||!inn)return;
-          s.x=s.dOX+(cx-s.dSX);s.y=s.dOY+(cy-s.dSY);se.style.left=s.x+"px";se.style.top=s.y+"px";
-          const now=performance.now(),dt=Math.max(1,now-s.lMT),vx=((cx-s.lMX)/dt)*16,vy=((cy-s.lMY)/dt)*16;
-          s.lMX=cx;s.lMY=cy;s.lMT=now;
-          const ty=Math.max(-this.maxTilt,Math.min(this.maxTilt,vx*this.tiltSen)),tx=Math.max(-this.maxTilt,Math.min(this.maxTilt,-vy*this.tiltSen));
-          s.dTX+=(tx-s.dTX)*this.tSmooth;s.dTY+=(ty-s.dTY)*this.tSmooth;s.cTX=s.dTX;s.cTY=s.dTY;
-          if(this.sheen==="holo"){const td=Math.abs(s.dTX-s.pTX)+Math.abs(s.dTY-s.pTY);s.holo=Math.min(1,s.holo+td*HOLO_MOTION_BUMP);s.pTX=s.dTX;s.pTY=s.dTY;}
-          inn.style.transform=`rotateX(${s.dTX}deg) rotateY(${s.dTY}deg)`;
+        pm(cx, cy) {
+          const s = this.st;
+          if (!s.held) return;
+          const se = this.el,
+            inn = this.inn;
+          if (!se || !inn) return;
+          s.x = s.dOX + (cx - s.dSX);
+          s.y = s.dOY + (cy - s.dSY);
+          se.style.left = s.x + "px";
+          se.style.top = s.y + "px";
+          const now = performance.now(),
+            dt = Math.max(1, now - s.lMT),
+            vx = ((cx - s.lMX) / dt) * 16,
+            vy = ((cy - s.lMY) / dt) * 16;
+          s.lMX = cx;
+          s.lMY = cy;
+          s.lMT = now;
+          const ty = Math.max(
+              -this.maxTilt,
+              Math.min(this.maxTilt, vx * this.tiltSen),
+            ),
+            tx = Math.max(
+              -this.maxTilt,
+              Math.min(this.maxTilt, -vy * this.tiltSen),
+            );
+          s.dTX += (tx - s.dTX) * this.tSmooth;
+          s.dTY += (ty - s.dTY) * this.tSmooth;
+          s.cTX = s.dTX;
+          s.cTY = s.dTY;
+          if (this.sheen === "holo") {
+            const td = Math.abs(s.dTX - s.pTX) + Math.abs(s.dTY - s.pTY);
+            s.holo = Math.min(1, s.holo + td * HOLO_MOTION_BUMP);
+            s.pTX = s.dTX;
+            s.pTY = s.dTY;
+          }
+          inn.style.transform = `rotateX(${s.dTX}deg) rotateY(${s.dTY}deg)`;
         }
-        pu(){
-          const s=this.st;if(!s.held)return;const inn=this.inn;
-          s.held=false;s.peling=false;s.sticking=true;
-          if(s.peel>=.95&&inn){const rc=inn.getBoundingClientRect(),cx2=rc.left+rc.width/2,cy2=rc.top+rc.height/2;
-            s.pAng=Math.atan2(-(s.lMY-cy2),-(s.lMX-cx2));s.peel=1;}
-          this.setTilt();this.ensureTick();
+        pu() {
+          const s = this.st;
+          if (!s.held) return;
+          const inn = this.inn;
+          s.held = false;
+          s.peling = false;
+          s.sticking = true;
+          if (s.peel >= 0.95 && inn) {
+            const rc = inn.getBoundingClientRect(),
+              cx2 = rc.left + rc.width / 2,
+              cy2 = rc.top + rc.height / 2;
+            s.pAng = Math.atan2(-(s.lMY - cy2), -(s.lMX - cx2));
+            s.peel = 1;
+          }
+          this.setTilt();
+          this.ensureTick();
         }
 
-        _evts(){
-          this.el.addEventListener("mousedown",e=>{e.preventDefault();this.pd(e.clientX,e.clientY);});
-          window.addEventListener("mousemove",e=>this.pm(e.clientX,e.clientY));window.addEventListener("mouseup",()=>this.pu());
-          this.el.addEventListener("touchstart",e=>{e.preventDefault();const t=e.touches[0];if(t)this.pd(t.clientX,t.clientY);},{passive:false});
-          window.addEventListener("touchmove",e=>{const t=e.touches[0];if(t)this.pm(t.clientX,t.clientY);},{passive:false});
-          window.addEventListener("touchend",()=>this.pu());
+        _evts() {
+          this.el.addEventListener("mousedown", (e) => {
+            e.preventDefault();
+            this.pd(e.clientX, e.clientY);
+          });
+          window.addEventListener("mousemove", (e) =>
+            this.pm(e.clientX, e.clientY),
+          );
+          window.addEventListener("mouseup", () => this.pu());
+          this.el.addEventListener(
+            "touchstart",
+            (e) => {
+              e.preventDefault();
+              const t = e.touches[0];
+              if (t) this.pd(t.clientX, t.clientY);
+            },
+            { passive: false },
+          );
+          window.addEventListener(
+            "touchmove",
+            (e) => {
+              const t = e.touches[0];
+              if (t) this.pm(t.clientX, t.clientY);
+            },
+            { passive: false },
+          );
+          window.addEventListener("touchend", () => this.pu());
         }
       }
 
       // ============================================================================
       // BOOT — CREATE MULTIPLE STICKERS OF VARYING SIZES & POSITIONS
       // ============================================================================
-      window.addEventListener("DOMContentLoaded",()=>{
-        const sc=document.getElementById("sticker-container");
+      window.addEventListener("DOMContentLoaded", () => {
+        const sc = document.getElementById("sticker-container");
 
         // Large calendar/card
-        new StickerDrag(sc,{image:{src:"https://images.unsplash.com/photo-1513885535751-8b9238bd345a?q=80&w=400"},imageWidth:220,imageHeight:300,initialX:40,initialY:30,sheenMode:"sheen",elevation:10});
+        new StickerDrag(sc, {
+          image: {
+            src: "https://images.unsplash.com/photo-1513885535751-8b9238bd345a?q=80&w=400",
+          },
+          imageWidth: 220,
+          imageHeight: 300,
+          initialX: 40,
+          initialY: 30,
+          sheenMode: "sheen",
+          elevation: 10,
+        });
 
         // Medium note card
-        new StickerDrag(sc,{image:{src:"https://images.unsplash.com/photo-1586281380349-632531db7ed4?q=80&w=400"},imageWidth:160,imageHeight:210,initialX:290,initialY:20,sheenMode:"holo",elevation:8,tilt:35});
+        new StickerDrag(sc, {
+          image: {
+            src: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?q=80&w=400",
+          },
+          imageWidth: 160,
+          imageHeight: 210,
+          initialX: 290,
+          initialY: 20,
+          sheenMode: "holo",
+          elevation: 8,
+          tilt: 35,
+        });
 
         // Small pink sticky
-        new StickerDrag(sc,{image:{src:"https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=300"},imageWidth:130,imageHeight:140,initialX:480,initialY:10,sheenMode:"sheen",elevation:6});
+        new StickerDrag(sc, {
+          image: {
+            src: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=300",
+          },
+          imageWidth: 130,
+          imageHeight: 140,
+          initialX: 480,
+          initialY: 10,
+          sheenMode: "sheen",
+          elevation: 6,
+        });
 
         // Medium quote card
-        new StickerDrag(sc,{image:{src:"https://images.unsplash.com/photo-1490682143684-14369eaf38c1?q=80&w=500"},imageWidth:190,imageHeight:135,initialX:650,initialY:25,sheenMode:"holo",elevation:9,staticShadow:"0px 3px 6px rgba(0,0,0,0.22)",dynamicShadow:"0px 16px 22px rgba(0,0,0,0.32)"});
+        new StickerDrag(sc, {
+          image: {
+            src: "https://images.unsplash.com/photo-1490682143684-14369eaf38c1?q=80&w=500",
+          },
+          imageWidth: 190,
+          imageHeight: 135,
+          initialX: 650,
+          initialY: 25,
+          sheenMode: "holo",
+          elevation: 9,
+          staticShadow: "0px 3px 6px rgba(0,0,0,0.22)",
+          dynamicShadow: "0px 16px 22px rgba(0,0,0,0.32)",
+        });
 
         // Circular-ish sticker (use squarish ratio)
-        new StickerDrag(sc,{image:{src:"https://images.unsplash.com/photo-1599561046281-acdf7a696e7c?q=80&w=400"},imageWidth:150,imageHeight:145,initialX:520,initialY:155,sheenMode:"rug",elevation:12,lightingStrength:7});
+        new StickerDrag(sc, {
+          image: {
+            src: "https://images.unsplash.com/photo-1599561046281-acdf7a696e7c?q=80&w=400",
+          },
+          imageWidth: 150,
+          imageHeight: 145,
+          initialX: 520,
+          initialY: 155,
+          sheenMode: "rug",
+          elevation: 12,
+          lightingStrength: 7,
+        });
 
         // Large to-do list
-        new StickerDrag(sc,{image:{src:"https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?q=80&w=400"},imageWidth:230,imageHeight:175,initialX:30,initialY:260,sheenMode:"sheen",elevation:8});
+        new StickerDrag(sc, {
+          image: {
+            src: "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?q=80&w=400",
+          },
+          imageWidth: 230,
+          imageHeight: 175,
+          initialX: 30,
+          initialY: 260,
+          sheenMode: "sheen",
+          elevation: 8,
+        });
 
         // Small green idea sticky
-        new StickerDrag(sc,{image:{src:"https://images.unsplash.com/photo-1531346878377-a5be20888e57?q=80&w=300"},imageWidth:115,imageHeight:125,initialX:280,initialY:240,sheenMode:"sheen",elevation:5});
+        new StickerDrag(sc, {
+          image: {
+            src: "https://images.unsplash.com/photo-1531346878377-a5be20888e57?q=80&w=300",
+          },
+          imageWidth: 115,
+          imageHeight: 125,
+          initialX: 280,
+          initialY: 240,
+          sheenMode: "sheen",
+          elevation: 5,
+        });
 
         // Medium yellow vertical card
-        new StickerDrag(sc,{image:{src:"https://images.unsplash.com/photo-1471102337591-59c0dd51a866?q=80&w=400"},imageWidth:105,imageHeight:165,initialX:420,initialY:225,sheenMode:"holo",elevation:7});
+        new StickerDrag(sc, {
+          image: {
+            src: "https://images.unsplash.com/photo-1471102337591-59c0dd51a866?q=80&w=400",
+          },
+          imageWidth: 105,
+          imageHeight: 165,
+          initialX: 420,
+          initialY: 225,
+          sheenMode: "holo",
+          elevation: 7,
+        });
 
         // "LOVE ME" roundish
-        new StickerDrag(sc,{image:{src:"https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=400"},imageWidth:145,imageHeight:145,initialX:720,initialY:145,sheenMode:"sheen",elevation:10});
+        new StickerDrag(sc, {
+          image: {
+            src: "https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=400",
+          },
+          imageWidth: 145,
+          imageHeight: 145,
+          initialX: 720,
+          initialY: 145,
+          sheenMode: "sheen",
+          elevation: 10,
+        });
 
         // Bottom banner / text sticker
-        new StickerDrag(sc,{image:{src:"https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=500"},imageWidth:195,imageHeight:108,initialX:550,initialY:360,sheenMode:"rug",elevation:9});
+        new StickerDrag(sc, {
+          image: {
+            src: "https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=500",
+          },
+          imageWidth: 195,
+          imageHeight: 108,
+          initialX: 550,
+          initialY: 360,
+          sheenMode: "rug",
+          elevation: 9,
+        });
 
         // Tiny yellow note bottom left
-        new StickerDrag(sc,{image:{src:"https://images.unsplash.com/photo-1516979187457-637abb4f9353?q=80&w=300"},imageWidth:100,imageHeight:105,initialX:50,initialY:450,sheenMode:"sheen",elevation:4});
+        new StickerDrag(sc, {
+          image: {
+            src: "https://images.unsplash.com/photo-1516979187457-637abb4f9353?q=80&w=300",
+          },
+          imageWidth: 100,
+          imageHeight: 105,
+          initialX: 50,
+          initialY: 450,
+          sheenMode: "sheen",
+          elevation: 4,
+        });
 
         // Small kindness card right side
-        new StickerDrag(sc,{image:{src:"https://images.unsplash.com/photo-1529515582136-10683999f373?q=80&w=400"},imageWidth:160,imageHeight:102,initialX:680,initialY:310,sheenMode:"holo",elevation:8,tilt:40});
+        new StickerDrag(sc, {
+          image: {
+            src: "https://images.unsplash.com/photo-1529515582136-10683999f373?q=80&w=400",
+          },
+          imageWidth: 160,
+          imageHeight: 102,
+          initialX: 680,
+          initialY: 310,
+          sheenMode: "holo",
+          elevation: 8,
+          tilt: 40,
+        });
 
         // Wide bottom sticker
-        new StickerDrag(sc,{image:{src:"https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?q=80&w=500"},imageWidth:185,imageHeight:112,initialX:320,initialY:380,sheenMode:"sheen",elevation:6,tilt:50});
+        new StickerDrag(sc, {
+          image: {
+            src: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?q=80&w=500",
+          },
+          imageWidth: 185,
+          imageHeight: 112,
+          initialX: 320,
+          initialY: 380,
+          sheenMode: "sheen",
+          elevation: 6,
+          tilt: 50,
+        });
       });
     </script>
   </body>

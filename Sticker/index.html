@@ -3,1012 +3,357 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Draggable Rug Sticker</title>
+    <title>Realistic Felt Board Studio</title>
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      html,
-      body {
-        width: 100%;
-        height: 100%;
-        background: #d8cfc2;
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      
+      body, html {
+        width: 100%; height: 100%;
         overflow: hidden;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #222;
+        font-family: sans-serif;
       }
 
-      /* Floor backdrop so the rug reads as sitting on a surface */
-      #floor {
-        position: fixed;
-        inset: 0;
-        background:
-          radial-gradient(
-            ellipse at 50% 40%,
-            rgba(255, 255, 255, 0.25),
-            rgba(0, 0, 0, 0.08) 80%
-          ),
-          repeating-linear-gradient(
-            90deg,
-            #cbb79a 0px,
-            #cbb79a 46px,
-            #c2ad8e 46px,
-            #c2ad8e 48px
-          );
-        z-index: 0;
-      }
-
-      #whiteboard {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        width: min(94vw, 980px);
-        max-height: min(86vh, 720px);
-        padding: 32px 28px 22px;
-        background: rgba(255, 255, 255, 0.98);
-        border: 2px solid rgba(0, 0, 0, 0.08);
-        border-radius: 32px;
-        box-shadow: 0 30px 70px rgba(15, 20, 30, 0.14);
-        overflow: hidden;
-        z-index: 1;
-        display: grid;
-        grid-template-rows: auto 1fr;
-      }
-
-      #whiteboard::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background:
-          linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
-        background-size: 48px 48px;
-        opacity: 0.4;
-        pointer-events: none;
-      }
-
-      #whiteboard-topbar {
+      /* Wall Background */
+      #scene {
         position: relative;
-        z-index: 2;
+        width: 100%; height: 100%;
+        background: radial-gradient(circle at 50% 40%, #555 0%, #222 100%);
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 18px;
+        justify-content: center;
       }
 
-      #whiteboard-title {
-        color: #444;
-        font-size: 1rem;
-        font-weight: 700;
+      /* Dark Textured Wall Overlay */
+      #scene::before {
+        content: ""; position: absolute; inset: 0;
+        background-image: url('https://www.transparenttextures.com/patterns/dark-matter.png');
+        opacity: 0.4; pointer-events: none;
       }
 
-      #mover {
-        display: inline-flex;
+      /* Wooden Desk */
+      #desk {
+        position: absolute; bottom: 0; width: 100%; height: 180px;
+        background: linear-gradient(to bottom, #5d4037 0%, #3e2723 100%);
+        border-top: 4px solid #795548;
+        box-shadow: inset 0 20px 40px rgba(0,0,0,0.5);
+        z-index: 5;
+      }
+
+      /* Decor Items */
+      .decor-plant {
+        position: absolute; left: 15%; bottom: 180px;
+        width: 80px; height: 100px;
+        background: url('https://cdn-icons-png.flaticon.com/512/628/628285.png') no-repeat bottom;
+        background-size: contain; z-index: 6;
+      }
+      .decor-books {
+        position: absolute; left: 5%; bottom: 180px;
+        width: 100px; height: 60px;
+        background: #8d6e63; border: 1px solid #5d4037;
+        box-shadow: 2px -2px 5px rgba(0,0,0,0.3); z-index: 6;
+      }
+
+      /* The Board (Wooden Frame + Felt Surface) */
+      #board-frame {
+        position: relative;
+        width: min(90vw, 900px);
+        height: min(75vh, 600px);
+        padding: 20px;
+        background: #5d4037; /* Wood Color */
+        border: 12px solid #4e342e;
+        border-image: linear-gradient(45deg, #5d4037, #795548, #3e2723) 1;
+        box-shadow: 0 50px 100px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.5);
+        z-index: 10;
+        display: flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
-        padding: 10px 14px;
-        border-radius: 999px;
-        background: rgba(0, 0, 0, 0.06);
-        color: #333;
-        font-size: 0.88rem;
-        font-weight: 600;
-        user-select: none;
-        cursor: grab;
       }
 
-      #mover:active {
-        cursor: grabbing;
-      }
-
-      #sticker-container {
+      #board-surface {
         position: relative;
-        width: 100%;
-        height: 100%;
-        overflow: visible;
-        perspective: 800px;
-        z-index: 2;
+        width: 100%; height: 100%;
+        background: #1a222c; /* Felt Color */
+        box-shadow: inset 0 0 50px rgba(0,0,0,0.9);
+        overflow: visible; /* Let stickers peel outside if needed */
+        perspective: 1000px;
       }
 
-      #sizing-div {
-        position: relative;
-        opacity: 0;
-        pointer-events: none;
-        user-select: none;
+      /* Felt Texture Overlay */
+      #board-surface::after {
+        content: ""; position: absolute; inset: 0;
+        background-image: url('https://www.transparenttextures.com/patterns/felt.png');
+        opacity: 0.2; pointer-events: none;
       }
 
-      #zoom-probe {
+      /* Sticker Instance Styles */
+      .sticker-wrap {
         position: absolute;
-        width: 20px;
-        height: 20px;
-        top: 0;
-        left: 0;
-        opacity: 0;
-        pointer-events: none;
-      }
-
-      #sticker {
-        position: absolute;
-        width: 100%;
-        height: 100%;
         cursor: grab;
+        transform-style: preserve-3d;
         user-select: none;
-        perspective: 800px;
-        transform-style: preserve-3d;
-        will-change: transform;
-        overflow: visible;
+        will-change: transform, left, top;
       }
+      .sticker-wrap:active { cursor: grabbing; }
 
-      #sticker:active {
-        cursor: grabbing;
-      }
-
-      #inner {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        transform-style: preserve-3d;
-        overflow: visible;
-      }
-
-      #gl-canvas {
+      .gl-canvas {
         display: block;
         pointer-events: none;
-        position: absolute;
+        will-change: filter;
       }
     </style>
   </head>
   <body>
-    <div id="floor"></div>
 
-    <div id="sticker-container">
-      <div id="sizing-div"></div>
-      <div id="zoom-probe"></div>
-      <div id="sticker">
-        <div id="inner">
-          <canvas id="gl-canvas"></canvas>
+    <div id="scene">
+      <div id="decor-plant" class="decor-plant"></div>
+      <div id="decor-books" class="decor-books"></div>
+      
+      <div id="board-frame">
+        <div id="board-surface">
+            <!-- Stickers injected here by JS -->
         </div>
       </div>
+
+      <div id="desk"></div>
     </div>
 
     <script>
       // ============================================================================
-      // COMPONENT DEFAULTS
+      // WEBGL SHADERS
       // ============================================================================
+      const VS = `
+        attribute vec2 aPos; attribute vec2 aUV;
+        uniform float uPeel, uLift, uPeelAngle, uPasting, uScale, uElevation;
+        varying vec2 vUV; varying float vHi, vSh;
+        void main() {
+            vUV = aUV; vec2 p = aPos; vHi = 0.0; vSh = 0.0;
+            if (uPeel > 0.0) {
+                vec2 peelAxis = vec2(cos(uPeelAngle), sin(uPeelAngle));
+                vec2 uvCentered = aUV - vec2(0.5);
+                float proj = dot(uvCentered, peelAxis);
+                float diag = 0.5 - proj;
+                float peelLine = -0.3 + uPeel * 2.0;
+                float rampWidth = 0.6;
+                float lifted = 1.0 - smoothstep(peelLine - rampWidth, peelLine, diag);
+                p *= (1.0 + lifted * uElevation);
+                float inRamp = smoothstep(peelLine - rampWidth, peelLine - rampWidth * 0.5, diag) * smoothstep(peelLine + 0.05, peelLine - rampWidth * 0.3, diag);
+                p += (-peelAxis) * inRamp * (uPasting > 0.5 ? 0.06 : 0.12);
+                float t = smoothstep(peelLine - rampWidth, peelLine, diag);
+                vHi = inRamp * 0.75 * pow(1.0 - t, 1.2);
+                vSh = inRamp * 0.75 * pow(t, 1.2);
+            }
+            gl_Position = vec4(p * uScale, 0.0, 1.0);
+        }`;
 
-      const COMPONENT_DEFAULTS = {
-        image: {
-          src: "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/fake-journal.png"
-        },
-        imageWidth: 600,
-        imageHeight: 400,
-        tilt: 45,
-        lighting: true,
-        lightingStrength: 10,
-        lightingColor: "#ffffff",
-        sheenMode: "sheen", // "sheen" | "holo" | "rug"
-        elevation: 10,
-        staticShadow: "0px 1px 2px 0px rgba(0, 0, 0, 0.30)",
-        dynamicShadow: "0px 13px 14px 0px rgba(0, 0, 0, 0.30)",
-      };
-
-      // ============================================================================
-      // CONSTANTS
-      // ============================================================================
-
-      const RENDER_SCALE = 2;
-      const PAD_BASE = 20; 
-      const MESH_GRID_SIZE = 32; 
-      const DRAG_Z_INDEX_BASE = 1000; 
-
-      let zIndexCounter = DRAG_Z_INDEX_BASE;
-
-      function getNextZIndex() {
-        zIndexCounter += 1;
-        return zIndexCounter;
-      }
-
-      const DRAG_TILT_SENSITIVITY = 3;
-      const DRAG_MAX_TILT_DEG = 30;
-      const DRAG_TILT_SMOOTHING = 0.05;
-      const SHEEN_STRENGTH = 0.6;
-      const SHEEN_TILT_SHIFT = 0.05;
-      const SHEEN_TILT_DEADZONE = 0.035;
-      const ANIM_SPEED = 1.92;
-      const HOLO_MOTION_BUMP = 0.15;
-      const HOLO_MOTION_DECAY = 0.88;
-
-      const ELEVATION_INTERNAL_MAX = 0.3;
-
-      // ============================================================================
-      // WebGL Shaders
-      // ============================================================================
-
-      const VERTEX_SHADER = `
-attribute vec2 aPos;
-attribute vec2 aUV;
-uniform float uPeel;
-uniform float uLift;
-uniform float uPeelAngle;
-uniform float uPasting;
-uniform float uScale;
-uniform float uElevation;
-varying vec2 vUV;
-varying float vHi;
-varying float vSh;
-
-void main() {
-    vUV = aUV;
-    vec2 p = aPos;
-    vHi = 0.0;
-    vSh = 0.0;
-
-    if (uPeel > 0.0) {
-        vec2 peelAxis = vec2(cos(uPeelAngle), sin(uPeelAngle));
-        vec2 uvCentered = aUV - vec2(0.5);
-        float proj = dot(uvCentered, peelAxis);
-        float diag = 0.5 - proj;
-
-        float peelLine = -0.3 + uPeel * 2.0;
-        float rampWidth = 0.6;
-        float lifted = smoothstep(peelLine - rampWidth, peelLine, diag);
-        lifted = 1.0 - lifted;
-
-        float scale = 1.0 + lifted * uElevation;
-        p *= scale;
-
-        float inRamp = smoothstep(peelLine - rampWidth, peelLine - rampWidth * 0.5, diag) *
-                       smoothstep(peelLine + 0.05, peelLine - rampWidth * 0.3, diag);
-
-        float curveAmount = uPasting > 0.5 ? 0.06 : 0.12;
-        p += (-peelAxis) * inRamp * curveAmount;
-
-        float t = smoothstep(peelLine - rampWidth, peelLine, diag);
-        vHi = inRamp * 0.75 * pow(1.0 - t, 1.2);
-        vSh = inRamp * 0.75 * pow(t, 1.2);
-    }
-    gl_Position = vec4(p * uScale, 0.0, 1.0);
-}
-`;
-
-      const FRAGMENT_SHADER = `
-precision mediump float;
-uniform sampler2D uTex;
-uniform vec2 uTilt;
-uniform float uSheenStrength;
-uniform float uSheenTiltShift;
-uniform float uSheenTiltDeadzone;
-uniform float uMaxTiltDeg;
-uniform float uEffectMode; // 0.0=sheen, 1.0=holo, 2.0=rug
-uniform float uHoloMotion;
-uniform vec3 uSheenColor;
-uniform float uAspect;
-varying vec2 vUV;
-varying float vHi;
-varying float vSh;
-
-// Random noise generator for fibers
-float hash(vec2 p) {
-    return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
-}
-
-vec3 overlayBlend(vec3 base, vec3 blend) {
-    return mix(2.0 * base * blend, 1.0 - 2.0 * (1.0 - base) * (1.0 - blend), step(0.5, base));
-}
-
-vec3 hsl2rgb(float h, float s, float l) {
-    float c = (1.0 - abs(2.0 * l - 1.0)) * s;
-    float x = c * (1.0 - abs(mod(h * 6.0, 2.0) - 1.0));
-    float m = l - c * 0.5;
-    vec3 rgb;
-    if (h < 1.0/6.0) rgb = vec3(c, x, 0.0);
-    else if (h < 2.0/6.0) rgb = vec3(x, c, 0.0);
-    else if (h < 3.0/6.0) rgb = vec3(0.0, c, x);
-    else if (h < 4.0/6.0) rgb = vec3(0.0, x, c);
-    else if (h < 5.0/6.0) rgb = vec3(x, 0.0, c);
-    else rgb = vec3(c, 0.0, x);
-    return rgb + m;
-}
-
-void main() {
-    vec4 tex = texture2D(uTex, vUV);
-    if (tex.a < 0.01) discard;
-
-    vec3 c = tex.rgb * 0.95;
-
-    float maxTilt = max(0.001, uMaxTiltDeg);
-    float tiltMag = clamp(length(uTilt) / maxTilt, 0.0, 1.0);
-
-    if (uEffectMode > 1.5) {
-        // ==========================================
-        // RUG MODE
-        // ==========================================
-        
-        // 1. Procedural Weave Pattern
-        vec2 aspUV = vec2(vUV.x * uAspect, vUV.y);
-        float scale = 400.0;
-        
-        // Crossed sine waves for thread bumps
-        float sx = sin(aspUV.x * scale);
-        float sy = sin(aspUV.y * scale);
-        float weave = (sx * sy) * 0.5 + 0.5;
-        
-        // Add fiber noise
-        float n = hash(aspUV * 800.0);
-        float pattern = mix(weave, n, 0.3);
-        
-        // Apply weave depth (dark crevices, bright threads)
-        c *= mix(0.45, 1.2, pattern);
-
-        // 2. Directional Pile Sheen (Velvet/Nap effect)
-        // Adjusts brightness based on how the tilt aligns with the rug pile direction
-        vec2 pileDir = normalize(vec2(1.0, -1.0)); 
-        float alignment = dot(uTilt / maxTilt, pileDir);
-        
-        // mix between a darkened pile and a light-catching sheen
-        float pileLighting = mix(0.7, 1.35, alignment * 0.5 + 0.5);
-        c *= mix(1.0, pileLighting, uSheenStrength);
-
-    } else {
-        // ==========================================
-        // SHEEN & HOLO MODES
-        // ==========================================
-        float tiltGate = smoothstep(uSheenTiltDeadzone, 1.0, tiltMag);
-        float gradient = fract(vUV.x * 0.5 + vUV.y * 0.5 + uTilt.x * uSheenTiltShift + uTilt.y * uSheenTiltShift);
-
-        if (uEffectMode > 0.5) {
-            // Holo Mode
-            float holoStrength = uSheenStrength * uHoloMotion;
-            float distFromWhite = length(tex.rgb - vec3(1.0));
-            float nonWhiteMask = smoothstep(0.06, 0.22, distFromWhite);
-            vec3 rainbow = hsl2rgb(gradient, 0.8, 0.55);
-            c = mix(c, rainbow, holoStrength * nonWhiteMask * tex.a);
-        } else {
-            // Sheen Mode
-            float effectStrength = uSheenStrength * tiltGate;
-            float sheen = smoothstep(0.2, 0.5, gradient) * (1.0 - smoothstep(0.5, 0.8, gradient));
-            c = mix(c, uSheenColor, sheen * effectStrength * tex.a);
-        }
-    }
-
-    // Peel/paste curvature lighting
-    float hiW = clamp(vHi, 0.0, 1.0) * 0.55;
-    float shW = clamp(vSh, 0.0, 1.0) * 0.60;
-
-    vec3 hi = overlayBlend(c, vec3(1.0));
-    c = mix(c, hi, hiW);
-
-    vec3 sh = overlayBlend(c, vec3(0.0));
-    c = mix(c, sh, shW);
-    c *= (1.0 - shW * 0.35);
-
-    c = clamp(c, 0.0, 1.0);
-    gl_FragColor = vec4(c, tex.a);
-}
-`;
+      const FS = `
+        precision mediump float;
+        uniform sampler2D uTex; uniform vec2 uTilt; uniform float uAspect;
+        varying vec2 vUV; varying float vHi, vSh;
+        float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+        void main() {
+            vec4 tex = texture2D(uTex, vUV); if (tex.a < 0.01) discard;
+            vec3 c = tex.rgb;
+            // Rug Logic
+            vec2 aspUV = vec2(vUV.x * uAspect, vUV.y);
+            float pattern = mix(sin(aspUV.x * 500.0) * sin(aspUV.y * 500.0) * 0.5 + 0.5, hash(aspUV * 1000.0), 0.2);
+            c *= mix(0.6, 1.1, pattern);
+            // Dynamic nap lighting
+            float align = dot(normalize(uTilt + 0.001), normalize(vec2(1.0, -1.0)));
+            c *= (1.0 + align * 0.2);
+            // Peel Lighting
+            c = mix(c, c + 0.4, vHi);
+            c = mix(c, c * 0.5, vSh);
+            gl_FragColor = vec4(c, tex.a);
+        }`;
 
       // ============================================================================
-      // UTILITIES
+      // STICKER CLASS
       // ============================================================================
+      let globalZ = 1000;
 
-      function resolveImageSource(input) {
-        if (!input) return undefined;
-        if (typeof input === "string") return input.trim() || undefined;
-        return (
-          input.src ||
-          input.url ||
-          (input.asset && input.asset.url) ||
-          undefined
-        );
-      }
-
-      function parseColorToRgb(input) {
-        if (!input) return [1, 1, 1];
-        const s = input.trim();
-        const m = s.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/i);
-        if (m) return [+m[1] / 255, +m[2] / 255, +m[3] / 255];
-        let h = s.replace(/^#/, "");
-        if (h.length === 3)
-          h = h.split("").map((c) => c + c).join("");
-        if (h.length >= 6)
-          return [
-            parseInt(h.slice(0, 2), 16) / 255,
-            parseInt(h.slice(2, 4), 16) / 255,
-            parseInt(h.slice(4, 6), 16) / 255,
-          ];
-        return [1, 1, 1];
-      }
-
-      function parseBoxShadow(shadow) {
-        const result = { x: 0, y: 0, blur: 0, color: "rgba(0,0,0,0.3)" };
-        if (!shadow) return result;
-        const colorMatch = shadow.match(
-          /(rgba?\([^)]+\)|#[0-9a-fA-F]{3,8}|\b[a-z]+\b(?=\s*$))/i,
-        );
-        if (colorMatch) result.color = colorMatch[0];
-        const numbers = shadow.match(/-?\d+(\.\d+)?(px)?/g);
-        if (numbers) {
-          const vals = numbers.map((n) => parseFloat(n));
-          if (vals.length >= 1) result.x = vals[0];
-          if (vals.length >= 2) result.y = vals[1];
-          if (vals.length >= 3) result.blur = vals[2];
-        }
-        return result;
-      }
-
-      function lerpShadow(a, b, t) {
-        const x = a.x + (b.x - a.x) * t;
-        const y = a.y + (b.y - a.y) * t;
-        const blur = a.blur + (b.blur - a.blur) * t;
-        const color = t > 0.5 ? b.color : a.color;
-        return `drop-shadow(${x.toFixed(2)}px ${y.toFixed(2)}px ${blur.toFixed(2)}px ${color})`;
-      }
-
-      // ============================================================================
-      // STICKER DRAG CLASS
-      // ============================================================================
-
-      class StickerDrag {
-        constructor(props) {
-          this.props = { ...COMPONENT_DEFAULTS, ...props };
-
-          this.tiltSensitivity = DRAG_TILT_SENSITIVITY;
-          this.maxTilt = Math.max(1, this.props.tilt);
-          this.tiltSmoothing =
-            this.props.tiltSmoothing != null
-              ? this.props.tiltSmoothing
-              : DRAG_TILT_SMOOTHING;
-          this.sheenStrength = this.props.lighting
-            ? Math.max(1, Math.min(10, this.props.lightingStrength)) / 10
-            : 0;
-          this.sheenColor = parseColorToRgb(this.props.lightingColor);
-          this.elevation =
-            (Math.max(1, Math.min(10, this.props.elevation)) / 10) *
-            ELEVATION_INTERNAL_MAX;
-          this.sheenMode = this.props.sheenMode;
-          this.imageWidth = this.props.imageWidth;
-          this.imageHeight = this.props.imageHeight;
-
-          this.container = document.getElementById("sticker-container");
-          this.sticker = document.getElementById("sticker");
-          this.inner = document.getElementById("inner");
-          this.canvas = document.getElementById("gl-canvas");
-          this.sizingDiv = document.getElementById("sizing-div");
-          this.zoomProbe = document.getElementById("zoom-probe");
-
-          this.sizingDimensions = { width: 400, height: 400 };
-
-          this.gl = null;
-          this.program = null;
-          this.texture = null;
-          this.vbo = null;
-          this.ibo = null;
-          this.indexCount = 0;
-          this.uniforms = {};
-
-          this.state = {
-            x: 0, y: 0, width: 200, height: 200,
-            imageAspectRatio: null, scale: 1.0,
-            held: false, peeling: false, sticking: false,
-            dragStartX: 0, dragStartY: 0, dragOrigX: 0, dragOrigY: 0,
-            peel: 0, lift: 0, peelAngle: -Math.PI / 4,
-            dragTiltX: 0, dragTiltY: 0,
-            currentTiltX: 0, currentTiltY: 0,
-            prevTiltX: 0, prevTiltY: 0,
-            holoMotion: 0,
-            lastMoveX: 0, lastMoveY: 0, lastMoveT: 0,
-            texReady: false,
+      class Sticker {
+        constructor(parent, config) {
+          this.parent = parent;
+          this.config = {
+            url: '', x: 0, y: 0, w: 150, h: 150,
+            tilt: 30, elevation: 0.2, ...config
           };
-
-          this.animationId = null;
-          this.lastTickT = null;
-
-          this.parsedStaticShadow = parseBoxShadow(this.props.staticShadow);
-          this.parsedDynamicShadow = parseBoxShadow(this.props.dynamicShadow);
-
-          this.applyResizeTimeout = null;
-          this.SIZING_THRESHOLD = 5;
-          this.RESIZE_DEBOUNCE_MS = 180;
-
-          this.tick = this.tick.bind(this);
-          this.draw = this.draw.bind(this);
-          this.handleResize = this.handleResize.bind(this);
-          this.updateShadowCSS = this.updateShadowCSS.bind(this);
-
-          this.init();
-        }
-
-        init() {
-          this.applySizingDiv();
-          this.initWebGL();
+          this.state = {
+            x: this.config.x, y: this.config.y,
+            peel: 0, lift: 0, tX: 0, tY: 0,
+            peeling: false, held: false, pasting: false,
+            peelAngle: -Math.PI/4, texReady: false
+          };
+          this.initDOM();
+          this.initGL();
           this.loadImage();
           this.attachEvents();
-          this.startResizeDetection();
         }
 
-        applySizingDiv() {
-          const d = this.sizingDimensions;
-          this.sizingDiv.style.width = d.width + "px";
-          this.sizingDiv.style.height = d.height + "px";
-          this.sizingDiv.style.minWidth = d.width + "px";
-          this.sizingDiv.style.minHeight = d.height + "px";
+        initDOM() {
+          this.wrap = document.createElement('div');
+          this.wrap.className = 'sticker-wrap';
+          this.wrap.style.width = this.config.w + 'px';
+          this.wrap.style.height = this.config.h + 'px';
+          this.wrap.style.left = this.config.x + 'px';
+          this.wrap.style.top = this.config.y + 'px';
+          
+          this.canvas = document.createElement('canvas');
+          this.canvas.className = 'gl-canvas';
+          this.wrap.appendChild(this.canvas);
+          this.parent.appendChild(this.wrap);
         }
 
-        initWebGL() {
-          const canvas = this.canvas;
-          const gl = canvas.getContext("webgl", {
-            alpha: true,
-            antialias: true,
-            premultipliedAlpha: false,
-          });
-          if (!gl) return;
-          this.gl = gl;
-
-          const compileShader = (source, type) => {
-            const shader = gl.createShader(type);
-            if (!shader) return null;
-            gl.shaderSource(shader, source);
-            gl.compileShader(shader);
-            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-              console.error("Shader compile error:", gl.getShaderInfoLog(shader));
-              gl.deleteShader(shader);
-              return null;
-            }
-            return shader;
+        initGL() {
+          const gl = this.gl = this.canvas.getContext('webgl', { alpha: true });
+          const compile = (s, t) => {
+            const sh = gl.createShader(t); gl.shaderSource(sh, s);
+            gl.compileShader(sh); return sh;
           };
+          this.prog = gl.createProgram();
+          gl.attachShader(this.prog, compile(VS, gl.VERTEX_SHADER));
+          gl.attachShader(this.prog, compile(FS, gl.FRAGMENT_SHADER));
+          gl.linkProgram(this.prog);
+          gl.useProgram(this.prog);
 
-          const vs = compileShader(VERTEX_SHADER, gl.VERTEX_SHADER);
-          const fs = compileShader(FRAGMENT_SHADER, gl.FRAGMENT_SHADER);
-          if (!vs || !fs) return;
-
-          const program = gl.createProgram();
-          if (!program) return;
-          gl.attachShader(program, vs);
-          gl.attachShader(program, fs);
-          gl.linkProgram(program);
-          if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-            console.error("Program link error:", gl.getProgramInfoLog(program));
-            return;
+          const grid = 32, verts = [], inds = [];
+          for (let j=0; j<=grid; j++) for (let i=0; i<=grid; i++) verts.push((i/grid)*2-1, (j/grid)*2-1, i/grid, 1-j/grid);
+          for (let j=0; j<grid; j++) for (let i=0; i<grid; i++) {
+            let a = j*(grid+1)+i; inds.push(a, a+1, a+grid+1, a+1, a+grid+2, a+grid+1);
           }
-          this.program = program;
-
-          const uniformNames = [
-            "uPeel", "uLift", "uPeelAngle", "uPasting", "uScale", "uElevation",
-            "uTilt", "uSheenStrength", "uSheenColor", "uSheenTiltShift",
-            "uSheenTiltDeadzone", "uMaxTiltDeg", "uEffectMode", "uHoloMotion", 
-            "uTex", "uAspect"
-          ];
-          for (const name of uniformNames) {
-            this.uniforms[name] = gl.getUniformLocation(program, name);
-          }
-          this.aPos = gl.getAttribLocation(program, "aPos");
-          this.aUV = gl.getAttribLocation(program, "aUV");
-
-          const N = MESH_GRID_SIZE;
-          const verts = [];
-          const inds = [];
-          for (let j = 0; j <= N; j++) {
-            for (let i = 0; i <= N; i++) {
-              verts.push((i / N) * 2 - 1, (j / N) * 2 - 1, i / N, 1 - j / N);
-            }
-          }
-          for (let j = 0; j < N; j++) {
-            for (let i = 0; i < N; i++) {
-              const a = j * (N + 1) + i;
-              inds.push(a, a + 1, a + N + 1, a + 1, a + N + 2, a + N + 1);
-            }
-          }
-
-          const vbo = gl.createBuffer();
-          gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW);
-          this.vbo = vbo;
-
-          const ibo = gl.createBuffer();
-          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
-          gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(inds), gl.STATIC_DRAW);
-          this.ibo = ibo;
           this.indexCount = inds.length;
+          gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW);
+          const aPos = gl.getAttribLocation(this.prog, 'aPos');
+          gl.enableVertexAttribArray(aPos); gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 16, 0);
+          const aUV = gl.getAttribLocation(this.prog, 'aUV');
+          gl.enableVertexAttribArray(aUV); gl.vertexAttribPointer(aUV, 2, gl.FLOAT, false, 16, 8);
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer());
+          gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(inds), gl.STATIC_DRAW);
 
-          gl.viewport(0, 0, canvas.width, canvas.height);
-          gl.clearColor(0, 0, 0, 0);
-          gl.clear(gl.COLOR_BUFFER_BIT);
+          this.resize();
         }
 
-        draw() {
-          const gl = this.gl;
-          const program = this.program;
-          const texture = this.texture;
-          const state = this.state;
-
-          if (!gl || !program || !texture || !state.texReady) return;
-
-          gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-          gl.clearColor(0, 0, 0, 0);
-          gl.clear(gl.COLOR_BUFFER_BIT);
-          gl.enable(gl.BLEND);
-          gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-          gl.useProgram(program);
-
-          gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
-          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ibo);
-          gl.enableVertexAttribArray(this.aPos);
-          gl.enableVertexAttribArray(this.aUV);
-          gl.vertexAttribPointer(this.aPos, 2, gl.FLOAT, false, 16, 0);
-          gl.vertexAttribPointer(this.aUV, 2, gl.FLOAT, false, 16, 8);
-
-          const u = this.uniforms;
-          gl.uniform1f(u.uPeel, state.peel);
-          gl.uniform1f(u.uLift, state.lift);
-          gl.uniform1f(u.uPeelAngle, state.peelAngle);
-          gl.uniform1f(u.uPasting, state.sticking ? 1.0 : 0.0);
-          gl.uniform1f(u.uScale, state.scale);
-          gl.uniform1f(u.uElevation, this.elevation);
-          gl.uniform2f(u.uTilt, state.currentTiltX, state.currentTiltY);
-          gl.uniform1f(u.uSheenStrength, this.sheenStrength);
-          gl.uniform3f(u.uSheenColor, this.sheenColor[0], this.sheenColor[1], this.sheenColor[2]);
-          gl.uniform1f(u.uSheenTiltShift, SHEEN_TILT_SHIFT);
-          gl.uniform1f(u.uSheenTiltDeadzone, SHEEN_TILT_DEADZONE);
-          gl.uniform1f(u.uMaxTiltDeg, this.maxTilt);
-          
-          let effectMode = 0.0;
-          if (this.sheenMode === "holo") effectMode = 1.0;
-          else if (this.sheenMode === "rug") effectMode = 2.0;
-          
-          gl.uniform1f(u.uEffectMode, effectMode);
-          gl.uniform1f(u.uHoloMotion, state.holoMotion);
-          gl.uniform1f(u.uAspect, state.width / state.height);
-
-          gl.activeTexture(gl.TEXTURE0);
-          gl.bindTexture(gl.TEXTURE_2D, texture);
-          gl.uniform1i(u.uTex, 0);
-          gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_SHORT, 0);
-        }
-
-        updateShadowCSS() {
-          const canvas = this.canvas;
-          const state = this.state;
-          if (!canvas) return;
-
-          const tRaw = Math.max(state.lift, state.peel);
-          const t = tRaw * tRaw * (3 - 2 * tRaw); 
-          canvas.style.filter = lerpShadow(
-            this.parsedStaticShadow,
-            this.parsedDynamicShadow,
-            t
-          );
-        }
-
-        tick(timestamp) {
-          const state = this.state;
-
-          if (this.lastTickT === null) this.lastTickT = timestamp;
-          const dt = Math.min((timestamp - this.lastTickT) / 1000, 0.1);
-          this.lastTickT = timestamp;
-
-          const step = ANIM_SPEED * dt;
-          let changed = false;
-
-          if (state.peeling) {
-            if (state.peel < 1 || state.lift < 1) {
-              state.peel = Math.min(1, state.peel + step);
-              state.lift = Math.min(1, state.lift + step);
-              changed = true;
-            }
-          }
-
-          if (state.sticking) {
-            if (state.peel > 0 || state.lift > 0) {
-              state.peel = Math.max(0, state.peel - step);
-              state.lift = Math.max(0, state.lift - step);
-              changed = true;
-            } else {
-              state.sticking = false;
-            }
-          }
-
-          const holoDecayActive = this.sheenMode === "holo" && state.holoMotion > 0.005;
-          if (holoDecayActive) {
-            state.holoMotion *= HOLO_MOTION_DECAY;
-            if (state.holoMotion < 0.005) state.holoMotion = 0;
-            changed = true;
-          }
-
-          if (changed) this.updateShadowCSS();
-
-          if (changed || state.held || holoDecayActive) this.draw();
-
-          if (state.held || state.peeling || state.sticking || holoDecayActive) {
-            this.animationId = requestAnimationFrame(this.tick);
-          } else {
-            this.animationId = null;
-            this.lastTickT = null;
-          }
-        }
-
-        ensureTickRunning() {
-          if (this.animationId !== null) return;
-          this.lastTickT = null;
-          this.animationId = requestAnimationFrame(this.tick);
-        }
-
-        handleResize() {
-          const container = this.container;
-          const canvas = this.canvas;
-          const sticker = this.sticker;
-          const gl = this.gl;
-          const state = this.state;
-
-          if (!container || !canvas || !sticker || !gl) return;
-
-          const containerWidth = container.clientWidth || 200;
-          const containerHeight = container.clientHeight || 200;
-
-          const width = this.imageWidth > 0 ? this.imageWidth : containerWidth;
-          const height = this.imageHeight > 0 ? this.imageHeight : containerHeight;
-
-          const maxDim = Math.max(width, height);
-          const elevationPad = maxDim * this.elevation * 0.6;
-          const effectivePad = PAD_BASE + elevationPad;
-          const canvasWidth = width + effectivePad * 2;
-          const canvasHeight = height + effectivePad * 2;
-
-          const scaleX = width / canvasWidth;
-          const scaleY = height / canvasHeight;
-          const scale = Math.min(scaleX, scaleY);
-
-          const x = (containerWidth - width) / 2;
-          const y = (containerHeight - height) / 2;
-
-          canvas.width = Math.round(canvasWidth * RENDER_SCALE);
-          canvas.height = Math.round(canvasHeight * RENDER_SCALE);
-          canvas.style.width = `${canvasWidth}px`;
-          canvas.style.height = `${canvasHeight}px`;
-
-          canvas.style.position = "absolute";
-          canvas.style.left = `${-effectivePad}px`;
-          canvas.style.top = `${-effectivePad}px`;
-
-          sticker.style.width = `${width}px`;
-          sticker.style.height = `${height}px`;
-          sticker.style.left = `${x}px`;
-          sticker.style.top = `${y}px`;
-
-          state.width = width;
-          state.height = height;
-          state.x = x;
-          state.y = y;
-          state.scale = scale;
-
-          gl.viewport(0, 0, canvas.width, canvas.height);
-
-          if (state.texReady) this.draw();
-        }
-
-        scheduleResize(measuredW, measuredH) {
-          if (this.applyResizeTimeout) clearTimeout(this.applyResizeTimeout);
-          this.applyResizeTimeout = setTimeout(() => {
-            this.applyResizeTimeout = null;
-            const prev = this.sizingDimensions;
-            const w = Math.max(1, Math.round(measuredW)) || prev.width;
-            const h = Math.max(1, Math.round(measuredH)) || prev.height;
-            const dw = Math.abs(w - prev.width);
-            const dh = Math.abs(h - prev.height);
-            if (dw >= this.SIZING_THRESHOLD || dh >= this.SIZING_THRESHOLD) {
-              this.sizingDimensions = { width: w, height: h };
-              this.applySizingDiv();
-            }
-            this.handleResize();
-          }, this.RESIZE_DEBOUNCE_MS);
-        }
-
-        startResizeDetection() {
-          const container = this.container;
-          if (!container) return;
-
-          this.handleResize();
-
-          const ro = new ResizeObserver(() => {
-            const w = container.clientWidth || container.offsetWidth || 400;
-            const h = container.clientHeight || container.offsetHeight || 400;
-            this.scheduleResize(w, h);
-          });
-          ro.observe(container);
-          this.resizeObserver = ro;
+        resize() {
+          const pad = this.config.w * 0.5;
+          const cw = this.config.w + pad*2, ch = this.config.h + pad*2;
+          this.canvas.width = cw * 2; this.canvas.height = ch * 2;
+          this.canvas.style.width = cw + 'px'; this.canvas.style.height = ch + 'px';
+          this.canvas.style.marginLeft = -pad + 'px'; this.canvas.style.marginTop = -pad + 'px';
+          this.state.scale = this.config.w / cw;
+          this.gl.viewport(0,0, this.canvas.width, this.canvas.height);
         }
 
         loadImage() {
-          const imageSrc = resolveImageSource(this.props.image) || DEFAULT_IMAGE;
-
-          const gl = this.gl;
-          if (!gl || !this.program) return;
-
-          const img = new Image();
-          img.crossOrigin = "anonymous";
-
+          const img = new Image(); img.crossOrigin = "anonymous";
           img.onload = () => {
-            const state = this.state;
-            state.imageAspectRatio = img.width / img.height;
-
-            if (this.texture) gl.deleteTexture(this.texture);
-
-            const texture = gl.createTexture();
-            if (!texture) return;
-
-            gl.bindTexture(gl.TEXTURE_2D, texture);
-            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+            const gl = this.gl;
+            this.tex = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, this.tex);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-            this.texture = texture;
-            state.texReady = true;
-
-            this.handleResize();
-            this.updateShadowCSS();
+            this.state.texReady = true;
             this.draw();
           };
-
-          img.onerror = () => console.error("Failed to load image");
-          img.src = imageSrc;
-        }
-
-        settleTilt() {
-          const state = this.state;
-          const inner = this.inner;
-
-          const step = () => {
-            state.dragTiltX *= 0.9;
-            state.dragTiltY *= 0.9;
-            state.currentTiltX = state.dragTiltX;
-            state.currentTiltY = state.dragTiltY;
-
-            if (inner) {
-              inner.style.transform = `rotateX(${state.dragTiltX}deg) rotateY(${state.dragTiltY}deg)`;
-            }
-
-            if (Math.abs(state.dragTiltX) > 0.1 || Math.abs(state.dragTiltY) > 0.1) {
-              requestAnimationFrame(step);
-            } else {
-              state.dragTiltX = 0; state.dragTiltY = 0;
-              state.currentTiltX = 0; state.currentTiltY = 0;
-              state.prevTiltX = 0; state.prevTiltY = 0;
-              if (inner) inner.style.transform = "";
-            }
-          };
-          step();
-        }
-
-        pointerDown(clientX, clientY) {
-          const state = this.state;
-          const container = this.container;
-          const sticker = this.sticker;
-          const inner = this.inner;
-          if (!container || !sticker || !inner) return;
-
-          const rect = sticker.getBoundingClientRect();
-          const grabOffsetX = clientX - rect.left;
-          const grabOffsetY = clientY - rect.top;
-          inner.style.transformOrigin = `${grabOffsetX}px ${grabOffsetY}px`;
-
-          const centerX = rect.left + rect.width / 2;
-          const centerY = rect.top + rect.height / 2;
-          state.peelAngle = Math.atan2(clientY - centerY, clientX - centerX);
-
-          state.dragStartX = clientX;
-          state.dragStartY = clientY;
-          state.dragOrigX = state.x;
-          state.dragOrigY = state.y;
-
-          state.peel = 0;
-          state.lift = 0;
-
-          state.held = true;
-          state.peeling = true;
-          state.sticking = false;
-
-          state.lastMoveX = clientX;
-          state.lastMoveY = clientY;
-          state.lastMoveT = performance.now();
-
-          container.style.zIndex = `${getNextZIndex()}`;
-
-          this.ensureTickRunning();
-        }
-
-        pointerMove(clientX, clientY) {
-          const state = this.state;
-          if (!state.held) return;
-
-          const sticker = this.sticker;
-          const inner = this.inner;
-          if (!sticker || !inner) return;
-
-          state.x = state.dragOrigX + (clientX - state.dragStartX);
-          state.y = state.dragOrigY + (clientY - state.dragStartY);
-          sticker.style.left = `${state.x}px`;
-          sticker.style.top = `${state.y}px`;
-
-          const now = performance.now();
-          const dt = Math.max(1, now - state.lastMoveT);
-          const velX = ((clientX - state.lastMoveX) / dt) * 16;
-          const velY = ((clientY - state.lastMoveY) / dt) * 16;
-          state.lastMoveX = clientX;
-          state.lastMoveY = clientY;
-          state.lastMoveT = now;
-
-          const targetTiltY = Math.max(-this.maxTilt, Math.min(this.maxTilt, velX * this.tiltSensitivity));
-          const targetTiltX = Math.max(-this.maxTilt, Math.min(this.maxTilt, -velY * this.tiltSensitivity));
-
-          state.dragTiltX += (targetTiltX - state.dragTiltX) * this.tiltSmoothing;
-          state.dragTiltY += (targetTiltY - state.dragTiltY) * this.tiltSmoothing;
-
-          state.currentTiltX = state.dragTiltX;
-          state.currentTiltY = state.dragTiltY;
-
-          if (this.sheenMode === "holo") {
-            const tiltDelta = Math.abs(state.dragTiltX - state.prevTiltX) + Math.abs(state.dragTiltY - state.prevTiltY);
-            state.holoMotion = Math.min(1, state.holoMotion + tiltDelta * HOLO_MOTION_BUMP);
-            state.prevTiltX = state.dragTiltX;
-            state.prevTiltY = state.dragTiltY;
-          }
-
-          inner.style.transform = `rotateX(${state.dragTiltX}deg) rotateY(${state.dragTiltY}deg)`;
-        }
-
-        pointerUp() {
-          const state = this.state;
-          if (!state.held) return;
-
-          const inner = this.inner;
-
-          state.held = false;
-          state.peeling = false;
-          state.sticking = true;
-
-          if (state.peel >= 0.95 && inner) {
-            const rect = inner.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            state.peelAngle = Math.atan2(-(state.lastMoveY - centerY), -(state.lastMoveX - centerX));
-            state.peel = 1;
-          }
-
-          this.settleTilt();
-          this.ensureTickRunning();
+          img.src = this.config.url;
         }
 
         attachEvents() {
-          this.sticker.addEventListener("mousedown", (e) => {
-            e.preventDefault();
-            this.pointerDown(e.clientX, e.clientY);
-          });
-          window.addEventListener("mousemove", (e) => this.pointerMove(e.clientX, e.clientY));
-          window.addEventListener("mouseup", () => this.pointerUp());
+          const start = (e) => {
+            const p = e.touches ? e.touches[0] : e;
+            this.state.held = true; this.state.peeling = true; this.state.pasting = false;
+            const r = this.wrap.getBoundingClientRect();
+            this.state.offX = p.clientX - r.left; this.state.offY = p.clientY - r.top;
+            this.wrap.style.zIndex = globalZ++;
+            this.state.peelAngle = Math.atan2(p.clientY - (r.top + r.height/2), p.clientX - (r.left + r.width/2));
+            this.lastT = performance.now();
+            this.anim();
+          };
+          this.wrap.addEventListener('mousedown', start);
+          this.wrap.addEventListener('touchstart', start);
 
-          this.sticker.addEventListener("touchstart", (e) => {
-              e.preventDefault();
-              const touch = e.touches[0];
-              if (touch) this.pointerDown(touch.clientX, touch.clientY);
-            }, { passive: false }
-          );
-          window.addEventListener("touchmove", (e) => {
-              const touch = e.touches[0];
-              if (touch) this.pointerMove(touch.clientX, touch.clientY);
-            }, { passive: false }
-          );
-          window.addEventListener("touchend", () => this.pointerUp());
+          window.addEventListener('mousemove', (e) => {
+            if (!this.state.held) return;
+            const p = e.touches ? e.touches[0] : e;
+            const parentR = this.parent.getBoundingClientRect();
+            this.state.x = p.clientX - parentR.left - this.state.offX;
+            this.state.y = p.clientY - parentR.top - this.state.offY;
+            this.wrap.style.left = this.state.x + 'px';
+            this.wrap.style.top = this.state.y + 'px';
+
+            const vx = (p.clientX - this.lastX) || 0, vy = (p.clientY - this.lastY) || 0;
+            this.state.tY += (vx * 2 - this.state.tY) * 0.1;
+            this.state.tX += (-vy * 2 - this.state.tX) * 0.1;
+            this.wrap.style.transform = `rotateX(${this.state.tX}deg) rotateY(${this.state.tY}deg)`;
+            this.lastX = p.clientX; this.lastY = p.clientY;
+          });
+
+          window.addEventListener('mouseup', () => {
+            if (this.state.held) {
+              this.state.held = false; this.state.peeling = false; this.state.pasting = true;
+              const settle = () => {
+                this.state.tX *= 0.85; this.state.tY *= 0.85;
+                this.wrap.style.transform = `rotateX(${this.state.tX}deg) rotateY(${this.state.tY}deg)`;
+                if(Math.abs(this.state.tX) > 0.1) requestAnimationFrame(settle);
+                else this.wrap.style.transform = '';
+              };
+              settle();
+            }
+          });
+        }
+
+        anim() {
+          const now = performance.now();
+          const dt = (now - (this.lastAnimT || now)) / 1000;
+          this.lastAnimT = now;
+          const step = 2.0 * dt;
+
+          if (this.state.peeling) {
+            this.state.peel = Math.min(1, this.state.peel + step);
+            this.state.lift = Math.min(1, this.state.lift + step);
+          } else if (this.state.pasting) {
+            this.state.peel = Math.max(0, this.state.peel - step);
+            this.state.lift = Math.max(0, this.state.lift - step);
+            if (this.state.peel === 0) this.state.pasting = false;
+          }
+
+          const tr = this.state.peel;
+          this.canvas.style.filter = `drop-shadow(${tr*20}px ${tr*20}px ${tr*15}px rgba(0,0,0,0.5))`;
+          
+          this.draw();
+          if (this.state.held || this.state.peeling || this.state.pasting) requestAnimationFrame(() => this.anim());
+          else this.lastAnimT = null;
+        }
+
+        draw() {
+          const gl = this.gl, s = this.state, u = this.uni = this.uni || {};
+          if (!s.texReady) return;
+          gl.clear(gl.COLOR_BUFFER_BIT);
+          const loc = (n) => gl.getUniformLocation(this.prog, n);
+          gl.uniform1f(loc('uPeel'), s.peel); gl.uniform1f(loc('uLift'), s.lift);
+          gl.uniform1f(loc('uPeelAngle'), s.peelAngle); gl.uniform1f(loc('uPasting'), s.pasting?1:0);
+          gl.uniform1f(loc('uScale'), s.scale); gl.uniform1f(loc('uElevation'), this.config.elevation);
+          gl.uniform2f(loc('uTilt'), s.tY, s.tX); gl.uniform1f(loc('uAspect'), this.config.w/this.config.h);
+          gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.tex);
+          gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_SHORT, 0);
         }
       }
 
-      window.addEventListener("DOMContentLoaded", () => {
-        new StickerDrag();
+      // ============================================================================
+      // INIT SCENE
+      // ============================================================================
+      window.addEventListener('DOMContentLoaded', () => {
+        const board = document.getElementById('board-surface');
+        
+        // Add various sized stickers
+        new Sticker(board, { url: 'https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/fake-journal.png', x: 20, y: 20, w: 250, h: 180 });
+        new Sticker(board, { url: 'https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/3fb4a247-64e9-4c54-2391-86598eebfe00/w=800', x: 300, y: 50, w: 120, h: 120, elevation: 0.4 });
+        new Sticker(board, { url: 'https://plus.unsplash.com/premium_photo-1664194583917-b0ba07c4ce2a?q=80&w=500&auto=format', x: 450, y: 20, w: 200, h: 250 });
+        new Sticker(board, { url: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png', x: 50, y: 300, w: 100, h: 100 });
+        new Sticker(board, { url: 'https://img.freepik.com/free-vector/yellow-sticky-note-paper-post-it_1017-31560.jpg', x: 200, y: 280, w: 150, h: 150 });
       });
     </script>
   </body>

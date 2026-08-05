@@ -7,73 +7,29 @@
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       
-      html,
-body {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background: #cbb79a;
-  font-family: sans-serif;
-}
-
-#floor {
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(
-      ellipse at 50% 40%,
-      rgba(255, 255, 255, 0.25),
-      rgba(0, 0, 0, 0.08) 80%
-    ),
-    repeating-linear-gradient(
-      90deg,
-      #cbb79a 0px,
-      #cbb79a 46px,
-      #c2ad8e 46px,
-      #c2ad8e 48px
-    );
-  z-index: 0;
-}
-
-#scene {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1;
-}
+      body, html {
+        width: 100%; height: 100%;
+        overflow: hidden;
+        background: #222;
+        font-family: sans-serif;
+      }
 
       /* Wall Background */
-      #floor {
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(
-      ellipse at 50% 40%,
-      rgba(255, 255, 255, 0.25),
-      rgba(0, 0, 0, 0.08) 80%
-    ),
-    repeating-linear-gradient(
-      90deg,
-      #cbb79a 0px,
-      #cbb79a 46px,
-      #c2ad8e 46px,
-      #c2ad8e 48px
-    );
-  z-index: 0;
-}
+      #scene {
+        position: relative;
+        width: 100%; height: 100%;
+        background: radial-gradient(circle at 50% 40%, #555 0%, #222 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
 
-#scene {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1;
-}
+      /* Dark Textured Wall Overlay */
+      #scene::before {
+        content: ""; position: absolute; inset: 0;
+        background-image: url('https://www.transparenttextures.com/patterns/dark-matter.png');
+        opacity: 0.4; pointer-events: none;
+      }
 
       /* Wooden Desk */
       #desk {
@@ -149,20 +105,17 @@ body {
   </head>
   <body>
 
-    <div id="floor"></div>
-
-  <div id="scene">
-    <div id="decor-plant" class="decor-plant"></div>
-    <div id="decor-books" class="decor-books"></div>
-
-    <div id="board-frame">
-      <div id="board-surface">
-        <!-- Stickers are injected here -->
+    <div id="scene">
+      <div id="decor-plant" class="decor-plant"></div>
+      <div id="decor-books" class="decor-books"></div>
+      
+      <div id="board-frame">
+        <div id="board-surface">
+            <!-- Stickers injected here by JS -->
+        </div>
       </div>
-    </div>
 
-    <div id="desk"></div>
-  </div>
+      <div id="desk"></div>
     </div>
 
     <script>

@@ -24,8 +24,7 @@
         position: fixed;
         inset: 0;
         background-color: #cfc5b8;
-        background-image:
-          url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.12'/%3E%3C/svg%3E");
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.12'/%3E%3C/svg%3E");
         z-index: 0;
       }
 
@@ -36,10 +35,17 @@
         left: 0;
         right: 0;
         height: 48px;
-        background: linear-gradient(180deg, #e8e4dc 0%, #d9d4ca 60%, #c8c2b6 100%);
-        border-top: 2px solid rgba(255,255,255,0.7);
+        background: linear-gradient(
+          180deg,
+          #e8e4dc 0%,
+          #d9d4ca 60%,
+          #c8c2b6 100%
+        );
+        border-top: 2px solid rgba(255, 255, 255, 0.7);
         z-index: 1;
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.06), 0 -2px 8px rgba(0,0,0,0.08);
+        box-shadow:
+          inset 0 2px 4px rgba(0, 0, 0, 0.06),
+          0 -2px 8px rgba(0, 0, 0, 0.08);
       }
 
       /* REAL WHITEBOARD - WALL MOUNTED STYLE */
@@ -52,24 +58,23 @@
         height: min(72vh, 650px);
         border-radius: 4px;
         /* Metallic aluminum frame */
-        background:
-          linear-gradient(
-            180deg,
-            #f5f6f7 0%,
-            #ffffff 4px,
-            #fafbfc calc(100% - 32px),
-            #eceef0 calc(100% - 28px),
-            #e1e4e7 100%
-          );
+        background: linear-gradient(
+          180deg,
+          #f5f6f7 0%,
+          #ffffff 4px,
+          #fafbfc calc(100% - 32px),
+          #eceef0 calc(100% - 28px),
+          #e1e4e7 100%
+        );
         border-top: 4px solid #d0d4d8;
         border-left: 4px solid #cdd0d4;
         border-right: 4px solid #b8bcc1;
         border-bottom: 8px solid #aeb2b7;
         box-shadow:
           0 25px 70px rgba(20, 25, 35, 0.18),
-          0 10px 24px rgba(20, 25, 35, 0.10),
-          inset 0 1px 0 rgba(255,255,255,0.9),
-          inset 0 -1px 0 rgba(0,0,0,0.04);
+          0 10px 24px rgba(20, 25, 35, 0.1),
+          inset 0 1px 0 rgba(255, 255, 255, 0.9),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.04);
         z-index: 2;
         display: flex;
         flex-direction: column;
@@ -84,10 +89,26 @@
         pointer-events: none;
         border-radius: 4px;
         background:
-          radial-gradient(circle at 6px 6px, rgba(255,255,255,0.6) 0%, transparent 40%),
-          radial-gradient(circle at calc(100% - 6px) 6px, rgba(255,255,255,0.4) 0%, transparent 40%),
-          radial-gradient(circle at 6px calc(100% - 6px), rgba(0,0,0,0.05) 0%, transparent 40%),
-          radial-gradient(circle at calc(100% - 6px) calc(100% - 6px), rgba(0,0,0,0.07) 0%, transparent 40%);
+          radial-gradient(
+            circle at 6px 6px,
+            rgba(255, 255, 255, 0.6) 0%,
+            transparent 40%
+          ),
+          radial-gradient(
+            circle at calc(100% - 6px) 6px,
+            rgba(255, 255, 255, 0.4) 0%,
+            transparent 40%
+          ),
+          radial-gradient(
+            circle at 6px calc(100% - 6px),
+            rgba(0, 0, 0, 0.05) 0%,
+            transparent 40%
+          ),
+          radial-gradient(
+            circle at calc(100% - 6px) calc(100% - 6px),
+            rgba(0, 0, 0, 0.07) 0%,
+            transparent 40%
+          );
       }
 
       /* Surface glare/sheen */
@@ -112,15 +133,15 @@
             90deg,
             transparent,
             transparent 49px,
-            rgba(220,225,230,0.15) 49px,
-            rgba(220,225,230,0.15) 50px
+            rgba(220, 225, 230, 0.15) 49px,
+            rgba(220, 225, 230, 0.15) 50px
           ),
           repeating-linear-gradient(
             0deg,
             transparent,
             transparent 49px,
-            rgba(220,225,230,0.15) 49px,
-            rgba(220,225,230,0.15) 50px
+            rgba(220, 225, 230, 0.15) 49px,
+            rgba(220, 225, 230, 0.15) 50px
           );
       }
 
@@ -131,8 +152,8 @@
         inset: 0;
         background: linear-gradient(
           115deg,
-          rgba(255,255,255,0.65) 0%,
-          rgba(255,255,255,0.2) 25%,
+          rgba(255, 255, 255, 0.65) 0%,
+          rgba(255, 255, 255, 0.2) 25%,
           transparent 45%
         );
         pointer-events: none;
@@ -144,8 +165,7 @@
         content: "";
         position: absolute;
         inset: 0;
-        background-image: 
-          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='200'%3E%3Ctext x='40' y='80' fill='%237a8599' font-family='monospace' font-size='22' opacity='0.12' style='writing-mode:lr;' transform='rotate(-1,40,80)'%3E3 - 24%3C/text%3E%3Ctext x='40' y='120' fill='%237a8599' font-family='monospace' font-size='22' opacity='0.09' transform='rotate(-0.5,40,120)'%3E4 - 31%3C/text%3E%3Ctext x='40' y='160' fill='%237a8599' font-family='monospace' font-size='22' opacity='0.10' transform='rotate(0.5,40,160)'%3E7 - 30%3C/text%3E%3C/svg%3E");
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='200'%3E%3Ctext x='40' y='80' fill='%237a8599' font-family='monospace' font-size='22' opacity='0.12' style='writing-mode:lr;' transform='rotate(-1,40,80)'%3E3 - 24%3C/text%3E%3Ctext x='40' y='120' fill='%237a8599' font-family='monospace' font-size='22' opacity='0.09' transform='rotate(-0.5,40,120)'%3E4 - 31%3C/text%3E%3Ctext x='40' y='160' fill='%237a8599' font-family='monospace' font-size='22' opacity='0.10' transform='rotate(0.5,40,160)'%3E7 - 30%3C/text%3E%3C/svg%3E");
         background-repeat: no-repeat;
         background-position: 36px 42%;
         background-size: auto 44%;
@@ -164,9 +184,9 @@
         );
         border-radius: 3px 3px 4px 4px;
         box-shadow:
-          inset 0 1px 0 rgba(255,255,255,0.5),
-          inset 0 -1px 0 rgba(0,0,0,0.08),
-          0 2px 4px rgba(0,0,0,0.06);
+          inset 0 1px 0 rgba(255, 255, 255, 0.5),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.08),
+          0 2px 4px rgba(0, 0, 0, 0.06);
         display: flex;
         align-items: center;
         padding: 0 16px;
@@ -180,12 +200,20 @@
         height: 11px;
         border-radius: 2px;
         transform: rotate(-2deg);
-        box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
       }
-      .marker-black { background: linear-gradient(180deg, #333 0%, #111 100%); }
-      .marker-red { background: linear-gradient(180deg, #c0392b 0%, #96281b 100%); }
-      .marker-blue { background: linear-gradient(180deg, #2980b9 0%, #1a5276 100%); }
-      .marker-green { background: linear-gradient(180deg, #27ae60 0%, #1e8449 100%); }
+      .marker-black {
+        background: linear-gradient(180deg, #333 0%, #111 100%);
+      }
+      .marker-red {
+        background: linear-gradient(180deg, #c0392b 0%, #96281b 100%);
+      }
+      .marker-blue {
+        background: linear-gradient(180deg, #2980b9 0%, #1a5276 100%);
+      }
+      .marker-green {
+        background: linear-gradient(180deg, #27ae60 0%, #1e8449 100%);
+      }
 
       .eraser {
         width: 56px;
@@ -198,7 +226,7 @@
           #2d3748 50%,
           #1a202c 100%
         );
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         position: relative;
       }
       .eraser::after {
@@ -464,7 +492,11 @@ void main() {
         const m = s.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/i);
         if (m) return [+m[1] / 255, +m[2] / 255, +m[3] / 255];
         let h = s.replace(/^#/, "");
-        if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+        if (h.length === 3)
+          h = h
+            .split("")
+            .map((c) => c + c)
+            .join("");
         if (h.length >= 6)
           return [
             parseInt(h.slice(0, 2), 16) / 255,
@@ -674,10 +706,22 @@ void main() {
           this.program = program;
 
           const uniformNames = [
-            "uPeel","uLift","uPeelAngle","uPasting","uScale","uElevation",
-            "uTilt","uSheenStrength","uSheenColor","uSheenTiltShift",
-            "uSheenTiltDeadzone","uMaxTiltDeg","uEffectMode","uHoloMotion",
-            "uTex","uAspect"
+            "uPeel",
+            "uLift",
+            "uPeelAngle",
+            "uPasting",
+            "uScale",
+            "uElevation",
+            "uTilt",
+            "uSheenStrength",
+            "uSheenColor",
+            "uSheenTiltShift",
+            "uSheenTiltDeadzone",
+            "uMaxTiltDeg",
+            "uEffectMode",
+            "uHoloMotion",
+            "uTex",
+            "uAspect",
           ];
           for (const name of uniformNames)
             this.uniforms[name] = gl.getUniformLocation(program, name);
@@ -689,36 +733,47 @@ void main() {
           const inds = [];
           for (let j = 0; j <= N; j++) {
             for (let i = 0; i <= N; i++)
-              verts.push((i/N)*2-1, (j/N)*2-1, i/N, 1-j/N);
+              verts.push((i / N) * 2 - 1, (j / N) * 2 - 1, i / N, 1 - j / N);
           }
           for (let j = 0; j < N; j++) {
             for (let i = 0; i < N; i++) {
-              const a = j*(N+1)+i;
-              inds.push(a,a+1,a+N+1,a+1,a+N+2,a+N+1);
+              const a = j * (N + 1) + i;
+              inds.push(a, a + 1, a + N + 1, a + 1, a + N + 2, a + N + 1);
             }
           }
 
           const vbo = gl.createBuffer();
           gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW);
+          gl.bufferData(
+            gl.ARRAY_BUFFER,
+            new Float32Array(verts),
+            gl.STATIC_DRAW,
+          );
           this.vbo = vbo;
 
           const ibo = gl.createBuffer();
           gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
-          gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(inds), gl.STATIC_DRAW);
+          gl.bufferData(
+            gl.ELEMENT_ARRAY_BUFFER,
+            new Uint16Array(inds),
+            gl.STATIC_DRAW,
+          );
           this.ibo = ibo;
           this.indexCount = inds.length;
 
-          gl.clearColor(0,0,0,0);
+          gl.clearColor(0, 0, 0, 0);
           gl.clear(gl.COLOR_BUFFER_BIT);
         }
 
         draw() {
-          const gl = this.gl, prog = this.program, tex = this.texture, st = this.state;
+          const gl = this.gl,
+            prog = this.program,
+            tex = this.texture,
+            st = this.state;
           if (!gl || !prog || !tex || !st.texReady) return;
 
-          gl.viewport(0,0,this.canvas.width,this.canvas.height);
-          gl.clearColor(0,0,0,0);
+          gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+          gl.clearColor(0, 0, 0, 0);
           gl.clear(gl.COLOR_BUFFER_BIT);
           gl.enable(gl.BLEND);
           gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -735,22 +790,27 @@ void main() {
           gl.uniform1f(u.uPeel, st.peel);
           gl.uniform1f(u.uLift, st.lift);
           gl.uniform1f(u.uPeelAngle, st.peelAngle);
-          gl.uniform1f(u.uPasting, st.sticking?1:0);
+          gl.uniform1f(u.uPasting, st.sticking ? 1 : 0);
           gl.uniform1f(u.uScale, st.scale);
           gl.uniform1f(u.uElevation, this.elevation);
           gl.uniform2f(u.uTilt, st.currentTiltX, st.currentTiltY);
           gl.uniform1f(u.uSheenStrength, this.sheenStrength);
-          gl.uniform3f(u.uSheenColor, this.sheenColor[0], this.sheenColor[1], this.sheenColor[2]);
+          gl.uniform3f(
+            u.uSheenColor,
+            this.sheenColor[0],
+            this.sheenColor[1],
+            this.sheenColor[2],
+          );
           gl.uniform1f(u.uSheenTiltShift, SHEEN_TILT_SHIFT);
           gl.uniform1f(u.uSheenTiltDeadzone, SHEEN_TILT_DEADZONE);
           gl.uniform1f(u.uMaxTiltDeg, this.maxTilt);
 
-          let em=0;
-          if (this.sheenMode==="holo") em=1;
-          else if (this.sheenMode==="rug") em=2;
+          let em = 0;
+          if (this.sheenMode === "holo") em = 1;
+          else if (this.sheenMode === "rug") em = 2;
           gl.uniform1f(u.uEffectMode, em);
           gl.uniform1f(u.uHoloMotion, st.holoMotion);
-          gl.uniform1f(u.uAspect, st.width/st.height||1);
+          gl.uniform1f(u.uAspect, st.width / st.height || 1);
 
           gl.activeTexture(gl.TEXTURE0);
           gl.bindTexture(gl.TEXTURE_2D, tex);
@@ -760,183 +820,301 @@ void main() {
 
         updateShadowCSS() {
           const tRaw = Math.max(this.state.lift, this.state.peel);
-          const t = tRaw*tRaw*(3-2*tRaw);
-          this.canvas.style.filter = lerpShadow(this.parsedStaticShadow, this.parsedDynamicShadow, t);
+          const t = tRaw * tRaw * (3 - 2 * tRaw);
+          this.canvas.style.filter = lerpShadow(
+            this.parsedStaticShadow,
+            this.parsedDynamicShadow,
+            t,
+          );
         }
 
         tick(ts) {
           const st = this.state;
-          if (this.lastTickT===null) this.lastTickT = ts;
-          const dt = Math.min((ts-this.lastTickT)/1000, 0.1);
+          if (this.lastTickT === null) this.lastTickT = ts;
+          const dt = Math.min((ts - this.lastTickT) / 1000, 0.1);
           this.lastTickT = ts;
-          const step = ANIM_SPEED*dt;
-          let ch=false;
+          const step = ANIM_SPEED * dt;
+          let ch = false;
 
-          if (st.peeling && (st.peel<1||st.lift<1)) { st.peel=Math.min(1,st.peel+step); st.lift=Math.min(1,st.lift+step); ch=true; }
+          if (st.peeling && (st.peel < 1 || st.lift < 1)) {
+            st.peel = Math.min(1, st.peel + step);
+            st.lift = Math.min(1, st.lift + step);
+            ch = true;
+          }
           if (st.sticking) {
-            if (st.peel>0||st.lift>0) { st.peel=Math.max(0,st.peel-step); st.lift=Math.max(0,st.lift-step); ch=true; }
-            else st.sticking=false;
+            if (st.peel > 0 || st.lift > 0) {
+              st.peel = Math.max(0, st.peel - step);
+              st.lift = Math.max(0, st.lift - step);
+              ch = true;
+            } else st.sticking = false;
           }
 
-          const hd=this.sheenMode==="holo"&&st.holoMotion>0.005;
-          if (hd) { st.holoMotion*=HOLO_MOTION_DECAY; if(st.holoMotion<0.005)st.holoMotion=0; ch=true; }
+          const hd = this.sheenMode === "holo" && st.holoMotion > 0.005;
+          if (hd) {
+            st.holoMotion *= HOLO_MOTION_DECAY;
+            if (st.holoMotion < 0.005) st.holoMotion = 0;
+            ch = true;
+          }
 
           if (ch) this.updateShadowCSS();
-          if (ch||st.held||hd) this.draw();
+          if (ch || st.held || hd) this.draw();
 
-          if (st.held||st.peeling||st.sticking||hd) {
-            this.animationId=requestAnimationFrame(this.tick);
+          if (st.held || st.peeling || st.sticking || hd) {
+            this.animationId = requestAnimationFrame(this.tick);
           } else {
-            this.animationId=null;
-            this.lastTickT=null;
+            this.animationId = null;
+            this.lastTickT = null;
           }
         }
 
         ensureTickRunning() {
-          if (this.animationId!==null) return;
-          this.lastTickT=null;
-          this.animationId=requestAnimationFrame(this.tick);
+          if (this.animationId !== null) return;
+          this.lastTickT = null;
+          this.animationId = requestAnimationFrame(this.tick);
         }
 
         handleResize() {
-          const ct=this.containerEl, cv=this.canvas, se=this.stickerEl, gl=this.gl, st=this.state;
-          if (!ct||!cv||!se||!gl) return;
+          const ct = this.containerEl,
+            cv = this.canvas,
+            se = this.stickerEl,
+            gl = this.gl,
+            st = this.state;
+          if (!ct || !cv || !se || !gl) return;
 
-          const cw=ct.clientWidth||900, ch=ct.clientHeight||500;
-          const w=this.imageWidth>0?this.imageWidth:cw;
-          const h=this.imageHeight>0?this.imageHeight:ch;
+          const cw = ct.clientWidth || 900,
+            ch = ct.clientHeight || 500;
+          const w = this.imageWidth > 0 ? this.imageWidth : cw;
+          const h = this.imageHeight > 0 ? this.imageHeight : ch;
 
-          const maxDim=Math.max(w,h);
-          const ep=maxDim*this.elevation*0.6;
-          const pad=PAD_BASE+ep;
-          const cw2=w+pad*2, ch2=h+pad*2;
+          const maxDim = Math.max(w, h);
+          const ep = maxDim * this.elevation * 0.6;
+          const pad = PAD_BASE + ep;
+          const cw2 = w + pad * 2,
+            ch2 = h + pad * 2;
 
-          const sx=w/cw2, sy=h/ch2, sc=Math.min(sx,sy);
-          const x=(cw-w)/2, y=(ch-h)/2;
+          const sx = w / cw2,
+            sy = h / ch2,
+            sc = Math.min(sx, sy);
+          const x = (cw - w) / 2,
+            y = (ch - h) / 2;
 
-          cv.width=Math.round(cw2*RENDER_SCALE);
-          cv.height=Math.round(ch2*RENDER_SCALE);
-          cv.style.width=cw2+"px"; cv.style.height=ch2+"px";
-          cv.style.position="absolute";
-          cv.style.left=(-pad)+"px"; cv.style.top=(-pad+"px");
+          cv.width = Math.round(cw2 * RENDER_SCALE);
+          cv.height = Math.round(ch2 * RENDER_SCALE);
+          cv.style.width = cw2 + "px";
+          cv.style.height = ch2 + "px";
+          cv.style.position = "absolute";
+          cv.style.left = -pad + "px";
+          cv.style.top = -pad + "px";
 
-          se.style.width=w+"px"; se.style.height=h+"px";
-          se.style.left=x+"px"; se.style.top=y+"px";
+          se.style.width = w + "px";
+          se.style.height = h + "px";
+          se.style.left = x + "px";
+          se.style.top = y + "px";
 
-          st.width=w; st.height=h;
-          st.x=x; st.y=y; st.scale=sc;
+          st.width = w;
+          st.height = h;
+          st.x = x;
+          st.y = y;
+          st.scale = sc;
 
-          gl.viewport(0,0,cv.width,cv.height);
+          gl.viewport(0, 0, cv.width, cv.height);
           if (st.texReady) this.draw();
         }
 
-        scheduleResize(mw,mh) {
+        scheduleResize(mw, mh) {
           if (this.applyResizeTimeout) clearTimeout(this.applyResizeTimeout);
-          this.applyResizeTimeout = setTimeout(()=>{
-            this.applyResizeTimeout=null;
+          this.applyResizeTimeout = setTimeout(() => {
+            this.applyResizeTimeout = null;
             this.handleResize();
           }, this.RESIZE_DEBOUNCE_MS);
         }
 
         loadImage() {
-          const src = resolveImageSource(this.props.image)||"https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/3fb4a247-64e9-4c54-2391-86598eebfe00/w=800";
-          const gl=this.gl; if(!gl||!this.program) return;
-          const img=new Image(); img.crossOrigin="anonymous";
+          const src =
+            resolveImageSource(this.props.image) ||
+            "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/3fb4a247-64e9-4c54-2391-86598eebfe00/w=800";
+          const gl = this.gl;
+          if (!gl || !this.program) return;
+          const img = new Image();
+          img.crossOrigin = "anonymous";
 
-          img.onload=()=>{
-            const st=this.state;
-            st.imageAspectRatio=img.width/img.height;
-            if(this.texture) gl.deleteTexture(this.texture);
-            const tx=gl.createTexture(); if(!tx)return;
-            gl.bindTexture(gl.TEXTURE_2D,tx);
-            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);
-            gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,img);
-            gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
-            this.texture=tx; st.texReady=true;
-            this.handleResize(); this.updateShadowCSS(); this.draw();
+          img.onload = () => {
+            const st = this.state;
+            st.imageAspectRatio = img.width / img.height;
+            if (this.texture) gl.deleteTexture(this.texture);
+            const tx = gl.createTexture();
+            if (!tx) return;
+            gl.bindTexture(gl.TEXTURE_2D, tx);
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+            gl.texImage2D(
+              gl.TEXTURE_2D,
+              0,
+              gl.RGBA,
+              gl.RGBA,
+              gl.UNSIGNED_BYTE,
+              img,
+            );
+            gl.texParameteri(
+              gl.TEXTURE_2D,
+              gl.TEXTURE_WRAP_S,
+              gl.CLAMP_TO_EDGE,
+            );
+            gl.texParameteri(
+              gl.TEXTURE_2D,
+              gl.TEXTURE_WRAP_T,
+              gl.CLAMP_TO_EDGE,
+            );
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            this.texture = tx;
+            st.texReady = true;
+            this.handleResize();
+            this.updateShadowCSS();
+            this.draw();
           };
-          img.src=src;
+          img.src = src;
         }
 
-        settleTilt(){
-          const st=this.state, inn=this.innerEl;
-          const go=()=>{
-            st.dragTiltX*=0.9; st.dragTiltY*=0.9;
-            st.currentTiltX=st.dragTiltX; st.currentTiltY=st.dragTiltY;
-            if(inn) inn.style.transform=`rotateX(${st.dragTiltX}deg) rotateY(${st.dragTiltY}deg)`;
-            if(Math.abs(st.dragTiltX)>0.1||Math.abs(st.dragTiltY)>0.1){
+        settleTilt() {
+          const st = this.state,
+            inn = this.innerEl;
+          const go = () => {
+            st.dragTiltX *= 0.9;
+            st.dragTiltY *= 0.9;
+            st.currentTiltX = st.dragTiltX;
+            st.currentTiltY = st.dragTiltY;
+            if (inn)
+              inn.style.transform = `rotateX(${st.dragTiltX}deg) rotateY(${st.dragTiltY}deg)`;
+            if (Math.abs(st.dragTiltX) > 0.1 || Math.abs(st.dragTiltY) > 0.1) {
               requestAnimationFrame(go);
-            }else{
-              st.dragTiltX=0; st.dragTiltY=0; st.currentTiltX=0; st.currentTiltY=0;
-              st.prevTiltX=0; st.prevTiltY=0;
-              if(inn) inn.style.transform="";
+            } else {
+              st.dragTiltX = 0;
+              st.dragTiltY = 0;
+              st.currentTiltX = 0;
+              st.currentTiltY = 0;
+              st.prevTiltX = 0;
+              st.prevTiltY = 0;
+              if (inn) inn.style.transform = "";
             }
           };
           go();
         }
 
-        pointerDown(cx,cy){
-          const st=this.state, se=this.stickerEl, inn=this.innerEl;
-          if(!se||!inn) return;
-          const rc=se.getBoundingClientRect();
-          inn.style.transformOrigin=(cx-rc.left)+"px "+(cy-rc.top)+"px";
-          const cx2=rc.left+rc.width/2, cy2=rc.top+rc.height/2;
-          st.peelAngle=Math.atan2(cy-cy2,cx-cx2);
-          st.dragStartX=cx; st.dragStartY=cy;
-          st.dragOrigX=st.x; st.dragOrigY=st.y;
-          st.peel=0; st.lift=0;
-          st.held=true; st.peeling=true; st.sticking=false;
-          st.lastMoveX=cx; st.lastMoveY=cy; st.lastMoveT=performance.now();
-          se.style.zIndex=getNextZIndex();
+        pointerDown(cx, cy) {
+          const st = this.state,
+            se = this.stickerEl,
+            inn = this.innerEl;
+          if (!se || !inn) return;
+          const rc = se.getBoundingClientRect();
+          inn.style.transformOrigin =
+            cx - rc.left + "px " + (cy - rc.top) + "px";
+          const cx2 = rc.left + rc.width / 2,
+            cy2 = rc.top + rc.height / 2;
+          st.peelAngle = Math.atan2(cy - cy2, cx - cx2);
+          st.dragStartX = cx;
+          st.dragStartY = cy;
+          st.dragOrigX = st.x;
+          st.dragOrigY = st.y;
+          st.peel = 0;
+          st.lift = 0;
+          st.held = true;
+          st.peeling = true;
+          st.sticking = false;
+          st.lastMoveX = cx;
+          st.lastMoveY = cy;
+          st.lastMoveT = performance.now();
+          se.style.zIndex = getNextZIndex();
           this.ensureTickRunning();
         }
 
-        pointerMove(cx,cy){
-          const st=this.state; if(!st.held) return;
-          const se=this.stickerEl, inn=this.innerEl; if(!se||!inn) return;
-          st.x=st.dragOrigX+(cx-st.dragStartX); st.y=st.dragOrigY+(cy-st.dragStartY);
-          se.style.left=st.x+"px"; se.style.top=st.y+"px";
-          const now=performance.now(), dt=Math.max(1,now-st.lastMoveT);
-          const vx=((cx-st.lastMoveX)/dt)*16, vy=((cy-st.lastMoveY)/dt)*16;
-          st.lastMoveX=cx; st.lastMoveY=cy; st.lastMoveT=now;
-          const ty=Math.max(-this.maxTilt,Math.min(this.maxTilt,vx*this.tiltSensitivity));
-          const tx=Math.max(-this.maxTilt,Math.min(this.maxTilt,-vy*this.tiltSensitivity));
-          st.dragTiltX+=(tx-st.dragTiltX)*this.tiltSmoothing;
-          st.dragTiltY+=(ty-st.dragTiltY)*this.tiltSmoothing;
-          st.currentTiltX=st.dragTiltX; st.currentTiltY=st.dragTiltY;
-          if(this.sheenMode==="holo"){
-            const td=Math.abs(st.dragTiltX-st.prevTiltX)+Math.abs(st.dragTiltY-st.prevTiltY);
-            st.holoMotion=Math.min(1, st.holoMotion+td*HOLO_MOTION_BUMP);
-            st.prevTiltX=st.dragTiltX; st.prevTiltY=st.dragTiltY;
+        pointerMove(cx, cy) {
+          const st = this.state;
+          if (!st.held) return;
+          const se = this.stickerEl,
+            inn = this.innerEl;
+          if (!se || !inn) return;
+          st.x = st.dragOrigX + (cx - st.dragStartX);
+          st.y = st.dragOrigY + (cy - st.dragStartY);
+          se.style.left = st.x + "px";
+          se.style.top = st.y + "px";
+          const now = performance.now(),
+            dt = Math.max(1, now - st.lastMoveT);
+          const vx = ((cx - st.lastMoveX) / dt) * 16,
+            vy = ((cy - st.lastMoveY) / dt) * 16;
+          st.lastMoveX = cx;
+          st.lastMoveY = cy;
+          st.lastMoveT = now;
+          const ty = Math.max(
+            -this.maxTilt,
+            Math.min(this.maxTilt, vx * this.tiltSensitivity),
+          );
+          const tx = Math.max(
+            -this.maxTilt,
+            Math.min(this.maxTilt, -vy * this.tiltSensitivity),
+          );
+          st.dragTiltX += (tx - st.dragTiltX) * this.tiltSmoothing;
+          st.dragTiltY += (ty - st.dragTiltY) * this.tiltSmoothing;
+          st.currentTiltX = st.dragTiltX;
+          st.currentTiltY = st.dragTiltY;
+          if (this.sheenMode === "holo") {
+            const td =
+              Math.abs(st.dragTiltX - st.prevTiltX) +
+              Math.abs(st.dragTiltY - st.prevTiltY);
+            st.holoMotion = Math.min(1, st.holoMotion + td * HOLO_MOTION_BUMP);
+            st.prevTiltX = st.dragTiltX;
+            st.prevTiltY = st.dragTiltY;
           }
-          inn.style.transform=`rotateX(${st.dragTiltX}deg) rotateY(${st.dragTiltY}deg)`;
+          inn.style.transform = `rotateX(${st.dragTiltX}deg) rotateY(${st.dragTiltY}deg)`;
         }
 
-        pointerUp(){
-          const st=this.state; if(!st.held) return;
-          const inn=this.innerEl;
-          st.held=false; st.peeling=false; st.sticking=true;
-          if(st.peel>=0.95&&inn){
-            const rc=inn.getBoundingClientRect(), cx2=rc.left+rc.width/2, cy2=rc.top+rc.height/2;
-            st.peelAngle=Math.atan2(-(st.lastMoveY-cy2),-(st.lastMoveX-cx2));
-            st.peel=1;
+        pointerUp() {
+          const st = this.state;
+          if (!st.held) return;
+          const inn = this.innerEl;
+          st.held = false;
+          st.peeling = false;
+          st.sticking = true;
+          if (st.peel >= 0.95 && inn) {
+            const rc = inn.getBoundingClientRect(),
+              cx2 = rc.left + rc.width / 2,
+              cy2 = rc.top + rc.height / 2;
+            st.peelAngle = Math.atan2(
+              -(st.lastMoveY - cy2),
+              -(st.lastMoveX - cx2),
+            );
+            st.peel = 1;
           }
           this.settleTilt();
           this.ensureTickRunning();
         }
 
-        attachEvents(){
-          this.stickerEl.addEventListener("mousedown",(e)=>{ e.preventDefault(); this.pointerDown(e.clientX,e.clientY); });
-          window.addEventListener("mousemove",(e)=>this.pointerMove(e.clientX,e.clientY));
-          window.addEventListener("mouseup",()=>this.pointerUp());
-          this.stickerEl.addEventListener("touchstart",(e)=>{
-            e.preventDefault(); const t=e.touches[0]; if(t)this.pointerDown(t.clientX,t.clientY);
-          },{passive:false});
-          window.addEventListener("touchmove",(e)=>{ const t=e.touches[0]; if(t)this.pointerMove(t.clientX,t.clientY); },{passive:false});
-          window.addEventListener("touchend",()=>this.pointerUp());
+        attachEvents() {
+          this.stickerEl.addEventListener("mousedown", (e) => {
+            e.preventDefault();
+            this.pointerDown(e.clientX, e.clientY);
+          });
+          window.addEventListener("mousemove", (e) =>
+            this.pointerMove(e.clientX, e.clientY),
+          );
+          window.addEventListener("mouseup", () => this.pointerUp());
+          this.stickerEl.addEventListener(
+            "touchstart",
+            (e) => {
+              e.preventDefault();
+              const t = e.touches[0];
+              if (t) this.pointerDown(t.clientX, t.clientY);
+            },
+            { passive: false },
+          );
+          window.addEventListener(
+            "touchmove",
+            (e) => {
+              const t = e.touches[0];
+              if (t) this.pointerMove(t.clientX, t.clientY);
+            },
+            { passive: false },
+          );
+          window.addEventListener("touchend", () => this.pointerUp());
         }
       }
 
@@ -946,10 +1124,12 @@ void main() {
 
       const stickerContainer = document.getElementById("sticker-container");
 
-      window.addEventListener("DOMContentLoaded",()=>{
+      window.addEventListener("DOMContentLoaded", () => {
         // Sticker 1: Photo/Polaroid
         new StickerDrag(stickerContainer, {
-          image: { src: "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/fake-journal.png" },
+          image: {
+            src: "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/fake-journal.png",
+          },
           imageWidth: 260,
           imageHeight: 340,
           initialX: 60,
@@ -960,7 +1140,9 @@ void main() {
 
         // Sticker 2: Another image / note
         new StickerDrag(stickerContainer, {
-          image: { src: "https://images.unsplash.com/photo-1615291660381-9915a3dc00c0?q=80&w=600&auto=format&fit=crop" },
+          image: {
+            src: "https://images.unsplash.com/photo-1615291660381-9915a3dc00c0?q=80&w=600&auto=format&fit=crop",
+          },
           imageWidth: 300,
           imageHeight: 210,
           initialX: 380,
@@ -972,12 +1154,14 @@ void main() {
 
         // Sticker 3: Rug texture mode on a smaller card
         new StickerDrag(stickerContainer, {
-          image: { src: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=600&auto=format&fit=crop" },
+          image: {
+            src: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=600&auto=format&fit=crop",
+          },
           imageWidth: 240,
           imageHeight: 320,
           initialX: 700,
           initialY: 60,
-          sheenMode: "rug",   // <-- Rug mode!
+          sheenMode: "rug", // <-- Rug mode!
           elevation: 12,
           lightingStrength: 7,
           staticShadow: "0px 3px 6px 0px rgba(0,0,0,0.15)",
@@ -986,7 +1170,9 @@ void main() {
 
         // Sticker 4: One more for fun
         new StickerDrag(stickerContainer, {
-          image: { src: "https://images.unsplash.com/photo-1490682143684-14369e18dce8?q=80&w=600&auto=format&fit=crop" },
+          image: {
+            src: "https://images.unsplash.com/photo-1490682143684-14369e18dce8?q=80&w=600&auto=format&fit=crop",
+          },
           imageWidth: 220,
           imageHeight: 150,
           initialX: 520,

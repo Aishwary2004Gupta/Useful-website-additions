@@ -3,586 +3,357 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pin Board Studio</title>
+    <title>Realistic Felt Board Studio</title>
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      html,
-      body {
-        width: 100%;
-        height: 100%;
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      
+      body, html {
+        width: 100%; height: 100%;
         overflow: hidden;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #222;
+        font-family: sans-serif;
       }
 
-      /* Textured concrete wall */
-      #wall {
-        position: fixed;
-        inset: 0;
-        background-color: #8a8680;
-        background-image:
-          url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.18'/%3E%3C/svg%3E");
-        z-index: 0;
-      }
-
-      /* Table / shelf at bottom */
-      .table {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 120px;
-        background: linear-gradient(
-          180deg,
-          #6b5a4e 0%,
-          #5c4d42 30%,
-          #4a3f36 70%,
-          #3d342c 100%
-        );
-        z-index: 5;
-        box-shadow:
-          inset 0 2px 4px rgba(255,255,255,0.06),
-          0 -4px 20px rgba(0,0,0,0.35);
-      }
-      .table::before {
-        content: "";
-        position: absolute;
-        top: 0; left: 10%; right: 10%;
-        height: 20%;
-        background: linear-gradient(90deg, transparent, rgba(0,0,0,0.15), transparent);
-      }
-      .table-legs::after {
-        content: "";
-        position: fixed;
-        bottom: -40px; left: 15%; width: 24px; height: 60px;
-        background: linear-gradient(90deg, #3d342c, #524539);
-        transform: skewX(-12deg);
-        z-index: 4;
-      }
-      .table-legs::before {
-        content: "";
-        position: fixed;
-        bottom: -40px; right: 18%; width: 26px; height: 65px;
-        background: linear-gradient(90deg, #4a3f36, #3d342c);
-        transform: skewX(14deg);
-        z-index: 4;
-      }
-
-      /* === PIN BOARD (matching reference) === */
-      #pinboard {
-        position: absolute;
-        left: 50%;
-        top: 48%;
-        transform: translate(-50%, -50%);
-        width: min(90vw, 920px);
-        height: min(74vh, 600px);
-        /* Dark charcoal/navy felt surface */
-        background:
-          radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.04), transparent 55%),
-          radial-gradient(ellipse at 80% 75%, rgba(0,0,0,0.08), transparent 50%),
-          linear-gradient(
-            170deg,
-            #2a3040 0%,
-            #282e3c 25%,
-            #252b38 50%,
-            #21273a 75%,
-            #1e2330 100%
-          );
-        /* Wood grain frame - brown aluminum style */
-        border-top: 16px solid #7a5c48;
-        border-left: 16px solid #846350;
-        border-right: 16px solid #65493a;
-        border-bottom: 22px solid #584235;
-        border-radius: 3px;
-        box-shadow:
-          0 30px 70px rgba(0,0,0,0.45),
-          0 12px 28px rgba(0,0,0,0.28),
-          inset 0 1px 0 rgba(255,255,255,0.06),
-          inset 0 -1px 0 rgba(0,0,0,0.2);
-        z-index: 2;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-      }
-
-      /* Frame inner bevel / reflection */
-      #pinboard::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        border-radius: 3px;
-        background:
-          radial-gradient(circle at 8px 8px, rgba(255,255,255,0.15) 0%, transparent 45%),
-          radial-gradient(circle at calc(100% - 8px) 8px, rgba(255,255,255,0.07) 0%, transparent 40%),
-          radial-gradient(circle at 8px calc(100% - 8px), rgba(0,0,0,0.12) 0%, transparent 40%),
-          radial-gradient(circle at calc(100% - 8px) calc(100% - 8px), rgba(0,0,0,0.18) 0%, transparent 40%);
-        z-index: 1;
-      }
-
-      /* Felt texture overlay */
-      #pinboard-surface {
-        flex: 1;
-        margin: 2px 3px 4px 3px;
-        border-radius: 2px;
+      /* Wall Background */
+      #scene {
         position: relative;
-        overflow: visible;
-        /* Subtle grid of tiny dots like pin board fabric */
-        background-image:
-          radial-gradient(circle, rgba(255,255,255,0.03) 0.5px, transparent 0.5px);
-        background-size: 6px 6px;
+        width: 100%; height: 100%;
+        background: radial-gradient(circle at 50% 40%, #555 0%, #222 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
-      /* Surface ambient sheen */
-      #pinboard-surface::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(
-          125deg,
-          rgba(255,255,255,0.04) 0%,
-          transparent 35%
-        );
-        pointer-events: none;
-        mix-blend-mode: overlay;
+      /* Dark Textured Wall Overlay */
+      #scene::before {
+        content: ""; position: absolute; inset: 0;
+        background-image: url('https://www.transparenttextures.com/patterns/dark-matter.png');
+        opacity: 0.4; pointer-events: none;
       }
 
-      /* Sticker container */
-      #sticker-container {
-        position: absolute;
-        inset: 0;
-        overflow: visible;
-        perspective: 800px;
-        z-index: 3;
-        pointer-events: none;
+      /* Wooden Desk */
+      #desk {
+        position: absolute; bottom: 0; width: 100%; height: 180px;
+        background: linear-gradient(to bottom, #5d4037 0%, #3e2723 100%);
+        border-top: 4px solid #795548;
+        box-shadow: inset 0 20px 40px rgba(0,0,0,0.5);
+        z-index: 5;
       }
 
-      /* Each individual sticker instance */
-      .sticker-instance {
+      /* Decor Items */
+      .decor-plant {
+        position: absolute; left: 15%; bottom: 180px;
+        width: 80px; height: 100px;
+        background: url('https://cdn-icons-png.flaticon.com/512/628/628285.png') no-repeat bottom;
+        background-size: contain; z-index: 6;
+      }
+      .decor-books {
+        position: absolute; left: 5%; bottom: 180px;
+        width: 100px; height: 60px;
+        background: #8d6e63; border: 1px solid #5d4037;
+        box-shadow: 2px -2px 5px rgba(0,0,0,0.3); z-index: 6;
+      }
+
+      /* The Board (Wooden Frame + Felt Surface) */
+      #board-frame {
+        position: relative;
+        width: min(90vw, 900px);
+        height: min(75vh, 600px);
+        padding: 20px;
+        background: #5d4037; /* Wood Color */
+        border: 12px solid #4e342e;
+        border-image: linear-gradient(45deg, #5d4037, #795548, #3e2723) 1;
+        box-shadow: 0 50px 100px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.5);
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #board-surface {
+        position: relative;
+        width: 100%; height: 100%;
+        background: #1a222c; /* Felt Color */
+        box-shadow: inset 0 0 50px rgba(0,0,0,0.9);
+        overflow: visible; /* Let stickers peel outside if needed */
+        perspective: 1000px;
+      }
+
+      /* Felt Texture Overlay */
+      #board-surface::after {
+        content: ""; position: absolute; inset: 0;
+        background-image: url('https://www.transparenttextures.com/patterns/felt.png');
+        opacity: 0.2; pointer-events: none;
+      }
+
+      /* Sticker Instance Styles */
+      .sticker-wrap {
         position: absolute;
         cursor: grab;
+        transform-style: preserve-3d;
         user-select: none;
-        perspective: 800px;
-        transform-style: preserve-3d;
-        will-change: transform;
-        overflow: visible;
-        pointer-events: auto;
+        will-change: transform, left, top;
       }
-      .sticker-instance:active { cursor: grabbing; }
+      .sticker-wrap:active { cursor: grabbing; }
 
-      .sticker-inner {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        transform-style: preserve-3d;
-        overflow: visible;
-      }
-      .sticker-canvas {
+      .gl-canvas {
         display: block;
         pointer-events: none;
-        position: absolute;
-      }
-
-      /* Plant decoration */
-      .plant-deco {
-        position: fixed;
-        bottom: 110px;
-        left: 6%;
-        width: 72px;
-        height: 140px;
-        z-index: 6;
-        filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3));
-      }
-      .plant-deco svg { width: 100%; height: 100%; }
-
-      /* Book stack decoration */
-      .books-deco {
-        position: fixed;
-        bottom: 115px;
-        left: 12%;
-        display: flex;
-        flex-direction: column;
-        gap: 3px;
-        z-index: 6;
-        filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));
-      }
-      .book-spine {
-        width: 54px; height: 11px;
-        border-radius: 1px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        will-change: filter;
       }
     </style>
   </head>
   <body>
-    <div id="wall"></div>
-    <div class="table"></div>
 
-    <!-- Pin Board -->
-    <div id="pinboard">
-      <div id="pinboard-surface">
-        <div id="sticker-container"></div>
+    <div id="scene">
+      <div id="decor-plant" class="decor-plant"></div>
+      <div id="decor-books" class="decor-books"></div>
+      
+      <div id="board-frame">
+        <div id="board-surface">
+            <!-- Stickers injected here by JS -->
+        </div>
       </div>
-    </div>
 
-    <!-- Decorations -->
-    <div class="plant-deco">
-      <svg viewBox="0 0 64 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M32 124 C32 124 24 94 18 78 S8 52 12 38 S26 16 32 12" stroke="#2d5a27" stroke-width="3" fill="none"/>
-        <path d="M32 124 C32 124 40 92 44 76 S56 50 52 36 S38 14 32 10" stroke="#3d6f35" stroke-width="2.5" fill="none"/>
-        <ellipse cx="20" cy="36" rx="14" ry="9" fill="#4a8540" opacity="0.9"/>
-        <ellipse cx="44" cy="40" rx="12" ry="8" fill="#529a47" opacity="0.85"/>
-        <ellipse cx="28" cy="62" rx="16" ry="10" fill="#3d7a35" opacity="0.88"/>
-        <ellipse cx="48" cy="66" rx="13" ry="8" fill="#4a8c40" opacity="0.82"/>
-        <rect x="28" y="118" width="8" height="10" rx="2" fill="#6b4a33"/>
-      </svg>
-    </div>
-    <div class="books-deco">
-      <div class="book-spine" style="background:linear-gradient(180deg,#e8e4dc,#d4cfc4);"></div>
-      <div class="book-spine" style="width:50px;background:linear-gradient(180deg,#c4d4e4,#a8bcd0);"></div>
-      <div class="book-spine" style="width:56px;background:linear-gradient(180deg,#e4d4c4,#d0bc9e);"></div>
-      <div class="book-spine" style="width:52px;background:linear-gradient(180deg,#dcdce4,#c4c4d0);"></div>
-      <div class="book-spine" style="width:48px;background:linear-gradient(180deg,#ddd8cc,#c8c2b4);"></div>
+      <div id="desk"></div>
     </div>
 
     <script>
       // ============================================================================
-      // CONSTANTS & SHADERS (unchanged core logic)
+      // WEBGL SHADERS
       // ============================================================================
+      const VS = `
+        attribute vec2 aPos; attribute vec2 aUV;
+        uniform float uPeel, uLift, uPeelAngle, uPasting, uScale, uElevation;
+        varying vec2 vUV; varying float vHi, vSh;
+        void main() {
+            vUV = aUV; vec2 p = aPos; vHi = 0.0; vSh = 0.0;
+            if (uPeel > 0.0) {
+                vec2 peelAxis = vec2(cos(uPeelAngle), sin(uPeelAngle));
+                vec2 uvCentered = aUV - vec2(0.5);
+                float proj = dot(uvCentered, peelAxis);
+                float diag = 0.5 - proj;
+                float peelLine = -0.3 + uPeel * 2.0;
+                float rampWidth = 0.6;
+                float lifted = 1.0 - smoothstep(peelLine - rampWidth, peelLine, diag);
+                p *= (1.0 + lifted * uElevation);
+                float inRamp = smoothstep(peelLine - rampWidth, peelLine - rampWidth * 0.5, diag) * smoothstep(peelLine + 0.05, peelLine - rampWidth * 0.3, diag);
+                p += (-peelAxis) * inRamp * (uPasting > 0.5 ? 0.06 : 0.12);
+                float t = smoothstep(peelLine - rampWidth, peelLine, diag);
+                vHi = inRamp * 0.75 * pow(1.0 - t, 1.2);
+                vSh = inRamp * 0.75 * pow(t, 1.2);
+            }
+            gl_Position = vec4(p * uScale, 0.0, 1.0);
+        }`;
 
-      const RENDER_SCALE = 2;
-      const PAD_BASE = 20;
-      const MESH_GRID_SIZE = 32;
-
-      let zIndexCounter = 100;
-      const getNextZIndex = () => ++zIndexCounter;
-
-      const DRAG_TILT_SENSITIVITY = 3;
-      const DRAG_MAX_TILT_DEG = 30;
-      const DRAG_TILT_SMOOTHING = 0.05;
-      const SHEEN_TILT_SHIFT = 0.05;
-      const SHEEN_TILT_DEADZONE = 0.035;
-      const ANIM_SPEED = 1.92;
-      const HOLO_MOTION_BUMP = 0.15;
-      const HOLO_MOTION_DECAY = 0.88;
-      const ELEVATION_INTERNAL_MAX = 0.3;
-
-      const VERTEX_SHADER = `
-attribute vec2 aPos; attribute vec2 aUV;
-uniform float uPeel,uLift,uPeelAngle,uPasting,uScale,uElevation;
-varying vec2 vUV; varying float vHi,vSh;
-void main(){
-  vUV=aUV; vec2 p=aPos; vHi=0.; vSh=0.;
-  if(uPeel>0.){
-    vec2 pa=vec2(cos(uPeelAngle),sin(uPeelAngle)), uv=vUV-.5;
-    float proj=dot(uv,pa), diag=.5-proj, pl=-.3+uPeel*2., rw=.6;
-    float lf=smoothstep(pl-rw,pl,diag); lf=1.-lf;
-    p*=1.+lf*uElevation;
-    float ir=smoothstep(pl-rw,pl-rw*.5,diag)*smoothstep(pl+.05,pl-rw*.3,diag);
-    p+=(-pa)*ir*(uPasting>.5?.06:.12);
-    float t=smoothstep(pl-rw,pl,diag); vHi=ir*.75*pow(1.-t,1.2); vSh=ir*.75*pow(t,1.2);
-  }
-  gl_Position=vec4(p*uScale,0.,1.);
-}`;
-
-      const FRAGMENT_SHADER = `
-precision mediump float;
-uniform sampler2D uTex; uniform vec2 uTilt;
-uniform float uSheenStrength,uSheenTiltShift,uSheenTiltDeadzone,uMaxTiltDeg;
-uniform float uEffectMode,uHoloMotion; uniform vec3 uSheenColor; uniform float uAspect;
-varying vec2 vUV; varying float vHi,vSh;
-float hash(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453);}
-vec3 ob(vec3 b,vec3 bl){return mix(2.*b*bl,1.-2.*(1.-b)*(1.-bl),step(.5,b));}
-vec3 hsl(float h,float s,float l){
-  float c=(1.-abs(2.*l-1.))*s,x=c*(1.-abs(mod(h*6.,2.)-1.)),m=l-c*.5;
-  vec3 rgb;
-  if(h<1./6.)rgb=vec3(c,x,0);else if(h<2./6.)rgb=vec3(x,c,0);else if(h<3./6.)rgb=vec3(0,c,x);else if(h<4./6.)rgb=vec3(0,x,c);else if(h<5./6.)rgb=vec3(x,0,c);else rgb=vec3(c,0,x);
-  return rgb+m;
-}
-void main(){
-  vec4 tex=texture2D(uTex,vUV); if(tex.a<.01)discard;
-  vec3 c=tex.rgb*.95; float mt=max(.001,uMaxTiltDeg),tm=clamp(length(uTilt)/mt,0.,1.);
-  if(uEffectMode>1.5){
-    vec2 au=vec2(vUV.x*uAspect,vUV.y);
-    float sx=sin(au.x*400.),sy=sin(au.y*400.),we=(sx*sy)*.5+.5,n=hash(au*800.),pt=mix(weave,n,.3);
-    c*=mix(.45,1.2,pt);
-    vec2 pd=normalize(vec2(1.,-1.)); float al=dot(uTilt/mt,pd);
-    c*=mix(1.,mix(.7,1.35,al*.5+.5),uSheenStrength);
-  } else{
-    float tg=smoothstep(uSheenTiltDeadzone,1.,tm);
-    float g=fract(vUV.x*.5+vUV.y*.5+uTilt.x*uSheenTiltShift+uTilt.y*uSheenTiltShift);
-    if(uEffectMode>.5){
-      float hs=uSheenStrength*uHoloMotion,dw=length(tex.rgb-vec3(1.)),nm=smoothstep(.06,.22,dw);
-      c= mix(c,hsl(g,.8,.55),hs*nm*tex.a);
-    } else{
-      float es=uSheenStrength*tg,s=smoothstep(.2,.5,g)*(1.-smoothstep(.5,.8,g));
-      c=mix(c,uSheenColor,s*es*tex.a);
-    }
-  }
-  float hw=clamp(vHi,0.,1.)*.55,sw=clamp(vSh,0.,1.)*.6;
-  vec3 hi=ob(c,vec3(1.));c=mix(c,hi,hw);
-  vec3 sh=ob(c,vec3(0.));c=mix(c,sh,sw);c*=1.-sw*.35;
-  gl_FragColor=vec4(clamp(c,0.,1.),tex.a);
-}`;
+      const FS = `
+        precision mediump float;
+        uniform sampler2D uTex; uniform vec2 uTilt; uniform float uAspect;
+        varying vec2 vUV; varying float vHi, vSh;
+        float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+        void main() {
+            vec4 tex = texture2D(uTex, vUV); if (tex.a < 0.01) discard;
+            vec3 c = tex.rgb;
+            // Rug Logic
+            vec2 aspUV = vec2(vUV.x * uAspect, vUV.y);
+            float pattern = mix(sin(aspUV.x * 500.0) * sin(aspUV.y * 500.0) * 0.5 + 0.5, hash(aspUV * 1000.0), 0.2);
+            c *= mix(0.6, 1.1, pattern);
+            // Dynamic nap lighting
+            float align = dot(normalize(uTilt + 0.001), normalize(vec2(1.0, -1.0)));
+            c *= (1.0 + align * 0.2);
+            // Peel Lighting
+            c = mix(c, c + 0.4, vHi);
+            c = mix(c, c * 0.5, vSh);
+            gl_FragColor = vec4(c, tex.a);
+        }`;
 
       // ============================================================================
-      // UTILS
+      // STICKER CLASS
       // ============================================================================
-      const resolveImageSource = (input) => {
-        if(!input)return;if(typeof input==="string")return input.trim()||undefined;
-        return input.src||input.url||(input.asset&&input.asset.url)||undefined;
-      };
-      const parseColorToRgb=(i)=>{
-        if(!i)return[1,1,1];const s=i.trim(),m=s.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/i);
-        if(m)return[+m[1]/255,+m[2]/255,+m[3]/255];
-        let h=s.replace(/^#/,"");if(h.length===3)h=h.split("").map(c=>c+c).join("");
-        return h.length>=6?[parseInt(h.slice(0,2),16)/255,parseInt(h.slice(2,4),16)/255,parseInt(h.slice(4,6),16)/255]:[1,1,1];
-      };
-      const parseBoxShadow=(sh)=>{
-        const r={x:0,y:0,blur:0,color:"rgba(0,0,0,0.3)"};
-        if(!sh)return r;
-        const cm=sh.match(/(rgba?\([^)]+\)|#[0-9a-fA-F]{3,8}|\b[a-z]+\b(?=\s*$))/i);
-        if(cm)r.color=cm[0];const nums=sh.match(/-?\d+(\.\d+)?(px)?/g);
-        if(nums){const v=nums.map(n=>parseFloat(n));if(v.length>=1)r.x=v[0];if(v.length>=2)r.y=v[1];if(v.length>=3)r.blur=v[2];}
-        return r;
-      };
-      const lerpShadow=(a,b,t)=>`drop-shadow(${(a.x+(b.x-a.x)*t).toFixed(2)}px ${(a.y+(b.y-a.y)*t).toFixed(2)}px ${(a.blur+(b.blur-a.blur)*t).toFixed(2)}px ${t>.5?b.color:a.color})`;
+      let globalZ = 1000;
 
-      // ============================================================================
-      // STICKER CLASS — creates own DOM, supports multiples
-      // ============================================================================
-      const DEF={imageWidth:200,imageHeight:150,tilt:45,lighting:true,lightingStrength:10,lightingColor:"#fff",sheenMode:"sheen",elevation:8,staticShadow:"0px 2px 5px rgba(0,0,0,0.25)",dynamicShadow:"0px 14px 18px rgba(0,0,0,0.35)"};
-
-      class StickerDrag{
-        static _id=0;
-        constructor(containerEl,props={}){
-          this.id=++StickerDrag._id;
-          this.cEl=containerEl; // parent container
-          this.p={...DEF,...props};
-
-          this.tiltSen=DRAG_TILT_SENSITIVITY;this.maxTilt=Math.max(1,this.p.tilt);
-          this.tSmooth=this.p.tiltSmoothing??DRAG_TILT_SMOOTHING;
-          this.shStr=this.p.lighting?Math.max(1,Math.min(10,this.p.lightingStrength))/10:0;
-          this.shCol=parseColorToRgb(this.p.lightingColor);
-          this.elev=(Math.max(1,Math.min(10,this.p.elevation))/10)*ELEVATION_INTERNAL_MAX;
-          this.sheen=this.p.sheenMode;this.w=this.p.imageWidth;this.h=this.p.imageHeight;
-
-          this._buildDOM();
-          this.gl=null;this.prog=null;this.tex=null;this.vbo=null;this.ibo=null;this.ic=0;this.u={};
-          this.st={
-            x:this.p.initialX||0,y:this.p.initialY||0,w:200,h:200,ar:null,sc:1,
-            held:false,peling:false,sticking:false,dSX:0,dSY:0,dOX:0,dOY:0,
-            peel:0,lift:0,pAng:-Math.PI/4,dTX:0,dTY:0,cTX:0,cTY:0,pTX:0,pTY:0,
-            holo:0,lMX:0,lMY:0,lMT:0,ready:false
+      class Sticker {
+        constructor(parent, config) {
+          this.parent = parent;
+          this.config = {
+            url: '', x: 0, y: 0, w: 150, h: 150,
+            tilt: 30, elevation: 0.2, ...config
           };
-          this.raf=null;this.lTT=null;
-          this.pSS=parseBoxShadow(this.p.staticShadow);this.pDS=parseBoxShadow(this.p.dynamicShadow);
-          this.art=null;this.SZTH=5;this.RDB=150;
-
-          this.init();
-        }
-
-        _buildDOM(){
-          const w=document.createElement("div");
-          w.className="sticker-instance";w.id=`si-${this.id}`;
-          const i=document.createElement("div");i.className="sticker-inner";
-          const cv=document.createElement("canvas");cv.className="sticker-canvas";
-          i.appendChild(cv);w.appendChild(i);
-          this.cEl.appendChild(w);
-          this.el=w;this.inn=i;this.can=cv;
-        }
-
-        init(){this._initGL();this._loadImg();this._evts();this._resize();
-          this.ro=new ResizeObserver(()=>{const cw=this.cEl.clientWidth||900,ch=this.cEl.clientHeight||500;this._sched(cw,ch)});
-          this.ro.observe(this.cEl);
-        }
-
-        _initGL(){
-          const cv=this.can,gl=cv.getContext("webgl",{alpha:true,antialias:true,premultipliedAlpha:false});
-          if(!gl)return;this.gl=gl;
-          const cs=(src,tp)=>{
-            const sh=gl.createShader(tp);if(!sh)return null;gl.shaderSource(sh,src);gl.compileShader(sh);
-            if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS)){console.error(gl.getShaderInfoLog(sh));gl.deleteShader(sh);return null;}
-            return sh;
+          this.state = {
+            x: this.config.x, y: this.config.y,
+            peel: 0, lift: 0, tX: 0, tY: 0,
+            peeling: false, held: false, pasting: false,
+            peelAngle: -Math.PI/4, texReady: false
           };
-          const vs=cs(VERTEX_SHADER,gl.VERTEX_SHADER),fs=cs(FRAGMENT_SHADER,gl.FRAGMENT_SHADER);
-          if(!vs||!fs)return;
-          const pr=gl.createProgram();gl.attachShader(pr,vs);gl.attachShader(pr,fs);gl.linkProgram(pr);
-          if(!gl.getProgramParameter(pr,gl.LINK_STATUS)){console.error(gl.getProgramInfoLog(pr));return;}
-          this.prog=pr;
-          ["uPeel","uLift","uPeelAngle","uPasting","uScale","uElevation","uTilt","uSheenStrength","uSheenColor",
-            "uSheenTiltShift","uSheenTiltDeadzone","uMaxTiltDeg","uEffectMode","uHoloMotion","uTex","uAspect"
-          ].forEach(n=>{this.u[n]=gl.getUniformLocation(pr,n)});
-          this.ap=gl.getAttribLocation(pr,"aPos");this.auv=gl.getAttribLocation(pr,"aUV");
-
-          const N=MESH_GRID_SIZE,v=[],ind=[];
-          for(let j=0;j<=N;j++)for(let i=0;i<=N;i++)v.push((i/N)*2-1,(j/N)*2-1,i/N,1-j/N);
-          for(let j=0;j<N;j++)for(let i=0;i<N;i++){const a=j*(N+1)+i;ind.push(a,a+1,a+N+1,a+1,a+N+2,a+N+1);}
-          const vb=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,vb);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(v),gl.STATIC_DRAW);this.vbo=vb;
-          const ib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(ind),gl.STATIC_DRAW);this.ibo=ib;
-          this.ic=ind.length;
+          this.initDOM();
+          this.initGL();
+          this.loadImage();
+          this.attachEvents();
         }
 
-        draw(){
-          const gl=this.gl,p=this.prog,t=this.tex,s=this.st;if(!gl||!p||!t||!s.ready)return;
-          gl.viewport(0,0,this.can.width,this.can.height);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);
-          gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.useProgram(p);
-          gl.bindBuffer(gl.ARRAY_BUFFER,this.vbo);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,this.ibo);
-          gl.enableVertexAttribArray(this.ap);gl.enableVertexAttribArray(this.auv);
-          gl.vertexAttribPointer(this.ap,2,gl.FLOAT,false,16,0);gl.vertexAttribPointer(this.auv,2,gl.FLOAT,false,16,8);
-          const u=this.u;
-          gl.uniform1f(u.uPeel,s.peel);gl.uniform1f(u.uLift,s.lift);gl.uniform1f(u.uPeelAngle,s.pAng);
-          gl.uniform1f(u.uPasting,s.sticking?1:0);gl.uniform1f(u.uScale,s.sc);gl.uniform1f(u.uElevation,this.elev);
-          gl.uniform2f(u.uTilt,s.cTX,s.cTY);gl.uniform1f(u.uSheenStrength,this.shStr);
-          gl.uniform3f(u.uSheenColor,this.shCol[0],this.shCol[1],this.shCol[2]);
-          gl.uniform1f(u.uSheenTiltShift,SHEEN_TILT_SHIFT);gl.uniform1f(u.uSheenTiltDeadzone,SHEEN_TILT_DEADZONE);
-          gl.uniform1f(u.uMaxTiltDeg,this.maxTilt);
-          let em=0;if(this.sheen==="holo")em=1;else if(this.sheen==="rug")em=2;
-          gl.uniform1f(u.uEffectMode,em);gl.uniform1f(u.uHoloMotion,s.holo);gl.uniform1f(u.uAspect,s.w/s.h||1);
-          gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,t);gl.uniform1i(u.uTex,0);
-          gl.drawElements(gl.TRIANGLES,this.ic,gl.UNSIGNED_SHORT,0);
+        initDOM() {
+          this.wrap = document.createElement('div');
+          this.wrap.className = 'sticker-wrap';
+          this.wrap.style.width = this.config.w + 'px';
+          this.wrap.style.height = this.config.h + 'px';
+          this.wrap.style.left = this.config.x + 'px';
+          this.wrap.style.top = this.config.y + 'px';
+          
+          this.canvas = document.createElement('canvas');
+          this.canvas.className = 'gl-canvas';
+          this.wrap.appendChild(this.canvas);
+          this.parent.appendChild(this.wrap);
         }
 
-        _upCSS(){
-          const tr=Math.max(this.st.lift,this.st.peel),t=tr*tr*(3-2*tr);
-          this.can.style.filter=lerpShadow(this.pSS,this.pDS,t);
-        }
-
-        tick(ts){
-          const s=this.st;if(this.lTT===null)this.lTT=ts;
-          const dt=Math.min((ts-this.lTT)/1000,0.1);this.lTT=ts;const stp=ANIM_SPEED*dt;let ch=false;
-          if(s.peling){if(s.peel<1||s.lift<1){s.peel=Math.min(1,s.peel+stp);s.lift=Math.min(1,s.lift+stp);ch=true;}}
-          if(s.sticking){if(s.peel>0||s.lift>0){s.peel=Math.max(0,s.peel-stp);s.lift=Math.max(0,s.lift-stp);ch=true;}else s.sticking=false;}
-          const hd=this.sheen==="holo"&&s.holo>0.005;
-          if(hd){s.holo*=HOLO_MOTION_DECAY;if(s.holo<0.005)s.holo=0;ch=true;}
-          if(ch)this._upCSS();if(ch||s.held||hd)this.draw();
-          if(s.held||s.peling||s.sticking||hd){this.raf=requestAnimationFrame(this.tick);}else{this.raf=null;this.lTT=null;}
-        }
-        ensureTick(){if(this.raf!==null)return;this.lTT=null;this.raf=requestAnimationFrame(this.tick);}
-
-        _resize(){
-          const ct=this.cEl,cv=this.can,se=this.el,gl=this.gl,s=this.st;
-          if(!ct||!cv||!se||!gl)return;
-          const cw=ct.clientWidth||900,ch=ct.clientHeight||500,w=this.w>0?this.w:cw,h=this.h>0?this.h:ch;
-          const md=Math.max(w,h),ep=md*this.elev*.6,pad=PAD_BASE+ep,cw2=w+pad*2,ch2=h+pad*2;
-          const sx=w/cw2,sy=h/ch2,sc=Math.min(sx,sy),x=(cw-w)/2,y=(ch-h)/2;
-          cv.width=Math.round(cw2*RENDER_SCALE);cv.height=Math.round(ch2*RENDER_SCALE);
-          cv.style.width=cw2+"px";cv.style.height=ch2+"px";cv.style.position="absolute";cv.style.left=(-pad)+"px";cv.style.top=(-pad+"px");
-          se.style.width=w+"px";se.style.height=h+"px";se.style.left=x+"px";se.style.top=y+"px";
-          s.w=w;s.h=h;s.x=x;s.y=y;s.sc=sc;gl.viewport(0,0,cv.width,cv.height);if(s.ready)this.draw();
-        }
-        _sched(mw,mh){if(this.art)clearTimeout(this.art);this.art=setTimeout(()=>{this.art=null;this._resize()},this.RDB);}
-
-        _loadImg(){
-          const src=resolveImageSource(this.p.image)||"https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/3fb4a247-64e9-4c54-2391-86598eebfe00/w=800";
-          const gl=this.gl;if(!gl||!this.prog)return;
-          const im=new Image();im.crossOrigin="anonymous";
-          im.onload=()=>{
-            this.st.ar=im.width/im.height;
-            if(this.tex)gl.deleteTexture(this.tex);
-            const tx=gl.createTexture();if(!tx)return;
-            gl.bindTexture(gl.TEXTURE_2D,tx);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);
-            gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,im);
-            gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
-            this.tex=tx;this.st.ready=true;this._resize();this._upCSS();this.draw();
+        initGL() {
+          const gl = this.gl = this.canvas.getContext('webgl', { alpha: true });
+          const compile = (s, t) => {
+            const sh = gl.createShader(t); gl.shaderSource(sh, s);
+            gl.compileShader(sh); return sh;
           };
-          im.src=src;
+          this.prog = gl.createProgram();
+          gl.attachShader(this.prog, compile(VS, gl.VERTEX_SHADER));
+          gl.attachShader(this.prog, compile(FS, gl.FRAGMENT_SHADER));
+          gl.linkProgram(this.prog);
+          gl.useProgram(this.prog);
+
+          const grid = 32, verts = [], inds = [];
+          for (let j=0; j<=grid; j++) for (let i=0; i<=grid; i++) verts.push((i/grid)*2-1, (j/grid)*2-1, i/grid, 1-j/grid);
+          for (let j=0; j<grid; j++) for (let i=0; i<grid; i++) {
+            let a = j*(grid+1)+i; inds.push(a, a+1, a+grid+1, a+1, a+grid+2, a+grid+1);
+          }
+          this.indexCount = inds.length;
+          gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW);
+          const aPos = gl.getAttribLocation(this.prog, 'aPos');
+          gl.enableVertexAttribArray(aPos); gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 16, 0);
+          const aUV = gl.getAttribLocation(this.prog, 'aUV');
+          gl.enableVertexAttribArray(aUV); gl.vertexAttribPointer(aUV, 2, gl.FLOAT, false, 16, 8);
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer());
+          gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(inds), gl.STATIC_DRAW);
+
+          this.resize();
         }
 
-        setTilt(){
-          const s=this.st,inn=this.inn;
-          const go=()=>{
-            s.dTX*=.9;s.dTY*=.9;s.cTX=s.dTX;s.cTY=s.dTY;
-            if(inn)inn.style.transform=`rotateX(${s.dTX}deg) rotateY(${s.dTY}deg)`;
-            if(Math.abs(s.dTX)>.1||Math.abs(s.dTY)>.1){requestAnimationFrame(go);}
-            else{s.dTX=0;s.dTY=0;s.cTX=0;s.cTY=0;s.pTX=0;s.pTY=0;if(inn)inn.style.transform="";}
+        resize() {
+          const pad = this.config.w * 0.5;
+          const cw = this.config.w + pad*2, ch = this.config.h + pad*2;
+          this.canvas.width = cw * 2; this.canvas.height = ch * 2;
+          this.canvas.style.width = cw + 'px'; this.canvas.style.height = ch + 'px';
+          this.canvas.style.marginLeft = -pad + 'px'; this.canvas.style.marginTop = -pad + 'px';
+          this.state.scale = this.config.w / cw;
+          this.gl.viewport(0,0, this.canvas.width, this.canvas.height);
+        }
+
+        loadImage() {
+          const img = new Image(); img.crossOrigin = "anonymous";
+          img.onload = () => {
+            const gl = this.gl;
+            this.tex = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, this.tex);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            this.state.texReady = true;
+            this.draw();
           };
-          go();
+          img.src = this.config.url;
         }
 
-        pd(cx,cy){
-          const s=this.st,se=this.el,inn=this.inn;if(!se||!inn)return;
-          const rc=se.getBoundingClientRect();inn.style.transformOrigin=(cx-rc.left)+"px "+(cy-rc.top)+"px";
-          const cx2=rc.left+rc.width/2,cy2=rc.top+rc.height/2;
-          s.pAng=Math.atan2(cy-cy2,cx-cx2);s.dSX=cx;s.dSY=cy;s.dOX=s.x;s.dOY=s.y;
-          s.peel=0;s.lift=0;s.held=true;s.peling=true;s.sticking=false;
-          s.lMX=cx;s.lMY=cy;s.lMT=performance.now();se.style.zIndex=getNextZIndex();this.ensureTick();
-        }
-        pm(cx,cy){
-          const s=this.st;if(!s.held)return;const se=this.el,inn=this.inn;if(!se||!inn)return;
-          s.x=s.dOX+(cx-s.dSX);s.y=s.dOY+(cy-s.dSY);se.style.left=s.x+"px";se.style.top=s.y+"px";
-          const now=performance.now(),dt=Math.max(1,now-s.lMT),vx=((cx-s.lMX)/dt)*16,vy=((cy-s.lMY)/dt)*16;
-          s.lMX=cx;s.lMY=cy;s.lMT=now;
-          const ty=Math.max(-this.maxTilt,Math.min(this.maxTilt,vx*this.tiltSen)),tx=Math.max(-this.maxTilt,Math.min(this.maxTilt,-vy*this.tiltSen));
-          s.dTX+=(tx-s.dTX)*this.tSmooth;s.dTY+=(ty-s.dTY)*this.tSmooth;s.cTX=s.dTX;s.cTY=s.dTY;
-          if(this.sheen==="holo"){const td=Math.abs(s.dTX-s.pTX)+Math.abs(s.dTY-s.pTY);s.holo=Math.min(1,s.holo+td*HOLO_MOTION_BUMP);s.pTX=s.dTX;s.pTY=s.dTY;}
-          inn.style.transform=`rotateX(${s.dTX}deg) rotateY(${s.dTY}deg)`;
-        }
-        pu(){
-          const s=this.st;if(!s.held)return;const inn=this.inn;
-          s.held=false;s.peling=false;s.sticking=true;
-          if(s.peel>=.95&&inn){const rc=inn.getBoundingClientRect(),cx2=rc.left+rc.width/2,cy2=rc.top+rc.height/2;
-            s.pAng=Math.atan2(-(s.lMY-cy2),-(s.lMX-cx2));s.peel=1;}
-          this.setTilt();this.ensureTick();
+        attachEvents() {
+          const start = (e) => {
+            const p = e.touches ? e.touches[0] : e;
+            this.state.held = true; this.state.peeling = true; this.state.pasting = false;
+            const r = this.wrap.getBoundingClientRect();
+            this.state.offX = p.clientX - r.left; this.state.offY = p.clientY - r.top;
+            this.wrap.style.zIndex = globalZ++;
+            this.state.peelAngle = Math.atan2(p.clientY - (r.top + r.height/2), p.clientX - (r.left + r.width/2));
+            this.lastT = performance.now();
+            this.anim();
+          };
+          this.wrap.addEventListener('mousedown', start);
+          this.wrap.addEventListener('touchstart', start);
+
+          window.addEventListener('mousemove', (e) => {
+            if (!this.state.held) return;
+            const p = e.touches ? e.touches[0] : e;
+            const parentR = this.parent.getBoundingClientRect();
+            this.state.x = p.clientX - parentR.left - this.state.offX;
+            this.state.y = p.clientY - parentR.top - this.state.offY;
+            this.wrap.style.left = this.state.x + 'px';
+            this.wrap.style.top = this.state.y + 'px';
+
+            const vx = (p.clientX - this.lastX) || 0, vy = (p.clientY - this.lastY) || 0;
+            this.state.tY += (vx * 2 - this.state.tY) * 0.1;
+            this.state.tX += (-vy * 2 - this.state.tX) * 0.1;
+            this.wrap.style.transform = `rotateX(${this.state.tX}deg) rotateY(${this.state.tY}deg)`;
+            this.lastX = p.clientX; this.lastY = p.clientY;
+          });
+
+          window.addEventListener('mouseup', () => {
+            if (this.state.held) {
+              this.state.held = false; this.state.peeling = false; this.state.pasting = true;
+              const settle = () => {
+                this.state.tX *= 0.85; this.state.tY *= 0.85;
+                this.wrap.style.transform = `rotateX(${this.state.tX}deg) rotateY(${this.state.tY}deg)`;
+                if(Math.abs(this.state.tX) > 0.1) requestAnimationFrame(settle);
+                else this.wrap.style.transform = '';
+              };
+              settle();
+            }
+          });
         }
 
-        _evts(){
-          this.el.addEventListener("mousedown",e=>{e.preventDefault();this.pd(e.clientX,e.clientY);});
-          window.addEventListener("mousemove",e=>this.pm(e.clientX,e.clientY));window.addEventListener("mouseup",()=>this.pu());
-          this.el.addEventListener("touchstart",e=>{e.preventDefault();const t=e.touches[0];if(t)this.pd(t.clientX,t.clientY);},{passive:false});
-          window.addEventListener("touchmove",e=>{const t=e.touches[0];if(t)this.pm(t.clientX,t.clientY);},{passive:false});
-          window.addEventListener("touchend",()=>this.pu());
+        anim() {
+          const now = performance.now();
+          const dt = (now - (this.lastAnimT || now)) / 1000;
+          this.lastAnimT = now;
+          const step = 2.0 * dt;
+
+          if (this.state.peeling) {
+            this.state.peel = Math.min(1, this.state.peel + step);
+            this.state.lift = Math.min(1, this.state.lift + step);
+          } else if (this.state.pasting) {
+            this.state.peel = Math.max(0, this.state.peel - step);
+            this.state.lift = Math.max(0, this.state.lift - step);
+            if (this.state.peel === 0) this.state.pasting = false;
+          }
+
+          const tr = this.state.peel;
+          this.canvas.style.filter = `drop-shadow(${tr*20}px ${tr*20}px ${tr*15}px rgba(0,0,0,0.5))`;
+          
+          this.draw();
+          if (this.state.held || this.state.peeling || this.state.pasting) requestAnimationFrame(() => this.anim());
+          else this.lastAnimT = null;
+        }
+
+        draw() {
+          const gl = this.gl, s = this.state, u = this.uni = this.uni || {};
+          if (!s.texReady) return;
+          gl.clear(gl.COLOR_BUFFER_BIT);
+          const loc = (n) => gl.getUniformLocation(this.prog, n);
+          gl.uniform1f(loc('uPeel'), s.peel); gl.uniform1f(loc('uLift'), s.lift);
+          gl.uniform1f(loc('uPeelAngle'), s.peelAngle); gl.uniform1f(loc('uPasting'), s.pasting?1:0);
+          gl.uniform1f(loc('uScale'), s.scale); gl.uniform1f(loc('uElevation'), this.config.elevation);
+          gl.uniform2f(loc('uTilt'), s.tY, s.tX); gl.uniform1f(loc('uAspect'), this.config.w/this.config.h);
+          gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.tex);
+          gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_SHORT, 0);
         }
       }
 
       // ============================================================================
-      // BOOT — CREATE MULTIPLE STICKERS OF VARYING SIZES & POSITIONS
+      // INIT SCENE
       // ============================================================================
-      window.addEventListener("DOMContentLoaded",()=>{
-        const sc=document.getElementById("sticker-container");
-
-        // Large calendar/card
-        new StickerDrag(sc,{image:{src:"https://images.unsplash.com/photo-1513885535751-8b9238bd345a?q=80&w=400"},imageWidth:220,imageHeight:300,initialX:40,initialY:30,sheenMode:"sheen",elevation:10});
-
-        // Medium note card
-        new StickerDrag(sc,{image:{src:"https://images.unsplash.com/photo-1586281380349-632531db7ed4?q=80&w=400"},imageWidth:160,imageHeight:210,initialX:290,initialY:20,sheenMode:"holo",elevation:8,tilt:35});
-
-        // Small pink sticky
-        new StickerDrag(sc,{image:{src:"https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=300"},imageWidth:130,imageHeight:140,initialX:480,initialY:10,sheenMode:"sheen",elevation:6});
-
-        // Medium quote card
-        new StickerDrag(sc,{image:{src:"https://images.unsplash.com/photo-1490682143684-14369eaf38c1?q=80&w=500"},imageWidth:190,imageHeight:135,initialX:650,initialY:25,sheenMode:"holo",elevation:9,staticShadow:"0px 3px 6px rgba(0,0,0,0.22)",dynamicShadow:"0px 16px 22px rgba(0,0,0,0.32)"});
-
-        // Circular-ish sticker (use squarish ratio)
-        new StickerDrag(sc,{image:{src:"https://images.unsplash.com/photo-1599561046281-acdf7a696e7c?q=80&w=400"},imageWidth:150,imageHeight:145,initialX:520,initialY:155,sheenMode:"rug",elevation:12,lightingStrength:7});
-
-        // Large to-do list
-        new StickerDrag(sc,{image:{src:"https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?q=80&w=400"},imageWidth:230,imageHeight:175,initialX:30,initialY:260,sheenMode:"sheen",elevation:8});
-
-        // Small green idea sticky
-        new StickerDrag(sc,{image:{src:"https://images.unsplash.com/photo-1531346878377-a5be20888e57?q=80&w=300"},imageWidth:115,imageHeight:125,initialX:280,initialY:240,sheenMode:"sheen",elevation:5});
-
-        // Medium yellow vertical card
-        new StickerDrag(sc,{image:{src:"https://images.unsplash.com/photo-1471102337591-59c0dd51a866?q=80&w=400"},imageWidth:105,imageHeight:165,initialX:420,initialY:225,sheenMode:"holo",elevation:7});
-
-        // "LOVE ME" roundish
-        new StickerDrag(sc,{image:{src:"https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=400"},imageWidth:145,imageHeight:145,initialX:720,initialY:145,sheenMode:"sheen",elevation:10});
-
-        // Bottom banner / text sticker
-        new StickerDrag(sc,{image:{src:"https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=500"},imageWidth:195,imageHeight:108,initialX:550,initialY:360,sheenMode:"rug",elevation:9});
-
-        // Tiny yellow note bottom left
-        new StickerDrag(sc,{image:{src:"https://images.unsplash.com/photo-1516979187457-637abb4f9353?q=80&w=300"},imageWidth:100,imageHeight:105,initialX:50,initialY:450,sheenMode:"sheen",elevation:4});
-
-        // Small kindness card right side
-        new StickerDrag(sc,{image:{src:"https://images.unsplash.com/photo-1529515582136-10683999f373?q=80&w=400"},imageWidth:160,imageHeight:102,initialX:680,initialY:310,sheenMode:"holo",elevation:8,tilt:40});
-
-        // Wide bottom sticker
-        new StickerDrag(sc,{image:{src:"https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?q=80&w=500"},imageWidth:185,imageHeight:112,initialX:320,initialY:380,sheenMode:"sheen",elevation:6,tilt:50});
+      window.addEventListener('DOMContentLoaded', () => {
+        const board = document.getElementById('board-surface');
+        
+        // Add various sized stickers
+        new Sticker(board, { url: 'https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/fake-journal.png', x: 20, y: 20, w: 250, h: 180 });
+        new Sticker(board, { url: 'https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/3fb4a247-64e9-4c54-2391-86598eebfe00/w=800', x: 300, y: 50, w: 120, h: 120, elevation: 0.4 });
+        new Sticker(board, { url: 'https://plus.unsplash.com/premium_photo-1664194583917-b0ba07c4ce2a?q=80&w=500&auto=format', x: 450, y: 20, w: 200, h: 250 });
+        new Sticker(board, { url: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png', x: 50, y: 300, w: 100, h: 100 });
+        new Sticker(board, { url: 'https://img.freepik.com/free-vector/yellow-sticky-note-paper-post-it_1017-31560.jpg', x: 200, y: 280, w: 150, h: 150 });
       });
     </script>
   </body>

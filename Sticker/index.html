@@ -1,9 +1,11 @@
+make the the whiteboard look like the image i have added, also add multiple different sized stickers right now there is only one large sticker 
+
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Whiteboard Studio</title>
+    <title>Draggable Rug Sticker</title>
     <style>
       * {
         margin: 0;
@@ -15,258 +17,152 @@
       body {
         width: 100%;
         height: 100%;
+        background: #d8cfc2;
         overflow: hidden;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       }
 
-      /* Textured Wall Background */
-      #wall {
+      /* Floor backdrop so the rug reads as sitting on a surface */
+      #floor {
         position: fixed;
         inset: 0;
-        background-color: #cfc5b8;
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.12'/%3E%3C/svg%3E");
+        background:
+          radial-gradient(
+            ellipse at 50% 40%,
+            rgba(255, 255, 255, 0.25),
+            rgba(0, 0, 0, 0.08) 80%
+          ),
+          repeating-linear-gradient(
+            90deg,
+            #cbb79a 0px,
+            #cbb79a 46px,
+            #c2ad8e 46px,
+            #c2ad8e 48px
+          );
         z-index: 0;
       }
 
-      /* Baseboard */
-      .baseboard {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 48px;
-        background: linear-gradient(
-          180deg,
-          #e8e4dc 0%,
-          #d9d4ca 60%,
-          #c8c2b6 100%
-        );
-        border-top: 2px solid rgba(255, 255, 255, 0.7);
-        z-index: 1;
-        box-shadow:
-          inset 0 2px 4px rgba(0, 0, 0, 0.06),
-          0 -2px 8px rgba(0, 0, 0, 0.08);
-      }
-
-      /* REAL WHITEBOARD - WALL MOUNTED STYLE */
       #whiteboard {
         position: absolute;
         left: 50%;
-        top: 52%;
+        top: 50%;
         transform: translate(-50%, -50%);
-        width: min(92vw, 1100px);
-        height: min(72vh, 650px);
-        border-radius: 4px;
-        /* Metallic aluminum frame */
+        width: min(94vw, 980px);
+        height: min(84vh, 620px);
+        padding: 26px;
         background: linear-gradient(
           180deg,
-          #f5f6f7 0%,
-          #ffffff 4px,
-          #fafbfc calc(100% - 32px),
-          #eceef0 calc(100% - 28px),
-          #e1e4e7 100%
+          #fdfdfd 0%,
+          #f5f7f8 48%,
+          #fdfdfd 100%
         );
-        border-top: 4px solid #d0d4d8;
-        border-left: 4px solid #cdd0d4;
-        border-right: 4px solid #b8bcc1;
-        border-bottom: 8px solid #aeb2b7;
-        box-shadow:
-          0 25px 70px rgba(20, 25, 35, 0.18),
-          0 10px 24px rgba(20, 25, 35, 0.1),
-          inset 0 1px 0 rgba(255, 255, 255, 0.9),
-          inset 0 -1px 0 rgba(0, 0, 0, 0.04);
-        z-index: 2;
-        display: flex;
-        flex-direction: column;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-radius: 28px;
+        box-shadow: 0 28px 64px rgba(15, 20, 30, 0.12);
         overflow: hidden;
+        z-index: 1;
       }
 
-      /* Frame corner accents */
       #whiteboard::before {
         content: "";
         position: absolute;
         inset: 0;
-        pointer-events: none;
-        border-radius: 4px;
         background:
-          radial-gradient(
-            circle at 6px 6px,
-            rgba(255, 255, 255, 0.6) 0%,
-            transparent 40%
-          ),
-          radial-gradient(
-            circle at calc(100% - 6px) 6px,
-            rgba(255, 255, 255, 0.4) 0%,
-            transparent 40%
-          ),
-          radial-gradient(
-            circle at 6px calc(100% - 6px),
-            rgba(0, 0, 0, 0.05) 0%,
-            transparent 40%
-          ),
-          radial-gradient(
-            circle at calc(100% - 6px) calc(100% - 6px),
-            rgba(0, 0, 0, 0.07) 0%,
-            transparent 40%
-          );
-      }
-
-      /* Surface glare/sheen */
-      #wb-surface {
-        flex: 1;
-        margin: 8px 10px 34px 10px;
-        background: linear-gradient(
-          135deg,
-          #fdfefe 0%,
-          #f7f9fa 25%,
-          #ffffff 45%,
-          #f8fafa 55%,
-          #ffffff 75%,
-          #f5f7f8 100%
-        );
-        border-radius: 2px;
-        position: relative;
-        overflow: hidden;
-        /* Subtle grid like real whiteboards */
-        background-image:
-          repeating-linear-gradient(
-            90deg,
-            transparent,
-            transparent 49px,
-            rgba(220, 225, 230, 0.15) 49px,
-            rgba(220, 225, 230, 0.15) 50px
-          ),
-          repeating-linear-gradient(
-            0deg,
-            transparent,
-            transparent 49px,
-            rgba(220, 225, 230, 0.15) 49px,
-            rgba(220, 225, 230, 0.15) 50px
-          );
-      }
-
-      /* Realistic surface glare */
-      #wb-surface::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(
-          115deg,
-          rgba(255, 255, 255, 0.65) 0%,
-          rgba(255, 255, 255, 0.2) 25%,
-          transparent 45%
-        );
-        pointer-events: none;
-        mix-blend-mode: overlay;
-      }
-
-      /* Faint ghost writing */
-      #wb-surface::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='200'%3E%3Ctext x='40' y='80' fill='%237a8599' font-family='monospace' font-size='22' opacity='0.12' style='writing-mode:lr;' transform='rotate(-1,40,80)'%3E3 - 24%3C/text%3E%3Ctext x='40' y='120' fill='%237a8599' font-family='monospace' font-size='22' opacity='0.09' transform='rotate(-0.5,40,120)'%3E4 - 31%3C/text%3E%3Ctext x='40' y='160' fill='%237a8599' font-family='monospace' font-size='22' opacity='0.10' transform='rotate(0.5,40,160)'%3E7 - 30%3C/text%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: 36px 42%;
-        background-size: auto 44%;
+          linear-gradient(rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.86)),
+          linear-gradient(180deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+        background-size:
+          48px 48px,
+          100% 48px;
+        opacity: 0.6;
         pointer-events: none;
       }
 
-      /* Marker tray */
-      #wb-tray {
-        height: 26px;
-        margin: 0 14px 6px 14px;
-        background: linear-gradient(
-          180deg,
-          #dce0e4 0%,
-          #ced2d7 40%,
-          #c1c5cb 100%
-        );
-        border-radius: 3px 3px 4px 4px;
-        box-shadow:
-          inset 0 1px 0 rgba(255, 255, 255, 0.5),
-          inset 0 -1px 0 rgba(0, 0, 0, 0.08),
-          0 2px 4px rgba(0, 0, 0, 0.06);
-        display: flex;
-        align-items: center;
-        padding: 0 16px;
-        gap: 6px;
+      #whiteboard::after {
+        content: "";
+        position: absolute;
+        inset: 16px;
+        border: 2px solid rgba(0, 0, 0, 0.04);
+        border-radius: 20px;
+        pointer-events: none;
+      }
+
+      #whiteboard-topbar {
         position: relative;
         z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 18px;
       }
 
-      .marker {
-        width: 38px;
-        height: 11px;
-        border-radius: 2px;
-        transform: rotate(-2deg);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
-      }
-      .marker-black {
-        background: linear-gradient(180deg, #333 0%, #111 100%);
-      }
-      .marker-red {
-        background: linear-gradient(180deg, #c0392b 0%, #96281b 100%);
-      }
-      .marker-blue {
-        background: linear-gradient(180deg, #2980b9 0%, #1a5276 100%);
-      }
-      .marker-green {
-        background: linear-gradient(180deg, #27ae60 0%, #1e8449 100%);
+      #whiteboard-title {
+        color: #444;
+        font-size: 1rem;
+        font-weight: 700;
       }
 
-      .eraser {
-        width: 56px;
-        height: 16px;
-        margin-left: auto;
-        border-radius: 3px;
-        background: linear-gradient(
-          180deg,
-          #4a5568 0%,
-          #2d3748 50%,
-          #1a202c 100%
-        );
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        position: relative;
-      }
-      .eraser::after {
-        content: "";
-        position: absolute;
-        bottom: 0;
-        left: 2px;
-        right: 2px;
-        height: 5px;
-        background: #718096;
-        border-radius: 0 0 2px 2px;
+      #mover {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.06);
+        color: #333;
+        font-size: 0.88rem;
+        font-weight: 600;
+        user-select: none;
+        cursor: grab;
       }
 
-      /* STICKER CONTAINER */
+      #mover:active {
+        cursor: grabbing;
+      }
+
       #sticker-container {
         position: absolute;
         inset: 0;
         overflow: visible;
         perspective: 800px;
-        z-index: 3;
+        z-index: 2;
+      }
+
+      #sizing-div {
+        position: relative;
+        opacity: 0;
+        pointer-events: none;
+        user-select: none;
+      }
+
+      #zoom-probe {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        top: 0;
+        left: 0;
+        opacity: 0;
         pointer-events: none;
       }
 
-      /* Individual sticker wrapper */
-      .sticker-instance {
+      #sticker {
         position: absolute;
+        width: 100%;
+        height: 100%;
         cursor: grab;
         user-select: none;
         perspective: 800px;
         transform-style: preserve-3d;
         will-change: transform;
         overflow: visible;
-        pointer-events: auto;
       }
 
-      .sticker-instance:active {
+      #sticker:active {
         cursor: grabbing;
       }
 
-      .sticker-inner {
+      #inner {
         position: absolute;
         width: 100%;
         height: 100%;
@@ -274,44 +170,77 @@
         overflow: visible;
       }
 
-      .sticker-canvas {
+      #gl-canvas {
         display: block;
         pointer-events: none;
         position: absolute;
       }
+
+      #sticker-container {
+        min-height: 420px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+
+      #sticker {
+        z-index: 3;
+      }
     </style>
   </head>
   <body>
-    <div id="wall"></div>
-    <div class="baseboard"></div>
+    <div id="floor"></div>
 
     <div id="whiteboard">
-      <div id="wb-surface">
-        <!-- Stickers will be placed here via JS -->
+      <div id="whiteboard-topbar">
+        <div id="whiteboard-title">Whiteboard Studio</div>
+        <!-- <div id="mover">Mover</div> -->
       </div>
-      <div id="wb-tray">
-        <div class="marker marker-black"></div>
-        <div class="marker marker-red"></div>
-        <div class="marker marker-blue"></div>
-        <div class="marker marker-green"></div>
-        <div class="eraser"></div>
-      </div>
+    </div>
 
-      <!-- Sticker container layered on top of surface -->
-      <div id="sticker-container"></div>
+    <div id="sticker-container">
+      <div id="sizing-div"></div>
+      <div id="zoom-probe"></div>
+      <div id="sticker">
+        <div id="inner">
+          <canvas id="gl-canvas"></canvas>
+        </div>
+      </div>
     </div>
 
     <script>
       // ============================================================================
-      // CONSTANTS & DEFAULTS
+      // COMPONENT DEFAULTS
+      // ============================================================================
+
+      const COMPONENT_DEFAULTS = {
+        image: {
+          src: "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/fake-journal.png",
+        },
+        imageWidth: 600,
+        imageHeight: 400,
+        tilt: 45,
+        lighting: true,
+        lightingStrength: 10,
+        lightingColor: "#ffffff",
+        sheenMode: "sheen", // "sheen" | "holo" | "rug"
+        elevation: 10,
+        staticShadow: "0px 1px 2px 0px rgba(0, 0, 0, 0.30)",
+        dynamicShadow: "0px 13px 14px 0px rgba(0, 0, 0, 0.30)",
+      };
+
+      // ============================================================================
+      // CONSTANTS
       // ============================================================================
 
       const RENDER_SCALE = 2;
       const PAD_BASE = 20;
       const MESH_GRID_SIZE = 32;
-      const DRAG_Z_INDEX_BASE = 100;
+      const DRAG_Z_INDEX_BASE = 1000;
 
       let zIndexCounter = DRAG_Z_INDEX_BASE;
+
       function getNextZIndex() {
         zIndexCounter += 1;
         return zIndexCounter;
@@ -320,15 +249,17 @@
       const DRAG_TILT_SENSITIVITY = 3;
       const DRAG_MAX_TILT_DEG = 30;
       const DRAG_TILT_SMOOTHING = 0.05;
+      const SHEEN_STRENGTH = 0.6;
       const SHEEN_TILT_SHIFT = 0.05;
       const SHEEN_TILT_DEADZONE = 0.035;
       const ANIM_SPEED = 1.92;
       const HOLO_MOTION_BUMP = 0.15;
       const HOLO_MOTION_DECAY = 0.88;
+
       const ELEVATION_INTERNAL_MAX = 0.3;
 
       // ============================================================================
-      // WEBGL SHADERS
+      // WebGL Shaders
       // ============================================================================
 
       const VERTEX_SHADER = `
@@ -374,7 +305,6 @@ void main() {
         vHi = inRamp * 0.75 * pow(1.0 - t, 1.2);
         vSh = inRamp * 0.75 * pow(t, 1.2);
     }
-
     gl_Position = vec4(p * uScale, 0.0, 1.0);
 }
 `;
@@ -387,7 +317,7 @@ uniform float uSheenStrength;
 uniform float uSheenTiltShift;
 uniform float uSheenTiltDeadzone;
 uniform float uMaxTiltDeg;
-uniform float uEffectMode;
+uniform float uEffectMode; // 0.0=sheen, 1.0=holo, 2.0=rug
 uniform float uHoloMotion;
 uniform vec3 uSheenColor;
 uniform float uAspect;
@@ -395,6 +325,7 @@ varying vec2 vUV;
 varying float vHi;
 varying float vSh;
 
+// Random noise generator for fibers
 float hash(vec2 p) {
     return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
 }
@@ -422,40 +353,63 @@ void main() {
     if (tex.a < 0.01) discard;
 
     vec3 c = tex.rgb * 0.95;
+
     float maxTilt = max(0.001, uMaxTiltDeg);
     float tiltMag = clamp(length(uTilt) / maxTilt, 0.0, 1.0);
 
     if (uEffectMode > 1.5) {
+        // ==========================================
         // RUG MODE
+        // ==========================================
+        
+        // 1. Procedural Weave Pattern
         vec2 aspUV = vec2(vUV.x * uAspect, vUV.y);
         float scale = 400.0;
+        
+        // Crossed sine waves for thread bumps
         float sx = sin(aspUV.x * scale);
         float sy = sin(aspUV.y * scale);
         float weave = (sx * sy) * 0.5 + 0.5;
+        
+        // Add fiber noise
         float n = hash(aspUV * 800.0);
         float pattern = mix(weave, n, 0.3);
+        
+        // Apply weave depth (dark crevices, bright threads)
         c *= mix(0.45, 1.2, pattern);
+
+        // 2. Directional Pile Sheen (Velvet/Nap effect)
+        // Adjusts brightness based on how the tilt aligns with the rug pile direction
         vec2 pileDir = normalize(vec2(1.0, -1.0)); 
         float alignment = dot(uTilt / maxTilt, pileDir);
+        
+        // mix between a darkened pile and a light-catching sheen
         float pileLighting = mix(0.7, 1.35, alignment * 0.5 + 0.5);
         c *= mix(1.0, pileLighting, uSheenStrength);
+
     } else {
+        // ==========================================
+        // SHEEN & HOLO MODES
+        // ==========================================
         float tiltGate = smoothstep(uSheenTiltDeadzone, 1.0, tiltMag);
         float gradient = fract(vUV.x * 0.5 + vUV.y * 0.5 + uTilt.x * uSheenTiltShift + uTilt.y * uSheenTiltShift);
 
         if (uEffectMode > 0.5) {
+            // Holo Mode
             float holoStrength = uSheenStrength * uHoloMotion;
             float distFromWhite = length(tex.rgb - vec3(1.0));
             float nonWhiteMask = smoothstep(0.06, 0.22, distFromWhite);
             vec3 rainbow = hsl2rgb(gradient, 0.8, 0.55);
             c = mix(c, rainbow, holoStrength * nonWhiteMask * tex.a);
         } else {
+            // Sheen Mode
             float effectStrength = uSheenStrength * tiltGate;
             float sheen = smoothstep(0.2, 0.5, gradient) * (1.0 - smoothstep(0.5, 0.8, gradient));
             c = mix(c, uSheenColor, sheen * effectStrength * tex.a);
         }
     }
 
+    // Peel/paste curvature lighting
     float hiW = clamp(vHi, 0.0, 1.0) * 0.55;
     float shW = clamp(vSh, 0.0, 1.0) * 0.60;
 
@@ -532,29 +486,12 @@ void main() {
       }
 
       // ============================================================================
-      // STICKER CLASS (creates its own DOM nodes dynamically)
+      // STICKER DRAG CLASS
       // ============================================================================
 
-      const DEFAULT_PROPS = {
-        imageWidth: 280,
-        imageHeight: 190,
-        tilt: 45,
-        lighting: true,
-        lightingStrength: 10,
-        lightingColor: "#ffffff",
-        sheenMode: "sheen",
-        elevation: 10,
-        staticShadow: "0px 2px 5px 0px rgba(0,0,0,0.18)",
-        dynamicShadow: "0px 16px 20px 0px rgba(0,0,0,0.28)",
-      };
-
       class StickerDrag {
-        static nextId = 0;
-
-        constructor(containerEl, props = {}) {
-          this.id = ++StickerDrag.nextId;
-          this.containerEl = containerEl; // #sticker-container
-          this.props = { ...DEFAULT_PROPS, ...props };
+        constructor(props) {
+          this.props = { ...COMPONENT_DEFAULTS, ...props };
 
           this.tiltSensitivity = DRAG_TILT_SENSITIVITY;
           this.maxTilt = Math.max(1, this.props.tilt);
@@ -573,10 +510,15 @@ void main() {
           this.imageWidth = this.props.imageWidth;
           this.imageHeight = this.props.imageHeight;
 
-          // Create DOM nodes
-          this.createDOM();
+          this.container = document.getElementById("sticker-container");
+          this.sticker = document.getElementById("sticker");
+          this.inner = document.getElementById("inner");
+          this.canvas = document.getElementById("gl-canvas");
+          this.sizingDiv = document.getElementById("sizing-div");
+          this.zoomProbe = document.getElementById("zoom-probe");
 
-          // WebGL refs
+          this.sizingDimensions = { width: 400, height: 400 };
+
           this.gl = null;
           this.program = null;
           this.texture = null;
@@ -585,10 +527,9 @@ void main() {
           this.indexCount = 0;
           this.uniforms = {};
 
-          // State
           this.state = {
-            x: this.props.initialX || 0,
-            y: this.props.initialY || 0,
+            x: 0,
+            y: 0,
             width: 200,
             height: 200,
             imageAspectRatio: null,
@@ -621,6 +562,7 @@ void main() {
 
           this.parsedStaticShadow = parseBoxShadow(this.props.staticShadow);
           this.parsedDynamicShadow = parseBoxShadow(this.props.dynamicShadow);
+
           this.applyResizeTimeout = null;
           this.SIZING_THRESHOLD = 5;
           this.RESIZE_DEBOUNCE_MS = 180;
@@ -633,39 +575,20 @@ void main() {
           this.init();
         }
 
-        createDOM() {
-          const wrapper = document.createElement("div");
-          wrapper.className = "sticker-instance";
-          wrapper.id = `sticker-${this.id}`;
-
-          const inner = document.createElement("div");
-          inner.className = "sticker-inner";
-
-          const canvas = document.createElement("canvas");
-          canvas.className = "sticker-canvas";
-
-          inner.appendChild(canvas);
-          wrapper.appendChild(inner);
-          this.containerEl.appendChild(wrapper);
-
-          this.stickerEl = wrapper;
-          this.innerEl = inner;
-          this.canvas = canvas;
-        }
-
         init() {
+          this.applySizingDiv();
           this.initWebGL();
           this.loadImage();
           this.attachEvents();
-          this.handleResize();
+          this.startResizeDetection();
+        }
 
-          // Watch container resize
-          this.ro = new ResizeObserver(() => {
-            const w = this.containerEl.clientWidth || 900;
-            const h = this.containerEl.clientHeight || 500;
-            this.scheduleResize(w, h);
-          });
-          this.ro.observe(this.containerEl);
+        applySizingDiv() {
+          const d = this.sizingDimensions;
+          this.sizingDiv.style.width = d.width + "px";
+          this.sizingDiv.style.height = d.height + "px";
+          this.sizingDiv.style.minWidth = d.width + "px";
+          this.sizingDiv.style.minHeight = d.height + "px";
         }
 
         initWebGL() {
@@ -684,7 +607,10 @@ void main() {
             gl.shaderSource(shader, source);
             gl.compileShader(shader);
             if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-              console.error("Shader error:", gl.getShaderInfoLog(shader));
+              console.error(
+                "Shader compile error:",
+                gl.getShaderInfoLog(shader),
+              );
               gl.deleteShader(shader);
               return null;
             }
@@ -696,11 +622,12 @@ void main() {
           if (!vs || !fs) return;
 
           const program = gl.createProgram();
+          if (!program) return;
           gl.attachShader(program, vs);
           gl.attachShader(program, fs);
           gl.linkProgram(program);
           if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-            console.error("Link error:", gl.getProgramInfoLog(program));
+            console.error("Program link error:", gl.getProgramInfoLog(program));
             return;
           }
           this.program = program;
@@ -723,8 +650,9 @@ void main() {
             "uTex",
             "uAspect",
           ];
-          for (const name of uniformNames)
+          for (const name of uniformNames) {
             this.uniforms[name] = gl.getUniformLocation(program, name);
+          }
           this.aPos = gl.getAttribLocation(program, "aPos");
           this.aUV = gl.getAttribLocation(program, "aUV");
 
@@ -732,8 +660,9 @@ void main() {
           const verts = [];
           const inds = [];
           for (let j = 0; j <= N; j++) {
-            for (let i = 0; i <= N; i++)
+            for (let i = 0; i <= N; i++) {
               verts.push((i / N) * 2 - 1, (j / N) * 2 - 1, i / N, 1 - j / N);
+            }
           }
           for (let j = 0; j < N; j++) {
             for (let i = 0; i < N; i++) {
@@ -761,23 +690,25 @@ void main() {
           this.ibo = ibo;
           this.indexCount = inds.length;
 
+          gl.viewport(0, 0, canvas.width, canvas.height);
           gl.clearColor(0, 0, 0, 0);
           gl.clear(gl.COLOR_BUFFER_BIT);
         }
 
         draw() {
-          const gl = this.gl,
-            prog = this.program,
-            tex = this.texture,
-            st = this.state;
-          if (!gl || !prog || !tex || !st.texReady) return;
+          const gl = this.gl;
+          const program = this.program;
+          const texture = this.texture;
+          const state = this.state;
 
-          gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+          if (!gl || !program || !texture || !state.texReady) return;
+
+          gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
           gl.clearColor(0, 0, 0, 0);
           gl.clear(gl.COLOR_BUFFER_BIT);
           gl.enable(gl.BLEND);
           gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-          gl.useProgram(prog);
+          gl.useProgram(program);
 
           gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
           gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ibo);
@@ -787,13 +718,13 @@ void main() {
           gl.vertexAttribPointer(this.aUV, 2, gl.FLOAT, false, 16, 8);
 
           const u = this.uniforms;
-          gl.uniform1f(u.uPeel, st.peel);
-          gl.uniform1f(u.uLift, st.lift);
-          gl.uniform1f(u.uPeelAngle, st.peelAngle);
-          gl.uniform1f(u.uPasting, st.sticking ? 1 : 0);
-          gl.uniform1f(u.uScale, st.scale);
+          gl.uniform1f(u.uPeel, state.peel);
+          gl.uniform1f(u.uLift, state.lift);
+          gl.uniform1f(u.uPeelAngle, state.peelAngle);
+          gl.uniform1f(u.uPasting, state.sticking ? 1.0 : 0.0);
+          gl.uniform1f(u.uScale, state.scale);
           gl.uniform1f(u.uElevation, this.elevation);
-          gl.uniform2f(u.uTilt, st.currentTiltX, st.currentTiltY);
+          gl.uniform2f(u.uTilt, state.currentTiltX, state.currentTiltY);
           gl.uniform1f(u.uSheenStrength, this.sheenStrength);
           gl.uniform3f(
             u.uSheenColor,
@@ -805,61 +736,80 @@ void main() {
           gl.uniform1f(u.uSheenTiltDeadzone, SHEEN_TILT_DEADZONE);
           gl.uniform1f(u.uMaxTiltDeg, this.maxTilt);
 
-          let em = 0;
-          if (this.sheenMode === "holo") em = 1;
-          else if (this.sheenMode === "rug") em = 2;
-          gl.uniform1f(u.uEffectMode, em);
-          gl.uniform1f(u.uHoloMotion, st.holoMotion);
-          gl.uniform1f(u.uAspect, st.width / st.height || 1);
+          let effectMode = 0.0;
+          if (this.sheenMode === "holo") effectMode = 1.0;
+          else if (this.sheenMode === "rug") effectMode = 2.0;
+
+          gl.uniform1f(u.uEffectMode, effectMode);
+          gl.uniform1f(u.uHoloMotion, state.holoMotion);
+          gl.uniform1f(u.uAspect, state.width / state.height);
 
           gl.activeTexture(gl.TEXTURE0);
-          gl.bindTexture(gl.TEXTURE_2D, tex);
+          gl.bindTexture(gl.TEXTURE_2D, texture);
           gl.uniform1i(u.uTex, 0);
           gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_SHORT, 0);
         }
 
         updateShadowCSS() {
-          const tRaw = Math.max(this.state.lift, this.state.peel);
+          const canvas = this.canvas;
+          const state = this.state;
+          if (!canvas) return;
+
+          const tRaw = Math.max(state.lift, state.peel);
           const t = tRaw * tRaw * (3 - 2 * tRaw);
-          this.canvas.style.filter = lerpShadow(
+          canvas.style.filter = lerpShadow(
             this.parsedStaticShadow,
             this.parsedDynamicShadow,
             t,
           );
         }
 
-        tick(ts) {
-          const st = this.state;
-          if (this.lastTickT === null) this.lastTickT = ts;
-          const dt = Math.min((ts - this.lastTickT) / 1000, 0.1);
-          this.lastTickT = ts;
+        tick(timestamp) {
+          const state = this.state;
+
+          if (this.lastTickT === null) this.lastTickT = timestamp;
+          const dt = Math.min((timestamp - this.lastTickT) / 1000, 0.1);
+          this.lastTickT = timestamp;
+
           const step = ANIM_SPEED * dt;
-          let ch = false;
+          let changed = false;
 
-          if (st.peeling && (st.peel < 1 || st.lift < 1)) {
-            st.peel = Math.min(1, st.peel + step);
-            st.lift = Math.min(1, st.lift + step);
-            ch = true;
-          }
-          if (st.sticking) {
-            if (st.peel > 0 || st.lift > 0) {
-              st.peel = Math.max(0, st.peel - step);
-              st.lift = Math.max(0, st.lift - step);
-              ch = true;
-            } else st.sticking = false;
+          if (state.peeling) {
+            if (state.peel < 1 || state.lift < 1) {
+              state.peel = Math.min(1, state.peel + step);
+              state.lift = Math.min(1, state.lift + step);
+              changed = true;
+            }
           }
 
-          const hd = this.sheenMode === "holo" && st.holoMotion > 0.005;
-          if (hd) {
-            st.holoMotion *= HOLO_MOTION_DECAY;
-            if (st.holoMotion < 0.005) st.holoMotion = 0;
-            ch = true;
+          if (state.sticking) {
+            if (state.peel > 0 || state.lift > 0) {
+              state.peel = Math.max(0, state.peel - step);
+              state.lift = Math.max(0, state.lift - step);
+              changed = true;
+            } else {
+              state.sticking = false;
+            }
           }
 
-          if (ch) this.updateShadowCSS();
-          if (ch || st.held || hd) this.draw();
+          const holoDecayActive =
+            this.sheenMode === "holo" && state.holoMotion > 0.005;
+          if (holoDecayActive) {
+            state.holoMotion *= HOLO_MOTION_DECAY;
+            if (state.holoMotion < 0.005) state.holoMotion = 0;
+            changed = true;
+          }
 
-          if (st.held || st.peeling || st.sticking || hd) {
+          if (changed) this.updateShadowCSS();
+
+          if (changed || state.held || holoDecayActive) this.draw();
+
+          if (
+            state.held ||
+            state.peeling ||
+            state.sticking ||
+            holoDecayActive
+          ) {
             this.animationId = requestAnimationFrame(this.tick);
           } else {
             this.animationId = null;
@@ -874,77 +824,111 @@ void main() {
         }
 
         handleResize() {
-          const ct = this.containerEl,
-            cv = this.canvas,
-            se = this.stickerEl,
-            gl = this.gl,
-            st = this.state;
-          if (!ct || !cv || !se || !gl) return;
+          const container = this.container;
+          const canvas = this.canvas;
+          const sticker = this.sticker;
+          const gl = this.gl;
+          const state = this.state;
 
-          const cw = ct.clientWidth || 900,
-            ch = ct.clientHeight || 500;
-          const w = this.imageWidth > 0 ? this.imageWidth : cw;
-          const h = this.imageHeight > 0 ? this.imageHeight : ch;
+          if (!container || !canvas || !sticker || !gl) return;
 
-          const maxDim = Math.max(w, h);
-          const ep = maxDim * this.elevation * 0.6;
-          const pad = PAD_BASE + ep;
-          const cw2 = w + pad * 2,
-            ch2 = h + pad * 2;
+          const containerWidth = container.clientWidth || 200;
+          const containerHeight = container.clientHeight || 200;
 
-          const sx = w / cw2,
-            sy = h / ch2,
-            sc = Math.min(sx, sy);
-          const x = (cw - w) / 2,
-            y = (ch - h) / 2;
+          const width = this.imageWidth > 0 ? this.imageWidth : containerWidth;
+          const height =
+            this.imageHeight > 0 ? this.imageHeight : containerHeight;
 
-          cv.width = Math.round(cw2 * RENDER_SCALE);
-          cv.height = Math.round(ch2 * RENDER_SCALE);
-          cv.style.width = cw2 + "px";
-          cv.style.height = ch2 + "px";
-          cv.style.position = "absolute";
-          cv.style.left = -pad + "px";
-          cv.style.top = -pad + "px";
+          const maxDim = Math.max(width, height);
+          const elevationPad = maxDim * this.elevation * 0.6;
+          const effectivePad = PAD_BASE + elevationPad;
+          const canvasWidth = width + effectivePad * 2;
+          const canvasHeight = height + effectivePad * 2;
 
-          se.style.width = w + "px";
-          se.style.height = h + "px";
-          se.style.left = x + "px";
-          se.style.top = y + "px";
+          const scaleX = width / canvasWidth;
+          const scaleY = height / canvasHeight;
+          const scale = Math.min(scaleX, scaleY);
 
-          st.width = w;
-          st.height = h;
-          st.x = x;
-          st.y = y;
-          st.scale = sc;
+          const x = (containerWidth - width) / 2;
+          const y = (containerHeight - height) / 2;
 
-          gl.viewport(0, 0, cv.width, cv.height);
-          if (st.texReady) this.draw();
+          canvas.width = Math.round(canvasWidth * RENDER_SCALE);
+          canvas.height = Math.round(canvasHeight * RENDER_SCALE);
+          canvas.style.width = `${canvasWidth}px`;
+          canvas.style.height = `${canvasHeight}px`;
+
+          canvas.style.position = "absolute";
+          canvas.style.left = `${-effectivePad}px`;
+          canvas.style.top = `${-effectivePad}px`;
+
+          sticker.style.width = `${width}px`;
+          sticker.style.height = `${height}px`;
+          sticker.style.left = `${x}px`;
+          sticker.style.top = `${y}px`;
+
+          state.width = width;
+          state.height = height;
+          state.x = x;
+          state.y = y;
+          state.scale = scale;
+
+          gl.viewport(0, 0, canvas.width, canvas.height);
+
+          if (state.texReady) this.draw();
         }
 
-        scheduleResize(mw, mh) {
+        scheduleResize(measuredW, measuredH) {
           if (this.applyResizeTimeout) clearTimeout(this.applyResizeTimeout);
           this.applyResizeTimeout = setTimeout(() => {
             this.applyResizeTimeout = null;
+            const prev = this.sizingDimensions;
+            const w = Math.max(1, Math.round(measuredW)) || prev.width;
+            const h = Math.max(1, Math.round(measuredH)) || prev.height;
+            const dw = Math.abs(w - prev.width);
+            const dh = Math.abs(h - prev.height);
+            if (dw >= this.SIZING_THRESHOLD || dh >= this.SIZING_THRESHOLD) {
+              this.sizingDimensions = { width: w, height: h };
+              this.applySizingDiv();
+            }
             this.handleResize();
           }, this.RESIZE_DEBOUNCE_MS);
         }
 
+        startResizeDetection() {
+          const container = this.container;
+          if (!container) return;
+
+          this.handleResize();
+
+          const ro = new ResizeObserver(() => {
+            const w = container.clientWidth || container.offsetWidth || 400;
+            const h = container.clientHeight || container.offsetHeight || 400;
+            this.scheduleResize(w, h);
+          });
+          ro.observe(container);
+          this.resizeObserver = ro;
+        }
+
         loadImage() {
-          const src =
-            resolveImageSource(this.props.image) ||
-            "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/3fb4a247-64e9-4c54-2391-86598eebfe00/w=800";
+          const imageSrc =
+            resolveImageSource(this.props.image) || DEFAULT_IMAGE;
+
           const gl = this.gl;
           if (!gl || !this.program) return;
+
           const img = new Image();
           img.crossOrigin = "anonymous";
 
           img.onload = () => {
-            const st = this.state;
-            st.imageAspectRatio = img.width / img.height;
+            const state = this.state;
+            state.imageAspectRatio = img.width / img.height;
+
             if (this.texture) gl.deleteTexture(this.texture);
-            const tx = gl.createTexture();
-            if (!tx) return;
-            gl.bindTexture(gl.TEXTURE_2D, tx);
+
+            const texture = gl.createTexture();
+            if (!texture) return;
+
+            gl.bindTexture(gl.TEXTURE_2D, texture);
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
             gl.texImage2D(
               gl.TEXTURE_2D,
@@ -966,130 +950,168 @@ void main() {
             );
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            this.texture = tx;
-            st.texReady = true;
+
+            this.texture = texture;
+            state.texReady = true;
+
             this.handleResize();
             this.updateShadowCSS();
             this.draw();
           };
-          img.src = src;
+
+          img.onerror = () => console.error("Failed to load image");
+          img.src = imageSrc;
         }
 
         settleTilt() {
-          const st = this.state,
-            inn = this.innerEl;
-          const go = () => {
-            st.dragTiltX *= 0.9;
-            st.dragTiltY *= 0.9;
-            st.currentTiltX = st.dragTiltX;
-            st.currentTiltY = st.dragTiltY;
-            if (inn)
-              inn.style.transform = `rotateX(${st.dragTiltX}deg) rotateY(${st.dragTiltY}deg)`;
-            if (Math.abs(st.dragTiltX) > 0.1 || Math.abs(st.dragTiltY) > 0.1) {
-              requestAnimationFrame(go);
+          const state = this.state;
+          const inner = this.inner;
+
+          const step = () => {
+            state.dragTiltX *= 0.9;
+            state.dragTiltY *= 0.9;
+            state.currentTiltX = state.dragTiltX;
+            state.currentTiltY = state.dragTiltY;
+
+            if (inner) {
+              inner.style.transform = `rotateX(${state.dragTiltX}deg) rotateY(${state.dragTiltY}deg)`;
+            }
+
+            if (
+              Math.abs(state.dragTiltX) > 0.1 ||
+              Math.abs(state.dragTiltY) > 0.1
+            ) {
+              requestAnimationFrame(step);
             } else {
-              st.dragTiltX = 0;
-              st.dragTiltY = 0;
-              st.currentTiltX = 0;
-              st.currentTiltY = 0;
-              st.prevTiltX = 0;
-              st.prevTiltY = 0;
-              if (inn) inn.style.transform = "";
+              state.dragTiltX = 0;
+              state.dragTiltY = 0;
+              state.currentTiltX = 0;
+              state.currentTiltY = 0;
+              state.prevTiltX = 0;
+              state.prevTiltY = 0;
+              if (inner) inner.style.transform = "";
             }
           };
-          go();
+          step();
         }
 
-        pointerDown(cx, cy) {
-          const st = this.state,
-            se = this.stickerEl,
-            inn = this.innerEl;
-          if (!se || !inn) return;
-          const rc = se.getBoundingClientRect();
-          inn.style.transformOrigin =
-            cx - rc.left + "px " + (cy - rc.top) + "px";
-          const cx2 = rc.left + rc.width / 2,
-            cy2 = rc.top + rc.height / 2;
-          st.peelAngle = Math.atan2(cy - cy2, cx - cx2);
-          st.dragStartX = cx;
-          st.dragStartY = cy;
-          st.dragOrigX = st.x;
-          st.dragOrigY = st.y;
-          st.peel = 0;
-          st.lift = 0;
-          st.held = true;
-          st.peeling = true;
-          st.sticking = false;
-          st.lastMoveX = cx;
-          st.lastMoveY = cy;
-          st.lastMoveT = performance.now();
-          se.style.zIndex = getNextZIndex();
+        pointerDown(clientX, clientY) {
+          const state = this.state;
+          const container = this.container;
+          const sticker = this.sticker;
+          const inner = this.inner;
+          if (!container || !sticker || !inner) return;
+
+          const rect = sticker.getBoundingClientRect();
+          const grabOffsetX = clientX - rect.left;
+          const grabOffsetY = clientY - rect.top;
+          inner.style.transformOrigin = `${grabOffsetX}px ${grabOffsetY}px`;
+
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+          state.peelAngle = Math.atan2(clientY - centerY, clientX - centerX);
+
+          state.dragStartX = clientX;
+          state.dragStartY = clientY;
+          state.dragOrigX = state.x;
+          state.dragOrigY = state.y;
+
+          state.peel = 0;
+          state.lift = 0;
+
+          state.held = true;
+          state.peeling = true;
+          state.sticking = false;
+
+          state.lastMoveX = clientX;
+          state.lastMoveY = clientY;
+          state.lastMoveT = performance.now();
+
+          container.style.zIndex = `${getNextZIndex()}`;
+
           this.ensureTickRunning();
         }
 
-        pointerMove(cx, cy) {
-          const st = this.state;
-          if (!st.held) return;
-          const se = this.stickerEl,
-            inn = this.innerEl;
-          if (!se || !inn) return;
-          st.x = st.dragOrigX + (cx - st.dragStartX);
-          st.y = st.dragOrigY + (cy - st.dragStartY);
-          se.style.left = st.x + "px";
-          se.style.top = st.y + "px";
-          const now = performance.now(),
-            dt = Math.max(1, now - st.lastMoveT);
-          const vx = ((cx - st.lastMoveX) / dt) * 16,
-            vy = ((cy - st.lastMoveY) / dt) * 16;
-          st.lastMoveX = cx;
-          st.lastMoveY = cy;
-          st.lastMoveT = now;
-          const ty = Math.max(
+        pointerMove(clientX, clientY) {
+          const state = this.state;
+          if (!state.held) return;
+
+          const sticker = this.sticker;
+          const inner = this.inner;
+          if (!sticker || !inner) return;
+
+          state.x = state.dragOrigX + (clientX - state.dragStartX);
+          state.y = state.dragOrigY + (clientY - state.dragStartY);
+          sticker.style.left = `${state.x}px`;
+          sticker.style.top = `${state.y}px`;
+
+          const now = performance.now();
+          const dt = Math.max(1, now - state.lastMoveT);
+          const velX = ((clientX - state.lastMoveX) / dt) * 16;
+          const velY = ((clientY - state.lastMoveY) / dt) * 16;
+          state.lastMoveX = clientX;
+          state.lastMoveY = clientY;
+          state.lastMoveT = now;
+
+          const targetTiltY = Math.max(
             -this.maxTilt,
-            Math.min(this.maxTilt, vx * this.tiltSensitivity),
+            Math.min(this.maxTilt, velX * this.tiltSensitivity),
           );
-          const tx = Math.max(
+          const targetTiltX = Math.max(
             -this.maxTilt,
-            Math.min(this.maxTilt, -vy * this.tiltSensitivity),
+            Math.min(this.maxTilt, -velY * this.tiltSensitivity),
           );
-          st.dragTiltX += (tx - st.dragTiltX) * this.tiltSmoothing;
-          st.dragTiltY += (ty - st.dragTiltY) * this.tiltSmoothing;
-          st.currentTiltX = st.dragTiltX;
-          st.currentTiltY = st.dragTiltY;
+
+          state.dragTiltX +=
+            (targetTiltX - state.dragTiltX) * this.tiltSmoothing;
+          state.dragTiltY +=
+            (targetTiltY - state.dragTiltY) * this.tiltSmoothing;
+
+          state.currentTiltX = state.dragTiltX;
+          state.currentTiltY = state.dragTiltY;
+
           if (this.sheenMode === "holo") {
-            const td =
-              Math.abs(st.dragTiltX - st.prevTiltX) +
-              Math.abs(st.dragTiltY - st.prevTiltY);
-            st.holoMotion = Math.min(1, st.holoMotion + td * HOLO_MOTION_BUMP);
-            st.prevTiltX = st.dragTiltX;
-            st.prevTiltY = st.dragTiltY;
+            const tiltDelta =
+              Math.abs(state.dragTiltX - state.prevTiltX) +
+              Math.abs(state.dragTiltY - state.prevTiltY);
+            state.holoMotion = Math.min(
+              1,
+              state.holoMotion + tiltDelta * HOLO_MOTION_BUMP,
+            );
+            state.prevTiltX = state.dragTiltX;
+            state.prevTiltY = state.dragTiltY;
           }
-          inn.style.transform = `rotateX(${st.dragTiltX}deg) rotateY(${st.dragTiltY}deg)`;
+
+          inner.style.transform = `rotateX(${state.dragTiltX}deg) rotateY(${state.dragTiltY}deg)`;
         }
 
         pointerUp() {
-          const st = this.state;
-          if (!st.held) return;
-          const inn = this.innerEl;
-          st.held = false;
-          st.peeling = false;
-          st.sticking = true;
-          if (st.peel >= 0.95 && inn) {
-            const rc = inn.getBoundingClientRect(),
-              cx2 = rc.left + rc.width / 2,
-              cy2 = rc.top + rc.height / 2;
-            st.peelAngle = Math.atan2(
-              -(st.lastMoveY - cy2),
-              -(st.lastMoveX - cx2),
+          const state = this.state;
+          if (!state.held) return;
+
+          const inner = this.inner;
+
+          state.held = false;
+          state.peeling = false;
+          state.sticking = true;
+
+          if (state.peel >= 0.95 && inner) {
+            const rect = inner.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            state.peelAngle = Math.atan2(
+              -(state.lastMoveY - centerY),
+              -(state.lastMoveX - centerX),
             );
-            st.peel = 1;
+            state.peel = 1;
           }
+
           this.settleTilt();
           this.ensureTickRunning();
         }
 
         attachEvents() {
-          this.stickerEl.addEventListener("mousedown", (e) => {
+          this.sticker.addEventListener("mousedown", (e) => {
             e.preventDefault();
             this.pointerDown(e.clientX, e.clientY);
           });
@@ -1097,20 +1119,21 @@ void main() {
             this.pointerMove(e.clientX, e.clientY),
           );
           window.addEventListener("mouseup", () => this.pointerUp());
-          this.stickerEl.addEventListener(
+
+          this.sticker.addEventListener(
             "touchstart",
             (e) => {
               e.preventDefault();
-              const t = e.touches[0];
-              if (t) this.pointerDown(t.clientX, t.clientY);
+              const touch = e.touches[0];
+              if (touch) this.pointerDown(touch.clientX, touch.clientY);
             },
             { passive: false },
           );
           window.addEventListener(
             "touchmove",
             (e) => {
-              const t = e.touches[0];
-              if (t) this.pointerMove(t.clientX, t.clientY);
+              const touch = e.touches[0];
+              if (touch) this.pointerMove(touch.clientX, touch.clientY);
             },
             { passive: false },
           );
@@ -1118,69 +1141,8 @@ void main() {
         }
       }
 
-      // ============================================================================
-      // BOOT — Create Multiple Stickers
-      // ============================================================================
-
-      const stickerContainer = document.getElementById("sticker-container");
-
       window.addEventListener("DOMContentLoaded", () => {
-        // Sticker 1: Photo/Polaroid
-        new StickerDrag(stickerContainer, {
-          image: {
-            src: "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/fake-journal.png",
-          },
-          imageWidth: 260,
-          imageHeight: 340,
-          initialX: 60,
-          initialY: 40,
-          sheenMode: "sheen",
-          elevation: 8,
-        });
-
-        // Sticker 2: Another image / note
-        new StickerDrag(stickerContainer, {
-          image: {
-            src: "https://pbs.twimg.com/media/HO3Rw0iaoAAUhhB?format=jpg&name=large",
-          },
-          imageWidth: 300,
-          imageHeight: 210,
-          initialX: 380,
-          initialY: 140,
-          sheenMode: "holo",
-          elevation: 10,
-          tilt: 35,
-        });
-
-        // Sticker 3: Rug texture mode on a smaller card
-        new StickerDrag(stickerContainer, {
-          image: {
-            src: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=600&auto=format&fit=crop",
-          },
-          imageWidth: 240,
-          imageHeight: 320,
-          initialX: 700,
-          initialY: 60,
-          sheenMode: "rug", // <-- Rug mode!
-          elevation: 12,
-          lightingStrength: 7,
-          staticShadow: "0px 3px 6px 0px rgba(0,0,0,0.15)",
-          dynamicShadow: "0px 18px 22px 0px rgba(0,0,0,0.25)",
-        });
-
-        // Sticker 4: One more for fun
-        new StickerDrag(stickerContainer, {
-          image: {
-            src: "https://images.unsplash.com/photo-1490682143684-14369e18dce8?q=80&w=600&auto=format&fit=crop",
-          },
-          imageWidth: 220,
-          imageHeight: 150,
-          initialX: 520,
-          initialY: 350,
-          sheenMode: "sheen",
-          elevation: 6,
-          tilt: 50,
-        });
+        new StickerDrag();
       });
     </script>
   </body>

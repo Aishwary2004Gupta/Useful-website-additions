@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Realistic Whiteboard Studio</title>
+    <title>Whiteboard Studio</title>
     <style>
       * {
         margin: 0;
@@ -11,88 +11,227 @@
         box-sizing: border-box;
       }
 
-      html, body {
+      html,
+      body {
         width: 100%;
         height: 100%;
-        background: #e0e0e0;
         overflow: hidden;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       }
 
-      /* Realistic Wall Texture */
+      /* Textured Wall Background */
       #wall {
         position: fixed;
         inset: 0;
-        background-color: #e5e5e5;
-        background-image: 
-          radial-gradient(circle at 2px 2px, rgba(0,0,0,0.02) 1px, transparent 0);
-        background-size: 24px 24px;
+        background-color: #cfc5b8;
+        background-image:
+          url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.12'/%3E%3C/svg%3E");
         z-index: 0;
       }
 
-      /* Realistic Whiteboard */
-      #whiteboard-container {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        width: min(92vw, 1100px);
-        height: min(85vh, 700px);
+      /* Baseboard */
+      .baseboard {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 48px;
+        background: linear-gradient(180deg, #e8e4dc 0%, #d9d4ca 60%, #c8c2b6 100%);
+        border-top: 2px solid rgba(255,255,255,0.7);
         z-index: 1;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.06), 0 -2px 8px rgba(0,0,0,0.08);
       }
 
-      #whiteboard-frame {
+      /* REAL WHITEBOARD - WALL MOUNTED STYLE */
+      #whiteboard {
         position: absolute;
-        inset: 0;
-        background: #fff;
-        /* Aluminum Frame */
-        border: 12px solid #b0b0b0;
-        border-image: linear-gradient(to bottom, #d1d1d1, #a0a0a0, #d1d1d1) 1;
+        left: 50%;
+        top: 52%;
+        transform: translate(-50%, -50%);
+        width: min(92vw, 1100px);
+        height: min(72vh, 650px);
         border-radius: 4px;
-        box-shadow: 
-            0 20px 50px rgba(0,0,0,0.15),
-            0 0 0 2px rgba(0,0,0,0.05);
+        /* Metallic aluminum frame */
+        background:
+          linear-gradient(
+            180deg,
+            #f5f6f7 0%,
+            #ffffff 4px,
+            #fafbfc calc(100% - 32px),
+            #eceef0 calc(100% - 28px),
+            #e1e4e7 100%
+          );
+        border-top: 4px solid #d0d4d8;
+        border-left: 4px solid #cdd0d4;
+        border-right: 4px solid #b8bcc1;
+        border-bottom: 8px solid #aeb2b7;
+        box-shadow:
+          0 25px 70px rgba(20, 25, 35, 0.18),
+          0 10px 24px rgba(20, 25, 35, 0.10),
+          inset 0 1px 0 rgba(255,255,255,0.9),
+          inset 0 -1px 0 rgba(0,0,0,0.04);
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
         overflow: hidden;
       }
 
-      /* Glossy surface overlay */
-      #whiteboard-frame::before {
+      /* Frame corner accents */
+      #whiteboard::before {
         content: "";
         position: absolute;
         inset: 0;
-        background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 50%);
         pointer-events: none;
-        z-index: 5;
+        border-radius: 4px;
+        background:
+          radial-gradient(circle at 6px 6px, rgba(255,255,255,0.6) 0%, transparent 40%),
+          radial-gradient(circle at calc(100% - 6px) 6px, rgba(255,255,255,0.4) 0%, transparent 40%),
+          radial-gradient(circle at 6px calc(100% - 6px), rgba(0,0,0,0.05) 0%, transparent 40%),
+          radial-gradient(circle at calc(100% - 6px) calc(100% - 6px), rgba(0,0,0,0.07) 0%, transparent 40%);
       }
 
-      /* Marker Tray */
-      #marker-tray {
+      /* Surface glare/sheen */
+      #wb-surface {
+        flex: 1;
+        margin: 8px 10px 34px 10px;
+        background: linear-gradient(
+          135deg,
+          #fdfefe 0%,
+          #f7f9fa 25%,
+          #ffffff 45%,
+          #f8fafa 55%,
+          #ffffff 75%,
+          #f5f7f8 100%
+        );
+        border-radius: 2px;
+        position: relative;
+        overflow: hidden;
+        /* Subtle grid like real whiteboards */
+        background-image:
+          repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 49px,
+            rgba(220,225,230,0.15) 49px,
+            rgba(220,225,230,0.15) 50px
+          ),
+          repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 49px,
+            rgba(220,225,230,0.15) 49px,
+            rgba(220,225,230,0.15) 50px
+          );
+      }
+
+      /* Realistic surface glare */
+      #wb-surface::before {
+        content: "";
         position: absolute;
-        bottom: -15px;
-        left: 10%;
-        right: 10%;
-        height: 20px;
-        background: linear-gradient(to bottom, #d1d1d1, #999);
-        border-radius: 0 0 10px 10px;
-        box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+        inset: 0;
+        background: linear-gradient(
+          115deg,
+          rgba(255,255,255,0.65) 0%,
+          rgba(255,255,255,0.2) 25%,
+          transparent 45%
+        );
+        pointer-events: none;
+        mix-blend-mode: overlay;
+      }
+
+      /* Faint ghost writing */
+      #wb-surface::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: 
+          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='200'%3E%3Ctext x='40' y='80' fill='%237a8599' font-family='monospace' font-size='22' opacity='0.12' style='writing-mode:lr;' transform='rotate(-1,40,80)'%3E3 - 24%3C/text%3E%3Ctext x='40' y='120' fill='%237a8599' font-family='monospace' font-size='22' opacity='0.09' transform='rotate(-0.5,40,120)'%3E4 - 31%3C/text%3E%3Ctext x='40' y='160' fill='%237a8599' font-family='monospace' font-size='22' opacity='0.10' transform='rotate(0.5,40,160)'%3E7 - 30%3C/text%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: 36px 42%;
+        background-size: auto 44%;
+        pointer-events: none;
+      }
+
+      /* Marker tray */
+      #wb-tray {
+        height: 26px;
+        margin: 0 14px 6px 14px;
+        background: linear-gradient(
+          180deg,
+          #dce0e4 0%,
+          #ced2d7 40%,
+          #c1c5cb 100%
+        );
+        border-radius: 3px 3px 4px 4px;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,0.5),
+          inset 0 -1px 0 rgba(0,0,0,0.08),
+          0 2px 4px rgba(0,0,0,0.06);
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        gap: 6px;
+        position: relative;
         z-index: 2;
       }
 
-      /* The area where stickers can be dragged */
-      #sticker-canvas-area {
+      .marker {
+        width: 38px;
+        height: 11px;
+        border-radius: 2px;
+        transform: rotate(-2deg);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+      }
+      .marker-black { background: linear-gradient(180deg, #333 0%, #111 100%); }
+      .marker-red { background: linear-gradient(180deg, #c0392b 0%, #96281b 100%); }
+      .marker-blue { background: linear-gradient(180deg, #2980b9 0%, #1a5276 100%); }
+      .marker-green { background: linear-gradient(180deg, #27ae60 0%, #1e8449 100%); }
+
+      .eraser {
+        width: 56px;
+        height: 16px;
+        margin-left: auto;
+        border-radius: 3px;
+        background: linear-gradient(
+          180deg,
+          #4a5568 0%,
+          #2d3748 50%,
+          #1a202c 100%
+        );
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        position: relative;
+      }
+      .eraser::after {
+        content: "";
         position: absolute;
-        inset: 20px; /* Padding inside the frame */
-        z-index: 10;
-        perspective: 1000px;
+        bottom: 0;
+        left: 2px;
+        right: 2px;
+        height: 5px;
+        background: #718096;
+        border-radius: 0 0 2px 2px;
       }
 
-      /* Sticker Instance Styles */
+      /* STICKER CONTAINER */
+      #sticker-container {
+        position: absolute;
+        inset: 0;
+        overflow: visible;
+        perspective: 800px;
+        z-index: 3;
+        pointer-events: none;
+      }
+
+      /* Individual sticker wrapper */
       .sticker-instance {
         position: absolute;
         cursor: grab;
         user-select: none;
+        perspective: 800px;
         transform-style: preserve-3d;
         will-change: transform;
+        overflow: visible;
+        pointer-events: auto;
       }
 
       .sticker-instance:active {
@@ -104,307 +243,757 @@
         width: 100%;
         height: 100%;
         transform-style: preserve-3d;
+        overflow: visible;
       }
 
-      .gl-canvas {
+      .sticker-canvas {
         display: block;
         pointer-events: none;
         position: absolute;
-        will-change: filter;
       }
     </style>
   </head>
   <body>
     <div id="wall"></div>
+    <div class="baseboard"></div>
 
-    <div id="whiteboard-container">
-      <div id="whiteboard-frame">
-        <div id="sticker-canvas-area">
-          <!-- Stickers will be injected here -->
-        </div>
+    <div id="whiteboard">
+      <div id="wb-surface">
+        <!-- Stickers will be placed here via JS -->
       </div>
-      <div id="marker-tray"></div>
+      <div id="wb-tray">
+        <div class="marker marker-black"></div>
+        <div class="marker marker-red"></div>
+        <div class="marker marker-blue"></div>
+        <div class="marker marker-green"></div>
+        <div class="eraser"></div>
+      </div>
+
+      <!-- Sticker container layered on top of surface -->
+      <div id="sticker-container"></div>
     </div>
 
     <script>
       // ============================================================================
-      // CONFIGURATION & SHADERS
+      // CONSTANTS & DEFAULTS
       // ============================================================================
+
       const RENDER_SCALE = 2;
-      const PAD_BASE = 30;
+      const PAD_BASE = 20;
       const MESH_GRID_SIZE = 32;
+      const DRAG_Z_INDEX_BASE = 100;
+
+      let zIndexCounter = DRAG_Z_INDEX_BASE;
+      function getNextZIndex() {
+        zIndexCounter += 1;
+        return zIndexCounter;
+      }
+
+      const DRAG_TILT_SENSITIVITY = 3;
+      const DRAG_MAX_TILT_DEG = 30;
+      const DRAG_TILT_SMOOTHING = 0.05;
+      const SHEEN_TILT_SHIFT = 0.05;
+      const SHEEN_TILT_DEADZONE = 0.035;
       const ANIM_SPEED = 1.92;
-      const ELEVATION_MAX = 0.3;
+      const HOLO_MOTION_BUMP = 0.15;
+      const HOLO_MOTION_DECAY = 0.88;
+      const ELEVATION_INTERNAL_MAX = 0.3;
+
+      // ============================================================================
+      // WEBGL SHADERS
+      // ============================================================================
 
       const VERTEX_SHADER = `
-        attribute vec2 aPos;
-        attribute vec2 aUV;
-        uniform float uPeel, uLift, uPeelAngle, uPasting, uScale, uElevation;
-        varying vec2 vUV;
-        varying float vHi, vSh;
-        void main() {
-            vUV = aUV;
-            vec2 p = aPos;
-            vHi = 0.0; vSh = 0.0;
-            if (uPeel > 0.0) {
-                vec2 peelAxis = vec2(cos(uPeelAngle), sin(uPeelAngle));
-                vec2 uvCentered = aUV - vec2(0.5);
-                float proj = dot(uvCentered, peelAxis);
-                float diag = 0.5 - proj;
-                float peelLine = -0.3 + uPeel * 2.0;
-                float rampWidth = 0.6;
-                float lifted = smoothstep(peelLine - rampWidth, peelLine, diag);
-                lifted = 1.0 - lifted;
-                float scale = 1.0 + lifted * uElevation;
-                p *= scale;
-                float inRamp = smoothstep(peelLine - rampWidth, peelLine - rampWidth * 0.5, diag) *
-                               smoothstep(peelLine + 0.05, peelLine - rampWidth * 0.3, diag);
-                float curveAmount = uPasting > 0.5 ? 0.06 : 0.12;
-                p += (-peelAxis) * inRamp * curveAmount;
-                float t = smoothstep(peelLine - rampWidth, peelLine, diag);
-                vHi = inRamp * 0.75 * pow(1.0 - t, 1.2);
-                vSh = inRamp * 0.75 * pow(t, 1.2);
-            }
-            gl_Position = vec4(p * uScale, 0.0, 1.0);
-        }`;
+attribute vec2 aPos;
+attribute vec2 aUV;
+uniform float uPeel;
+uniform float uLift;
+uniform float uPeelAngle;
+uniform float uPasting;
+uniform float uScale;
+uniform float uElevation;
+varying vec2 vUV;
+varying float vHi;
+varying float vSh;
+
+void main() {
+    vUV = aUV;
+    vec2 p = aPos;
+    vHi = 0.0;
+    vSh = 0.0;
+
+    if (uPeel > 0.0) {
+        vec2 peelAxis = vec2(cos(uPeelAngle), sin(uPeelAngle));
+        vec2 uvCentered = aUV - vec2(0.5);
+        float proj = dot(uvCentered, peelAxis);
+        float diag = 0.5 - proj;
+
+        float peelLine = -0.3 + uPeel * 2.0;
+        float rampWidth = 0.6;
+        float lifted = smoothstep(peelLine - rampWidth, peelLine, diag);
+        lifted = 1.0 - lifted;
+
+        float scale = 1.0 + lifted * uElevation;
+        p *= scale;
+
+        float inRamp = smoothstep(peelLine - rampWidth, peelLine - rampWidth * 0.5, diag) *
+                       smoothstep(peelLine + 0.05, peelLine - rampWidth * 0.3, diag);
+
+        float curveAmount = uPasting > 0.5 ? 0.06 : 0.12;
+        p += (-peelAxis) * inRamp * curveAmount;
+
+        float t = smoothstep(peelLine - rampWidth, peelLine, diag);
+        vHi = inRamp * 0.75 * pow(1.0 - t, 1.2);
+        vSh = inRamp * 0.75 * pow(t, 1.2);
+    }
+
+    gl_Position = vec4(p * uScale, 0.0, 1.0);
+}
+`;
 
       const FRAGMENT_SHADER = `
-        precision mediump float;
-        uniform sampler2D uTex;
-        uniform vec2 uTilt;
-        uniform float uSheenStrength, uMaxTiltDeg, uAspect;
-        varying vec2 vUV;
-        varying float vHi, vSh;
-        float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
-        vec3 overlay(vec3 b, vec3 l) { return mix(2.0*b*l, 1.0-2.0*(1.0-b)*(1.0-l), step(0.5,b)); }
-        void main() {
-            vec4 tex = texture2D(uTex, vUV);
-            if (tex.a < 0.01) discard;
-            vec3 c = tex.rgb * 0.95;
-            // Rug Logic
-            vec2 aspUV = vec2(vUV.x * uAspect, vUV.y);
-            float weave = (sin(aspUV.x * 400.0) * sin(aspUV.y * 400.0)) * 0.5 + 0.5;
-            c *= mix(0.5, 1.2, mix(weave, hash(aspUV * 800.0), 0.3));
-            float align = dot(normalize(uTilt + 0.001), normalize(vec2(1.0, -1.0)));
-            c *= mix(0.8, 1.3, align * 0.5 + 0.5);
-            // Peel Lighting
-            c = mix(c, overlay(c, vec3(1.0)), clamp(vHi, 0.0, 1.0) * 0.55);
-            float sh = clamp(vSh, 0.0, 1.0) * 0.6;
-            c = mix(c, overlay(c, vec3(0.0)), sh) * (1.0 - sh * 0.35);
-            gl_FragColor = vec4(c, tex.a);
-        }`;
+precision mediump float;
+uniform sampler2D uTex;
+uniform vec2 uTilt;
+uniform float uSheenStrength;
+uniform float uSheenTiltShift;
+uniform float uSheenTiltDeadzone;
+uniform float uMaxTiltDeg;
+uniform float uEffectMode;
+uniform float uHoloMotion;
+uniform vec3 uSheenColor;
+uniform float uAspect;
+varying vec2 vUV;
+varying float vHi;
+varying float vSh;
+
+float hash(vec2 p) {
+    return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+vec3 overlayBlend(vec3 base, vec3 blend) {
+    return mix(2.0 * base * blend, 1.0 - 2.0 * (1.0 - base) * (1.0 - blend), step(0.5, base));
+}
+
+vec3 hsl2rgb(float h, float s, float l) {
+    float c = (1.0 - abs(2.0 * l - 1.0)) * s;
+    float x = c * (1.0 - abs(mod(h * 6.0, 2.0) - 1.0));
+    float m = l - c * 0.5;
+    vec3 rgb;
+    if (h < 1.0/6.0) rgb = vec3(c, x, 0.0);
+    else if (h < 2.0/6.0) rgb = vec3(x, c, 0.0);
+    else if (h < 3.0/6.0) rgb = vec3(0.0, c, x);
+    else if (h < 4.0/6.0) rgb = vec3(0.0, x, c);
+    else if (h < 5.0/6.0) rgb = vec3(x, 0.0, c);
+    else rgb = vec3(c, 0.0, x);
+    return rgb + m;
+}
+
+void main() {
+    vec4 tex = texture2D(uTex, vUV);
+    if (tex.a < 0.01) discard;
+
+    vec3 c = tex.rgb * 0.95;
+    float maxTilt = max(0.001, uMaxTiltDeg);
+    float tiltMag = clamp(length(uTilt) / maxTilt, 0.0, 1.0);
+
+    if (uEffectMode > 1.5) {
+        // RUG MODE
+        vec2 aspUV = vec2(vUV.x * uAspect, vUV.y);
+        float scale = 400.0;
+        float sx = sin(aspUV.x * scale);
+        float sy = sin(aspUV.y * scale);
+        float weave = (sx * sy) * 0.5 + 0.5;
+        float n = hash(aspUV * 800.0);
+        float pattern = mix(weave, n, 0.3);
+        c *= mix(0.45, 1.2, pattern);
+        vec2 pileDir = normalize(vec2(1.0, -1.0)); 
+        float alignment = dot(uTilt / maxTilt, pileDir);
+        float pileLighting = mix(0.7, 1.35, alignment * 0.5 + 0.5);
+        c *= mix(1.0, pileLighting, uSheenStrength);
+    } else {
+        float tiltGate = smoothstep(uSheenTiltDeadzone, 1.0, tiltMag);
+        float gradient = fract(vUV.x * 0.5 + vUV.y * 0.5 + uTilt.x * uSheenTiltShift + uTilt.y * uSheenTiltShift);
+
+        if (uEffectMode > 0.5) {
+            float holoStrength = uSheenStrength * uHoloMotion;
+            float distFromWhite = length(tex.rgb - vec3(1.0));
+            float nonWhiteMask = smoothstep(0.06, 0.22, distFromWhite);
+            vec3 rainbow = hsl2rgb(gradient, 0.8, 0.55);
+            c = mix(c, rainbow, holoStrength * nonWhiteMask * tex.a);
+        } else {
+            float effectStrength = uSheenStrength * tiltGate;
+            float sheen = smoothstep(0.2, 0.5, gradient) * (1.0 - smoothstep(0.5, 0.8, gradient));
+            c = mix(c, uSheenColor, sheen * effectStrength * tex.a);
+        }
+    }
+
+    float hiW = clamp(vHi, 0.0, 1.0) * 0.55;
+    float shW = clamp(vSh, 0.0, 1.0) * 0.60;
+
+    vec3 hi = overlayBlend(c, vec3(1.0));
+    c = mix(c, hi, hiW);
+
+    vec3 sh = overlayBlend(c, vec3(0.0));
+    c = mix(c, sh, shW);
+    c *= (1.0 - shW * 0.35);
+
+    c = clamp(c, 0.0, 1.0);
+    gl_FragColor = vec4(c, tex.a);
+}
+`;
 
       // ============================================================================
-      // STICKER CLASS
+      // UTILITIES
       // ============================================================================
-      let globalZ = 1000;
 
-      class Sticker {
-        constructor(parent, config) {
-          this.config = {
-            x: 50, y: 50, w: 200, h: 200,
-            img: '', ...config
-          };
-          
+      function resolveImageSource(input) {
+        if (!input) return undefined;
+        if (typeof input === "string") return input.trim() || undefined;
+        return (
+          input.src ||
+          input.url ||
+          (input.asset && input.asset.url) ||
+          undefined
+        );
+      }
+
+      function parseColorToRgb(input) {
+        if (!input) return [1, 1, 1];
+        const s = input.trim();
+        const m = s.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/i);
+        if (m) return [+m[1] / 255, +m[2] / 255, +m[3] / 255];
+        let h = s.replace(/^#/, "");
+        if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+        if (h.length >= 6)
+          return [
+            parseInt(h.slice(0, 2), 16) / 255,
+            parseInt(h.slice(2, 4), 16) / 255,
+            parseInt(h.slice(4, 6), 16) / 255,
+          ];
+        return [1, 1, 1];
+      }
+
+      function parseBoxShadow(shadow) {
+        const result = { x: 0, y: 0, blur: 0, color: "rgba(0,0,0,0.3)" };
+        if (!shadow) return result;
+        const colorMatch = shadow.match(
+          /(rgba?\([^)]+\)|#[0-9a-fA-F]{3,8}|\b[a-z]+\b(?=\s*$))/i,
+        );
+        if (colorMatch) result.color = colorMatch[0];
+        const numbers = shadow.match(/-?\d+(\.\d+)?(px)?/g);
+        if (numbers) {
+          const vals = numbers.map((n) => parseFloat(n));
+          if (vals.length >= 1) result.x = vals[0];
+          if (vals.length >= 2) result.y = vals[1];
+          if (vals.length >= 3) result.blur = vals[2];
+        }
+        return result;
+      }
+
+      function lerpShadow(a, b, t) {
+        const x = a.x + (b.x - a.x) * t;
+        const y = a.y + (b.y - a.y) * t;
+        const blur = a.blur + (b.blur - a.blur) * t;
+        const color = t > 0.5 ? b.color : a.color;
+        return `drop-shadow(${x.toFixed(2)}px ${y.toFixed(2)}px ${blur.toFixed(2)}px ${color})`;
+      }
+
+      // ============================================================================
+      // STICKER CLASS (creates its own DOM nodes dynamically)
+      // ============================================================================
+
+      const DEFAULT_PROPS = {
+        imageWidth: 280,
+        imageHeight: 190,
+        tilt: 45,
+        lighting: true,
+        lightingStrength: 10,
+        lightingColor: "#ffffff",
+        sheenMode: "sheen",
+        elevation: 10,
+        staticShadow: "0px 2px 5px 0px rgba(0,0,0,0.18)",
+        dynamicShadow: "0px 16px 20px 0px rgba(0,0,0,0.28)",
+      };
+
+      class StickerDrag {
+        static nextId = 0;
+
+        constructor(containerEl, props = {}) {
+          this.id = ++StickerDrag.nextId;
+          this.containerEl = containerEl; // #sticker-container
+          this.props = { ...DEFAULT_PROPS, ...props };
+
+          this.tiltSensitivity = DRAG_TILT_SENSITIVITY;
+          this.maxTilt = Math.max(1, this.props.tilt);
+          this.tiltSmoothing =
+            this.props.tiltSmoothing != null
+              ? this.props.tiltSmoothing
+              : DRAG_TILT_SMOOTHING;
+          this.sheenStrength = this.props.lighting
+            ? Math.max(1, Math.min(10, this.props.lightingStrength)) / 10
+            : 0;
+          this.sheenColor = parseColorToRgb(this.props.lightingColor);
+          this.elevation =
+            (Math.max(1, Math.min(10, this.props.elevation)) / 10) *
+            ELEVATION_INTERNAL_MAX;
+          this.sheenMode = this.props.sheenMode;
+          this.imageWidth = this.props.imageWidth;
+          this.imageHeight = this.props.imageHeight;
+
+          // Create DOM nodes
+          this.createDOM();
+
+          // WebGL refs
+          this.gl = null;
+          this.program = null;
+          this.texture = null;
+          this.vbo = null;
+          this.ibo = null;
+          this.indexCount = 0;
+          this.uniforms = {};
+
+          // State
           this.state = {
-            x: this.config.x, y: this.config.y,
-            peel: 0, lift: 0, tiltX: 0, tiltY: 0,
-            held: false, peeling: false, sticking: false,
-            lastX: 0, lastY: 0, lastT: 0, scale: 1.0,
-            texReady: false
+            x: this.props.initialX || 0,
+            y: this.props.initialY || 0,
+            width: 200,
+            height: 200,
+            imageAspectRatio: null,
+            scale: 1.0,
+            held: false,
+            peeling: false,
+            sticking: false,
+            dragStartX: 0,
+            dragStartY: 0,
+            dragOrigX: 0,
+            dragOrigY: 0,
+            peel: 0,
+            lift: 0,
+            peelAngle: -Math.PI / 4,
+            dragTiltX: 0,
+            dragTiltY: 0,
+            currentTiltX: 0,
+            currentTiltY: 0,
+            prevTiltX: 0,
+            prevTiltY: 0,
+            holoMotion: 0,
+            lastMoveX: 0,
+            lastMoveY: 0,
+            lastMoveT: 0,
+            texReady: false,
           };
 
-          this.initDOM(parent);
-          this.initGL();
+          this.animationId = null;
+          this.lastTickT = null;
+
+          this.parsedStaticShadow = parseBoxShadow(this.props.staticShadow);
+          this.parsedDynamicShadow = parseBoxShadow(this.props.dynamicShadow);
+          this.applyResizeTimeout = null;
+          this.SIZING_THRESHOLD = 5;
+          this.RESIZE_DEBOUNCE_MS = 180;
+
+          this.tick = this.tick.bind(this);
+          this.draw = this.draw.bind(this);
+          this.handleResize = this.handleResize.bind(this);
+          this.updateShadowCSS = this.updateShadowCSS.bind(this);
+
+          this.init();
+        }
+
+        createDOM() {
+          const wrapper = document.createElement("div");
+          wrapper.className = "sticker-instance";
+          wrapper.id = `sticker-${this.id}`;
+
+          const inner = document.createElement("div");
+          inner.className = "sticker-inner";
+
+          const canvas = document.createElement("canvas");
+          canvas.className = "sticker-canvas";
+
+          inner.appendChild(canvas);
+          wrapper.appendChild(inner);
+          this.containerEl.appendChild(wrapper);
+
+          this.stickerEl = wrapper;
+          this.innerEl = inner;
+          this.canvas = canvas;
+        }
+
+        init() {
+          this.initWebGL();
           this.loadImage();
           this.attachEvents();
-        }
+          this.handleResize();
 
-        initDOM(parent) {
-          this.el = document.createElement('div');
-          this.el.className = 'sticker-instance';
-          this.el.style.width = `${this.config.w}px`;
-          this.el.style.height = `${this.config.h}px`;
-          this.el.style.left = `${this.config.x}px`;
-          this.el.style.top = `${this.config.y}px`;
-          
-          this.inner = document.createElement('div');
-          this.inner.className = 'sticker-inner';
-          
-          this.canvas = document.createElement('canvas');
-          this.canvas.className = 'gl-canvas';
-          
-          this.inner.appendChild(this.canvas);
-          this.el.appendChild(this.inner);
-          parent.appendChild(this.el);
-        }
-
-        initGL() {
-          const gl = this.gl = this.canvas.getContext('webgl', { alpha: true });
-          const vs = gl.createShader(gl.VERTEX_SHADER);
-          gl.shaderSource(vs, VERTEX_SHADER); gl.compileShader(vs);
-          const fs = gl.createShader(gl.FRAGMENT_SHADER);
-          gl.shaderSource(fs, FRAGMENT_SHADER); gl.compileShader(fs);
-          
-          this.prog = gl.createProgram();
-          gl.attachShader(this.prog, vs); gl.attachShader(this.prog, fs);
-          gl.linkProgram(this.prog);
-          
-          this.uni = {};
-          ['uPeel', 'uLift', 'uPeelAngle', 'uPasting', 'uScale', 'uElevation', 'uTilt', 'uMaxTiltDeg', 'uAspect'].forEach(n => {
-            this.uni[n] = gl.getUniformLocation(this.prog, n);
+          // Watch container resize
+          this.ro = new ResizeObserver(() => {
+            const w = this.containerEl.clientWidth || 900;
+            const h = this.containerEl.clientHeight || 500;
+            this.scheduleResize(w, h);
           });
+          this.ro.observe(this.containerEl);
+        }
 
-          const N = MESH_GRID_SIZE, verts = [], inds = [];
-          for (let j = 0; j <= N; j++) for (let i = 0; i <= N; i++) verts.push((i/N)*2-1, (j/N)*2-1, i/N, 1-j/N);
-          for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
-            let a = j*(N+1)+i; inds.push(a, a+1, a+N+1, a+1, a+N+2, a+N+1);
+        initWebGL() {
+          const canvas = this.canvas;
+          const gl = canvas.getContext("webgl", {
+            alpha: true,
+            antialias: true,
+            premultipliedAlpha: false,
+          });
+          if (!gl) return;
+          this.gl = gl;
+
+          const compileShader = (source, type) => {
+            const shader = gl.createShader(type);
+            if (!shader) return null;
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+              console.error("Shader error:", gl.getShaderInfoLog(shader));
+              gl.deleteShader(shader);
+              return null;
+            }
+            return shader;
+          };
+
+          const vs = compileShader(VERTEX_SHADER, gl.VERTEX_SHADER);
+          const fs = compileShader(FRAGMENT_SHADER, gl.FRAGMENT_SHADER);
+          if (!vs || !fs) return;
+
+          const program = gl.createProgram();
+          gl.attachShader(program, vs);
+          gl.attachShader(program, fs);
+          gl.linkProgram(program);
+          if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+            console.error("Link error:", gl.getProgramInfoLog(program));
+            return;
           }
-          
-          const vbo = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+          this.program = program;
+
+          const uniformNames = [
+            "uPeel","uLift","uPeelAngle","uPasting","uScale","uElevation",
+            "uTilt","uSheenStrength","uSheenColor","uSheenTiltShift",
+            "uSheenTiltDeadzone","uMaxTiltDeg","uEffectMode","uHoloMotion",
+            "uTex","uAspect"
+          ];
+          for (const name of uniformNames)
+            this.uniforms[name] = gl.getUniformLocation(program, name);
+          this.aPos = gl.getAttribLocation(program, "aPos");
+          this.aUV = gl.getAttribLocation(program, "aUV");
+
+          const N = MESH_GRID_SIZE;
+          const verts = [];
+          const inds = [];
+          for (let j = 0; j <= N; j++) {
+            for (let i = 0; i <= N; i++)
+              verts.push((i/N)*2-1, (j/N)*2-1, i/N, 1-j/N);
+          }
+          for (let j = 0; j < N; j++) {
+            for (let i = 0; i < N; i++) {
+              const a = j*(N+1)+i;
+              inds.push(a,a+1,a+N+1,a+1,a+N+2,a+N+1);
+            }
+          }
+
+          const vbo = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
           gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW);
-          const ibo = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
+          this.vbo = vbo;
+
+          const ibo = gl.createBuffer();
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
           gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(inds), gl.STATIC_DRAW);
-          
-          gl.useProgram(this.prog);
-          const aPos = gl.getAttribLocation(this.prog, 'aPos');
-          gl.enableVertexAttribArray(aPos); gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 16, 0);
-          const aUV = gl.getAttribLocation(this.prog, 'aUV');
-          gl.enableVertexAttribArray(aUV); gl.vertexAttribPointer(aUV, 2, gl.FLOAT, false, 16, 8);
-          
-          this.resize();
-        }
+          this.ibo = ibo;
+          this.indexCount = inds.length;
 
-        resize() {
-          const pad = this.config.w * 0.4;
-          const cw = this.config.w + pad * 2, ch = this.config.h + pad * 2;
-          this.canvas.width = cw * RENDER_SCALE; this.canvas.height = ch * RENDER_SCALE;
-          this.canvas.style.width = `${cw}px`; this.canvas.style.height = `${ch}px`;
-          this.canvas.style.left = `${-pad}px`; this.canvas.style.top = `${-pad}px`;
-          this.state.scale = this.config.w / cw;
-          this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-        }
-
-        loadImage() {
-          const img = new Image();
-          img.crossOrigin = "anonymous";
-          img.onload = () => {
-            const gl = this.gl;
-            this.tex = gl.createTexture();
-            gl.bindTexture(gl.TEXTURE_2D, this.tex);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            this.state.texReady = true;
-            this.draw();
-          };
-          img.src = this.config.img;
-        }
-
-        attachEvents() {
-          const down = (e) => {
-            const cx = e.clientX || e.touches[0].clientX;
-            const cy = e.clientY || e.touches[0].clientY;
-            const r = this.el.getBoundingClientRect();
-            this.inner.style.transformOrigin = `${cx - r.left}px ${cy - r.top}px`;
-            this.state.peelAngle = Math.atan2(cy - (r.top + r.height/2), cx - (r.left + r.width/2));
-            this.state.held = true; this.state.peeling = true; this.state.sticking = false;
-            this.state.dragOffX = cx - this.state.x; this.state.dragOffY = cy - this.state.y;
-            this.el.style.zIndex = globalZ++;
-            this.lastT = performance.now();
-            requestAnimationFrame((t) => this.tick(t));
-          };
-          this.el.addEventListener('mousedown', down);
-          this.el.addEventListener('touchstart', down);
-
-          const move = (e) => {
-            if (!this.state.held) return;
-            const cx = e.clientX || (e.touches ? e.touches[0].clientX : 0);
-            const cy = e.clientY || (e.touches ? e.touches[0].clientY : 0);
-            this.state.x = cx - this.state.dragOffX; this.state.y = cy - this.state.dragOffY;
-            this.el.style.left = `${this.state.x}px`; this.el.style.top = `${this.state.y}px`;
-            
-            const now = performance.now(), dt = Math.max(1, now - this.lastT);
-            const vx = (cx - this.state.lastMoveX) / dt * 16, vy = (cy - this.state.lastMoveY) / dt * 16;
-            this.state.tiltY += (vx * 2 - this.state.tiltY) * 0.1;
-            this.state.tiltX += (-vy * 2 - this.state.tiltX) * 0.1;
-            this.inner.style.transform = `rotateX(${this.state.tiltX}deg) rotateY(${this.state.tiltY}deg)`;
-            this.state.lastMoveX = cx; this.state.lastMoveY = cy; this.lastT = now;
-          };
-          window.addEventListener('mousemove', move);
-          window.addEventListener('touchmove', move);
-
-          const up = () => {
-            if (!this.state.held) return;
-            this.state.held = false; this.state.peeling = false; this.state.sticking = true;
-            const settle = () => {
-              this.state.tiltX *= 0.8; this.state.tiltY *= 0.8;
-              this.inner.style.transform = `rotateX(${this.state.tiltX}deg) rotateY(${this.state.tiltY}deg)`;
-              if (Math.abs(this.state.tiltX) > 0.1) requestAnimationFrame(settle);
-              else this.inner.style.transform = '';
-            };
-            settle();
-          };
-          window.addEventListener('mouseup', up);
-          window.addEventListener('touchend', up);
-        }
-
-        tick(t) {
-          if (!this.lastTick) this.lastTick = t;
-          const dt = (t - this.lastTick) / 1000; this.lastTick = t;
-          const step = ANIM_SPEED * dt;
-          if (this.state.peeling) {
-            this.state.peel = Math.min(1, this.state.peel + step);
-            this.state.lift = Math.min(1, this.state.lift + step);
-          } else if (this.state.sticking) {
-            this.state.peel = Math.max(0, this.state.peel - step);
-            this.state.lift = Math.max(0, this.state.lift - step);
-            if (this.state.peel <= 0) this.state.sticking = false;
-          }
-          
-          const tr = Math.max(this.state.lift, this.state.peel);
-          const shadow = `drop-shadow(${tr*15}px ${tr*15}px ${tr*10}px rgba(0,0,0,0.3))`;
-          this.canvas.style.filter = shadow;
-
-          this.draw();
-          if (this.state.held || this.state.peeling || this.state.sticking) requestAnimationFrame((t)=>this.tick(t));
-          else this.lastTick = null;
+          gl.clearColor(0,0,0,0);
+          gl.clear(gl.COLOR_BUFFER_BIT);
         }
 
         draw() {
-          const gl = this.gl, u = this.uni, s = this.state;
-          if (!s.texReady) return;
+          const gl = this.gl, prog = this.program, tex = this.texture, st = this.state;
+          if (!gl || !prog || !tex || !st.texReady) return;
+
+          gl.viewport(0,0,this.canvas.width,this.canvas.height);
+          gl.clearColor(0,0,0,0);
           gl.clear(gl.COLOR_BUFFER_BIT);
-          gl.uniform1f(u.uPeel, s.peel); gl.uniform1f(u.uLift, s.lift);
-          gl.uniform1f(u.uPeelAngle, s.peelAngle); gl.uniform1f(u.uPasting, s.sticking?1:0);
-          gl.uniform1f(u.uScale, s.scale); gl.uniform1f(u.uElevation, ELEVATION_MAX);
-          gl.uniform2f(u.uTilt, s.tiltY, -s.tiltX); gl.uniform1f(u.uMaxTiltDeg, 30);
-          gl.uniform1f(u.uAspect, this.config.w/this.config.h);
+          gl.enable(gl.BLEND);
+          gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+          gl.useProgram(prog);
+
+          gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ibo);
+          gl.enableVertexAttribArray(this.aPos);
+          gl.enableVertexAttribArray(this.aUV);
+          gl.vertexAttribPointer(this.aPos, 2, gl.FLOAT, false, 16, 0);
+          gl.vertexAttribPointer(this.aUV, 2, gl.FLOAT, false, 16, 8);
+
+          const u = this.uniforms;
+          gl.uniform1f(u.uPeel, st.peel);
+          gl.uniform1f(u.uLift, st.lift);
+          gl.uniform1f(u.uPeelAngle, st.peelAngle);
+          gl.uniform1f(u.uPasting, st.sticking?1:0);
+          gl.uniform1f(u.uScale, st.scale);
+          gl.uniform1f(u.uElevation, this.elevation);
+          gl.uniform2f(u.uTilt, st.currentTiltX, st.currentTiltY);
+          gl.uniform1f(u.uSheenStrength, this.sheenStrength);
+          gl.uniform3f(u.uSheenColor, this.sheenColor[0], this.sheenColor[1], this.sheenColor[2]);
+          gl.uniform1f(u.uSheenTiltShift, SHEEN_TILT_SHIFT);
+          gl.uniform1f(u.uSheenTiltDeadzone, SHEEN_TILT_DEADZONE);
+          gl.uniform1f(u.uMaxTiltDeg, this.maxTilt);
+
+          let em=0;
+          if (this.sheenMode==="holo") em=1;
+          else if (this.sheenMode==="rug") em=2;
+          gl.uniform1f(u.uEffectMode, em);
+          gl.uniform1f(u.uHoloMotion, st.holoMotion);
+          gl.uniform1f(u.uAspect, st.width/st.height||1);
+
+          gl.activeTexture(gl.TEXTURE0);
+          gl.bindTexture(gl.TEXTURE_2D, tex);
+          gl.uniform1i(u.uTex, 0);
           gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_SHORT, 0);
+        }
+
+        updateShadowCSS() {
+          const tRaw = Math.max(this.state.lift, this.state.peel);
+          const t = tRaw*tRaw*(3-2*tRaw);
+          this.canvas.style.filter = lerpShadow(this.parsedStaticShadow, this.parsedDynamicShadow, t);
+        }
+
+        tick(ts) {
+          const st = this.state;
+          if (this.lastTickT===null) this.lastTickT = ts;
+          const dt = Math.min((ts-this.lastTickT)/1000, 0.1);
+          this.lastTickT = ts;
+          const step = ANIM_SPEED*dt;
+          let ch=false;
+
+          if (st.peeling && (st.peel<1||st.lift<1)) { st.peel=Math.min(1,st.peel+step); st.lift=Math.min(1,st.lift+step); ch=true; }
+          if (st.sticking) {
+            if (st.peel>0||st.lift>0) { st.peel=Math.max(0,st.peel-step); st.lift=Math.max(0,st.lift-step); ch=true; }
+            else st.sticking=false;
+          }
+
+          const hd=this.sheenMode==="holo"&&st.holoMotion>0.005;
+          if (hd) { st.holoMotion*=HOLO_MOTION_DECAY; if(st.holoMotion<0.005)st.holoMotion=0; ch=true; }
+
+          if (ch) this.updateShadowCSS();
+          if (ch||st.held||hd) this.draw();
+
+          if (st.held||st.peeling||st.sticking||hd) {
+            this.animationId=requestAnimationFrame(this.tick);
+          } else {
+            this.animationId=null;
+            this.lastTickT=null;
+          }
+        }
+
+        ensureTickRunning() {
+          if (this.animationId!==null) return;
+          this.lastTickT=null;
+          this.animationId=requestAnimationFrame(this.tick);
+        }
+
+        handleResize() {
+          const ct=this.containerEl, cv=this.canvas, se=this.stickerEl, gl=this.gl, st=this.state;
+          if (!ct||!cv||!se||!gl) return;
+
+          const cw=ct.clientWidth||900, ch=ct.clientHeight||500;
+          const w=this.imageWidth>0?this.imageWidth:cw;
+          const h=this.imageHeight>0?this.imageHeight:ch;
+
+          const maxDim=Math.max(w,h);
+          const ep=maxDim*this.elevation*0.6;
+          const pad=PAD_BASE+ep;
+          const cw2=w+pad*2, ch2=h+pad*2;
+
+          const sx=w/cw2, sy=h/ch2, sc=Math.min(sx,sy);
+          const x=(cw-w)/2, y=(ch-h)/2;
+
+          cv.width=Math.round(cw2*RENDER_SCALE);
+          cv.height=Math.round(ch2*RENDER_SCALE);
+          cv.style.width=cw2+"px"; cv.style.height=ch2+"px";
+          cv.style.position="absolute";
+          cv.style.left=(-pad)+"px"; cv.style.top=(-pad+"px");
+
+          se.style.width=w+"px"; se.style.height=h+"px";
+          se.style.left=x+"px"; se.style.top=y+"px";
+
+          st.width=w; st.height=h;
+          st.x=x; st.y=y; st.scale=sc;
+
+          gl.viewport(0,0,cv.width,cv.height);
+          if (st.texReady) this.draw();
+        }
+
+        scheduleResize(mw,mh) {
+          if (this.applyResizeTimeout) clearTimeout(this.applyResizeTimeout);
+          this.applyResizeTimeout = setTimeout(()=>{
+            this.applyResizeTimeout=null;
+            this.handleResize();
+          }, this.RESIZE_DEBOUNCE_MS);
+        }
+
+        loadImage() {
+          const src = resolveImageSource(this.props.image)||"https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/3fb4a247-64e9-4c54-2391-86598eebfe00/w=800";
+          const gl=this.gl; if(!gl||!this.program) return;
+          const img=new Image(); img.crossOrigin="anonymous";
+
+          img.onload=()=>{
+            const st=this.state;
+            st.imageAspectRatio=img.width/img.height;
+            if(this.texture) gl.deleteTexture(this.texture);
+            const tx=gl.createTexture(); if(!tx)return;
+            gl.bindTexture(gl.TEXTURE_2D,tx);
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);
+            gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,img);
+            gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+            this.texture=tx; st.texReady=true;
+            this.handleResize(); this.updateShadowCSS(); this.draw();
+          };
+          img.src=src;
+        }
+
+        settleTilt(){
+          const st=this.state, inn=this.innerEl;
+          const go=()=>{
+            st.dragTiltX*=0.9; st.dragTiltY*=0.9;
+            st.currentTiltX=st.dragTiltX; st.currentTiltY=st.dragTiltY;
+            if(inn) inn.style.transform=`rotateX(${st.dragTiltX}deg) rotateY(${st.dragTiltY}deg)`;
+            if(Math.abs(st.dragTiltX)>0.1||Math.abs(st.dragTiltY)>0.1){
+              requestAnimationFrame(go);
+            }else{
+              st.dragTiltX=0; st.dragTiltY=0; st.currentTiltX=0; st.currentTiltY=0;
+              st.prevTiltX=0; st.prevTiltY=0;
+              if(inn) inn.style.transform="";
+            }
+          };
+          go();
+        }
+
+        pointerDown(cx,cy){
+          const st=this.state, se=this.stickerEl, inn=this.innerEl;
+          if(!se||!inn) return;
+          const rc=se.getBoundingClientRect();
+          inn.style.transformOrigin=(cx-rc.left)+"px "+(cy-rc.top)+"px";
+          const cx2=rc.left+rc.width/2, cy2=rc.top+rc.height/2;
+          st.peelAngle=Math.atan2(cy-cy2,cx-cx2);
+          st.dragStartX=cx; st.dragStartY=cy;
+          st.dragOrigX=st.x; st.dragOrigY=st.y;
+          st.peel=0; st.lift=0;
+          st.held=true; st.peeling=true; st.sticking=false;
+          st.lastMoveX=cx; st.lastMoveY=cy; st.lastMoveT=performance.now();
+          se.style.zIndex=getNextZIndex();
+          this.ensureTickRunning();
+        }
+
+        pointerMove(cx,cy){
+          const st=this.state; if(!st.held) return;
+          const se=this.stickerEl, inn=this.innerEl; if(!se||!inn) return;
+          st.x=st.dragOrigX+(cx-st.dragStartX); st.y=st.dragOrigY+(cy-st.dragStartY);
+          se.style.left=st.x+"px"; se.style.top=st.y+"px";
+          const now=performance.now(), dt=Math.max(1,now-st.lastMoveT);
+          const vx=((cx-st.lastMoveX)/dt)*16, vy=((cy-st.lastMoveY)/dt)*16;
+          st.lastMoveX=cx; st.lastMoveY=cy; st.lastMoveT=now;
+          const ty=Math.max(-this.maxTilt,Math.min(this.maxTilt,vx*this.tiltSensitivity));
+          const tx=Math.max(-this.maxTilt,Math.min(this.maxTilt,-vy*this.tiltSensitivity));
+          st.dragTiltX+=(tx-st.dragTiltX)*this.tiltSmoothing;
+          st.dragTiltY+=(ty-st.dragTiltY)*this.tiltSmoothing;
+          st.currentTiltX=st.dragTiltX; st.currentTiltY=st.dragTiltY;
+          if(this.sheenMode==="holo"){
+            const td=Math.abs(st.dragTiltX-st.prevTiltX)+Math.abs(st.dragTiltY-st.prevTiltY);
+            st.holoMotion=Math.min(1, st.holoMotion+td*HOLO_MOTION_BUMP);
+            st.prevTiltX=st.dragTiltX; st.prevTiltY=st.dragTiltY;
+          }
+          inn.style.transform=`rotateX(${st.dragTiltX}deg) rotateY(${st.dragTiltY}deg)`;
+        }
+
+        pointerUp(){
+          const st=this.state; if(!st.held) return;
+          const inn=this.innerEl;
+          st.held=false; st.peeling=false; st.sticking=true;
+          if(st.peel>=0.95&&inn){
+            const rc=inn.getBoundingClientRect(), cx2=rc.left+rc.width/2, cy2=rc.top+rc.height/2;
+            st.peelAngle=Math.atan2(-(st.lastMoveY-cy2),-(st.lastMoveX-cx2));
+            st.peel=1;
+          }
+          this.settleTilt();
+          this.ensureTickRunning();
+        }
+
+        attachEvents(){
+          this.stickerEl.addEventListener("mousedown",(e)=>{ e.preventDefault(); this.pointerDown(e.clientX,e.clientY); });
+          window.addEventListener("mousemove",(e)=>this.pointerMove(e.clientX,e.clientY));
+          window.addEventListener("mouseup",()=>this.pointerUp());
+          this.stickerEl.addEventListener("touchstart",(e)=>{
+            e.preventDefault(); const t=e.touches[0]; if(t)this.pointerDown(t.clientX,t.clientY);
+          },{passive:false});
+          window.addEventListener("touchmove",(e)=>{ const t=e.touches[0]; if(t)this.pointerMove(t.clientX,t.clientY); },{passive:false});
+          window.addEventListener("touchend",()=>this.pointerUp());
         }
       }
 
       // ============================================================================
-      // INITIALIZATION
+      // BOOT — Create Multiple Stickers
       // ============================================================================
-      window.addEventListener('DOMContentLoaded', () => {
-        const area = document.getElementById('sticker-canvas-area');
-        
-        // Add 3 stickers with different images and locations
-        new Sticker(area, {
-          x: 50, y: 50, w: 280, h: 200,
-          img: "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/fake-journal.png"
+
+      const stickerContainer = document.getElementById("sticker-container");
+
+      window.addEventListener("DOMContentLoaded",()=>{
+        // Sticker 1: Photo/Polaroid
+        new StickerDrag(stickerContainer, {
+          image: { src: "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/fake-journal.png" },
+          imageWidth: 260,
+          imageHeight: 340,
+          initialX: 60,
+          initialY: 40,
+          sheenMode: "sheen",
+          elevation: 8,
         });
 
-        new Sticker(area, {
-          x: 400, y: 150, w: 220, h: 220,
-          img: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/3fb4a247-64e9-4c54-2391-86598eebfe00/w=800"
+        // Sticker 2: Another image / note
+        new StickerDrag(stickerContainer, {
+          image: { src: "https://images.unsplash.com/photo-1615291660381-9915a3dc00c0?q=80&w=600&auto=format&fit=crop" },
+          imageWidth: 300,
+          imageHeight: 210,
+          initialX: 380,
+          initialY: 140,
+          sheenMode: "holo",
+          elevation: 10,
+          tilt: 35,
         });
 
-        new Sticker(area, {
-          x: 100, y: 350, w: 250, h: 180,
-          img: "https://plus.unsplash.com/premium_photo-1664194583917-b0ba07c4ce2a?q=80&w=500&auto=format"
+        // Sticker 3: Rug texture mode on a smaller card
+        new StickerDrag(stickerContainer, {
+          image: { src: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=600&auto=format&fit=crop" },
+          imageWidth: 240,
+          imageHeight: 320,
+          initialX: 700,
+          initialY: 60,
+          sheenMode: "rug",   // <-- Rug mode!
+          elevation: 12,
+          lightingStrength: 7,
+          staticShadow: "0px 3px 6px 0px rgba(0,0,0,0.15)",
+          dynamicShadow: "0px 18px 22px 0px rgba(0,0,0,0.25)",
+        });
+
+        // Sticker 4: One more for fun
+        new StickerDrag(stickerContainer, {
+          image: { src: "https://images.unsplash.com/photo-1490682143684-14369e18dce8?q=80&w=600&auto=format&fit=crop" },
+          imageWidth: 220,
+          imageHeight: 150,
+          initialX: 520,
+          initialY: 350,
+          sheenMode: "sheen",
+          elevation: 6,
+          tilt: 50,
         });
       });
     </script>

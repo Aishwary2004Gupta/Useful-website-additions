@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Whiteboard Studio</title>
+
     <style>
       * {
         margin: 0;
@@ -19,7 +20,7 @@
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       }
 
-      /* Provided Floor Background */
+      /* Background requested by you */
       #floor {
         position: fixed;
         inset: 0;
@@ -39,119 +40,495 @@
         z-index: 0;
       }
 
-      /* Whiteboard Container */
+      /* Wood framed felt board */
       #whiteboard {
         position: absolute;
         left: 50%;
         top: 50%;
         transform: translate(-50%, -50%);
         width: min(90vw, 1000px);
-        height: min(80vh, 600px);
-        background: #2a2a2a;
-        border: 20px solid #5d4037;
-        border-radius: 4px;
-        box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6);
+        height: min(78vh, 600px);
+        padding: 18px;
         z-index: 1;
-        overflow: hidden;
+
+        background:
+          repeating-linear-gradient(
+            0deg,
+            #592610 0px,
+            #813d20 4px,
+            #a45c36 8px,
+            #6a2d16 12px,
+            #4d210f 16px
+          );
+
+        border: 8px solid #44200f;
+        border-radius: 5px;
+
+        box-shadow:
+          0 36px 70px rgba(0, 0, 0, 0.44),
+          inset 0 0 14px rgba(0, 0, 0, 0.65),
+          inset 0 0 0 2px rgba(255, 219, 175, 0.22);
       }
 
-      #whiteboard::after {
+      #whiteboard::before {
+        content: "";
+        position: absolute;
+        inset: 8px;
+        pointer-events: none;
+        border: 2px solid rgba(255, 218, 170, 0.18);
+      }
+
+      /* Dark felt inside the wooden frame */
+      #board-surface {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        perspective: 1000px;
+
+        background:
+          radial-gradient(
+            circle at 25% 20%,
+            rgba(255, 255, 255, 0.07),
+            transparent 35%
+          ),
+          radial-gradient(
+            circle at 75% 80%,
+            rgba(0, 0, 0, 0.45),
+            transparent 45%
+          ),
+          repeating-linear-gradient(
+            45deg,
+            rgba(255, 255, 255, 0.025) 0px,
+            rgba(255, 255, 255, 0.025) 1px,
+            transparent 1px,
+            transparent 4px
+          ),
+          repeating-linear-gradient(
+            -45deg,
+            rgba(0, 0, 0, 0.04) 0px,
+            rgba(0, 0, 0, 0.04) 1px,
+            transparent 1px,
+            transparent 5px
+          ),
+          #1b2731;
+
+        border: 2px solid #2a1309;
+
+        box-shadow:
+          inset 0 0 42px rgba(0, 0, 0, 0.82),
+          inset 0 0 5px rgba(255, 255, 255, 0.1);
+      }
+
+      /* Felt grain */
+      #board-surface::before {
         content: "";
         position: absolute;
         inset: 0;
-        background-image: url("https://www.transparenttextures.com/patterns/felt.png");
-        opacity: 0.3;
         pointer-events: none;
+        opacity: 0.22;
+        background-image:
+          radial-gradient(rgba(255, 255, 255, 0.22) 0.6px, transparent 0.7px),
+          radial-gradient(rgba(0, 0, 0, 0.32) 0.6px, transparent 0.7px);
+        background-size: 5px 5px, 6px 6px;
+        background-position: 0 0, 3px 3px;
       }
 
-      #board-surface {
+      /* Marker tray */
+      #marker-tray {
         position: absolute;
-        inset: 0;
-        z-index: 2;
-        overflow: visible;
-        perspective: 1000px;
+        left: 50%;
+        bottom: -25px;
+        transform: translateX(-50%);
+        width: 46%;
+        height: 18px;
+        border-radius: 0 0 8px 8px;
+        background: linear-gradient(
+          to bottom,
+          #d8d1c6,
+          #938b80 42%,
+          #4a443d
+        );
+        box-shadow:
+          0 7px 9px rgba(0, 0, 0, 0.3),
+          inset 0 2px 2px rgba(255, 255, 255, 0.45);
+      }
+
+      .marker {
+        position: absolute;
+        bottom: 5px;
+        width: 52px;
+        height: 8px;
+        border-radius: 9px;
+        box-shadow: 0 2px 3px rgba(0, 0, 0, 0.3);
+      }
+
+      .marker.red {
+        left: 18%;
+        background: linear-gradient(90deg, #222 0 14%, #ed3b45 14% 88%, #222 88%);
+      }
+
+      .marker.blue {
+        left: 43%;
+        background: linear-gradient(90deg, #222 0 14%, #2d71e8 14% 88%, #222 88%);
+      }
+
+      .marker.yellow {
+        left: 68%;
+        background: linear-gradient(90deg, #222 0 14%, #f0bf32 14% 88%, #222 88%);
       }
 
       .sticker-wrap {
         position: absolute;
         cursor: grab;
-        transform-style: preserve-3d;
         user-select: none;
+        touch-action: none;
+        transform-style: preserve-3d;
         will-change: transform, left, top;
         z-index: 10;
       }
+
       .sticker-wrap:active {
         cursor: grabbing;
+      }
+
+      .sticker-inner {
+        position: absolute;
+        inset: 0;
+        transform-style: preserve-3d;
+        will-change: transform;
       }
 
       .gl-canvas {
         display: block;
         pointer-events: none;
+        position: absolute;
         will-change: filter;
+      }
+
+      .pin {
+        position: absolute;
+        top: -8px;
+        left: calc(50% - 8px);
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        z-index: 30;
+        pointer-events: none;
+        box-shadow:
+          0 2px 3px rgba(0, 0, 0, 0.5),
+          inset 2px 2px 3px rgba(255, 255, 255, 0.58);
+      }
+
+      .pin::after {
+        content: "";
+        position: absolute;
+        width: 4px;
+        height: 9px;
+        left: 6px;
+        top: 11px;
+        z-index: -1;
+        border-radius: 0 0 4px 4px;
+        background: #777;
+        transform: rotate(12deg);
+      }
+
+      .pin-red {
+        background: radial-gradient(circle at 30% 25%, #ff9da1, #db1f2d 62%, #750612);
+      }
+
+      .pin-blue {
+        background: radial-gradient(circle at 30% 25%, #a5c8ff, #2563eb 62%, #092775);
+      }
+
+      .pin-green {
+        background: radial-gradient(circle at 30% 25%, #a2f1ad, #1fa349 62%, #075b25);
+      }
+
+      .pin-yellow {
+        background: radial-gradient(circle at 30% 25%, #fff498, #eab308 62%, #765300);
+      }
+
+      @media (max-width: 700px) {
+        #whiteboard {
+          width: 94vw;
+          height: 75vh;
+          padding: 12px;
+          border-width: 6px;
+        }
+
+        #marker-tray {
+          display: none;
+        }
       }
     </style>
   </head>
+
   <body>
     <div id="floor"></div>
 
     <div id="whiteboard">
       <div id="board-surface"></div>
+
+      <div id="marker-tray">
+        <div class="marker red"></div>
+        <div class="marker blue"></div>
+        <div class="marker yellow"></div>
+      </div>
     </div>
 
     <script>
-      // ============================================================================
-      // WEBGL SHADERS
-      // ============================================================================
+      /* ---------------------------------------------------------------
+         SAFE LOCAL SVG DATA URL HELPER
+
+         These stickers do not rely on Twitter, Unsplash, GitHub,
+         Cloudflare, or any other server with potential CORS problems.
+      ---------------------------------------------------------------- */
+
+      function svgToDataUrl(svg) {
+        return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+      }
+
+      const stickerImages = {
+        calendar: svgToDataUrl(`
+          <svg xmlns="http://www.w3.org/2000/svg" width="300" height="360" viewBox="0 0 300 360">
+            <rect width="300" height="360" rx="4" fill="#fcfaf5"/>
+            <rect width="300" height="68" fill="#d9363e"/>
+            <text x="23" y="42" fill="#ffffff" font-family="Arial" font-size="22" font-weight="bold">MARCH</text>
+            <text x="208" y="44" fill="#ffffff" font-family="Arial" font-size="31" font-weight="bold">2025</text>
+            <g fill="#333" font-family="Arial" font-size="13" text-anchor="middle">
+              <text x="30" y="98">SUN</text><text x="72" y="98">MON</text><text x="114" y="98">TUE</text>
+              <text x="156" y="98">WED</text><text x="198" y="98">THU</text><text x="240" y="98">FRI</text><text x="278" y="98">SAT</text>
+            </g>
+            <g fill="#3a3a3a" font-family="Arial" font-size="18" text-anchor="middle">
+              <text x="30" y="135">2</text><text x="72" y="135">3</text><text x="114" y="135">4</text><text x="156" y="135">5</text><text x="198" y="135">6</text><text x="240" y="135">7</text><text x="278" y="135">8</text>
+              <text x="30" y="175">9</text><text x="72" y="175">10</text><text x="114" y="175">11</text><text x="156" y="175">12</text><text x="198" y="175">13</text><text x="240" y="175">14</text><text x="278" y="175">15</text>
+              <text x="30" y="215">16</text><text x="72" y="215">17</text><text x="114" y="215">18</text><text x="156" y="215">19</text><text x="198" y="215">20</text><text x="240" y="215">21</text><text x="278" y="215">22</text>
+              <text x="30" y="255">23</text><text x="72" y="255">24</text><text x="114" y="255">25</text><text x="156" y="255">26</text><text x="198" y="255">27</text><text x="240" y="255">28</text><text x="278" y="255">29</text>
+            </g>
+            <circle cx="114" cy="208" r="16" fill="none" stroke="#d9363e" stroke-width="3"/>
+            <text x="150" y="323" fill="#777" font-family="Arial" font-size="15" text-anchor="middle">Make today count.</text>
+          </svg>
+        `),
+
+        weekly: svgToDataUrl(`
+          <svg xmlns="http://www.w3.org/2000/svg" width="320" height="400" viewBox="0 0 320 400">
+            <rect width="320" height="400" rx="4" fill="#d8d6bd"/>
+            <rect x="18" y="16" width="284" height="52" fill="#efeedf" stroke="#85816b"/>
+            <text x="160" y="49" fill="#3b3a32" font-family="Arial" font-size="24" font-weight="bold" text-anchor="middle">WEEKLY</text>
+            <g stroke="#777467" stroke-width="2">
+              <line x1="18" y1="105" x2="302" y2="105"/>
+              <line x1="18" y1="165" x2="302" y2="165"/>
+              <line x1="18" y1="225" x2="302" y2="225"/>
+              <line x1="18" y1="285" x2="302" y2="285"/>
+              <line x1="18" y1="345" x2="302" y2="345"/>
+              <line x1="94" y1="70" x2="94" y2="382"/>
+            </g>
+            <g fill="#4b4a41" font-family="Arial" font-size="16">
+              <text x="30" y="95">MON</text>
+              <text x="30" y="155">TUE</text>
+              <text x="30" y="215">WED</text>
+              <text x="30" y="275">THU</text>
+              <text x="30" y="335">FRI</text>
+            </g>
+            <g fill="#6b675d" font-family="cursive" font-size="18">
+              <text x="108" y="133">Design review</text>
+              <text x="108" y="193">Team lunch</text>
+              <text x="108" y="253">Finish draft</text>
+            </g>
+          </svg>
+        `),
+
+        todo: svgToDataUrl(`
+          <svg xmlns="http://www.w3.org/2000/svg" width="390" height="250" viewBox="0 0 390 250">
+            <rect width="390" height="250" fill="#ffe1b9"/>
+            <text x="42" y="55" fill="#40362e" font-family="Arial" font-size="34" font-weight="bold">TO DO LIST</text>
+            <g fill="none" stroke="#3c3834" stroke-width="3">
+              <rect x="45" y="87" width="19" height="19"/>
+              <rect x="45" y="128" width="19" height="19"/>
+              <rect x="45" y="169" width="19" height="19"/>
+            </g>
+            <g fill="#403831" font-family="Arial" font-size="24">
+              <text x="83" y="104">Eat healthy</text>
+              <text x="83" y="145">Drink water</text>
+              <text x="83" y="186">Sleep early</text>
+            </g>
+            <g stroke="#2e7d32" stroke-width="4" fill="none">
+              <path d="M48 96 L54 102 L64 89"/>
+              <path d="M48 137 L54 143 L64 130"/>
+            </g>
+          </svg>
+        `),
+
+        greenIdea: svgToDataUrl(`
+          <svg xmlns="http://www.w3.org/2000/svg" width="210" height="220" viewBox="0 0 210 220">
+            <rect width="210" height="220" rx="4" fill="#77df79"/>
+            <text x="105" y="104" fill="#15391d" font-family="Georgia" font-size="39" text-anchor="middle">IDEA</text>
+            <path d="M70 139 Q105 156 140 140" fill="none" stroke="#15391d" stroke-width="4"/>
+            <path d="M90 156 Q105 165 120 155" fill="none" stroke="#15391d" stroke-width="4"/>
+          </svg>
+        `),
+
+        smile: svgToDataUrl(`
+          <svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">
+            <circle cx="120" cy="120" r="118" fill="#f5b85b"/>
+            <circle cx="120" cy="120" r="76" fill="none" stroke="#fff2cf" stroke-width="4"/>
+            <circle cx="94" cy="108" r="8" fill="#6c4d2c"/>
+            <circle cx="146" cy="108" r="8" fill="#6c4d2c"/>
+            <path d="M82 142 Q120 173 158 142" fill="none" stroke="#6c4d2c" stroke-width="6" stroke-linecap="round"/>
+            <text x="120" y="56" fill="#704a22" font-family="Arial" font-size="17" font-weight="bold" text-anchor="middle">KEEP SMILING</text>
+          </svg>
+        `),
+
+        positive: svgToDataUrl(`
+          <svg xmlns="http://www.w3.org/2000/svg" width="350" height="190" viewBox="0 0 350 190">
+            <rect width="350" height="190" rx="8" fill="#fffdf3"/>
+            <rect x="12" y="12" width="326" height="166" rx="4" fill="none" stroke="#b99934" stroke-width="5"/>
+            <text x="175" y="84" fill="#403322" font-size="31" font-family="Georgia" text-anchor="middle">STAY</text>
+            <text x="175" y="132" fill="#96711b" font-size="44" font-family="Georgia" font-weight="bold" text-anchor="middle">positive</text>
+            <path d="M48 69 C82 35 115 35 144 62" fill="none" stroke="#b99934" stroke-width="4"/>
+            <path d="M210 129 C240 158 272 158 302 122" fill="none" stroke="#b99934" stroke-width="4"/>
+          </svg>
+        `),
+
+        kind: svgToDataUrl(`
+          <svg xmlns="http://www.w3.org/2000/svg" width="330" height="180" viewBox="0 0 330 180">
+            <rect width="330" height="180" rx="8" fill="#fffef7"/>
+            <rect x="12" y="12" width="306" height="156" fill="none" stroke="#bb84d7" stroke-width="5"/>
+            <text x="165" y="108" fill="#35213b" font-family="Georgia" font-size="51" font-weight="bold" text-anchor="middle">BE KIND</text>
+            <circle cx="38" cy="35" r="7" fill="#f6c84c"/>
+            <circle cx="292" cy="35" r="7" fill="#f08da0"/>
+            <circle cx="38" cy="145" r="7" fill="#91d88d"/>
+            <circle cx="292" cy="145" r="7" fill="#65c8ff"/>
+          </svg>
+        `),
+
+        yellowNote: svgToDataUrl(`
+          <svg xmlns="http://www.w3.org/2000/svg" width="250" height="210" viewBox="0 0 250 210">
+            <rect width="250" height="210" fill="#f5d75f"/>
+            <text x="125" y="75" fill="#4c4020" font-family="cursive" font-size="28" text-anchor="middle">Do what makes</text>
+            <text x="125" y="112" fill="#4c4020" font-family="cursive" font-size="32" font-weight="bold" text-anchor="middle">you happy</text>
+            <path d="M57 147 Q125 181 193 147" fill="none" stroke="#4c4020" stroke-width="4"/>
+          </svg>
+        `),
+      };
+
+      /* ---------------------------------------------------------------
+         WEBGL SHADERS
+      ---------------------------------------------------------------- */
+
       const VS = `
-        attribute vec2 aPos; attribute vec2 aUV;
-        uniform float uPeel, uLift, uPeelAngle, uPasting, uScale, uElevation;
-        varying vec2 vUV; varying float vHi, vSh;
+        attribute vec2 aPos;
+        attribute vec2 aUV;
+
+        uniform float uPeel;
+        uniform float uLift;
+        uniform float uPeelAngle;
+        uniform float uPasting;
+        uniform float uScale;
+        uniform float uElevation;
+
+        varying vec2 vUV;
+        varying float vHi;
+        varying float vSh;
+
         void main() {
-            vUV = aUV; vec2 p = aPos; vHi = 0.0; vSh = 0.0;
-            if (uPeel > 0.0) {
-                vec2 peelAxis = vec2(cos(uPeelAngle), sin(uPeelAngle));
-                vec2 uvCentered = aUV - vec2(0.5);
-                float proj = dot(uvCentered, peelAxis);
-                float diag = 0.5 - proj;
-                float peelLine = -0.3 + uPeel * 2.0;
-                float rampWidth = 0.6;
-                float lifted = 1.0 - smoothstep(peelLine - rampWidth, peelLine, diag);
-                p *= (1.0 + lifted * uElevation);
-                float inRamp = smoothstep(peelLine - rampWidth, peelLine - rampWidth * 0.5, diag) * smoothstep(peelLine + 0.05, peelLine - rampWidth * 0.3, diag);
-                p += (-peelAxis) * inRamp * (uPasting > 0.5 ? 0.06 : 0.12);
-                float t = smoothstep(peelLine - rampWidth, peelLine, diag);
-                vHi = inRamp * 0.75 * pow(1.0 - t, 1.2);
-                vSh = inRamp * 0.75 * pow(t, 1.2);
-            }
-            gl_Position = vec4(p * uScale, 0.0, 1.0);
-        }`;
+          vUV = aUV;
+          vec2 p = aPos;
+
+          vHi = 0.0;
+          vSh = 0.0;
+
+          if (uPeel > 0.0) {
+            vec2 peelAxis = vec2(cos(uPeelAngle), sin(uPeelAngle));
+            vec2 uvCentered = aUV - vec2(0.5);
+
+            float proj = dot(uvCentered, peelAxis);
+            float diag = 0.5 - proj;
+
+            float peelLine = -0.3 + uPeel * 2.0;
+            float rampWidth = 0.6;
+
+            float lifted =
+              1.0 - smoothstep(peelLine - rampWidth, peelLine, diag);
+
+            p *= 1.0 + lifted * uElevation;
+
+            float inRamp =
+              smoothstep(peelLine - rampWidth, peelLine - rampWidth * 0.5, diag) *
+              smoothstep(peelLine + 0.05, peelLine - rampWidth * 0.3, diag);
+
+            float curveAmount = uPasting > 0.5 ? 0.06 : 0.12;
+            p += (-peelAxis) * inRamp * curveAmount;
+
+            float t = smoothstep(peelLine - rampWidth, peelLine, diag);
+
+            vHi = inRamp * 0.75 * pow(1.0 - t, 1.2);
+            vSh = inRamp * 0.75 * pow(t, 1.2);
+          }
+
+          gl_Position = vec4(p * uScale, 0.0, 1.0);
+        }
+      `;
 
       const FS = `
         precision mediump float;
-        uniform sampler2D uTex; uniform vec2 uTilt; uniform float uAspect;
-        varying vec2 vUV; varying float vHi, vSh;
-        float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
-        void main() {
-            vec4 tex = texture2D(uTex, vUV); if (tex.a < 0.01) discard;
-            vec3 c = tex.rgb;
-            vec2 aspUV = vec2(vUV.x * uAspect, vUV.y);
-            float pattern = mix(sin(aspUV.x * 500.0) * sin(aspUV.y * 500.0) * 0.5 + 0.5, hash(aspUV * 1000.0), 0.2);
-            c *= mix(0.7, 1.05, pattern);
-            float align = dot(normalize(uTilt + 0.001), normalize(vec2(1.0, -1.0)));
-            c *= (1.0 + align * 0.2);
-            c = mix(c, c + 0.3, vHi);
-            c = mix(c, c * 0.6, vSh);
-            gl_FragColor = vec4(c, tex.a);
-        }`;
 
-      // ============================================================================
-      // STICKER CLASS
-      // ============================================================================
+        uniform sampler2D uTex;
+        uniform vec2 uTilt;
+        uniform float uAspect;
+
+        varying vec2 vUV;
+        varying float vHi;
+        varying float vSh;
+
+        float hash(vec2 p) {
+          return fract(
+            sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453
+          );
+        }
+
+        void main() {
+          vec4 tex = texture2D(uTex, vUV);
+
+          if (tex.a < 0.01) discard;
+
+          vec3 c = tex.rgb;
+
+          /* Fabric/rug texture */
+          vec2 aspUV = vec2(vUV.x * uAspect, vUV.y);
+
+          float woven =
+            sin(aspUV.x * 360.0) *
+            sin(aspUV.y * 470.0) *
+            0.5 + 0.5;
+
+          float fiber = hash(aspUV * 860.0);
+          float pattern = mix(woven, fiber, 0.18);
+
+          c *= mix(0.82, 1.06, pattern);
+
+          /* Dynamic pile reflection while sticker moves */
+          vec2 pileDirection = normalize(vec2(1.0, -1.0));
+          vec2 tiltDirection = normalize(uTilt + vec2(0.0001));
+
+          float alignment = dot(tiltDirection, pileDirection);
+          c *= 1.0 + alignment * 0.12;
+
+          /* Peel and curve shadows */
+          c = mix(c, c + vec3(0.25), clamp(vHi, 0.0, 1.0) * 0.55);
+          c = mix(c, c * 0.55, clamp(vSh, 0.0, 1.0) * 0.58);
+
+          gl_FragColor = vec4(c, tex.a);
+        }
+      `;
+
       let globalZ = 1000;
 
       class Sticker {
         constructor(parent, config) {
           this.parent = parent;
+
           this.config = {
             url: "",
             x: 0,
@@ -159,8 +536,10 @@
             w: 150,
             h: 150,
             elevation: 0.2,
+            pin: "pin-red",
             ...config,
           };
+
           this.state = {
             x: this.config.x,
             y: this.config.y,
@@ -168,11 +547,16 @@
             lift: 0,
             tX: 0,
             tY: 0,
+            peelAngle: -Math.PI / 4,
             peeling: false,
             held: false,
             pasting: false,
             texReady: false,
+            scale: 1,
           };
+
+          this.animationRunning = false;
+
           this.initDOM();
           this.initGL();
           this.loadImage();
@@ -186,43 +570,99 @@
           this.wrap.style.height = this.config.h + "px";
           this.wrap.style.left = this.config.x + "px";
           this.wrap.style.top = this.config.y + "px";
+
+          this.inner = document.createElement("div");
+          this.inner.className = "sticker-inner";
+
           this.canvas = document.createElement("canvas");
           this.canvas.className = "gl-canvas";
-          this.wrap.appendChild(this.canvas);
+
+          this.pin = document.createElement("div");
+          this.pin.className = `pin ${this.config.pin}`;
+
+          this.inner.appendChild(this.canvas);
+          this.wrap.appendChild(this.inner);
+          this.wrap.appendChild(this.pin);
           this.parent.appendChild(this.wrap);
         }
 
-        initGL() {
-          const gl = (this.gl = this.canvas.getContext("webgl", {
-            alpha: true,
-          }));
-          const compile = (s, t) => {
-            const sh = gl.createShader(t);
-            gl.shaderSource(sh, s);
-            gl.compileShader(sh);
-            return sh;
-          };
-          this.prog = gl.createProgram();
-          gl.attachShader(this.prog, compile(VS, gl.VERTEX_SHADER));
-          gl.attachShader(this.prog, compile(FS, gl.FRAGMENT_SHADER));
-          gl.linkProgram(this.prog);
-          gl.useProgram(this.prog);
+        createShader(source, type) {
+          const gl = this.gl;
+          const shader = gl.createShader(type);
 
-          const grid = 32,
-            verts = [],
-            inds = [];
-          for (let j = 0; j <= grid; j++)
-            for (let i = 0; i <= grid; i++)
-              verts.push(
-                (i / grid) * 2 - 1,
-                (j / grid) * 2 - 1,
-                i / grid,
-                1 - j / grid,
+          gl.shaderSource(shader, source);
+          gl.compileShader(shader);
+
+          if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            console.error("Shader error:", gl.getShaderInfoLog(shader));
+            gl.deleteShader(shader);
+            return null;
+          }
+
+          return shader;
+        }
+
+        initGL() {
+          this.gl = this.canvas.getContext("webgl", {
+            alpha: true,
+            antialias: true,
+            premultipliedAlpha: false,
+          });
+
+          const gl = this.gl;
+
+          if (!gl) {
+            console.error("WebGL is not available.");
+            return;
+          }
+
+          const vertexShader = this.createShader(VS, gl.VERTEX_SHADER);
+          const fragmentShader = this.createShader(FS, gl.FRAGMENT_SHADER);
+
+          this.program = gl.createProgram();
+
+          gl.attachShader(this.program, vertexShader);
+          gl.attachShader(this.program, fragmentShader);
+          gl.linkProgram(this.program);
+
+          if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
+            console.error("Program error:", gl.getProgramInfoLog(this.program));
+          }
+
+          gl.useProgram(this.program);
+
+          this.uniforms = {
+            peel: gl.getUniformLocation(this.program, "uPeel"),
+            lift: gl.getUniformLocation(this.program, "uLift"),
+            peelAngle: gl.getUniformLocation(this.program, "uPeelAngle"),
+            pasting: gl.getUniformLocation(this.program, "uPasting"),
+            scale: gl.getUniformLocation(this.program, "uScale"),
+            elevation: gl.getUniformLocation(this.program, "uElevation"),
+            tilt: gl.getUniformLocation(this.program, "uTilt"),
+            aspect: gl.getUniformLocation(this.program, "uAspect"),
+            texture: gl.getUniformLocation(this.program, "uTex"),
+          };
+
+          const grid = 32;
+          const vertices = [];
+          const indices = [];
+
+          for (let y = 0; y <= grid; y++) {
+            for (let x = 0; x <= grid; x++) {
+              vertices.push(
+                (x / grid) * 2 - 1,
+                (y / grid) * 2 - 1,
+                x / grid,
+                1 - y / grid,
               );
-          for (let j = 0; j < grid; j++)
-            for (let i = 0; i < grid; i++) {
-              let a = j * (grid + 1) + i;
-              inds.push(
+            }
+          }
+
+          for (let y = 0; y < grid; y++) {
+            for (let x = 0; x < grid; x++) {
+              const a = y * (grid + 1) + x;
+
+              indices.push(
                 a,
                 a + 1,
                 a + grid + 1,
@@ -231,73 +671,69 @@
                 a + grid + 1,
               );
             }
-          this.indexCount = inds.length;
-          gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+          }
+
+          this.indexCount = indices.length;
+
+          this.vertexBuffer = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+
           gl.bufferData(
             gl.ARRAY_BUFFER,
-            new Float32Array(verts),
-            gl.STATIC_DRAW,
-          );
-          gl.enableVertexAttribArray(gl.getAttribLocation(this.prog, "aPos"));
-          gl.vertexAttribPointer(
-            gl.getAttribLocation(this.prog, "aPos"),
-            2,
-            gl.FLOAT,
-            false,
-            16,
-            0,
-          );
-          gl.enableVertexAttribArray(gl.getAttribLocation(this.prog, "aUV"));
-          gl.vertexAttribPointer(
-            gl.getAttribLocation(this.prog, "aUV"),
-            2,
-            gl.FLOAT,
-            false,
-            16,
-            8,
-          );
-          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer());
-          gl.bufferData(
-            gl.ELEMENT_ARRAY_BUFFER,
-            new Uint16Array(inds),
+            new Float32Array(vertices),
             gl.STATIC_DRAW,
           );
 
-          const pad = this.config.w * 0.5;
-          const cw = this.config.w + pad * 2,
-            ch = this.config.h + pad * 2;
-          this.canvas.width = cw * 2;
-          this.canvas.height = ch * 2;
-          this.canvas.style.width = cw + "px";
-          this.canvas.style.height = ch + "px";
-          this.canvas.style.marginLeft = -pad + "px";
-          this.canvas.style.marginTop = -pad + "px";
-          this.state.scale = this.config.w / cw;
+          this.indexBuffer = gl.createBuffer();
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+
+          gl.bufferData(
+            gl.ELEMENT_ARRAY_BUFFER,
+            new Uint16Array(indices),
+            gl.STATIC_DRAW,
+          );
+
+          const aPos = gl.getAttribLocation(this.program, "aPos");
+          const aUV = gl.getAttribLocation(this.program, "aUV");
+
+          gl.enableVertexAttribArray(aPos);
+          gl.enableVertexAttribArray(aUV);
+
+          gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 16, 0);
+          gl.vertexAttribPointer(aUV, 2, gl.FLOAT, false, 16, 8);
+
+          const pad = Math.max(this.config.w, this.config.h) * 0.32;
+          const canvasWidth = this.config.w + pad * 2;
+          const canvasHeight = this.config.h + pad * 2;
+
+          this.canvas.width = Math.round(canvasWidth * 2);
+          this.canvas.height = Math.round(canvasHeight * 2);
+
+          this.canvas.style.width = canvasWidth + "px";
+          this.canvas.style.height = canvasHeight + "px";
+          this.canvas.style.left = -pad + "px";
+          this.canvas.style.top = -pad + "px";
+
+          this.state.scale = Math.min(
+            this.config.w / canvasWidth,
+            this.config.h / canvasHeight,
+          );
+
           gl.viewport(0, 0, this.canvas.width, this.canvas.height);
         }
 
         loadImage() {
-          const img = new Image();
-          img.crossOrigin = "anonymous";
-          img.onerror = () =>
-            console.error("Failed to load image:", this.config.url);
-          img.onload = () => {
+          const image = new Image();
+
+          image.onload = () => {
             const gl = this.gl;
-            this.tex = gl.createTexture();
-            gl.bindTexture(gl.TEXTURE_2D, this.tex);
-            // Crucial: Set texture parameters to support non-power-of-two images
-            gl.texParameteri(
-              gl.TEXTURE_2D,
-              gl.TEXTURE_WRAP_S,
-              gl.CLAMP_TO_EDGE,
-            );
-            gl.texParameteri(
-              gl.TEXTURE_2D,
-              gl.TEXTURE_WRAP_T,
-              gl.CLAMP_TO_EDGE,
-            );
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+            this.texture = gl.createTexture();
+
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, this.texture);
+
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
 
             gl.texImage2D(
               gl.TEXTURE_2D,
@@ -305,192 +741,338 @@
               gl.RGBA,
               gl.RGBA,
               gl.UNSIGNED_BYTE,
-              img,
+              image,
+            );
+
+            /*
+              IMPORTANT:
+              Both S and T must be CLAMP_TO_EDGE.
+              Otherwise a non-power-of-two image can render black.
+            */
+            gl.texParameteri(
+              gl.TEXTURE_2D,
+              gl.TEXTURE_WRAP_S,
+              gl.CLAMP_TO_EDGE,
+            );
+
+            gl.texParameteri(
+              gl.TEXTURE_2D,
+              gl.TEXTURE_WRAP_T,
+              gl.CLAMP_TO_EDGE,
+            );
+
+            gl.texParameteri(
+              gl.TEXTURE_2D,
+              gl.TEXTURE_MIN_FILTER,
+              gl.LINEAR,
+            );
+
+            gl.texParameteri(
+              gl.TEXTURE_2D,
+              gl.TEXTURE_MAG_FILTER,
+              gl.LINEAR,
             );
 
             this.state.texReady = true;
             this.draw();
           };
-          img.src = this.config.url;
+
+          image.onerror = () => {
+            console.error("Sticker image could not load:", this.config.url);
+          };
+
+          image.src = this.config.url;
         }
 
         attachEvents() {
-          const start = (e) => {
-            const p = e.touches ? e.touches[0] : e;
+          this.wrap.addEventListener("pointerdown", (event) => {
+            event.preventDefault();
+
+            this.wrap.setPointerCapture(event.pointerId);
+
+            const rect = this.wrap.getBoundingClientRect();
+
             this.state.held = true;
             this.state.peeling = true;
             this.state.pasting = false;
-            const r = this.wrap.getBoundingClientRect();
-            this.state.offX = p.clientX - r.left;
-            this.state.offY = p.clientY - r.top;
-            this.wrap.style.zIndex = globalZ++;
-            this.state.peelAngle = Math.atan2(
-              p.clientY - (r.top + r.height / 2),
-              p.clientX - (r.left + r.width / 2),
-            );
-            this.lastT = performance.now();
-            this.anim();
-          };
-          this.wrap.addEventListener("mousedown", start);
-          this.wrap.addEventListener("touchstart", start);
+            this.state.peel = 0;
+            this.state.lift = 0;
 
-          window.addEventListener("mousemove", (e) => {
+            this.state.dragStartX = event.clientX;
+            this.state.dragStartY = event.clientY;
+            this.state.originalX = this.state.x;
+            this.state.originalY = this.state.y;
+
+            this.state.lastX = event.clientX;
+            this.state.lastY = event.clientY;
+            this.state.lastTime = performance.now();
+
+            this.state.peelAngle = Math.atan2(
+              event.clientY - (rect.top + rect.height / 2),
+              event.clientX - (rect.left + rect.width / 2),
+            );
+
+            this.inner.style.transformOrigin = `
+              ${event.clientX - rect.left}px
+              ${event.clientY - rect.top}px
+            `;
+
+            this.wrap.style.zIndex = ++globalZ;
+
+            this.startAnimation();
+          });
+
+          this.wrap.addEventListener("pointermove", (event) => {
             if (!this.state.held) return;
-            const p = e.touches ? e.touches[0] : e;
-            const parentR = this.parent.getBoundingClientRect();
-            this.state.x = p.clientX - parentR.left - this.state.offX;
-            this.state.y = p.clientY - parentR.top - this.state.offY;
+
+            const now = performance.now();
+            const dt = Math.max(1, now - this.state.lastTime);
+
+            this.state.x =
+              this.state.originalX + event.clientX - this.state.dragStartX;
+
+            this.state.y =
+              this.state.originalY + event.clientY - this.state.dragStartY;
+
             this.wrap.style.left = this.state.x + "px";
             this.wrap.style.top = this.state.y + "px";
-            this.state.tY +=
-              ((p.clientX - (this.lastX || p.clientX)) * 2 - this.state.tY) *
-              0.1;
-            this.state.tX +=
-              (-(p.clientY - (this.lastY || p.clientY)) * 2 - this.state.tX) *
-              0.1;
-            this.wrap.style.transform = `rotateX(${this.state.tX}deg) rotateY(${this.state.tY}deg)`;
-            this.lastX = p.clientX;
-            this.lastY = p.clientY;
+
+            const velocityX =
+              ((event.clientX - this.state.lastX) / dt) * 16;
+
+            const velocityY =
+              ((event.clientY - this.state.lastY) / dt) * 16;
+
+            const targetTiltY = Math.max(-22, Math.min(22, velocityX * 2));
+            const targetTiltX = Math.max(-22, Math.min(22, -velocityY * 2));
+
+            this.state.tX += (targetTiltX - this.state.tX) * 0.1;
+            this.state.tY += (targetTiltY - this.state.tY) * 0.1;
+
+            this.inner.style.transform = `
+              rotateX(${this.state.tX}deg)
+              rotateY(${this.state.tY}deg)
+            `;
+
+            this.state.lastX = event.clientX;
+            this.state.lastY = event.clientY;
+            this.state.lastTime = now;
           });
 
-          window.addEventListener("mouseup", () => {
-            if (this.state.held) {
-              this.state.held = false;
-              this.state.peeling = false;
-              this.state.pasting = true;
-              const settle = () => {
-                this.state.tX *= 0.85;
-                this.state.tY *= 0.85;
-                this.wrap.style.transform = `rotateX(${this.state.tX}deg) rotateY(${this.state.tY}deg)`;
-                if (Math.abs(this.state.tX) > 0.1)
-                  requestAnimationFrame(settle);
-                else this.wrap.style.transform = "";
-              };
-              settle();
-            }
-          });
+          const release = () => {
+            if (!this.state.held) return;
+
+            this.state.held = false;
+            this.state.peeling = false;
+            this.state.pasting = true;
+
+            this.settleTilt();
+            this.startAnimation();
+          };
+
+          this.wrap.addEventListener("pointerup", release);
+          this.wrap.addEventListener("pointercancel", release);
         }
 
-        anim() {
-          const now = performance.now();
-          const dt = (now - (this.lastAnimT || now)) / 1000;
-          this.lastAnimT = now;
-          const step = 2.0 * dt;
-          if (this.state.peeling) {
-            this.state.peel = Math.min(1, this.state.peel + step);
-            this.state.lift = Math.min(1, this.state.lift + step);
-          } else if (this.state.pasting) {
-            this.state.peel = Math.max(0, this.state.peel - step);
-            this.state.lift = Math.max(0, this.state.lift - step);
-            if (this.state.peel === 0) this.state.pasting = false;
+        settleTilt() {
+          const settle = () => {
+            this.state.tX *= 0.85;
+            this.state.tY *= 0.85;
+
+            this.inner.style.transform = `
+              rotateX(${this.state.tX}deg)
+              rotateY(${this.state.tY}deg)
+            `;
+
+            if (
+              Math.abs(this.state.tX) > 0.1 ||
+              Math.abs(this.state.tY) > 0.1
+            ) {
+              requestAnimationFrame(settle);
+            } else {
+              this.state.tX = 0;
+              this.state.tY = 0;
+              this.inner.style.transform = "";
+            }
+          };
+
+          settle();
+        }
+
+        startAnimation() {
+          if (this.animationRunning) return;
+
+          this.animationRunning = true;
+          this.lastAnimationTime = null;
+
+          requestAnimationFrame((time) => this.animate(time));
+        }
+
+        animate(time) {
+          if (this.lastAnimationTime === null) {
+            this.lastAnimationTime = time;
           }
-          const tr = this.state.peel;
-          this.canvas.style.filter = `drop-shadow(${tr * 15}px ${tr * 15}px ${tr * 10}px rgba(0,0,0,0.4))`;
+
+          const dt = Math.min(
+            (time - this.lastAnimationTime) / 1000,
+            0.1,
+          );
+
+          this.lastAnimationTime = time;
+
+          const speed = 1.9 * dt;
+
+          if (this.state.peeling) {
+            this.state.peel = Math.min(1, this.state.peel + speed);
+            this.state.lift = Math.min(1, this.state.lift + speed);
+          }
+
+          if (this.state.pasting) {
+            this.state.peel = Math.max(0, this.state.peel - speed);
+            this.state.lift = Math.max(0, this.state.lift - speed);
+
+            if (this.state.peel <= 0) {
+              this.state.pasting = false;
+            }
+          }
+
+          const shadow = Math.max(this.state.peel, this.state.lift);
+
+          this.canvas.style.filter = `
+            drop-shadow(
+              ${shadow * 8}px
+              ${2 + shadow * 15}px
+              ${2 + shadow * 14}px
+              rgba(0, 0, 0, ${0.2 + shadow * 0.25})
+            )
+          `;
+
           this.draw();
-          if (this.state.held || this.state.peeling || this.state.pasting)
-            requestAnimationFrame(() => this.anim());
-          else this.lastAnimT = null;
+
+          if (
+            this.state.held ||
+            this.state.peeling ||
+            this.state.pasting
+          ) {
+            requestAnimationFrame((nextTime) => this.animate(nextTime));
+          } else {
+            this.animationRunning = false;
+            this.lastAnimationTime = null;
+          }
         }
 
         draw() {
-          const gl = this.gl,
-            s = this.state;
-          if (!s.texReady) return;
+          if (!this.state.texReady) return;
+
+          const gl = this.gl;
+          const s = this.state;
+          const u = this.uniforms;
+
+          gl.useProgram(this.program);
+          gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+
+          gl.clearColor(0, 0, 0, 0);
           gl.clear(gl.COLOR_BUFFER_BIT);
-          const loc = (n) => gl.getUniformLocation(this.prog, n);
-          gl.uniform1f(loc("uPeel"), s.peel);
-          gl.uniform1f(loc("uLift"), s.lift);
-          gl.uniform1f(loc("uPasting"), s.pasting ? 1 : 0);
-          gl.uniform1f(loc("uScale"), s.scale);
-          gl.uniform1f(loc("uElevation"), this.config.elevation);
-          gl.uniform2f(loc("uTilt"), s.tY, -s.tX);
-          gl.uniform1f(loc("uAspect"), this.config.w / this.config.h);
-          gl.bindTexture(gl.TEXTURE_2D, this.tex);
-          gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_SHORT, 0);
+
+          gl.enable(gl.BLEND);
+          gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+          gl.activeTexture(gl.TEXTURE0);
+          gl.bindTexture(gl.TEXTURE_2D, this.texture);
+
+          gl.uniform1i(u.texture, 0);
+          gl.uniform1f(u.peel, s.peel);
+          gl.uniform1f(u.lift, s.lift);
+          gl.uniform1f(u.peelAngle, s.peelAngle);
+          gl.uniform1f(u.pasting, s.pasting ? 1 : 0);
+          gl.uniform1f(u.scale, s.scale);
+          gl.uniform1f(u.elevation, this.config.elevation);
+          gl.uniform2f(u.tilt, s.tY, -s.tX);
+          gl.uniform1f(u.aspect, this.config.w / this.config.h);
+
+          gl.drawElements(
+            gl.TRIANGLES,
+            this.indexCount,
+            gl.UNSIGNED_SHORT,
+            0,
+          );
         }
       }
 
-      // ============================================================================
-      // SETUP
-      // ============================================================================
       window.addEventListener("DOMContentLoaded", () => {
         const board = document.getElementById("board-surface");
 
-        // These images are hosted on reliable services to prevent "black sticker" issues
         const notes = [
           {
-            url: "https://static.vecteezy.com/system/resources/previews/045/648/580/non_2x/cute-hamster-meme-transparent-background-illustration-free-png.png",
-            x: 100,
-            y: 100,
-            w: 248,
-            h: 180,
+            url: stickerImages.calendar,
+            x: 24,
+            y: 28,
+            w: 100,
+            h: 125,
+            pin: "pin-yellow",
           },
           {
-            url: "https://static.vecteezy.com/system/resources/previews/067/162/149/non_2x/cute-duck-meme-sticker-transparent-cute-illustration-free-png.png",
-            x: 100,
-            y: 100,
-            w: 200,
-            h: 100,
+            url: stickerImages.weekly,
+            x: 145,
+            y: 28,
+            w: 115,
+            h: 150,
+            pin: "pin-green",
           },
           {
-            url: "https://static.vecteezy.com/system/resources/previews/044/873/467/non_2x/loading-cat-meme-sticker-tshirt-illustration-free-png.png",
-            x: 100,
-            y: 100,
-            w: 200,
-            h: 100,
+            url: stickerImages.positive,
+            x: 510,
+            y: 28,
+            w: 155,
+            h: 84,
+            pin: "pin-red",
           },
           {
-            url: "https://static.vecteezy.com/system/resources/previews/060/468/440/non_2x/muscle-dog-tuff-shiba-inu-dog-meme-sticker-transparent-t-shirt-cute-illustration-free-png.png",
-            x: 100,
-            y: 100,
-            w: 200,
-            h: 100,
+            url: stickerImages.smile,
+            x: 325,
+            y: 44,
+            w: 122,
+            h: 122,
+            pin: "pin-yellow",
+            elevation: 0.28,
           },
           {
-            url: "https://static.vecteezy.com/system/resources/previews/067/162/129/non_2x/thumb-up-frog-meme-sticker-transparent-cute-illustration-free-png.png",
-            x: 100,
-            y: 100,
-            w: 200,
-            h: 100,
+            url: stickerImages.todo,
+            x: 28,
+            y: 205,
+            w: 165,
+            h: 105,
+            pin: "pin-red",
           },
           {
-            url: "https://static.vecteezy.com/system/resources/previews/067/162/141/non_2x/working-dog-meme-sticker-transparent-cute-illustration-free-png.png",
-            x: 200,
-            y: 200,
-            w: 346,
-            h: 107,
+            url: stickerImages.greenIdea,
+            x: 235,
+            y: 230,
+            w: 92,
+            h: 98,
+            pin: "pin-red",
           },
           {
-            url: "https://static.vecteezy.com/system/resources/previews/024/207/646/non_2x/old-retro-car-cartoon-sticker-with-ai-generative-free-png.png",
-            x: 300,
-            y: 300,
-            w: 346,
-            h: 107,
+            url: stickerImages.yellowNote,
+            x: 355,
+            y: 225,
+            w: 118,
+            h: 103,
+            pin: "pin-blue",
           },
           {
-            url: "https://static.vecteezy.com/system/resources/previews/027/183/094/non_2x/cute-baby-panda-sticker-transparent-free-png.png",
-            x: 400,
-            y: 400,
-            w: 300,
-            h: 300,
-          },
-          {
-            url: "https://static.vecteezy.com/system/resources/previews/024/684/305/non_2x/sticker-illustration-of-eagle-head-with-ai-generative-free-png.png",
-            x: 500,
-            y: 500,
-            w: 200,
-            h: 200,
-          },
-          {
-            url: "https://static.vecteezy.com/system/resources/previews/044/876/360/non_2x/cat-with-glasses-meme-sticker-tshirt-illustration-free-png.png",
-            x: 600,
-            y: 600,
-            w: 200,
-            h: 200,
+            url: stickerImages.kind,
+            x: 510,
+            y: 205,
+            w: 152,
+            h: 84,
+            pin: "pin-green",
           },
         ];
 
-        notes.forEach((n) => new Sticker(board, n));
+        notes.forEach((note) => {
+          new Sticker(board, note);
+        });
       });
     </script>
   </body>

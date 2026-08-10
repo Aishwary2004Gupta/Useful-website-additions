@@ -49,14 +49,19 @@
         z-index: 2;
       }
 
-      #sizing-div {
+      .sticker-instance {
+        position: absolute;
+        overflow: visible;
+      }
+
+      .sizing-div {
         position: relative;
         opacity: 0;
         pointer-events: none;
         user-select: none;
       }
 
-      #zoom-probe {
+      .zoom-probe {
         position: absolute;
         width: 20px;
         height: 20px;
@@ -66,7 +71,7 @@
         pointer-events: none;
       }
 
-      #sticker {
+      .sticker {
         position: absolute;
         width: 100%;
         height: 100%;
@@ -78,11 +83,11 @@
         overflow: visible;
       }
 
-      #sticker:active {
+      .sticker:active {
         cursor: grabbing;
       }
 
-      #inner {
+      .inner {
         position: absolute;
         width: 100%;
         height: 100%;
@@ -90,7 +95,7 @@
         overflow: visible;
       }
 
-      #gl-canvas {
+      .gl-canvas {
         display: block;
         pointer-events: none;
         position: absolute;
@@ -100,15 +105,7 @@
   <body>
     <div id="floor"></div>
 
-    <div id="sticker-container">
-      <div id="sizing-div"></div>
-      <div id="zoom-probe"></div>
-      <div id="sticker">
-        <div id="inner">
-          <canvas id="gl-canvas"></canvas>
-        </div>
-      </div>
-    </div>
+    <div id="sticker-container"></div>
 
     <script>
       // ============================================================================
@@ -411,12 +408,26 @@ void main() {
           this.imageWidth = this.props.imageWidth;
           this.imageHeight = this.props.imageHeight;
 
-          this.container = document.getElementById("sticker-container");
-          this.sticker = document.getElementById("sticker");
-          this.inner = document.getElementById("inner");
-          this.canvas = document.getElementById("gl-canvas");
-          this.sizingDiv = document.getElementById("sizing-div");
-          this.zoomProbe = document.getElementById("zoom-probe");
+          this.container = this.props.parent || document.getElementById("sticker-container");
+          this.container.style.position = this.container.style.position || "absolute";
+          this.container.style.overflow = "visible";
+
+          this.sizingDiv = document.createElement("div");
+          this.sizingDiv.className = "sizing-div";
+          this.zoomProbe = document.createElement("div");
+          this.zoomProbe.className = "zoom-probe";
+          this.sticker = document.createElement("div");
+          this.sticker.className = "sticker";
+          this.inner = document.createElement("div");
+          this.inner.className = "inner";
+          this.canvas = document.createElement("canvas");
+          this.canvas.className = "gl-canvas";
+
+          this.inner.appendChild(this.canvas);
+          this.sticker.appendChild(this.inner);
+          this.container.appendChild(this.sizingDiv);
+          this.container.appendChild(this.zoomProbe);
+          this.container.appendChild(this.sticker);
 
           this.sizingDimensions = { width: 400, height: 400 };
 
@@ -1042,8 +1053,98 @@ void main() {
         }
       }
 
+      const notes = [
+        {
+          url: "https://static.vecteezy.com/system/resources/previews/045/648/580/non_2x/cute-hamster-meme-transparent-background-illustration-free-png.png",
+          x: 60,
+          y: 70,
+          w: 248,
+          h: 180,
+        },
+        {
+          url: "https://static.vecteezy.com/system/resources/previews/067/162/149/non_2x/cute-duck-meme-sticker-transparent-cute-illustration-free-png.png",
+          x: 320,
+          y: 60,
+          w: 200,
+          h: 100,
+        },
+        {
+          url: "https://static.vecteezy.com/system/resources/previews/044/873/467/non_2x/loading-cat-meme-sticker-tshirt-illustration-free-png.png",
+          x: 620,
+          y: 90,
+          w: 200,
+          h: 100,
+        },
+        {
+          url: "https://static.vecteezy.com/system/resources/previews/060/468/440/non_2x/muscle-dog-tuff-shiba-inu-dog-meme-sticker-transparent-t-shirt-cute-illustration-free-png.png",
+          x: 140,
+          y: 250,
+          w: 200,
+          h: 100,
+        },
+        {
+          url: "https://static.vecteezy.com/system/resources/previews/067/162/129/non_2x/thumb-up-frog-meme-sticker-transparent-cute-illustration-free-png.png",
+          x: 460,
+          y: 240,
+          w: 200,
+          h: 100,
+        },
+        {
+          url: "https://static.vecteezy.com/system/resources/previews/067/162/141/non_2x/working-dog-meme-sticker-transparent-cute-illustration-free-png.png",
+          x: 720,
+          y: 220,
+          w: 346,
+          h: 107,
+        },
+        {
+          url: "https://static.vecteezy.com/system/resources/previews/024/207/646/non_2x/old-retro-car-cartoon-sticker-with-ai-generative-free-png.png",
+          x: 100,
+          y: 420,
+          w: 346,
+          h: 107,
+        },
+        {
+          url: "https://static.vecteezy.com/system/resources/previews/027/183/094/non_2x/cute-baby-panda-sticker-transparent-free-png.png",
+          x: 340,
+          y: 430,
+          w: 300,
+          h: 300,
+        },
+        {
+          url: "https://static.vecteezy.com/system/resources/previews/024/684/305/non_2x/sticker-illustration-of-eagle-head-with-ai-generative-free-png.png",
+          x: 620,
+          y: 420,
+          w: 200,
+          h: 200,
+        },
+        {
+          url: "https://static.vecteezy.com/system/resources/previews/044/876/360/non_2x/cat-with-glasses-meme-sticker-tshirt-illustration-free-png.png",
+          x: 820,
+          y: 430,
+          w: 200,
+          h: 200,
+        },
+      ];
+
       window.addEventListener("DOMContentLoaded", () => {
-        new StickerDrag();
+        const root = document.getElementById("sticker-container");
+        notes.forEach((note) => {
+          const wrapper = document.createElement("div");
+          wrapper.className = "sticker-instance";
+          wrapper.style.left = `${note.x}px`;
+          wrapper.style.top = `${note.y}px`;
+          wrapper.style.width = `${note.w}px`;
+          wrapper.style.height = `${note.h}px`;
+          wrapper.style.overflow = "visible";
+          root.appendChild(wrapper);
+
+          new StickerDrag({
+            image: { src: note.url },
+            imageWidth: note.w,
+            imageHeight: note.h,
+            parent: wrapper,
+          });
+        });
       });
     </script>
   </body>

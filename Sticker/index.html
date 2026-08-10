@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Wooden Sticker Wall</title>
+    <title>Whiteboard Studio</title>
     <style>
       * {
         margin: 0;
@@ -19,31 +19,49 @@
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       }
 
-      /* Wood wall background */
-      #wall {
+      /* Provided Floor Background */
+      #floor {
         position: fixed;
         inset: 0;
         background:
-          radial-gradient(circle at 18% 16%, rgba(255, 255, 255, 0.12), transparent 15%),
-          radial-gradient(circle at 82% 20%, rgba(255, 255, 255, 0.08), transparent 14%),
-          linear-gradient(180deg, #a37c55 0%, #8f6543 24%, #a27b57 50%, #8a6443 100%),
-          repeating-linear-gradient(
-            90deg,
-            rgba(255, 255, 255, 0.06) 0px,
-            rgba(255, 255, 255, 0.06) 1px,
-            transparent 1px,
-            transparent 18px
+          radial-gradient(
+            ellipse at 50% 40%,
+            rgba(255, 255, 255, 0.25),
+            rgba(0, 0, 0, 0.08) 80%
           ),
           repeating-linear-gradient(
-            0deg,
-            rgba(0, 0, 0, 0.07) 0px,
-            rgba(0, 0, 0, 0.07) 2px,
-            transparent 2px,
-            transparent 26px
+            90deg,
+            #cbb79a 0px,
+            #cbb79a 46px,
+            #c2ad8e 46px,
+            #c2ad8e 48px
           );
-        background-blend-mode: normal, normal, normal, multiply, overlay;
-        background-size: cover;
         z-index: 0;
+      }
+
+      /* Whiteboard Container */
+      #whiteboard {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: min(90vw, 1000px);
+        height: min(80vh, 600px);
+        background: #2a2a2a;
+        border: 20px solid #5d4037;
+        border-radius: 4px;
+        box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6);
+        z-index: 1;
+        overflow: hidden;
+      }
+
+      #whiteboard::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: url("https://www.transparenttextures.com/patterns/felt.png");
+        opacity: 0.3;
+        pointer-events: none;
       }
 
       #board-surface {
@@ -74,8 +92,11 @@
     </style>
   </head>
   <body>
-    <div id="wall"></div>
-    <div id="board-surface"></div>
+    <div id="floor"></div>
+
+    <div id="whiteboard">
+      <div id="board-surface"></div>
+    </div>
 
     <script>
       // ============================================================================
@@ -469,25 +490,7 @@
           },
         ];
 
-        const positions = [
-          { x: 60, y: 70 },
-          { x: 260, y: 40 },
-          { x: 520, y: 85 },
-          { x: 740, y: 55 },
-          { x: 100, y: 230 },
-          { x: 360, y: 220 },
-          { x: 620, y: 240 },
-          { x: 880, y: 210 },
-          { x: 40, y: 420 },
-          { x: 300, y: 465 },
-          { x: 560, y: 480 },
-          { x: 820, y: 430 },
-        ];
-
-        notes.forEach((n, index) => {
-          const pos = positions[index % positions.length];
-          new Sticker(board, { ...n, x: pos.x, y: pos.y });
-        });
+        notes.forEach((n) => new Sticker(board, n));
       });
     </script>
   </body>

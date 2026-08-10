@@ -3,71 +3,96 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Whiteboard Studio</title>
+    <title>Realistic Felt Board Studio</title>
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       
-      html, body {
+      body, html {
         width: 100%; height: 100%;
         overflow: hidden;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #222;
+        font-family: sans-serif;
       }
 
-      /* User Provided Floor Background */
-      #floor {
-        position: fixed;
-        inset: 0;
-        background:
-          radial-gradient(
-            ellipse at 50% 40%,
-            rgba(255, 255, 255, 0.25),
-            rgba(0, 0, 0, 0.08) 80%
-          ),
-          repeating-linear-gradient(
-            90deg,
-            #cbb79a 0px,
-            #cbb79a 46px,
-            #c2ad8e 46px,
-            #c2ad8e 48px
-          );
-        z-index: 0;
+      /* Wall Background */
+      #scene {
+        position: relative;
+        width: 100%; height: 100%;
+        background: radial-gradient(circle at 50% 40%, #555 0%, #222 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
-      /* The Whiteboard container */
-      #whiteboard {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        width: min(90vw, 1000px);
-        height: min(80vh, 600px);
-        background: #fff;
-        border: 12px solid #e0e0e0; /* Frame */
-        border-radius: 8px;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-        overflow: hidden;
-        z-index: 1;
-        /* Subtle glossy reflection */
-        background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+      /* Dark Textured Wall Overlay */
+      #scene::before {
+        content: ""; position: absolute; inset: 0;
+        background-image: url('https://www.transparenttextures.com/patterns/dark-matter.png');
+        opacity: 0.4; pointer-events: none;
       }
 
-      /* Surface where stickers live */
+      /* Wooden Desk */
+      #desk {
+        position: absolute; bottom: 0; width: 100%; height: 180px;
+        background: linear-gradient(to bottom, #5d4037 0%, #3e2723 100%);
+        border-top: 4px solid #795548;
+        box-shadow: inset 0 20px 40px rgba(0,0,0,0.5);
+        z-index: 5;
+      }
+
+      /* Decor Items */
+      .decor-plant {
+        position: absolute; left: 15%; bottom: 180px;
+        width: 80px; height: 100px;
+        background: url('https://cdn-icons-png.flaticon.com/512/628/628285.png') no-repeat bottom;
+        background-size: contain; z-index: 6;
+      }
+      .decor-books {
+        position: absolute; left: 5%; bottom: 180px;
+        width: 100px; height: 60px;
+        background: #8d6e63; border: 1px solid #5d4037;
+        box-shadow: 2px -2px 5px rgba(0,0,0,0.3); z-index: 6;
+      }
+
+      /* The Board (Wooden Frame + Felt Surface) */
+      #board-frame {
+        position: relative;
+        width: min(90vw, 900px);
+        height: min(75vh, 600px);
+        padding: 20px;
+        background: #5d4037; /* Wood Color */
+        border: 12px solid #4e342e;
+        border-image: linear-gradient(45deg, #5d4037, #795548, #3e2723) 1;
+        box-shadow: 0 50px 100px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.5);
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
       #board-surface {
-        position: absolute;
-        inset: 10px;
-        z-index: 2;
-        overflow: visible;
+        position: relative;
+        width: 100%; height: 100%;
+        background: #1a222c; /* Felt Color */
+        box-shadow: inset 0 0 50px rgba(0,0,0,0.9);
+        overflow: visible; /* Let stickers peel outside if needed */
         perspective: 1000px;
       }
 
-      /* Sticker Classes */
+      /* Felt Texture Overlay */
+      #board-surface::after {
+        content: ""; position: absolute; inset: 0;
+        background-image: url('https://www.transparenttextures.com/patterns/felt.png');
+        opacity: 0.2; pointer-events: none;
+      }
+
+      /* Sticker Instance Styles */
       .sticker-wrap {
         position: absolute;
         cursor: grab;
         transform-style: preserve-3d;
         user-select: none;
         will-change: transform, left, top;
-        z-index: 10;
       }
       .sticker-wrap:active { cursor: grabbing; }
 
@@ -79,12 +104,18 @@
     </style>
   </head>
   <body>
-    <div id="floor"></div>
 
-    <div id="whiteboard">
-      <div id="board-surface">
-        <!-- Stickers will be injected here via JS -->
+    <div id="scene">
+      <div id="decor-plant" class="decor-plant"></div>
+      <div id="decor-books" class="decor-books"></div>
+      
+      <div id="board-frame">
+        <div id="board-surface">
+            <!-- Stickers injected here by JS -->
+        </div>
       </div>
+
+      <div id="desk"></div>
     </div>
 
     <script>
@@ -123,13 +154,16 @@
         void main() {
             vec4 tex = texture2D(uTex, vUV); if (tex.a < 0.01) discard;
             vec3 c = tex.rgb;
-            // Rug texture effect
+            // Rug Logic
             vec2 aspUV = vec2(vUV.x * uAspect, vUV.y);
             float pattern = mix(sin(aspUV.x * 500.0) * sin(aspUV.y * 500.0) * 0.5 + 0.5, hash(aspUV * 1000.0), 0.2);
-            c *= mix(0.7, 1.05, pattern);
+            c *= mix(0.6, 1.1, pattern);
+            // Dynamic nap lighting
+            float align = dot(normalize(uTilt + 0.001), normalize(vec2(1.0, -1.0)));
+            c *= (1.0 + align * 0.2);
             // Peel Lighting
-            c = mix(c, c + 0.3, vHi);
-            c = mix(c, c * 0.6, vSh);
+            c = mix(c, c + 0.4, vHi);
+            c = mix(c, c * 0.5, vSh);
             gl_FragColor = vec4(c, tex.a);
         }`;
 
@@ -141,12 +175,20 @@
       class Sticker {
         constructor(parent, config) {
           this.parent = parent;
-          this.config = { url: '', x: 0, y: 0, w: 150, h: 150, elevation: 0.2, ...config };
-          this.state = {
-            x: this.config.x, y: this.config.y, peel: 0, lift: 0, tX: 0, tY: 0,
-            peeling: false, held: false, pasting: false, texReady: false
+          this.config = {
+            url: '', x: 0, y: 0, w: 150, h: 150,
+            tilt: 30, elevation: 0.2, ...config
           };
-          this.initDOM(); this.initGL(); this.loadImage(); this.attachEvents();
+          this.state = {
+            x: this.config.x, y: this.config.y,
+            peel: 0, lift: 0, tX: 0, tY: 0,
+            peeling: false, held: false, pasting: false,
+            peelAngle: -Math.PI/4, texReady: false
+          };
+          this.initDOM();
+          this.initGL();
+          this.loadImage();
+          this.attachEvents();
         }
 
         initDOM() {
@@ -156,6 +198,7 @@
           this.wrap.style.height = this.config.h + 'px';
           this.wrap.style.left = this.config.x + 'px';
           this.wrap.style.top = this.config.y + 'px';
+          
           this.canvas = document.createElement('canvas');
           this.canvas.className = 'gl-canvas';
           this.wrap.appendChild(this.canvas);
@@ -171,7 +214,8 @@
           this.prog = gl.createProgram();
           gl.attachShader(this.prog, compile(VS, gl.VERTEX_SHADER));
           gl.attachShader(this.prog, compile(FS, gl.FRAGMENT_SHADER));
-          gl.linkProgram(this.prog); gl.useProgram(this.prog);
+          gl.linkProgram(this.prog);
+          gl.useProgram(this.prog);
 
           const grid = 32, verts = [], inds = [];
           for (let j=0; j<=grid; j++) for (let i=0; i<=grid; i++) verts.push((i/grid)*2-1, (j/grid)*2-1, i/grid, 1-j/grid);
@@ -181,20 +225,24 @@
           this.indexCount = inds.length;
           gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
           gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW);
-          gl.enableVertexAttribArray(gl.getAttribLocation(this.prog, 'aPos')); 
-          gl.vertexAttribPointer(gl.getAttribLocation(this.prog, 'aPos'), 2, gl.FLOAT, false, 16, 0);
-          gl.enableVertexAttribArray(gl.getAttribLocation(this.prog, 'aUV')); 
-          gl.vertexAttribPointer(gl.getAttribLocation(this.prog, 'aUV'), 2, gl.FLOAT, false, 16, 8);
+          const aPos = gl.getAttribLocation(this.prog, 'aPos');
+          gl.enableVertexAttribArray(aPos); gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 16, 0);
+          const aUV = gl.getAttribLocation(this.prog, 'aUV');
+          gl.enableVertexAttribArray(aUV); gl.vertexAttribPointer(aUV, 2, gl.FLOAT, false, 16, 8);
           gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer());
           gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(inds), gl.STATIC_DRAW);
 
+          this.resize();
+        }
+
+        resize() {
           const pad = this.config.w * 0.5;
           const cw = this.config.w + pad*2, ch = this.config.h + pad*2;
           this.canvas.width = cw * 2; this.canvas.height = ch * 2;
           this.canvas.style.width = cw + 'px'; this.canvas.style.height = ch + 'px';
           this.canvas.style.marginLeft = -pad + 'px'; this.canvas.style.marginTop = -pad + 'px';
           this.state.scale = this.config.w / cw;
-          gl.viewport(0,0, this.canvas.width, this.canvas.height);
+          this.gl.viewport(0,0, this.canvas.width, this.canvas.height);
         }
 
         loadImage() {
@@ -205,6 +253,7 @@
             gl.bindTexture(gl.TEXTURE_2D, this.tex);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             this.state.texReady = true;
             this.draw();
@@ -219,7 +268,9 @@
             const r = this.wrap.getBoundingClientRect();
             this.state.offX = p.clientX - r.left; this.state.offY = p.clientY - r.top;
             this.wrap.style.zIndex = globalZ++;
-            this.lastT = performance.now(); this.anim();
+            this.state.peelAngle = Math.atan2(p.clientY - (r.top + r.height/2), p.clientX - (r.left + r.width/2));
+            this.lastT = performance.now();
+            this.anim();
           };
           this.wrap.addEventListener('mousedown', start);
           this.wrap.addEventListener('touchstart', start);
@@ -232,8 +283,10 @@
             this.state.y = p.clientY - parentR.top - this.state.offY;
             this.wrap.style.left = this.state.x + 'px';
             this.wrap.style.top = this.state.y + 'px';
-            this.state.tY += ((p.clientX - (this.lastX||p.clientX)) * 2 - this.state.tY) * 0.1;
-            this.state.tX += (-(p.clientY - (this.lastY||p.clientY)) * 2 - this.state.tX) * 0.1;
+
+            const vx = (p.clientX - this.lastX) || 0, vy = (p.clientY - this.lastY) || 0;
+            this.state.tY += (vx * 2 - this.state.tY) * 0.1;
+            this.state.tX += (-vy * 2 - this.state.tX) * 0.1;
             this.wrap.style.transform = `rotateX(${this.state.tX}deg) rotateY(${this.state.tY}deg)`;
             this.lastX = p.clientX; this.lastY = p.clientY;
           });
@@ -254,42 +307,53 @@
 
         anim() {
           const now = performance.now();
-          const dt = (now - (this.lastAnimT || now)) / 1000; this.lastAnimT = now;
+          const dt = (now - (this.lastAnimT || now)) / 1000;
+          this.lastAnimT = now;
           const step = 2.0 * dt;
-          if (this.state.peeling) { this.state.peel = Math.min(1, this.state.peel + step); this.state.lift = Math.min(1, this.state.lift + step); }
-          else if (this.state.pasting) { this.state.peel = Math.max(0, this.state.peel - step); this.state.lift = Math.max(0, this.state.lift - step); if (this.state.peel === 0) this.state.pasting = false; }
+
+          if (this.state.peeling) {
+            this.state.peel = Math.min(1, this.state.peel + step);
+            this.state.lift = Math.min(1, this.state.lift + step);
+          } else if (this.state.pasting) {
+            this.state.peel = Math.max(0, this.state.peel - step);
+            this.state.lift = Math.max(0, this.state.lift - step);
+            if (this.state.peel === 0) this.state.pasting = false;
+          }
+
           const tr = this.state.peel;
-          this.canvas.style.filter = `drop-shadow(${tr*15}px ${tr*15}px ${tr*10}px rgba(0,0,0,0.4))`;
+          this.canvas.style.filter = `drop-shadow(${tr*20}px ${tr*20}px ${tr*15}px rgba(0,0,0,0.5))`;
+          
           this.draw();
           if (this.state.held || this.state.peeling || this.state.pasting) requestAnimationFrame(() => this.anim());
           else this.lastAnimT = null;
         }
 
         draw() {
-          const gl = this.gl, s = this.state;
+          const gl = this.gl, s = this.state, u = this.uni = this.uni || {};
           if (!s.texReady) return;
           gl.clear(gl.COLOR_BUFFER_BIT);
           const loc = (n) => gl.getUniformLocation(this.prog, n);
           gl.uniform1f(loc('uPeel'), s.peel); gl.uniform1f(loc('uLift'), s.lift);
-          gl.uniform1f(loc('uPasting'), s.pasting?1:0);
+          gl.uniform1f(loc('uPeelAngle'), s.peelAngle); gl.uniform1f(loc('uPasting'), s.pasting?1:0);
           gl.uniform1f(loc('uScale'), s.scale); gl.uniform1f(loc('uElevation'), this.config.elevation);
-          gl.uniform2f(loc('uTilt'), s.tY, -s.tX); gl.uniform1f(loc('uAspect'), this.config.w/this.config.h);
-          gl.bindTexture(gl.TEXTURE_2D, this.tex);
+          gl.uniform2f(loc('uTilt'), s.tY, s.tX); gl.uniform1f(loc('uAspect'), this.config.w/this.config.h);
+          gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.tex);
           gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_SHORT, 0);
         }
       }
 
       // ============================================================================
-      // SETUP
+      // INIT SCENE
       // ============================================================================
       window.addEventListener('DOMContentLoaded', () => {
         const board = document.getElementById('board-surface');
         
-        // Spawn multiple stickers
-        new Sticker(board, { url: 'https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/fake-journal.png', x: 50, y: 50, w: 250, h: 200 });
-        new Sticker(board, { url: 'https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/3fb4a247-64e9-4c54-2391-86598eebfe00/w=800', x: 400, y: 100, w: 150, h: 150 });
-        new Sticker(board, { url: 'https://plus.unsplash.com/premium_photo-1664194583917-b0ba07c4ce2a?q=80&w=500', x: 600, y: 300, w: 220, h: 220 });
-        new Sticker(board, { url: 'https://img.freepik.com/free-vector/yellow-sticky-note-paper-post-it_1017-31560.jpg', x: 100, y: 300, w: 180, h: 180 });
+        // Add various sized stickers
+        new Sticker(board, { url: 'https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/fake-journal.png', x: 20, y: 20, w: 250, h: 180 });
+        new Sticker(board, { url: 'https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/3fb4a247-64e9-4c54-2391-86598eebfe00/w=800', x: 300, y: 50, w: 120, h: 120, elevation: 0.4 });
+        new Sticker(board, { url: 'https://plus.unsplash.com/premium_photo-1664194583917-b0ba07c4ce2a?q=80&w=500&auto=format', x: 450, y: 20, w: 200, h: 250 });
+        new Sticker(board, { url: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png', x: 50, y: 300, w: 100, h: 100 });
+        new Sticker(board, { url: 'https://img.freepik.com/free-vector/yellow-sticky-note-paper-post-it_1017-31560.jpg', x: 200, y: 280, w: 150, h: 150 });
       });
     </script>
   </body>

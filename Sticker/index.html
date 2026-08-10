@@ -136,9 +136,9 @@
       // ============================================================================
 
       const RENDER_SCALE = 2;
-      const PAD_BASE = 20; 
-      const MESH_GRID_SIZE = 32; 
-      const DRAG_Z_INDEX_BASE = 1000; 
+      const PAD_BASE = 20;
+      const MESH_GRID_SIZE = 32;
+      const DRAG_Z_INDEX_BASE = 1000;
 
       let zIndexCounter = DRAG_Z_INDEX_BASE;
 
@@ -348,7 +348,10 @@ void main() {
         if (m) return [+m[1] / 255, +m[2] / 255, +m[3] / 255];
         let h = s.replace(/^#/, "");
         if (h.length === 3)
-          h = h.split("").map((c) => c + c).join("");
+          h = h
+            .split("")
+            .map((c) => c + c)
+            .join("");
         if (h.length >= 6)
           return [
             parseInt(h.slice(0, 2), 16) / 255,
@@ -426,16 +429,32 @@ void main() {
           this.uniforms = {};
 
           this.state = {
-            x: 0, y: 0, width: 200, height: 200,
-            imageAspectRatio: null, scale: 1.0,
-            held: false, peeling: false, sticking: false,
-            dragStartX: 0, dragStartY: 0, dragOrigX: 0, dragOrigY: 0,
-            peel: 0, lift: 0, peelAngle: -Math.PI / 4,
-            dragTiltX: 0, dragTiltY: 0,
-            currentTiltX: 0, currentTiltY: 0,
-            prevTiltX: 0, prevTiltY: 0,
+            x: 0,
+            y: 0,
+            width: 200,
+            height: 200,
+            imageAspectRatio: null,
+            scale: 1.0,
+            held: false,
+            peeling: false,
+            sticking: false,
+            dragStartX: 0,
+            dragStartY: 0,
+            dragOrigX: 0,
+            dragOrigY: 0,
+            peel: 0,
+            lift: 0,
+            peelAngle: -Math.PI / 4,
+            dragTiltX: 0,
+            dragTiltY: 0,
+            currentTiltX: 0,
+            currentTiltY: 0,
+            prevTiltX: 0,
+            prevTiltY: 0,
             holoMotion: 0,
-            lastMoveX: 0, lastMoveY: 0, lastMoveT: 0,
+            lastMoveX: 0,
+            lastMoveY: 0,
+            lastMoveT: 0,
             texReady: false,
           };
 
@@ -489,7 +508,10 @@ void main() {
             gl.shaderSource(shader, source);
             gl.compileShader(shader);
             if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-              console.error("Shader compile error:", gl.getShaderInfoLog(shader));
+              console.error(
+                "Shader compile error:",
+                gl.getShaderInfoLog(shader),
+              );
               gl.deleteShader(shader);
               return null;
             }
@@ -512,10 +534,22 @@ void main() {
           this.program = program;
 
           const uniformNames = [
-            "uPeel", "uLift", "uPeelAngle", "uPasting", "uScale", "uElevation",
-            "uTilt", "uSheenStrength", "uSheenColor", "uSheenTiltShift",
-            "uSheenTiltDeadzone", "uMaxTiltDeg", "uEffectMode", "uHoloMotion", 
-            "uTex", "uAspect"
+            "uPeel",
+            "uLift",
+            "uPeelAngle",
+            "uPasting",
+            "uScale",
+            "uElevation",
+            "uTilt",
+            "uSheenStrength",
+            "uSheenColor",
+            "uSheenTiltShift",
+            "uSheenTiltDeadzone",
+            "uMaxTiltDeg",
+            "uEffectMode",
+            "uHoloMotion",
+            "uTex",
+            "uAspect",
           ];
           for (const name of uniformNames) {
             this.uniforms[name] = gl.getUniformLocation(program, name);
@@ -540,12 +574,20 @@ void main() {
 
           const vbo = gl.createBuffer();
           gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW);
+          gl.bufferData(
+            gl.ARRAY_BUFFER,
+            new Float32Array(verts),
+            gl.STATIC_DRAW,
+          );
           this.vbo = vbo;
 
           const ibo = gl.createBuffer();
           gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
-          gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(inds), gl.STATIC_DRAW);
+          gl.bufferData(
+            gl.ELEMENT_ARRAY_BUFFER,
+            new Uint16Array(inds),
+            gl.STATIC_DRAW,
+          );
           this.ibo = ibo;
           this.indexCount = inds.length;
 
@@ -585,15 +627,20 @@ void main() {
           gl.uniform1f(u.uElevation, this.elevation);
           gl.uniform2f(u.uTilt, state.currentTiltX, state.currentTiltY);
           gl.uniform1f(u.uSheenStrength, this.sheenStrength);
-          gl.uniform3f(u.uSheenColor, this.sheenColor[0], this.sheenColor[1], this.sheenColor[2]);
+          gl.uniform3f(
+            u.uSheenColor,
+            this.sheenColor[0],
+            this.sheenColor[1],
+            this.sheenColor[2],
+          );
           gl.uniform1f(u.uSheenTiltShift, SHEEN_TILT_SHIFT);
           gl.uniform1f(u.uSheenTiltDeadzone, SHEEN_TILT_DEADZONE);
           gl.uniform1f(u.uMaxTiltDeg, this.maxTilt);
-          
+
           let effectMode = 0.0;
           if (this.sheenMode === "holo") effectMode = 1.0;
           else if (this.sheenMode === "rug") effectMode = 2.0;
-          
+
           gl.uniform1f(u.uEffectMode, effectMode);
           gl.uniform1f(u.uHoloMotion, state.holoMotion);
           gl.uniform1f(u.uAspect, state.width / state.height);
@@ -610,11 +657,11 @@ void main() {
           if (!canvas) return;
 
           const tRaw = Math.max(state.lift, state.peel);
-          const t = tRaw * tRaw * (3 - 2 * tRaw); 
+          const t = tRaw * tRaw * (3 - 2 * tRaw);
           canvas.style.filter = lerpShadow(
             this.parsedStaticShadow,
             this.parsedDynamicShadow,
-            t
+            t,
           );
         }
 
@@ -646,7 +693,8 @@ void main() {
             }
           }
 
-          const holoDecayActive = this.sheenMode === "holo" && state.holoMotion > 0.005;
+          const holoDecayActive =
+            this.sheenMode === "holo" && state.holoMotion > 0.005;
           if (holoDecayActive) {
             state.holoMotion *= HOLO_MOTION_DECAY;
             if (state.holoMotion < 0.005) state.holoMotion = 0;
@@ -657,7 +705,12 @@ void main() {
 
           if (changed || state.held || holoDecayActive) this.draw();
 
-          if (state.held || state.peeling || state.sticking || holoDecayActive) {
+          if (
+            state.held ||
+            state.peeling ||
+            state.sticking ||
+            holoDecayActive
+          ) {
             this.animationId = requestAnimationFrame(this.tick);
           } else {
             this.animationId = null;
@@ -684,7 +737,8 @@ void main() {
           const containerHeight = container.clientHeight || 200;
 
           const width = this.imageWidth > 0 ? this.imageWidth : containerWidth;
-          const height = this.imageHeight > 0 ? this.imageHeight : containerHeight;
+          const height =
+            this.imageHeight > 0 ? this.imageHeight : containerHeight;
 
           const maxDim = Math.max(width, height);
           const elevationPad = maxDim * this.elevation * 0.6;
@@ -757,7 +811,8 @@ void main() {
         }
 
         loadImage() {
-          const imageSrc = resolveImageSource(this.props.image) || DEFAULT_IMAGE;
+          const imageSrc =
+            resolveImageSource(this.props.image) || DEFAULT_IMAGE;
 
           const gl = this.gl;
           if (!gl || !this.program) return;
@@ -776,9 +831,24 @@ void main() {
 
             gl.bindTexture(gl.TEXTURE_2D, texture);
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texImage2D(
+              gl.TEXTURE_2D,
+              0,
+              gl.RGBA,
+              gl.RGBA,
+              gl.UNSIGNED_BYTE,
+              img,
+            );
+            gl.texParameteri(
+              gl.TEXTURE_2D,
+              gl.TEXTURE_WRAP_S,
+              gl.CLAMP_TO_EDGE,
+            );
+            gl.texParameteri(
+              gl.TEXTURE_2D,
+              gl.TEXTURE_WRAP_T,
+              gl.CLAMP_TO_EDGE,
+            );
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
@@ -808,12 +878,18 @@ void main() {
               inner.style.transform = `rotateX(${state.dragTiltX}deg) rotateY(${state.dragTiltY}deg)`;
             }
 
-            if (Math.abs(state.dragTiltX) > 0.1 || Math.abs(state.dragTiltY) > 0.1) {
+            if (
+              Math.abs(state.dragTiltX) > 0.1 ||
+              Math.abs(state.dragTiltY) > 0.1
+            ) {
               requestAnimationFrame(step);
             } else {
-              state.dragTiltX = 0; state.dragTiltY = 0;
-              state.currentTiltX = 0; state.currentTiltY = 0;
-              state.prevTiltX = 0; state.prevTiltY = 0;
+              state.dragTiltX = 0;
+              state.dragTiltY = 0;
+              state.currentTiltX = 0;
+              state.currentTiltY = 0;
+              state.prevTiltX = 0;
+              state.prevTiltY = 0;
               if (inner) inner.style.transform = "";
             }
           };
@@ -878,18 +954,31 @@ void main() {
           state.lastMoveY = clientY;
           state.lastMoveT = now;
 
-          const targetTiltY = Math.max(-this.maxTilt, Math.min(this.maxTilt, velX * this.tiltSensitivity));
-          const targetTiltX = Math.max(-this.maxTilt, Math.min(this.maxTilt, -velY * this.tiltSensitivity));
+          const targetTiltY = Math.max(
+            -this.maxTilt,
+            Math.min(this.maxTilt, velX * this.tiltSensitivity),
+          );
+          const targetTiltX = Math.max(
+            -this.maxTilt,
+            Math.min(this.maxTilt, -velY * this.tiltSensitivity),
+          );
 
-          state.dragTiltX += (targetTiltX - state.dragTiltX) * this.tiltSmoothing;
-          state.dragTiltY += (targetTiltY - state.dragTiltY) * this.tiltSmoothing;
+          state.dragTiltX +=
+            (targetTiltX - state.dragTiltX) * this.tiltSmoothing;
+          state.dragTiltY +=
+            (targetTiltY - state.dragTiltY) * this.tiltSmoothing;
 
           state.currentTiltX = state.dragTiltX;
           state.currentTiltY = state.dragTiltY;
 
           if (this.sheenMode === "holo") {
-            const tiltDelta = Math.abs(state.dragTiltX - state.prevTiltX) + Math.abs(state.dragTiltY - state.prevTiltY);
-            state.holoMotion = Math.min(1, state.holoMotion + tiltDelta * HOLO_MOTION_BUMP);
+            const tiltDelta =
+              Math.abs(state.dragTiltX - state.prevTiltX) +
+              Math.abs(state.dragTiltY - state.prevTiltY);
+            state.holoMotion = Math.min(
+              1,
+              state.holoMotion + tiltDelta * HOLO_MOTION_BUMP,
+            );
             state.prevTiltX = state.dragTiltX;
             state.prevTiltY = state.dragTiltY;
           }
@@ -911,7 +1000,10 @@ void main() {
             const rect = inner.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
-            state.peelAngle = Math.atan2(-(state.lastMoveY - centerY), -(state.lastMoveX - centerX));
+            state.peelAngle = Math.atan2(
+              -(state.lastMoveY - centerY),
+              -(state.lastMoveX - centerX),
+            );
             state.peel = 1;
           }
 
@@ -924,19 +1016,27 @@ void main() {
             e.preventDefault();
             this.pointerDown(e.clientX, e.clientY);
           });
-          window.addEventListener("mousemove", (e) => this.pointerMove(e.clientX, e.clientY));
+          window.addEventListener("mousemove", (e) =>
+            this.pointerMove(e.clientX, e.clientY),
+          );
           window.addEventListener("mouseup", () => this.pointerUp());
 
-          this.sticker.addEventListener("touchstart", (e) => {
+          this.sticker.addEventListener(
+            "touchstart",
+            (e) => {
               e.preventDefault();
               const touch = e.touches[0];
               if (touch) this.pointerDown(touch.clientX, touch.clientY);
-            }, { passive: false }
+            },
+            { passive: false },
           );
-          window.addEventListener("touchmove", (e) => {
+          window.addEventListener(
+            "touchmove",
+            (e) => {
               const touch = e.touches[0];
               if (touch) this.pointerMove(touch.clientX, touch.clientY);
-            }, { passive: false }
+            },
+            { passive: false },
           );
           window.addEventListener("touchend", () => this.pointerUp());
         }

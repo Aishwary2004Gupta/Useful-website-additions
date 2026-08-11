@@ -9,21 +9,17 @@
         overflow: hidden;
         background: #000;
       }
-      #hud {
-        position: fixed;
-        top: 10px;
-        left: 10px;
-        color: #fff;
-        font: 12px/1.4 system-ui, sans-serif;
-        background: rgba(0, 0, 0, 0.4);
-        padding: 6px 10px;
-        border-radius: 4px;
-        pointer-events: none;
-      }
     </style>
   </head>
   <body>
-    <div id="hud">Move / click to ripple</div>
+    <!-- <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script> -->
 
     <script type="module">
       import * as THREE from "https://esm.sh/three";
@@ -41,11 +37,7 @@
       );
       camera.position.set(-4, 0, -3);
 
-      const renderer = new THREE.WebGLRenderer({
-        antialias: true,
-        powerPreference: "high-performance",
-      });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // cap DPR
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
       document.body.appendChild(renderer.domElement);
 
@@ -57,167 +49,142 @@
       const textureLoader = new THREE.TextureLoader();
       const envURL =
         "https://i.postimg.cc/DZTfk0vf/D10451C5-EB9F-4364-B668-83F91FC4B26C.jpg";
+      const reflectionTex = textureLoader.load(envURL);
+      const refractionTex = textureLoader.load(envURL);
 
-      const envTex = textureLoader.load(envURL, (t) => {
-        // Generate mipmaps for better, faster envmap sampling
-        t.mapping = THREE.EquirectangularReflectionMapping;
-        t.colorSpace = THREE.SRGBColorSpace;
-        t.generateMipmaps = true;
-        t.minFilter = THREE.LinearMipmapLinearFilter;
-        t.magFilter = THREE.LinearFilter;
-        t.needsUpdate = true;
-      });
+      reflectionTex.mapping = THREE.EquirectangularReflectionMapping;
+      refractionTex.mapping = THREE.EquirectangularRefractionMapping;
 
-      scene.background = envTex;
-      scene.environment = envTex;
+      scene.background = reflectionTex;
+      scene.environment = reflectionTex;
 
       // ------------------------------------------------
-      // MEDIUM-RES WATER SPHERE
+      // HIGH-RES WATER SPHERE
       // ------------------------------------------------
-      // 64x64 instead of 128x128: 4x fewer vertices (16k -> 4k)
-      const geometry = new THREE.SphereGeometry(2, 64, 64);
-      const base = new Float32Array(geometry.attributes.position.array);
-      const pos = geometry.attributes.position;
+      const geometry = new THREE.SphereGeometry(2, 128, 128);
+      const base = geometry.attributes.position.array.slice();
 
-      // One material is enough — drop the second overlapping sphere
-      const matWater = new THREE.MeshPhysicalMaterial({
-        color: 0x5cafdf,
-        envMap: envTex,
-        metalness: 0.25,
-        roughness: 0.05,
-        transmission: 0.85,
-        ior: 1.12,
-        side: THREE.FrontSide,            // FrontSide is enough
+      const matReflection = new THREE.MeshPhysicalMaterial({
+        color: 0x5CAFDF,
+        envMap: reflectionTex,
+        metalness: 0.3,
+        roughness: 0,
+        transmission: 1,
         transparent: true,
-        thickness: 0.5,
-        clearcoat: 0.5,
-        clearcoatRoughness: 0.1,
+        ior: 1.12,
+        side: THREE.DoubleSide,
       });
 
-      const sphereMesh = new THREE.Mesh(geometry, matWater);
-      scene.add(sphereMesh);
+      const matRefraction = new THREE.MeshPhysicalMaterial({
+        // color: 0xc3e4f9,
+        color: 0x5cafdf,
+        envMap: refractionTex,
+        roughness: 0,
+        metalness: 0.1,
+        transmission: 0.5,
+        ior: 1.12,
+        side: THREE.DoubleSide,
+      });
+
+      const sphereObj = new THREE.Object3D();
+      sphereObj.add(new THREE.Mesh(geometry, matRefraction));
+      sphereObj.add(new THREE.Mesh(geometry, matReflection));
+      scene.add(sphereObj);
 
       // ------------------------------------------------
       // CONTROLS
       // ------------------------------------------------
       const controls = new OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
-      controls.dampingFactor = 0.08;
 
       // ------------------------------------------------
       // RIPPLE DATA
       // ------------------------------------------------
-      const vertexCount = pos.count;
+      const vertexCount = geometry.attributes.position.count;
+
+      const rippleCenters = [];
+      const rippleTimes = [];
+
       const RIPPLE_RADIUS = 1.3;
       const RIPPLE_DECAY = 2.2;
-      const RIPPLE_SPEED = 2.0;
-      const RIPPLE_AMPLITUDE = 0.05;
-      const RIPPLE_LIFETIME = 2.5;   // seconds
-      const MAX_RIPPLES = 6;         // cap simultaneous ripples
 
-      // Use simple object pools to avoid GC churn
-      const ripples = []; // each: { x, y, z, t }
-
-      // ------------------------------------------------
-      // RIPPLE TRIGGER (throttled)
-      // ------------------------------------------------
       const raycaster = new THREE.Raycaster();
       const pointer = new THREE.Vector2();
-      let lastTriggerTime = 0;
-      const TRIGGER_COOLDOWN = 30; // ms between ripples on move
+      const tmpVec = new THREE.Vector3();
 
+      // ------------------------------------------------
+      // RIPPLE TRIGGER
+      // ------------------------------------------------
       function triggerRipple(point) {
-        if (ripples.length >= MAX_RIPPLES) ripples.shift(); // drop oldest
-        ripples.push({ x: point.x, y: point.y, z: point.z, t: 0 });
+        rippleCenters.push(point.clone());
+        rippleTimes.push(0);
       }
 
-      function onPointer(e, force) {
-        const now = performance.now();
-        if (!force && now - lastTriggerTime < TRIGGER_COOLDOWN) return;
-        lastTriggerTime = now;
-
+      function onPointer(e) {
         const r = renderer.domElement.getBoundingClientRect();
         pointer.x = ((e.clientX - r.left) / r.width) * 2 - 1;
         pointer.y = -((e.clientY - r.top) / r.height) * 2 + 1;
 
         raycaster.setFromCamera(pointer, camera);
-        const hit = raycaster.intersectObject(sphereMesh, false)[0];
+        const hit = raycaster.intersectObject(sphereObj.children[0])[0];
         if (hit) triggerRipple(hit.point);
       }
 
-      window.addEventListener("pointermove", (e) => onPointer(e, false));
-      window.addEventListener("pointerdown", (e) => onPointer(e, true));
+      window.addEventListener("pointermove", onPointer);
+      window.addEventListener("pointerdown", onPointer);
 
       // ------------------------------------------------
-      // ANIMATION LOOP
+      // ANIMATION LOOP WITH TRUE RIPPLE SYSTEM
       // ------------------------------------------------
-      const tmpVec = new THREE.Vector3();
-      const dt = 0.016; // fixed timestep for stable ripples
-      let elapsed = 0;
-
       function animate() {
         requestAnimationFrame(animate);
         controls.update();
 
-        // Skip work entirely if nothing is happening
-        if (ripples.length === 0) {
-          renderer.render(scene, camera);
-          return;
+        const pos = geometry.attributes.position;
+
+        // Reset sphere vertices to base positions
+        for (let i = 0; i < vertexCount; i++) {
+          pos.setXYZ(i, base[i * 3], base[i * 3 + 1], base[i * 3 + 2]);
         }
 
-        elapsed += dt;
-
-        // Advance ripple times and drop dead ones
-        for (let r = ripples.length - 1; r >= 0; r--) {
-          ripples[r].t += dt;
-          if (ripples[r].t > RIPPLE_LIFETIME) ripples.splice(r, 1);
+        // Update ripple lifetime
+        for (let r = 0; r < rippleTimes.length; r++) {
+          rippleTimes[r] += 0.02;
         }
 
-        // Reset to base positions
-        pos.array.set(base);
-        pos.needsUpdate = true;
-
-        const arr = pos.array;
-        const numRipples = ripples.length;
-        const r2 = RIPPLE_RADIUS * RIPPLE_RADIUS; // squared for cheaper check
-
-        for (let r = 0; r < numRipples; r++) {
-          const c = ripples[r];
-          const time = c.t;
-          const bandCenter = time * RIPPLE_SPEED;
-          const bandMin = bandCenter - RIPPLE_RADIUS;
-          const bandMax = bandCenter + RIPPLE_RADIUS;
+        // Apply all active ripples
+        for (let r = 0; r < rippleCenters.length; r++) {
+          const center = rippleCenters[r];
+          const time = rippleTimes[r];
 
           for (let i = 0; i < vertexCount; i++) {
-            const i3 = i * 3;
-            const dx = arr[i3]     - c.x;
-            const dy = arr[i3 + 1] - c.y;
-            const dz = arr[i3 + 2] - c.z;
-            const dist2 = dx * dx + dy * dy + dz * dz;
+            tmpVec.set(pos.getX(i), pos.getY(i), pos.getZ(i));
 
-            if (dist2 > bandMax * bandMax) continue;
-            if (dist2 < bandMin * bandMin && time > 0.05) continue;
+            const dist = tmpVec.distanceTo(center);
 
-            const dist = Math.sqrt(dist2);
+            // Ring travels outward over time
+            const wave = Math.sin((dist - time * 2.0) * 6.0);
 
-            // Skip very far ripples cheaply
-            if (dist > bandMax) continue;
+            // Ripple band area
+            if (
+              dist < time * 2.0 + RIPPLE_RADIUS &&
+              dist > time * 2.0 - RIPPLE_RADIUS
+            ) {
+              const intensity = wave * Math.exp(-dist * RIPPLE_DECAY) * 0.05;
 
-            const wave = Math.sin((dist - bandCenter) * 6.0);
-            const falloff = Math.exp(-dist * RIPPLE_DECAY);
-            const intensity = wave * falloff * RIPPLE_AMPLITUDE;
-
-            // Push outward along vertex normal (== vertex direction here)
-            arr[i3]     += arr[i3]     * intensity;
-            arr[i3 + 1] += arr[i3 + 1] * intensity;
-            arr[i3 + 2] += arr[i3 + 2] * intensity;
+              // Push outward for 3D ripple effect
+              pos.setXYZ(
+                i,
+                tmpVec.x + tmpVec.x * intensity,
+                tmpVec.y + tmpVec.y * intensity,
+                tmpVec.z + tmpVec.z * intensity
+              );
+            }
           }
         }
 
-        pos.needsUpdate = true;
-        // Recompute normals only if we have ripples; expensive op.
         geometry.computeVertexNormals();
-        geometry.attributes.normal.needsUpdate = true;
+        pos.needsUpdate = true;
 
         renderer.render(scene, camera);
       }

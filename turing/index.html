@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flat Book Turning Animation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap" rel="stylesheet">
+  
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Indie Flower", cursive;
+      background-color: #b4adb2;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    .header-text {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    /* 1. INCREASED SIZES */
+    .book-container {
+      position: relative;
+      width: 840px; /* Double the original width */
+      height: 500px; /* Taller pages */
+      perspective: 2000px; /* High perspective keeps it flat but 3D */
+      filter: drop-shadow(0px 15px 15px rgba(0, 0, 0, 0.3));
+    }
+
+    .book {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+    }
+
+    /* Center Spine shadow */
+    .book::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 40px;
+      height: 100%;
+      background: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0) 100%);
+      transform: translateX(-50%);
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    /* 2. FLAT PAGES (No Creases) */
+    .page {
+      position: absolute;
+      top: 0;
+      right: 0; /* Align to the right side of the book */
+      width: 50%; /* Each page is half the book width */
+      height: 100%;
+      transform-origin: left center; /* Hinge on the left (spine) */
+      transform-style: preserve-3d;
+      transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1);
+      border-radius: 5px 15px 15px 5px;
+    }
+
+    /* Front and Back of each paper piece */
+    .front, .back {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden; /* Hides the back side when facing away */
+      background-color: #f4f0e6;
+      border: 1px solid #ccc;
+      border-radius: inherit;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-size: 840px 500px; /* Span the whole book */
+    }
+
+    .front {
+      background-position: right center; /* Right side of image */
+    }
+
+    .back {
+      transform: rotateY(180deg);
+      background-position: left center; /* Left side of image */
+      border-radius: 15px 5px 5px 15px;
+    }
+
+    /* Flipped State triggered by JS */
+    .page.flipped {
+      transform: rotateY(-180deg);
+    }
+
+    /* Add some images for testing */
+    .page:nth-child(1) .front { background-image: url("https://picsum.photos/id/1015/840/500"); }
+    .page:nth-child(1) .back { background-image: url("https://picsum.photos/id/1016/840/500"); }
+    .page:nth-child(2) .front { background-image: url("https://picsum.photos/id/1018/840/500"); }
+    .page:nth-child(2) .back { background-image: url("https://picsum.photos/id/1019/840/500"); }
+    .page:nth-child(3) .front { background-image: url("https://picsum.photos/id/1021/840/500"); }
+    .page:nth-child(3) .back { background-image: url("https://picsum.photos/id/1022/840/500"); }
+    .page:nth-child(4) .front { background-image: url("https://picsum.photos/id/1025/840/500"); }
+    .page:nth-child(4) .back { background-image: url("https://picsum.photos/id/1026/840/500"); }
+
+    /* 3. CONTROLS */
+    .controls {
+      margin-top: 3rem;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    button {
+      background-color: #555;
+      color: white;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #333;
+    }
+
+    button:disabled {
+      background-color: #aaa;
+      cursor: not-allowed;
+    }
+
+    #pageCounter {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header-text">
+    <h1>Sketchbook Animation</h1>
+    <p>Flat pages, manual controls.</p>
+  </div>
+
+  <div class="book-container">
+    <div class="book" id="book">
+      <!-- Pages -->
+      <div class="page">
+        <div class="front"></div>
+        <div class="back"></div>
+      </div>
+      <div class="page">
+        <div class="front"></div>
+        <div class="back"></div>
+      </div>
+      <div class="page">
+        <div class="front"></div>
+        <div class="back"></div>
+      </div>
+      <div class="page">
+        <div class="front"></div>
+        <div class="back"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="prevBtn">&lt;</button>
+    <span id="pageCounter">1 / 4</span>
+    <button id="nextBtn">&gt;</button>
+  </div>
+
+  <script>
+    const pages = document.querySelectorAll('.page');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const counter = document.getElementById('pageCounter');
+    
+    let currentPage = 0;
+    const totalPages = pages.length;
+
+    // Set initial Z-indexes so pages stack correctly
+    function updateZIndexes() {
+      pages.forEach((page, index) => {
+        if (index < currentPage) {
+          // Pages on the left side
+          page.style.zIndex = index;
+        } else {
+          // Pages on the right side
+          page.style.zIndex = totalPages - index;
+        }
+      });
+    }
+
+    function updateCounter() {
+      counter.innerText = `${currentPage + 1} / ${totalPages + 1}`;
+      prevBtn.disabled = currentPage === 0;
+      nextBtn.disabled = currentPage === totalPages;
+    }
+
+    // Initialize
+    updateZIndexes();
+    updateCounter();
+
+    // Go to Next Page
+    function turnNext() {
+      if (currentPage < totalPages) {
+        pages[currentPage].classList.add('flipped');
+        currentPage++;
+        updateCounter();
+        // Wait for half the animation to change z-index so it doesn't clip
+        setTimeout(updateZIndexes, 400); 
+      }
+    }
+
+    // Go to Previous Page
+    function turnPrev() {
+      if (currentPage > 0) {
+        currentPage--;
+        pages[currentPage].classList.remove('flipped');
+        updateCounter();
+        setTimeout(updateZIndexes, 400);
+      }
+    }
+
+    // === AUTOMATIC TURNING LOGIC ===
+    let autoPlayTimer = setInterval(turnNext, 3000);
+
+    // Stop autoplay function
+    function stopAutoPlay() {
+      if (autoPlayTimer) {
+        clearInterval(autoPlayTimer);
+        autoPlayTimer = null; // Prevent it from running again
+      }
+    }
+
+    // Button Event Listeners
+    nextBtn.addEventListener('click', () => {
+      stopAutoPlay(); // Stop automatic turning when user takes control
+      turnNext();
+    });
+
+    prevBtn.addEventListener('click', () => {
+      stopAutoPlay(); // Stop automatic turning when user takes control
+      turnPrev();
+    });
+
+  </script>
+</body>
+</html>

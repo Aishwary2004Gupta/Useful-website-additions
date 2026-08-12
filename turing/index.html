@@ -1,297 +1,57 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Flat Book Turning Animation</title>
-  <link href="https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap" rel="stylesheet">
-  
-  <style>
-    /* --- CSS RESET & BASE STYLES --- */
-    * {
-      padding: 0;
-      margin: 0;
-      box-sizing: border-box;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Field Notes — Turning Journal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Kalam:wght@300;400;700&family=Special+Elite&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="stage">
+      <header class="mast">
+        <p class="mast-kicker">A travel sketchbook</p>
+        <h1>Field notes, turned by hand</h1>
+      </header>
 
-    body {
-      font-family: "Indie Flower", cursive;
-      background-color: #b4adb2;
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      overflow: hidden;
-    }
+      <div class="book-wrap">
+        <div class="book" id="book" aria-label="Illustrated journal">
+          <div class="sheet sheet-left" id="sheetLeft"></div>
+          <div class="sheet sheet-right" id="sheetRight"></div>
 
-    .header-text {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
+          <div class="leaf" id="leaf" aria-hidden="true">
+            <div class="leaf-face leaf-front" id="leafFront"></div>
+            <div class="leaf-face leaf-back" id="leafBack"></div>
+          </div>
 
-    /* --- BOOK CONTAINER (LARGER SIZE) --- */
-    .book-container {
-      position: relative;
-      width: 900px;  /* Increased width */
-      height: 600px; /* Increased height */
-      perspective: 2500px; /* Keeps the 3D effect flat but realistic */
-      filter: drop-shadow(0px 15px 15px rgba(0, 0, 0, 0.3));
-    }
-
-    .book {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      transform-style: preserve-3d;
-    }
-
-    /* Center Spine Shadow */
-    .book::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 50%;
-      width: 50px;
-      height: 100%;
-      background: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0) 100%);
-      transform: translateX(-50%);
-      z-index: 100;
-      pointer-events: none;
-    }
-
-    /* --- FLAT PAGES (NO CREASES) --- */
-    .page {
-      position: absolute;
-      top: 0;
-      right: 0; /* Pages rest on the right half of the book */
-      width: 50%; /* Each page is exactly half the book width */
-      height: 100%;
-      transform-origin: left center; /* Hinges exactly on the spine */
-      transform-style: preserve-3d;
-      transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1);
-      border-radius: 2px 10px 10px 2px;
-    }
-
-    /* Front and Back faces of the flat pages */
-    .front, .back {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      backface-visibility: hidden; /* Hides the reverse side when turned */
-      background-color: #f4f0e6;
-      border: 1px solid #c9c3b1;
-      border-radius: inherit;
-      overflow: hidden;
-      background-size: 900px 600px; /* Image spans the entire open book (900x600) */
-      background-repeat: no-repeat;
-    }
-
-    /* Right side of the book spread */
-    .front {
-      background-position: right center; 
-    }
-
-    /* Left side of the book spread */
-    .back {
-      transform: rotateY(180deg);
-      background-position: left center; 
-      border-radius: 10px 2px 2px 10px;
-    }
-
-    /* Flipped Class (Triggered by JS) */
-    .page.flipped {
-      transform: rotateY(-180deg);
-    }
-
-    /* --- PAGE CONTENT / IMAGES --- */
-    /* Cover Page (Only Front matters, back is blank or inside cover) */
-    .page:nth-child(1) .front { background-image: url("https://picsum.photos/id/1015/900/600"); }
-    .page:nth-child(1) .back { background-color: #e5e0d3; }
-
-    /* Spread 1 */
-    .page:nth-child(2) .front { background-image: url("https://picsum.photos/id/1018/900/600"); }
-    .page:nth-child(2) .back { background-image: url("https://picsum.photos/id/1015/900/600"); }
-
-    /* Spread 2 */
-    .page:nth-child(3) .front { background-image: url("https://picsum.photos/id/1021/900/600"); }
-    .page:nth-child(3) .back { background-image: url("https://picsum.photos/id/1018/900/600"); }
-
-    /* Spread 3 (Back cover) */
-    .page:nth-child(4) .front { background-color: #e5e0d3; }
-    .page:nth-child(4) .back { background-image: url("https://picsum.photos/id/1021/900/600"); }
-
-    /* --- MANUAL CONTROLS --- */
-    .controls {
-      margin-top: 2.5rem;
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-
-    button {
-      background-color: #333;
-      color: white;
-      border: none;
-      width: 45px;
-      height: 45px;
-      border-radius: 50%;
-      font-size: 1.5rem;
-      cursor: pointer;
-      transition: background 0.3s, transform 0.1s;
-    }
-
-    button:hover {
-      background-color: #555;
-    }
-
-    button:active {
-      transform: scale(0.95);
-    }
-
-    button:disabled {
-      background-color: #999;
-      cursor: not-allowed;
-    }
-
-    #pageCounter {
-      font-size: 1.2rem;
-      font-weight: bold;
-      min-width: 60px;
-      text-align: center;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="header-text">
-    <h1>Sketchbook Animation</h1>
-    <p>Flat pages, auto-turning stops when controls are used.</p>
-  </div>
-
-  <div class="book-container">
-    <div class="book" id="book">
-      
-      <!-- Page 1 -->
-      <div class="page">
-        <div class="front"></div>
-        <div class="back"></div>
-      </div>
-      
-      <!-- Page 2 -->
-      <div class="page">
-        <div class="front"></div>
-        <div class="back"></div>
-      </div>
-      
-      <!-- Page 3 -->
-      <div class="page">
-        <div class="front"></div>
-        <div class="back"></div>
-      </div>
-      
-      <!-- Page 4 -->
-      <div class="page">
-        <div class="front"></div>
-        <div class="back"></div>
+          <div class="spine" aria-hidden="true"></div>
+        </div>
       </div>
 
+      <nav class="controls" aria-label="Page controls">
+        <button class="nav-btn" id="prevBtn" type="button" aria-label="Previous page">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+            <path d="M15.5 5.5 9 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <p class="pager" id="pager">01 — 02</p>
+
+        <button class="nav-btn" id="nextBtn" type="button" aria-label="Next page">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+            <path d="M8.5 5.5 15 12l-6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </nav>
+
+      <p class="hint" id="hint">Pages turn on their own until you take over.</p>
     </div>
-  </div>
 
-  <div class="controls">
-    <button id="prevBtn">&lt;</button>
-    <span id="pageCounter">1 / 5</span>
-    <button id="nextBtn">&gt;</button>
-  </div>
-
-  <script>
-    const pages = document.querySelectorAll('.page');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const counter = document.getElementById('pageCounter');
-    
-    let currentPage = 0;
-    const totalPages = pages.length;
-
-    // Updates the Z-indexes so pages overlap correctly whether on the left or right side
-    function updateZIndexes() {
-      pages.forEach((page, index) => {
-        if (index < currentPage) {
-          // Pages on the left side (already turned)
-          page.style.zIndex = index;
-        } else {
-          // Pages on the right side (waiting to be turned)
-          page.style.zIndex = totalPages - index;
-        }
-      });
-    }
-
-    // Updates the counter text and button states
-    function updateCounter() {
-      counter.innerText = `${currentPage + 1} / ${totalPages + 1}`;
-      prevBtn.disabled = currentPage === 0;
-      nextBtn.disabled = currentPage === totalPages;
-    }
-
-    // Turn to the next page
-    function turnNext() {
-      if (currentPage < totalPages) {
-        pages[currentPage].classList.add('flipped');
-        currentPage++;
-        updateCounter();
-        // Wait exactly half the CSS transition time (0.4s) to swap z-indexes 
-        // This prevents pages from clipping through each other
-        setTimeout(updateZIndexes, 400); 
-      }
-    }
-
-    // Turn to the previous page
-    function turnPrev() {
-      if (currentPage > 0) {
-        currentPage--;
-        pages[currentPage].classList.remove('flipped');
-        updateCounter();
-        setTimeout(updateZIndexes, 400);
-      }
-    }
-
-    // --- AUTOMATIC TURNING LOGIC ---
-    let autoPlayTimer = setInterval(() => {
-      if(currentPage < totalPages) {
-        turnNext();
-      } else {
-        // If it reaches the end during autoplay, reset it
-        stopAutoPlay();
-      }
-    }, 3000); // Turns page every 3 seconds
-
-    // Function to permanently stop the automatic turning
-    function stopAutoPlay() {
-      if (autoPlayTimer) {
-        clearInterval(autoPlayTimer);
-        autoPlayTimer = null; // Clears the timer completely
-      }
-    }
-
-    // --- EVENT LISTENERS FOR MANUAL CONTROL ---
-    nextBtn.addEventListener('click', () => {
-      stopAutoPlay(); // Stop automatic turning the moment the user takes control
-      turnNext();
-    });
-
-    prevBtn.addEventListener('click', () => {
-      stopAutoPlay(); // Stop automatic turning the moment the user takes control
-      turnPrev();
-    });
-
-    // Initialize layout on load
-    updateZIndexes();
-    updateCounter();
-
-  </script>
-</body>
+    <script src="script.js"></script>
+  </body>
 </html>

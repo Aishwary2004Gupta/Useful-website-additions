@@ -108,7 +108,7 @@
           const ty = particle.originY - particle.y;
           const dist = Math.sqrt(tx * tx + ty * ty);
           const angle = Math.atan2(ty, tx);
-          const force = dist * 0.01;
+          const force = dist * 0.09;
 
           particle.vx += Math.cos(angle) * force;
           particle.vy += Math.sin(angle) * force;

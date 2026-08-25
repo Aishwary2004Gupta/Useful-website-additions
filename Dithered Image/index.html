@@ -350,7 +350,6 @@
       const CURSOR_FORCE = 100;
       const LERP = 0.12;
       const SNAP = 0.01;
-      const MAX_DPR = 2; // [FIX] cap device pixel ratio — 3× screens were rendering 9× pixels
       const imageCache = new Map();
 
       function preloadImage(src) {
@@ -373,7 +372,7 @@
         return promise;
       }
 
-      /* ═══════ Gallery ═══════ */
+      /* ═══════ Gallery — 3 images ═══════ */
       const GALLERY = [
         "https://images.unsplash.com/photo-1784792993431-d81e88fdacfb",
         "https://images.unsplash.com/photo-1784768143954-4f4f736ccd80",
@@ -389,53 +388,14 @@
         "https://raw.githubusercontent.com/Aishwary2004Gupta/models/cloud/images/mountainVally.png",
       ];
 
-      /* ═══════ [FIX] Spatial hash grid for O(1) cursor lookups ═══════ */
-      class SpatialGrid {
-        constructor(cellSize, w, h) {
-          this.cs = cellSize;
-          this.cols = Math.ceil(w / cellSize) + 1;
-          this.rows = Math.ceil(h / cellSize) + 1;
-          this.cells = new Array(this.cols * this.rows);
-          for (let i = 0; i < this.cells.length; i++) this.cells[i] = [];
-        }
-        insert(id, x, y) {
-          const c = (x / this.cs) | 0,
-            r = (y / this.cs) | 0;
-          if (c >= 0 && c < this.cols && r >= 0 && r < this.rows)
-            this.cells[r * this.cols + c].push(id);
-        }
-        query(x, y, out) {
-          out.length = 0;
-          const c0 = (x / this.cs) | 0,
-            r0 = (y / this.cs) | 0;
-          for (let dr = -1; dr <= 1; dr++) {
-            const r = r0 + dr;
-            if (r < 0 || r >= this.rows) continue;
-            for (let dc = -1; dc <= 1; dc++) {
-              const c = c0 + dc;
-              if (c < 0 || c >= this.cols) continue;
-              const cell = this.cells[r * this.cols + c];
-              for (let k = 0; k < cell.length; k++) out.push(cell[k]);
-            }
-          }
-          return out;
-        }
-      }
-
-      /* ═══════ DitheredLogo ═══════ */
+      /* ═══════ DitheredLogo (unchanged logic) ═══════ */
       class DitheredLogo {
         constructor(container, imageSrc, config = {}) {
           this.el = container;
           this.cv = container.querySelector("canvas");
-          // [FIX] desynchronized hint reduces input-to-paint latency
-          this.cx = this.cv.getContext("2d", {
-            desynchronized: true,
-            alpha: true,
-          });
+          this.cx = this.cv.getContext("2d");
           this.cfg = {
-            // [FIX] 340 → adaptive: 200 desktop / 140 mobile
-            // 340 produced ~80k+ particles causing the main lag
-            gridSize: matchMedia("(max-width:640px)").matches ? 140 : 200,
+            gridSize: 340,
             scale: 1,
             dotScale: 1,
             invert: true,
@@ -460,19 +420,6 @@
           this.lh = 0;
           this.resizeTimer = null;
 
-          // [FIX] cached rect avoids forced layout on every pointermove
-          this._cachedRect = null;
-          // [FIX] cached DPR avoids recalc every draw
-          this._dpr = Math.min(devicePixelRatio || 1, MAX_DPR);
-          // [FIX] cached bw color avoids getComputedStyle every frame
-          this._bwColorCache = "";
-          // [FIX] spatial grid + reusable query buffer
-          this.grid = null;
-          this._nearby = [];
-          // [FIX] pre-allocated force arrays avoid per-particle allocation
-          this._fx = null;
-          this._fy = null;
-
           this.ro = new ResizeObserver(() => this._resize());
           this.ro.observe(this.el);
 
@@ -484,15 +431,10 @@
         /* ── Pointer events ── */
         _bind() {
           const c = this.cv;
-          // [FIX] helper uses cached rect instead of getBoundingClientRect() per event
-          const updateCursor = (e) => {
-            if (!this._cachedRect) this._cachedRect = c.getBoundingClientRect();
-            this.cursor.x = e.clientX - this._cachedRect.left;
-            this.cursor.y = e.clientY - this._cachedRect.top;
-          };
-
           c.addEventListener("pointermove", (e) => {
-            updateCursor(e);
+            const r = c.getBoundingClientRect();
+            this.cursor.x = e.clientX - r.left;
+            this.cursor.y = e.clientY - r.top;
             this.cursor.on = true;
             this._loop();
           });
@@ -507,10 +449,10 @@
             this._loop();
           });
           c.addEventListener("pointerup", (e) => {
-            updateCursor(e);
+            const r = c.getBoundingClientRect();
             this.ripples.push({
-              x: this.cursor.x,
-              y: this.cursor.y,
+              x: e.clientX - r.left,
+              y: e.clientY - r.top,
               t: performance.now(),
             });
             if (e.pointerType !== "mouse") this.cursor.on = false;
@@ -730,25 +672,12 @@
           };
         }
 
-        // [FIX] build spatial grid after particles are placed
-        _buildSpatialGrid() {
-          if (!this.sys || !this._cachedRect) return;
-          this.grid = new SpatialGrid(
-            CURSOR_RADIUS,
-            this._cachedRect.width,
-            this._cachedRect.height,
-          );
-          const s = this.sys;
-          for (let i = 0; i < s.n; i++) this.grid.insert(i, s.bx[i], s.by[i]);
-        }
-
         async rebuild(newSrc) {
           if (newSrc) this.src = newSrc;
 
           try {
             const img = await this._img(this.src);
-            // [FIX] cache rect once per rebuild
-            this._cachedRect = this.cv.getBoundingClientRect();
+            const rect = this.cv.getBoundingClientRect();
             const g = this._gray(img);
 
             let pts = this._dither(g);
@@ -758,14 +687,11 @@
 
             const sf = Math.max(
               0.5,
-              (Math.min(this._cachedRect.width, this._cachedRect.height) *
-                this.cfg.scale) /
+              (Math.min(rect.width, rect.height) * this.cfg.scale) /
                 Math.max(g.w, g.h),
             );
-            const originX = Math.round((this._cachedRect.width - g.w * sf) / 2);
-            const originY = Math.round(
-              (this._cachedRect.height - g.h * sf) / 2,
-            );
+            const originX = Math.round((rect.width - g.w * sf) / 2);
+            const originY = Math.round((rect.height - g.h * sf) / 2);
             const mobile = matchMedia("(max-width:640px)").matches;
             const ds = mobile ? this.cfg.dotScale * 0.8 : this.cfg.dotScale;
 
@@ -780,17 +706,6 @@
               originY,
               pColors,
             );
-
-            // [FIX] pre-allocate reusable force arrays
-            this._fx = new Float32Array(this.sys.n);
-            this._fy = new Float32Array(this.sys.n);
-
-            // [FIX] build spatial grid for fast cursor queries
-            this._buildSpatialGrid();
-
-            // [FIX] cache bw color once
-            this._bwColorCache = this._bwColor();
-
             this._draw();
             this._loop();
             return true;
@@ -804,76 +719,48 @@
           const s = this.sys;
           if (!s) return false;
 
-          // [FIX] in-place compaction instead of splice (avoids array shifts)
-          let w = 0;
-          for (let i = 0; i < this.ripples.length; i++)
-            if (now - this.ripples[i].t < RIPPLE_DURATION)
-              this.ripples[w++] = this.ripples[i];
-          this.ripples.length = w;
+          for (let i = this.ripples.length - 1; i >= 0; i--)
+            if (now - this.ripples[i].t >= RIPPLE_DURATION)
+              this.ripples.splice(i, 1);
 
           const rm =
             this.ripples.length > 0 ? 1 + 0.5 * (this.ripples.length - 1) : 0;
           let motion = false;
 
-          // [FIX] ensure force arrays exist and zero them
-          if (!this._fx || this._fx.length < s.n) {
-            this._fx = new Float32Array(s.n);
-            this._fy = new Float32Array(s.n);
-          }
-          this._fx.fill(0, 0, s.n);
-          this._fy.fill(0, 0, s.n);
+          for (let i = 0; i < s.n; i++) {
+            let fx = 0,
+              fy = 0;
 
-          // [FIX] cursor repulsion uses spatial grid — O(k) instead of O(n)
-          if (this.cursor.on && this.grid) {
-            const nb = this.grid.query(
-              this.cursor.x,
-              this.cursor.y,
-              this._nearby,
-            );
-            for (let k = 0; k < nb.length; k++) {
-              const i = nb[k];
+            if (this.cursor.on) {
               const vx = s.bx[i] + s.ox[i] - this.cursor.x;
               const vy = s.by[i] + s.oy[i] - this.cursor.y;
               const d2 = vx * vx + vy * vy;
               if (d2 > 0.1 && d2 < CURSOR_RADIUS_SQ) {
                 const d = Math.sqrt(d2);
                 const f = (1 - d / CURSOR_RADIUS) ** 3 * CURSOR_FORCE;
-                this._fx[i] += (vx / d) * f;
-                this._fy[i] += (vy / d) * f;
+                fx += (vx / d) * f;
+                fy += (vy / d) * f;
               }
             }
-          }
 
-          // [FIX] ripple forces with bounding-box cull before sqrt
-          const rLen = this.ripples.length;
-          for (let r = 0; r < rLen; r++) {
-            const rip = this.ripples[r];
-            const el = now - rip.t;
-            const rad = (el / 1000) * RIPPLE_SPEED;
-            const life = 1 - el / RIPPLE_DURATION;
-            const maxD = rad + RIPPLE_WIDTH;
-
-            for (let i = 0; i < s.n; i++) {
+            for (const rip of this.ripples) {
+              const el = now - rip.t;
+              const rad = (el / 1000) * RIPPLE_SPEED;
+              const life = 1 - el / RIPPLE_DURATION;
               const dx = s.bx[i] - rip.x;
               const dy = s.by[i] - rip.y;
-              // [FIX] cheap AABB reject — skips ~95% of sqrt calls
-              if (dx > maxD || dx < -maxD || dy > maxD || dy < -maxD) continue;
-              const d2 = dx * dx + dy * dy;
-              if (d2 < 0.01) continue;
-              const d = Math.sqrt(d2);
+              const d = Math.sqrt(dx * dx + dy * dy);
+              if (d < 0.1) continue;
               const band = Math.abs(d - rad);
               if (band < RIPPLE_WIDTH) {
                 const wf = (1 - band / RIPPLE_WIDTH) * life * RIPPLE_FORCE * rm;
-                this._fx[i] += (dx / d) * wf;
-                this._fy[i] += (dy / d) * wf;
+                fx += (dx / d) * wf;
+                fy += (dy / d) * wf;
               }
             }
-          }
 
-          // [FIX] integrate in separate pass (cleaner, same cache behavior)
-          for (let i = 0; i < s.n; i++) {
-            s.ox[i] += (this._fx[i] - s.ox[i]) * LERP;
-            s.oy[i] += (this._fy[i] - s.oy[i]) * LERP;
+            s.ox[i] += (fx - s.ox[i]) * LERP;
+            s.oy[i] += (fy - s.oy[i]) * LERP;
             if (Math.abs(s.ox[i]) < SNAP) s.ox[i] = 0;
             if (Math.abs(s.oy[i]) < SNAP) s.oy[i] = 0;
             if (s.ox[i] || s.oy[i]) motion = true;
@@ -892,41 +779,37 @@
           const s = this.sys;
           if (!s) return;
 
-          // [FIX] use cached DPR instead of reading devicePixelRatio every frame
-          const dpr = this._dpr;
+          const dpr = devicePixelRatio || 1;
+          const rect = this.cv.getBoundingClientRect();
 
-          this.cx.clearRect(0, 0, this.cv.width, this.cv.height);
+          this.cx.clearRect(0, 0, rect.width * dpr, rect.height * dpr);
 
           const sz = s.sz * dpr;
-          const half = sz * 0.5;
+          const pad = 0.25 * dpr;
+          const psz = 0.5 * dpr;
 
-          // [FIX] batch all rects into a single path per colour, then one fill()
-          // was: individual fillRect() per particle = tens of thousands of draw calls
-          // now: beginPath() + rect() loop + single fill() = ~50 draw calls total
           if (this.monochrome) {
-            this.cx.fillStyle = this._bwColorCache;
+            this.cx.fillStyle = this._bwColor();
             this.cx.globalAlpha = 1;
-            this.cx.beginPath();
+
             for (let i = 0; i < s.n; i++) {
-              const x = (s.bx[i] + s.ox[i]) * dpr - half;
-              const y = (s.by[i] + s.oy[i]) * dpr - half;
-              this.cx.rect(x, y, sz, sz);
+              const x = (s.bx[i] + s.ox[i]) * dpr;
+              const y = (s.by[i] + s.oy[i]) * dpr;
+              this.cx.fillRect(x - pad, y - pad, sz + psz, sz + psz);
             }
-            this.cx.fill();
           } else {
             this.cx.globalAlpha = 1;
-            for (let b = 0; b < s.colorBuckets.length; b++) {
-              const bucket = s.colorBuckets[b];
+
+            for (const bucket of s.colorBuckets) {
               this.cx.fillStyle = bucket.css;
-              this.cx.beginPath();
               const ids = bucket.ids;
+
               for (let j = 0; j < ids.length; j++) {
                 const i = ids[j];
-                const x = (s.bx[i] + s.ox[i]) * dpr - half;
-                const y = (s.by[i] + s.oy[i]) * dpr - half;
-                this.cx.rect(x, y, sz, sz);
+                const x = (s.bx[i] + s.ox[i]) * dpr;
+                const y = (s.by[i] + s.oy[i]) * dpr;
+                this.cx.fillRect(x - pad, y - pad, sz + psz, sz + psz);
               }
-              this.cx.fill();
             }
           }
         }
@@ -945,25 +828,14 @@
         }
 
         _resize() {
-          // [FIX] cache rect and DPR
-          this._cachedRect = this.cv.getBoundingClientRect();
-          this._dpr = Math.min(devicePixelRatio || 1, MAX_DPR);
-          this.cv.width = Math.max(
-            1,
-            Math.round(this._cachedRect.width * this._dpr),
-          );
-          this.cv.height = Math.max(
-            1,
-            Math.round(this._cachedRect.height * this._dpr),
-          );
-          if (this.sys) {
-            this._draw();
-            this._buildSpatialGrid();
-            this._bwColorCache = this._bwColor();
-          }
+          const rect = this.cv.getBoundingClientRect();
+          const dpr = devicePixelRatio || 1;
+          this.cv.width = Math.max(1, Math.round(rect.width * dpr));
+          this.cv.height = Math.max(1, Math.round(rect.height * dpr));
+          if (this.sys) this._draw();
 
-          const w = Math.round(this._cachedRect.width);
-          const h = Math.round(this._cachedRect.height);
+          const w = Math.round(rect.width);
+          const h = Math.round(rect.height);
           if (this.lw && (w !== this.lw || h !== this.lh)) {
             clearTimeout(this.resizeTimer);
             this.resizeTimer = setTimeout(() => this.rebuild(), 180);

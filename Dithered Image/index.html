@@ -486,8 +486,7 @@
           const c = this.cv;
           // [FIX] helper uses cached rect instead of getBoundingClientRect() per event
           const updateCursor = (e) => {
-            if (!this._cachedRect)
-              this._cachedRect = c.getBoundingClientRect();
+            if (!this._cachedRect) this._cachedRect = c.getBoundingClientRect();
             this.cursor.x = e.clientX - this._cachedRect.left;
             this.cursor.y = e.clientY - this._cachedRect.top;
           };
@@ -584,9 +583,7 @@
 
               let l =
                 ba > 0.01
-                  ? (0.299 * px[pi] +
-                      0.587 * px[pi + 1] +
-                      0.114 * px[pi + 2]) /
+                  ? (0.299 * px[pi] + 0.587 * px[pi + 1] + 0.114 * px[pi + 2]) /
                     ba
                   : 0;
 
@@ -742,8 +739,7 @@
             this._cachedRect.height,
           );
           const s = this.sys;
-          for (let i = 0; i < s.n; i++)
-            this.grid.insert(i, s.bx[i], s.by[i]);
+          for (let i = 0; i < s.n; i++) this.grid.insert(i, s.bx[i], s.by[i]);
         }
 
         async rebuild(newSrc) {
@@ -766,9 +762,7 @@
                 this.cfg.scale) /
                 Math.max(g.w, g.h),
             );
-            const originX = Math.round(
-              (this._cachedRect.width - g.w * sf) / 2,
-            );
+            const originX = Math.round((this._cachedRect.width - g.w * sf) / 2);
             const originY = Math.round(
               (this._cachedRect.height - g.h * sf) / 2,
             );
@@ -818,9 +812,7 @@
           this.ripples.length = w;
 
           const rm =
-            this.ripples.length > 0
-              ? 1 + 0.5 * (this.ripples.length - 1)
-              : 0;
+            this.ripples.length > 0 ? 1 + 0.5 * (this.ripples.length - 1) : 0;
           let motion = false;
 
           // [FIX] ensure force arrays exist and zero them
@@ -845,8 +837,7 @@
               const d2 = vx * vx + vy * vy;
               if (d2 > 0.1 && d2 < CURSOR_RADIUS_SQ) {
                 const d = Math.sqrt(d2);
-                const f =
-                  ((1 - d / CURSOR_RADIUS) ** 3) * CURSOR_FORCE;
+                const f = (1 - d / CURSOR_RADIUS) ** 3 * CURSOR_FORCE;
                 this._fx[i] += (vx / d) * f;
                 this._fy[i] += (vy / d) * f;
               }
@@ -866,15 +857,13 @@
               const dx = s.bx[i] - rip.x;
               const dy = s.by[i] - rip.y;
               // [FIX] cheap AABB reject — skips ~95% of sqrt calls
-              if (dx > maxD || dx < -maxD || dy > maxD || dy < -maxD)
-                continue;
+              if (dx > maxD || dx < -maxD || dy > maxD || dy < -maxD) continue;
               const d2 = dx * dx + dy * dy;
               if (d2 < 0.01) continue;
               const d = Math.sqrt(d2);
               const band = Math.abs(d - rad);
               if (band < RIPPLE_WIDTH) {
-                const wf =
-                  (1 - band / RIPPLE_WIDTH) * life * RIPPLE_FORCE * rm;
+                const wf = (1 - band / RIPPLE_WIDTH) * life * RIPPLE_FORCE * rm;
                 this._fx[i] += (dx / d) * wf;
                 this._fy[i] += (dy / d) * wf;
               }
@@ -1078,22 +1067,20 @@
       });
 
       /* ═══════ Upload — adds to gallery ═══════ */
-      document
-        .getElementById("imagePicker")
-        .addEventListener("change", (e) => {
-          const f = e.target.files[0];
-          if (!f) return;
-          const uploadedUrl = URL.createObjectURL(f);
-          GALLERY.push(uploadedUrl);
+      document.getElementById("imagePicker").addEventListener("change", (e) => {
+        const f = e.target.files[0];
+        if (!f) return;
+        const uploadedUrl = URL.createObjectURL(f);
+        GALLERY.push(uploadedUrl);
 
-          const d = document.createElement("button");
-          d.className = "dot";
-          d.addEventListener("click", () => show(GALLERY.length - 1));
-          dotsBox.appendChild(d);
+        const d = document.createElement("button");
+        d.className = "dot";
+        d.addEventListener("click", () => show(GALLERY.length - 1));
+        dotsBox.appendChild(d);
 
-          preloadImage(uploadedUrl).catch(() => {});
-          show(GALLERY.length - 1);
-        });
+        preloadImage(uploadedUrl).catch(() => {});
+        show(GALLERY.length - 1);
+      });
     </script>
   </body>
 </html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -87,7 +87,7 @@
             50,
             window.innerWidth / window.innerHeight,
             0.1,
-            1000
+            1000,
           );
           this.camera.position.set(10, 0, 0);
 
@@ -115,7 +115,7 @@
           const hemisphereLight = new THREE.HemisphereLight(
             0x87ceeb,
             0x545454,
-            0
+            0,
           );
           this.scene.add(hemisphereLight);
         }
@@ -127,7 +127,7 @@
             winResolution: {
               value: new THREE.Vector2(
                 window.innerWidth,
-                window.innerHeight
+                window.innerHeight,
               ).multiplyScalar(Math.min(window.devicePixelRatio, 2)),
             },
           };
@@ -212,21 +212,21 @@
           this.scene.add(staticTorus);
 
           // Create torus knot
-            const torusKnotGeometry = new THREE.TorusKnotGeometry(
-              0.75,
-              0.3,
-              100,
-              16
-            );
-            const torusKnotMaterial = new THREE.MeshPhysicalMaterial({
-              roughness: 0,
-              clearcoat: 1,
-              clearcoatRoughness: 0,
-              color: 0x92b2ff,
-            });
-            this.torusKnot = new THREE.Mesh(torusKnotGeometry, torusKnotMaterial);
-            this.torusKnot.position.set(0, 0, 0);
-            this.scene.add(this.torusKnot);
+          const torusKnotGeometry = new THREE.TorusKnotGeometry(
+            0.75,
+            0.3,
+            100,
+            16,
+          );
+          const torusKnotMaterial = new THREE.MeshPhysicalMaterial({
+            roughness: 0,
+            clearcoat: 1,
+            clearcoatRoughness: 0,
+            color: 0x92b2ff,
+          });
+          this.torusKnot = new THREE.Mesh(torusKnotGeometry, torusKnotMaterial);
+          this.torusKnot.position.set(0, 0, 0);
+          this.scene.add(this.torusKnot);
 
           // Create smooth torus (replacing torus knot)
           // const innerTorusGeometry = new THREE.TorusGeometry(
@@ -291,20 +291,20 @@
           this.renderTarget1 = new THREE.WebGLRenderTarget(
             window.innerWidth * window.devicePixelRatio,
             window.innerHeight * window.devicePixelRatio,
-            renderTargetParameters
+            renderTargetParameters,
           );
 
           this.renderTarget2 = new THREE.WebGLRenderTarget(
             window.innerWidth * window.devicePixelRatio,
             window.innerHeight * window.devicePixelRatio,
-            renderTargetParameters
+            renderTargetParameters,
           );
         }
 
         setupControls() {
           this.controls = new OrbitControls(
             this.camera,
-            this.renderer.domElement
+            this.renderer.domElement,
           );
           this.controls.enableZoom = true;
           this.controls.autoRotate = false;
@@ -316,7 +316,7 @@
         updateUniforms() {
           const resolution = new THREE.Vector2(
             window.innerWidth,
-            window.innerHeight
+            window.innerHeight,
           ).multiplyScalar(Math.min(window.devicePixelRatio, 2));
 
           // Update cylinder 1 materials
@@ -401,11 +401,11 @@
             // Update render targets
             this.renderTarget1.setSize(
               window.innerWidth * window.devicePixelRatio,
-              window.innerHeight * window.devicePixelRatio
+              window.innerHeight * window.devicePixelRatio,
             );
             this.renderTarget2.setSize(
               window.innerWidth * window.devicePixelRatio,
-              window.innerHeight * window.devicePixelRatio
+              window.innerHeight * window.devicePixelRatio,
             );
           });
         }

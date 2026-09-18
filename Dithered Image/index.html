@@ -433,22 +433,26 @@
         /* ── Pointer events ── */
         _bind() {
           const c = this.cv;
+          c.addEventListener("pointerenter", () => {
+            if (!this.dotMode) this.setDotMode(true);
+          });
           c.addEventListener("pointermove", (e) => {
             const r = c.getBoundingClientRect();
             this.cursor.x = e.clientX - r.left;
             this.cursor.y = e.clientY - r.top;
             this.cursor.on = true;
+            if (!this.dotMode) this.setDotMode(true);
             this._loop();
           });
           c.addEventListener("pointerleave", (e) => {
             if (e.pointerType === "mouse") {
               this.cursor.on = false;
-              this._loop();
+              this.setDotMode(false);
             }
           });
           c.addEventListener("pointercancel", () => {
             this.cursor.on = false;
-            this._loop();
+            this.setDotMode(false);
           });
           c.addEventListener("pointerup", (e) => {
             const r = c.getBoundingClientRect();
@@ -458,6 +462,7 @@
               t: performance.now(),
             });
             if (e.pointerType !== "mouse") this.cursor.on = false;
+            if (!this.dotMode) this.setDotMode(true);
             this._loop();
           });
         }

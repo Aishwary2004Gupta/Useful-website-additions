@@ -79,11 +79,12 @@
 
       .dithered-logo {
         position: relative;
-        width: min(80vmin, 720px);
-        height: min(80vmin, 720px);
+        width: min(72vmin, 640px);
+        height: min(72vmin, 640px);
         max-width: 90vw;
         max-height: 90vh;
         color: var(--particle);
+        overflow: hidden;
       }
 
       /* IMPORTANT: only opacity is animated.
@@ -730,6 +731,14 @@
           try {
             const img = await this._img(this.src);
             const rect = this.cv.getBoundingClientRect();
+
+            const targetW = rect.width || this.el.clientWidth;
+            const targetH = rect.height || this.el.clientHeight;
+            const ctx = this.cx;
+            ctx.clearRect(0, 0, targetW, targetH);
+            ctx.fillStyle = getComputedStyle(this.el).background || "transparent";
+            ctx.fillRect(0, 0, targetW, targetH);
+
             const g = this._gray(img);
 
             let pts = this._dither(g);

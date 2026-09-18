@@ -79,12 +79,11 @@
 
       .dithered-logo {
         position: relative;
-        width: min(72vmin, 640px);
-        height: min(72vmin, 640px);
+        width: min(80vmin, 720px);
+        height: min(80vmin, 720px);
         max-width: 90vw;
         max-height: 90vh;
         color: var(--particle);
-        overflow: hidden;
       }
 
       /* IMPORTANT: only opacity is animated.
@@ -181,18 +180,17 @@
         height: 30px;
         border-radius: 999px;
         border: 1px solid var(--border);
-        background: linear-gradient(135deg, var(--surface), var(--surface-hover));
+        background: var(--surface);
         box-shadow: var(--shadow);
         cursor: pointer;
-        transition: all 0.28s ease;
+        transition: all 0.2s ease;
         display: inline-flex;
         align-items: center;
         padding: 4px;
-        overflow: hidden;
       }
 
       .theme-toggle:hover {
-        background: linear-gradient(135deg, var(--surface-hover), var(--surface));
+        background: var(--surface-hover);
       }
 
       .theme-toggle-thumb {
@@ -200,15 +198,13 @@
         height: 18px;
         border-radius: 50%;
         background: var(--text);
-        transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), background 0.28s ease, box-shadow 0.28s ease;
+        transition: transform 0.2s ease, background 0.2s ease;
         transform: translateX(0);
-        box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
       }
 
       [data-theme="dark"] .theme-toggle-thumb {
         transform: translateX(28px);
         background: #f5f5f5;
-        box-shadow: 0 0 0 1px rgba(255,255,255,0.15);
       }
 
       .btn {
@@ -731,14 +727,6 @@
           try {
             const img = await this._img(this.src);
             const rect = this.cv.getBoundingClientRect();
-
-            const targetW = rect.width || this.el.clientWidth;
-            const targetH = rect.height || this.el.clientHeight;
-            const ctx = this.cx;
-            ctx.clearRect(0, 0, targetW, targetH);
-            ctx.fillStyle = getComputedStyle(this.el).background || "transparent";
-            ctx.fillRect(0, 0, targetW, targetH);
-
             const g = this._gray(img);
 
             let pts = this._dither(g);

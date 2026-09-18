@@ -20,6 +20,19 @@
         --shadow-up: 0 6px 20px rgba(0, 0, 0, 0.1);
       }
 
+      [data-theme="dark"] {
+        --particle: #f3f3f3;
+        --bg: #151515;
+        --bg-spot: rgba(255, 255, 255, 0.05);
+        --surface: #1d1d1d;
+        --surface-hover: #242424;
+        --border: #2f2f2f;
+        --text: #f5f5f5;
+        --text-sub: #9d9d9d;
+        --shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+        --shadow-up: 0 6px 20px rgba(0, 0, 0, 0.45);
+      }
+
       *,
       *::before,
       *::after {
@@ -51,9 +64,9 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 12px;
+        gap: 8px;
         width: 100%;
-        transform: translateY(-20px);
+        transform: translateY(-14px);
       }
 
       /* ── Stage: canvas + arrows ── */
@@ -159,6 +172,39 @@
         flex-wrap: wrap;
         justify-content: center;
         padding: 0 10px;
+      }
+
+      .theme-toggle {
+        position: relative;
+        width: 58px;
+        height: 30px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        box-shadow: var(--shadow);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        padding: 4px;
+      }
+
+      .theme-toggle:hover {
+        background: var(--surface-hover);
+      }
+
+      .theme-toggle-thumb {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--text);
+        transition: transform 0.2s ease, background 0.2s ease;
+        transform: translateX(0);
+      }
+
+      [data-theme="dark"] .theme-toggle-thumb {
+        transform: translateX(28px);
+        background: #f5f5f5;
       }
 
       .btn {
@@ -334,6 +380,10 @@
             />
           </svg>
           Color
+        </button>
+
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+          <span class="theme-toggle-thumb"></span>
         </button>
       </div>
 
@@ -937,6 +987,21 @@
         bwBtn.classList.remove("active");
         logo.setColorMode(true);
       });
+
+      /* ═══════ Dark mode toggle ═══════ */
+      const themeToggle = document.getElementById("themeToggle");
+      const root = document.documentElement;
+
+      function applyTheme(theme) {
+        root.setAttribute("data-theme", theme);
+      }
+
+      themeToggle.addEventListener("click", () => {
+        const nextTheme = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        applyTheme(nextTheme);
+      });
+
+      applyTheme("light");
 
       /* ═══════ Upload — adds to gallery ═══════ */
       document.getElementById("imagePicker").addEventListener("change", (e) => {

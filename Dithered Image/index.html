@@ -180,17 +180,18 @@
         height: 30px;
         border-radius: 999px;
         border: 1px solid var(--border);
-        background: var(--surface);
+        background: linear-gradient(135deg, var(--surface), var(--surface-hover));
         box-shadow: var(--shadow);
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.28s ease;
         display: inline-flex;
         align-items: center;
         padding: 4px;
+        overflow: hidden;
       }
 
       .theme-toggle:hover {
-        background: var(--surface-hover);
+        background: linear-gradient(135deg, var(--surface-hover), var(--surface));
       }
 
       .theme-toggle-thumb {
@@ -198,13 +199,15 @@
         height: 18px;
         border-radius: 50%;
         background: var(--text);
-        transition: transform 0.2s ease, background 0.2s ease;
+        transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), background 0.28s ease, box-shadow 0.28s ease;
         transform: translateX(0);
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
       }
 
       [data-theme="dark"] .theme-toggle-thumb {
         transform: translateX(28px);
         background: #f5f5f5;
+        box-shadow: 0 0 0 1px rgba(255,255,255,0.15);
       }
 
       .btn {

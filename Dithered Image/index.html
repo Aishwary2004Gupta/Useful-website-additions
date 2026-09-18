@@ -411,8 +411,6 @@
           };
           this.src = imageSrc;
           this.sys = null;
-          this.image = null;
-          this.dotMode = false;
           this.monochrome = false;
           this.cursor = { x: 0, y: 0, on: false };
           this.ripples = [];
@@ -433,26 +431,22 @@
         /* ── Pointer events ── */
         _bind() {
           const c = this.cv;
-          c.addEventListener("pointerenter", () => {
-            if (!this.dotMode) this.setDotMode(true);
-          });
           c.addEventListener("pointermove", (e) => {
             const r = c.getBoundingClientRect();
             this.cursor.x = e.clientX - r.left;
             this.cursor.y = e.clientY - r.top;
             this.cursor.on = true;
-            if (!this.dotMode) this.setDotMode(true);
             this._loop();
           });
           c.addEventListener("pointerleave", (e) => {
             if (e.pointerType === "mouse") {
               this.cursor.on = false;
-              this.setDotMode(false);
+              this._loop();
             }
           });
           c.addEventListener("pointercancel", () => {
             this.cursor.on = false;
-            this.setDotMode(false);
+            this._loop();
           });
           c.addEventListener("pointerup", (e) => {
             const r = c.getBoundingClientRect();
@@ -462,7 +456,6 @@
               t: performance.now(),
             });
             if (e.pointerType !== "mouse") this.cursor.on = false;
-            if (!this.dotMode) this.setDotMode(true);
             this._loop();
           });
         }
@@ -472,16 +465,6 @@
           if (this.sys) {
             this._draw();
             this._loop();
-          }
-        }
-
-        setDotMode(enabled) {
-          this.dotMode = enabled;
-          this._draw();
-          if (enabled) this._loop();
-          else if (this.running) {
-            cancelAnimationFrame(this.raf);
-            this.running = false;
           }
         }
 
@@ -694,7 +677,6 @@
 
           try {
             const img = await this._img(this.src);
-            this.image = img;
             const rect = this.cv.getBoundingClientRect();
             const g = this._gray(img);
 
@@ -794,18 +776,14 @@
         }
 
         _draw() {
+          const s = this.sys;
+          if (!s) return;
+
           const dpr = devicePixelRatio || 1;
           const rect = this.cv.getBoundingClientRect();
+
           this.cx.clearRect(0, 0, rect.width * dpr, rect.height * dpr);
 
-          if (!this.dotMode || !this.sys) {
-            if (this.image) {
-              this.cx.drawImage(this.image, 0, 0, rect.width * dpr, rect.height * dpr);
-            }
-            return;
-          }
-
-          const s = this.sys;
           const sz = s.sz * dpr;
           const pad = 0.25 * dpr;
           const psz = 0.5 * dpr;
@@ -875,7 +853,6 @@
       /* ═══════ Init ═══════ */
       const stage = document.getElementById("ditheredLogo");
       const logo = new DitheredLogo(stage, GALLERY[0]);
-      logo.setDotMode(false);
 
       /* ═══════ Carousel ═══════ */
       let index = 0;

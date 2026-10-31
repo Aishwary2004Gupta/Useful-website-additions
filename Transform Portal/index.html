@@ -451,35 +451,6 @@
           // Update uniforms
           this.updateUniforms();
 
-          // Animate both forms together so the matching shape stays clickable
-          // wherever it appears in either portal view.
-          const newPosZ = Math.sin(elapsedTime) * 3.5;
-          this.box.position.z = newPosZ;
-          this.torusKnot.position.z = newPosZ;
-
-          this.box.rotation.x = Math.cos(elapsedTime / 2);
-          this.box.rotation.y = Math.sin(elapsedTime / 2);
-          this.box.rotation.z = Math.sin(elapsedTime / 2);
-
-          this.torusKnot.rotation.x = Math.cos(elapsedTime / 2);
-          this.torusKnot.rotation.y = Math.sin(elapsedTime / 2);
-          this.torusKnot.rotation.z = Math.sin(elapsedTime / 2);
-
-          if (this.portalShape) {
-            this.cylinder1.visible = false;
-            this.cylinder2.visible = false;
-            this.staticTorus.visible = false;
-            this.box.visible = this.portalShape === "box";
-            this.torusKnot.visible = this.portalShape === "knot";
-            this.renderer.setRenderTarget(null);
-            this.renderer.render(this.scene, this.camera);
-            return;
-          }
-
-          this.cylinder1.visible = true;
-          this.cylinder2.visible = true;
-          this.staticTorus.visible = true;
-
           // Render to texture 1 (box visible, torus knot hidden)
           this.torusKnot.visible = false;
           this.box.visible = true;
@@ -504,6 +475,20 @@
             this.renderTarget2.texture;
           this.cylinder2.material[2].uniforms.uTexture.value =
             this.renderTarget2.texture;
+
+          // Animate positions
+          const newPosZ = Math.sin(elapsedTime) * 3.5;
+          this.box.position.z = newPosZ;
+          this.torusKnot.position.z = newPosZ;
+
+          // Animate rotations
+          this.box.rotation.x = Math.cos(elapsedTime / 2);
+          this.box.rotation.y = Math.sin(elapsedTime / 2);
+          this.box.rotation.z = Math.sin(elapsedTime / 2);
+
+          this.torusKnot.rotation.x = Math.cos(elapsedTime / 2);
+          this.torusKnot.rotation.y = Math.sin(elapsedTime / 2);
+          this.torusKnot.rotation.z = Math.sin(elapsedTime / 2);
 
           // Final render
           this.renderer.render(this.scene, this.camera);

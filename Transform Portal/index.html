@@ -51,9 +51,7 @@
             void main() {
                 vec2 uv = gl_FragCoord.xy / winResolution.xy;
                 vec4 color = texture2D(uTexture, uv);
-                float brightness = max(max(color.r, color.g), color.b);
-                float alpha = smoothstep(0.015, 0.08, brightness);
-                gl_FragColor = vec4(color.rgb, alpha);
+                gl_FragColor = color;
             }
         `;
 
@@ -144,8 +142,6 @@
           const shaderMaterial1 = new THREE.ShaderMaterial({
             vertexShader,
             fragmentShader,
-            transparent: true,
-            depthWrite: false,
             uniforms: {
               ...this.uniforms,
               uTexture: { value: null },
@@ -155,8 +151,6 @@
           const shaderMaterial2 = new THREE.ShaderMaterial({
             vertexShader,
             fragmentShader,
-            transparent: true,
-            depthWrite: false,
             uniforms: {
               ...this.uniforms,
               uTexture: { value: null },
@@ -185,8 +179,6 @@
           const shaderMaterial3 = new THREE.ShaderMaterial({
             vertexShader,
             fragmentShader,
-            transparent: true,
-            depthWrite: false,
             uniforms: {
               ...this.uniforms,
               uTexture: { value: null },
@@ -196,8 +188,6 @@
           const shaderMaterial4 = new THREE.ShaderMaterial({
             vertexShader,
             fragmentShader,
-            transparent: true,
-            depthWrite: false,
             uniforms: {
               ...this.uniforms,
               uTexture: { value: null },

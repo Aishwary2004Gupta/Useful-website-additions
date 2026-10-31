@@ -388,13 +388,35 @@
 
         isPointerOverShape(shape) {
           shape.updateWorldMatrix(true, false);
-          // The selected form is hidden in the normal render, but its exact
-          // geometry still matches the pixels shown through its portal side.
-          const wasVisible = shape.visible;
-          shape.visible = true;
-          const hit = this.raycaster.intersectObject(shape, false).length > 0;
-          shape.visible = wasVisible;
-          return hit;
+          const bounds = new THREE.Box3().setFromObject(shape);
+          const sphere = bounds.getBoundingSphere(new THREE.Sphere());
+          if (sphere.isEmpty() || sphere.radius <= 0) return false;
+
+          const center = sphere.center.clone().project(this.camera);
+          if (center.z < -1 || center.z > 1) return false;
+
+          const right = new THREE.Vector3(1, 0, 0).applyQuaternion(
+            this.camera.quaternion,
+          );
+          const up = new THREE.Vector3(0, 1, 0).applyQuaternion(
+            this.camera.quaternion,
+          );
+          const radius = sphere.radius * 1.2;
+          const edgeX = sphere.center
+            .clone()
+            .addScaledVector(right, radius)
+            .project(this.camera);
+          const edgeY = sphere.center
+            .clone()
+            .addScaledVector(up, radius)
+            .project(this.camera);
+          const radiusX = Math.abs(edgeX.x - center.x);
+          const radiusY = Math.abs(edgeY.y - center.y);
+          if (radiusX === 0 || radiusY === 0) return false;
+
+          const dx = (this.pointer.x - center.x) / radiusX;
+          const dy = (this.pointer.y - center.y) / radiusY;
+          return dx * dx + dy * dy <= 1;
         }
 
         updateUniforms() {

@@ -15,10 +15,29 @@
         width: 100vw;
         height: 100vh;
       }
+      #go-back-button {
+        position: fixed;
+        left: 50%;
+        bottom: 28px;
+        transform: translateX(-50%);
+        display: none;
+        z-index: 10;
+        padding: 12px 24px;
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        border-radius: 999px;
+        background: rgba(15, 18, 28, 0.9);
+        color: #fff;
+        font: 600 15px Arial, sans-serif;
+        cursor: pointer;
+      }
+      #go-back-button.is-visible {
+        display: block;
+      }
     </style>
   </head>
   <body>
     <div id="canvas-container"></div>
+    <button id="go-back-button" type="button">Go Back</button>
 
     <!-- <script type="importmap">
       {
@@ -51,7 +70,9 @@
             void main() {
                 vec2 uv = gl_FragCoord.xy / winResolution.xy;
                 vec4 color = texture2D(uTexture, uv);
-                gl_FragColor = color;
+                float brightness = max(max(color.r, color.g), color.b);
+                float alpha = smoothstep(0.015, 0.08, brightness);
+                gl_FragColor = vec4(color.rgb, alpha);
             }
         `;
 
@@ -63,6 +84,7 @@
           this.createObjects();
           this.createRenderTargets();
           this.setupControls();
+          this.setupPortalInteraction();
           this.animate();
           this.handleResize();
         }
@@ -142,6 +164,8 @@
           const shaderMaterial1 = new THREE.ShaderMaterial({
             vertexShader,
             fragmentShader,
+            transparent: true,
+            depthWrite: false,
             uniforms: {
               ...this.uniforms,
               uTexture: { value: null },
@@ -151,6 +175,8 @@
           const shaderMaterial2 = new THREE.ShaderMaterial({
             vertexShader,
             fragmentShader,
+            transparent: true,
+            depthWrite: false,
             uniforms: {
               ...this.uniforms,
               uTexture: { value: null },
@@ -179,6 +205,8 @@
           const shaderMaterial3 = new THREE.ShaderMaterial({
             vertexShader,
             fragmentShader,
+            transparent: true,
+            depthWrite: false,
             uniforms: {
               ...this.uniforms,
               uTexture: { value: null },
@@ -188,6 +216,8 @@
           const shaderMaterial4 = new THREE.ShaderMaterial({
             vertexShader,
             fragmentShader,
+            transparent: true,
+            depthWrite: false,
             uniforms: {
               ...this.uniforms,
               uTexture: { value: null },
@@ -206,10 +236,10 @@
           const torusMaterial = new THREE.MeshStandardMaterial({
             color: 0xf9f9f9,
           });
-          const staticTorus = new THREE.Mesh(torusGeometry, torusMaterial);
+          this.staticTorus = new THREE.Mesh(torusGeometry, torusMaterial);
           // staticTorus.rotation.set(0, 0, 0);
           // staticTorus.rotation.y = -0.3;
-          this.scene.add(staticTorus);
+          this.scene.add(this.staticTorus);
 
           // Create torus knot
           const torusKnotGeometry = new THREE.TorusKnotGeometry(
@@ -313,6 +343,60 @@
           this.controls.dampingFactor = 0.05;
         }
 
+        setupPortalInteraction() {
+          this.portalShape = null;
+          this.raycaster = new THREE.Raycaster();
+          this.pointer = new THREE.Vector2();
+          this.backButton = document.getElementById("go-back-button");
+
+          this.renderer.domElement.addEventListener("click", (event) => {
+            this.handlePortalClick(event);
+          });
+
+          this.backButton.addEventListener("click", () => {
+            this.portalShape = null;
+            this.backButton.classList.remove("is-visible");
+          });
+        }
+
+        handlePortalClick(event) {
+          if (this.portalShape) return;
+
+          const bounds = this.renderer.domElement.getBoundingClientRect();
+          this.pointer.set(
+            ((event.clientX - bounds.left) / bounds.width) * 2 - 1,
+            -((event.clientY - bounds.top) / bounds.height) * 2 + 1,
+          );
+
+          this.camera.updateMatrixWorld();
+          this.raycaster.setFromCamera(this.pointer, this.camera);
+          const hits = this.raycaster.intersectObjects(
+            [this.cylinder1, this.cylinder2],
+            false,
+          );
+
+          for (const hit of hits) {
+            const isCubeSide = hit.object === this.cylinder1;
+            const shape = isCubeSide ? this.box : this.torusKnot;
+            if (this.isPointerOverShape(shape)) {
+              this.portalShape = isCubeSide ? "box" : "knot";
+              this.backButton.classList.add("is-visible");
+              return;
+            }
+          }
+        }
+
+        isPointerOverShape(shape) {
+          shape.updateWorldMatrix(true, false);
+          // The selected form is hidden in the normal render, but its exact
+          // geometry still matches the pixels shown through its portal side.
+          const wasVisible = shape.visible;
+          shape.visible = true;
+          const hit = this.raycaster.intersectObject(shape, false).length > 0;
+          shape.visible = wasVisible;
+          return hit;
+        }
+
         updateUniforms() {
           const resolution = new THREE.Vector2(
             window.innerWidth,
@@ -345,6 +429,35 @@
           // Update uniforms
           this.updateUniforms();
 
+          // Animate both forms together so the matching shape stays clickable
+          // wherever it appears in either portal view.
+          const newPosZ = Math.sin(elapsedTime) * 3.5;
+          this.box.position.z = newPosZ;
+          this.torusKnot.position.z = newPosZ;
+
+          this.box.rotation.x = Math.cos(elapsedTime / 2);
+          this.box.rotation.y = Math.sin(elapsedTime / 2);
+          this.box.rotation.z = Math.sin(elapsedTime / 2);
+
+          this.torusKnot.rotation.x = Math.cos(elapsedTime / 2);
+          this.torusKnot.rotation.y = Math.sin(elapsedTime / 2);
+          this.torusKnot.rotation.z = Math.sin(elapsedTime / 2);
+
+          if (this.portalShape) {
+            this.cylinder1.visible = false;
+            this.cylinder2.visible = false;
+            this.staticTorus.visible = false;
+            this.box.visible = this.portalShape === "box";
+            this.torusKnot.visible = this.portalShape === "knot";
+            this.renderer.setRenderTarget(null);
+            this.renderer.render(this.scene, this.camera);
+            return;
+          }
+
+          this.cylinder1.visible = true;
+          this.cylinder2.visible = true;
+          this.staticTorus.visible = true;
+
           // Render to texture 1 (box visible, torus knot hidden)
           this.torusKnot.visible = false;
           this.box.visible = true;
@@ -369,20 +482,6 @@
             this.renderTarget2.texture;
           this.cylinder2.material[2].uniforms.uTexture.value =
             this.renderTarget2.texture;
-
-          // Animate positions
-          const newPosZ = Math.sin(elapsedTime) * 3.5;
-          this.box.position.z = newPosZ;
-          this.torusKnot.position.z = newPosZ;
-
-          // Animate rotations
-          this.box.rotation.x = Math.cos(elapsedTime / 2);
-          this.box.rotation.y = Math.sin(elapsedTime / 2);
-          this.box.rotation.z = Math.sin(elapsedTime / 2);
-
-          this.torusKnot.rotation.x = Math.cos(elapsedTime / 2);
-          this.torusKnot.rotation.y = Math.sin(elapsedTime / 2);
-          this.torusKnot.rotation.z = Math.sin(elapsedTime / 2);
 
           // Final render
           this.renderer.render(this.scene, this.camera);

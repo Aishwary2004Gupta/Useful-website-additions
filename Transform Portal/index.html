@@ -168,6 +168,9 @@
             shaderMaterial2,
             transparentMaterial,
           ];
+          // Keep the capsule shell out of the final view so only the portal
+          // ring and the shape moving through it remain visible.
+          this.cylinder1.visible = false;
           this.scene.add(this.cylinder1);
 
           // Create cylinder 2
@@ -199,6 +202,7 @@
             transparentMaterial.clone(),
             shaderMaterial4,
           ];
+          this.cylinder2.visible = false;
           this.scene.add(this.cylinder2);
 
           // Create static torus (ring)

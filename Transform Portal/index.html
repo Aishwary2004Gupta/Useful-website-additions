@@ -15,29 +15,10 @@
         width: 100vw;
         height: 100vh;
       }
-      #go-back-button {
-        position: fixed;
-        left: 50%;
-        bottom: 28px;
-        transform: translateX(-50%);
-        display: none;
-        z-index: 10;
-        padding: 12px 24px;
-        border: 1px solid rgba(255, 255, 255, 0.7);
-        border-radius: 999px;
-        background: rgba(15, 18, 28, 0.9);
-        color: #fff;
-        font: 600 15px Arial, sans-serif;
-        cursor: pointer;
-      }
-      #go-back-button.is-visible {
-        display: block;
-      }
     </style>
   </head>
   <body>
     <div id="canvas-container"></div>
-    <button id="go-back-button" type="button">Go Back</button>
 
     <!-- <script type="importmap">
       {
@@ -70,9 +51,7 @@
             void main() {
                 vec2 uv = gl_FragCoord.xy / winResolution.xy;
                 vec4 color = texture2D(uTexture, uv);
-                float brightness = max(max(color.r, color.g), color.b);
-                float alpha = smoothstep(0.015, 0.08, brightness);
-                gl_FragColor = vec4(color.rgb, alpha);
+                gl_FragColor = color;
             }
         `;
 
@@ -84,7 +63,6 @@
           this.createObjects();
           this.createRenderTargets();
           this.setupControls();
-          this.setupPortalInteraction();
           this.animate();
           this.handleResize();
         }
@@ -164,8 +142,6 @@
           const shaderMaterial1 = new THREE.ShaderMaterial({
             vertexShader,
             fragmentShader,
-            transparent: true,
-            depthWrite: false,
             uniforms: {
               ...this.uniforms,
               uTexture: { value: null },
@@ -175,8 +151,6 @@
           const shaderMaterial2 = new THREE.ShaderMaterial({
             vertexShader,
             fragmentShader,
-            transparent: true,
-            depthWrite: false,
             uniforms: {
               ...this.uniforms,
               uTexture: { value: null },
@@ -205,8 +179,6 @@
           const shaderMaterial3 = new THREE.ShaderMaterial({
             vertexShader,
             fragmentShader,
-            transparent: true,
-            depthWrite: false,
             uniforms: {
               ...this.uniforms,
               uTexture: { value: null },
@@ -216,8 +188,6 @@
           const shaderMaterial4 = new THREE.ShaderMaterial({
             vertexShader,
             fragmentShader,
-            transparent: true,
-            depthWrite: false,
             uniforms: {
               ...this.uniforms,
               uTexture: { value: null },
@@ -236,10 +206,10 @@
           const torusMaterial = new THREE.MeshStandardMaterial({
             color: 0xf9f9f9,
           });
-          this.staticTorus = new THREE.Mesh(torusGeometry, torusMaterial);
+          const staticTorus = new THREE.Mesh(torusGeometry, torusMaterial);
           // staticTorus.rotation.set(0, 0, 0);
           // staticTorus.rotation.y = -0.3;
-          this.scene.add(this.staticTorus);
+          this.scene.add(staticTorus);
 
           // Create torus knot
           const torusKnotGeometry = new THREE.TorusKnotGeometry(
@@ -341,82 +311,6 @@
           this.controls.autoRotateSpeed = 3;
           this.controls.enableDamping = true;
           this.controls.dampingFactor = 0.05;
-        }
-
-        setupPortalInteraction() {
-          this.portalShape = null;
-          this.raycaster = new THREE.Raycaster();
-          this.pointer = new THREE.Vector2();
-          this.backButton = document.getElementById("go-back-button");
-
-          this.renderer.domElement.addEventListener("click", (event) => {
-            this.handlePortalClick(event);
-          });
-
-          this.backButton.addEventListener("click", () => {
-            this.portalShape = null;
-            this.backButton.classList.remove("is-visible");
-          });
-        }
-
-        handlePortalClick(event) {
-          if (this.portalShape) return;
-
-          const bounds = this.renderer.domElement.getBoundingClientRect();
-          this.pointer.set(
-            ((event.clientX - bounds.left) / bounds.width) * 2 - 1,
-            -((event.clientY - bounds.top) / bounds.height) * 2 + 1,
-          );
-
-          this.camera.updateMatrixWorld();
-          this.raycaster.setFromCamera(this.pointer, this.camera);
-          const hits = this.raycaster.intersectObjects(
-            [this.cylinder1, this.cylinder2],
-            false,
-          );
-
-          for (const hit of hits) {
-            const isCubeSide = hit.object === this.cylinder1;
-            const shape = isCubeSide ? this.box : this.torusKnot;
-            if (this.isPointerOverShape(shape)) {
-              this.portalShape = isCubeSide ? "box" : "knot";
-              this.backButton.classList.add("is-visible");
-              return;
-            }
-          }
-        }
-
-        isPointerOverShape(shape) {
-          shape.updateWorldMatrix(true, false);
-          const bounds = new THREE.Box3().setFromObject(shape);
-          const sphere = bounds.getBoundingSphere(new THREE.Sphere());
-          if (sphere.isEmpty() || sphere.radius <= 0) return false;
-
-          const center = sphere.center.clone().project(this.camera);
-          if (center.z < -1 || center.z > 1) return false;
-
-          const right = new THREE.Vector3(1, 0, 0).applyQuaternion(
-            this.camera.quaternion,
-          );
-          const up = new THREE.Vector3(0, 1, 0).applyQuaternion(
-            this.camera.quaternion,
-          );
-          const radius = sphere.radius * 1.2;
-          const edgeX = sphere.center
-            .clone()
-            .addScaledVector(right, radius)
-            .project(this.camera);
-          const edgeY = sphere.center
-            .clone()
-            .addScaledVector(up, radius)
-            .project(this.camera);
-          const radiusX = Math.abs(edgeX.x - center.x);
-          const radiusY = Math.abs(edgeY.y - center.y);
-          if (radiusX === 0 || radiusY === 0) return false;
-
-          const dx = (this.pointer.x - center.x) / radiusX;
-          const dy = (this.pointer.y - center.y) / radiusY;
-          return dx * dx + dy * dy <= 1;
         }
 
         updateUniforms() {

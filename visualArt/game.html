@@ -121,6 +121,9 @@ body.dark #state{color:#8a857a}
   #scenes{top:max(60px, calc(env(safe-area-inset-top, 16px) + 44px));right:max(16px, env(safe-area-inset-right, 16px));gap:4px}
   .scene-button{font-size:10px;padding:6px 8px;min-height:30px}
 }
+@media (max-width:500px){
+  #scenes{top:max(130px, calc(env(safe-area-inset-top, 16px) + 116px))}
+}
 @media (max-height:500px) and (orientation:landscape){
   .top{top:12px;left:16px;max-width:calc(100vw - 110px)}
   .clock{margin-bottom:6px;font-size:10px}
@@ -394,7 +397,7 @@ function release(){
 }
 cv.addEventListener('pointerup', release);
 cv.addEventListener('pointercancel', release);
-addEventListener('keydown', e => { if (e.code === 'Space' && e.target === document.body){ e.preventDefault(); initAudio(); toggle(); } });
+addEventListener('keydown', e => { if (scene === 'lamp' && e.code === 'Space' && e.target === document.body){ e.preventDefault(); initAudio(); toggle(); } });
 
 /* ---------- simulation ---------- */
 function update(dt){
@@ -446,7 +449,7 @@ function update(dt){
 
 /* ---------- drawing ---------- */
 function drawBuilding(){
-  const b = buildingBounds(), cols = 4;
+  const b = buildingBounds();
   const sky = x.createLinearGradient(0,0,0,floorY);
   sky.addColorStop(0,'#080d17'); sky.addColorStop(1,'#111923');
   x.fillStyle = sky; x.fillRect(0,0,W,floorY);

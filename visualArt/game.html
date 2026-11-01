@@ -74,6 +74,28 @@ body.dark #state{color:#8a857a}
 }
 #snd:hover{background:rgba(255,255,255,.09);color:var(--ink)}
 #snd:focus-visible{outline:2px solid var(--warm);outline-offset:2px}
+#scenes{
+  position:fixed;
+  top:max(70px, calc(env(safe-area-inset-top, 22px) + 48px));
+  right:max(22px, env(safe-area-inset-right, 22px));
+  z-index:3;
+  display:flex;
+  gap:6px;
+}
+.scene-button{
+  cursor:pointer;
+  pointer-events:auto;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.1);
+  color:var(--dim);
+  font:11px ui-monospace,SFMono-Regular,Menlo,monospace;
+  padding:7px 10px;
+  border-radius:999px;
+  min-height:34px;
+  -webkit-tap-highlight-color:transparent;
+}
+.scene-button[aria-pressed="true"]{color:var(--ink);border-color:rgba(255,201,118,.5);background:rgba(255,201,118,.1)}
+.scene-button:focus-visible{outline:2px solid var(--warm);outline-offset:2px}
 
 @media (max-width:700px){
   .top{
@@ -96,6 +118,8 @@ body.dark #state{color:#8a857a}
     padding:7px 12px;
     font-size:11px;
   }
+  #scenes{top:max(60px, calc(env(safe-area-inset-top, 16px) + 44px));right:max(16px, env(safe-area-inset-right, 16px));gap:4px}
+  .scene-button{font-size:10px;padding:6px 8px;min-height:30px}
 }
 @media (max-height:500px) and (orientation:landscape){
   .top{top:12px;left:16px;max-width:calc(100vw - 110px)}
@@ -104,6 +128,7 @@ body.dark #state{color:#8a857a}
   .sub,.hint{display:none}
   .stats{left:16px;bottom:10px;font-size:10px}
   #snd{top:10px;right:14px;padding:5px 10px;font-size:10px;min-height:30px}
+  #scenes{top:48px;right:14px}
 }
 </style>
 </head>
@@ -112,17 +137,21 @@ body.dark #state{color:#8a857a}
 
 <div class="ui top">
   <div class="clock" id="clock">--:--</div>
-  <h1>Who keeps breaking the <em>lamp?</em></h1>
-  <p class="sub">Flip the wall switch. Pull back the slingshot and let a pebble fly at the shade, the bulb or the switch. Or just grab the shade and give it a swing.</p>
+  <h1>Who keeps breaking the <em id="target">lamp?</em></h1>
+  <p class="sub" id="description">Flip the wall switch. Pull back the slingshot and let a pebble fly at the shade, the bulb or the switch. Or just grab the shade and give it a swing.</p>
 </div>
 
 <div class="ui stats">
-  <div>lamp · <b id="state">on</b></div>
-  <div>shots <b id="shots">0</b> · bulbs broken <b id="bulbs">0</b></div>
+  <div><span id="scene-name">lamp</span> · <b id="state">on</b></div>
+  <div>shots <b id="shots">0</b> · <span id="break-label">bulbs broken</span> <b id="broken">0</b></div>
 </div>
 
-<div class="ui hint">flip the switch · pull the pebble back &amp; let go · drag the shade</div>
+<div class="ui hint" id="hint">flip the switch · pull the pebble back &amp; let go · drag the shade</div>
 <button id="snd" type="button">sound: on</button>
+<nav id="scenes" aria-label="Choose a scene">
+  <button class="scene-button" type="button" data-scene="lamp" aria-pressed="true">lamp</button>
+  <button class="scene-button" type="button" data-scene="building" aria-pressed="false">skyscraper</button>
+</nav>
 
 <script>
 (() => {
@@ -130,6 +159,8 @@ const cv = document.getElementById('c'), x = cv.getContext('2d');
 const G = 1500, POW = 11.5, MAXPULL = 130;
 let W, H, DPR, ax, ay = 0, L, floorY, swX, swY, sX, rest;
 const S = { on:true, bulb:true, bulbT:1, glow:1, flick:0, pop:0, th:.18, om:0, shots:0, broken:0, sound:true };
+let scene = 'lamp';
+const building = { panes:Array.from({length:28}, () => ({ broken:false })), broken:0 };
 let pebbles = [], shards = [], dust = [], drag = false, grab = null, replaceAt = 0, now = 0;
 const ammo = { x:0, y:0, ready:true, a:1, at:0 };
 
@@ -171,6 +202,25 @@ function toWorld(lx,ly){ const e=end(), c=Math.cos(S.th), s=Math.sin(S.th); retu
 function inShade(p,r){ if (p.y < 2-r || p.y > 66+r) return false; const hw = 22 + Math.max(0,Math.min(60,p.y-6))/60*40; return Math.abs(p.x) < hw + r; }
 const inBulb = (p,r) => S.bulb && S.bulbT > .6 && p.y > 62 && Math.hypot(p.x, p.y-74) < 16 + r;
 const onSwitch = (px,py,pad=0) => Math.abs(px-swX) < 23+pad && Math.abs(py-swY) < 38+pad;
+function buildingBounds(){
+  const width = Math.min(W*.44,320), height = Math.min(H*.68,floorY-100);
+  return { x:Math.max(W*.43,Math.min(W-width-18,W*.68-width/2)), y:floorY-height, w:width, h:height };
+}
+function paneBounds(index){
+  const b = buildingBounds(), cols = 4, rows = 7, gap = Math.max(4,b.w*.018);
+  const mx = b.w*.1, my = b.h*.09;
+  const w = (b.w-mx*2-gap*(cols-1))/cols, h = (b.h-my*2-gap*(rows-1))/rows;
+  const col = index%cols, row = Math.floor(index/cols);
+  return { x:b.x+mx+col*(w+gap), y:b.y+my+row*(h+gap), w, h };
+}
+function paneAt(px,py,pad=0){
+  for (let i=0;i<building.panes.length;i++){
+    if (building.panes[i].broken) continue;
+    const b = paneBounds(i);
+    if (px >= b.x-pad && px <= b.x+b.w+pad && py >= b.y-pad && py <= b.y+b.h+pad) return { index:i, bounds:b };
+  }
+  return null;
+}
 
 /* ---------- audio (synthesized) ---------- */
 let AC = null, master, nbuf;

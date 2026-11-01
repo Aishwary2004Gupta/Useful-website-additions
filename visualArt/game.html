@@ -588,6 +588,9 @@ function draw(){
   x.font = '600 9px ui-monospace,Menlo,monospace'; x.textAlign = 'center';
   x.fillStyle = `rgba(236,230,217,${S.on ? .55 : .2})`; x.fillText('ON', swX, swY-48);
   x.fillStyle = `rgba(236,230,217,${S.on ? .2 : .55})`; x.fillText('OFF', swX, swY+56);
+  } else {
+    drawBuilding();
+  }
 
   // slingshot
   const wood = mix('#24190f','#6a4829',.15+g*.75), fy = floorY;
@@ -626,11 +629,10 @@ function draw(){
   vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,.65)'); x.fillStyle = vg; x.fillRect(0,0,W,H);
 
   // switch indicator (findable in the dark)
-  const ia = (1-g) * (.55 + .45*Math.sin(now*2.5));
-  if (ia > .02){ x.save(); x.shadowColor = '#ffb85c'; x.shadowBlur = 10; x.fillStyle = `rgba(255,184,92,${ia})`;
-    x.beginPath(); x.arc(swX, swY+28, 2.2, 0, 7); x.fill(); x.restore(); }
-  } else {
-    drawBuilding();
+  if (scene === 'lamp'){
+    const ia = (1-g) * (.55 + .45*Math.sin(now*2.5));
+    if (ia > .02){ x.save(); x.shadowColor = '#ffb85c'; x.shadowBlur = 10; x.fillStyle = `rgba(255,184,92,${ia})`;
+      x.beginPath(); x.arc(swX, swY+28, 2.2, 0, 7); x.fill(); x.restore(); }
   }
 
   // aim preview

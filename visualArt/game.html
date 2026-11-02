@@ -149,8 +149,9 @@ body.dark #state{color:#8a857a}
 <div class="ui hint" id="hint">flip the switch · pull the pebble back &amp; let go · drag the shade</div>
 <button id="snd" type="button">sound: on</button>
 <nav id="scenes" aria-label="Choose a scene">
-  <button class="scene-button" type="button" data-scene="lamp" aria-pressed="true">lamp</button>
-  <button class="scene-button" type="button" data-scene="building" aria-pressed="false">skyscraper</button>
+  <button class="scene-button" type="button" data-scene="hanging" aria-pressed="true">hanging</button>
+  <button class="scene-button" type="button" data-scene="table" aria-pressed="false">table</button>
+  <button class="scene-button" type="button" data-scene="floor" aria-pressed="false">floor</button>
 </nav>
 
 <script>
@@ -158,10 +159,14 @@ body.dark #state{color:#8a857a}
 const cv = document.getElementById('c'), x = cv.getContext('2d');
 const G = 1500, POW = 11.5, MAXPULL = 130;
 let W, H, DPR, ax, ay = 0, L, floorY, swX, swY, sX, rest;
-const S = { on:true, bulb:true, bulbT:1, glow:1, flick:0, pop:0, th:.18, om:0, shots:0, broken:0, sound:true };
-let scene = 'lamp';
-const building = { panes:Array.from({length:28}, () => ({ broken:false })), broken:0 };
-let pebbles = [], shards = [], dust = [], drag = false, grab = null, replaceAt = 0, now = 0;
+const S = { on:true, bulb:true, bulbT:1, glow:1, flick:0, pop:0, th:.18, om:0, replaceAt:0, shots:0, broken:0, sound:true };
+let scene = 'hanging';
+const sceneStates = {
+  hanging:{ on:true, bulb:true, bulbT:1, glow:1, flick:0, pop:0, th:.18, om:0, replaceAt:0, broken:0 },
+  table:{ on:true, bulb:true, bulbT:1, glow:1, flick:0, pop:0, th:0, om:0, replaceAt:0, broken:0 },
+  floor:{ on:true, bulb:true, bulbT:1, glow:1, flick:0, pop:0, th:0, om:0, replaceAt:0, broken:0 }
+};
+let pebbles = [], shards = [], dust = [], drag = false, grab = null, now = 0;
 const ammo = { x:0, y:0, ready:true, a:1, at:0 };
 
 /* ---------- layout ---------- */
@@ -196,30 +201,33 @@ resize();
 const hex = h => [1,3,5].map(i => parseInt(h.slice(i,i+2),16));
 const mix = (a,b,t) => { const A=hex(a),B=hex(b); return `rgb(${A.map((v,i)=>Math.round(v+(B[i]-v)*t)).join(',')})`; };
 function rr(px,py,w,h,r){ x.beginPath(); x.moveTo(px+r,py); x.arcTo(px+w,py,px+w,py+h,r); x.arcTo(px+w,py+h,px,py+h,r); x.arcTo(px,py+h,px,py,r); x.arcTo(px,py,px+w,py,r); x.closePath(); }
-const end = () => ({ x: ax + L*Math.sin(S.th), y: ay + L*Math.cos(S.th) });
-function toLocal(px,py){ const e=end(), dx=px-e.x, dy=py-e.y, c=Math.cos(S.th), s=Math.sin(S.th); return { x:dx*c-dy*s, y:dx*s+dy*c }; }
-function toWorld(lx,ly){ const e=end(), c=Math.cos(S.th), s=Math.sin(S.th); return { x:e.x+lx*c+ly*s, y:e.y-lx*s+ly*c }; }
+function end(){
+  if (scene === 'hanging') return { x:ax+L*Math.sin(S.th), y:ay+L*Math.cos(S.th) };
+  const y = scene === 'table'
+    ? tableTop()-230
+    : floorY-Math.min(H*.68,430);
+  return { x:Math.min(W-80,Math.max(145,W*.68)), y };
+}
+function tableTop(){ return floorY-(W<700 ? 122 : 150); }
+function toLocal(px,py){
+  const e=end(), dx=px-e.x, dy=py-e.y, th=scene === 'hanging' ? S.th : 0, c=Math.cos(th), s=Math.sin(th);
+  return { x:dx*c-dy*s, y:dx*s+dy*c };
+}
+function toWorld(lx,ly){
+  const e=end(), th=scene === 'hanging' ? S.th : 0, c=Math.cos(th), s=Math.sin(th);
+  return { x:e.x+lx*c+ly*s, y:e.y-lx*s+ly*c };
+}
 function inShade(p,r){ if (p.y < 2-r || p.y > 66+r) return false; const hw = 22 + Math.max(0,Math.min(60,p.y-6))/60*40; return Math.abs(p.x) < hw + r; }
 const inBulb = (p,r) => S.bulb && S.bulbT > .6 && p.y > 62 && Math.hypot(p.x, p.y-74) < 16 + r;
-const onSwitch = (px,py,pad=0) => Math.abs(px-swX) < 23+pad && Math.abs(py-swY) < 38+pad;
-function buildingBounds(){
-  const width = Math.min(W*.44,320), height = Math.min(H*.68,floorY-100);
-  return { x:Math.max(W*.43,Math.min(W-width-18,W*.68-width/2)), y:floorY-height, w:width, h:height };
+function switchPosition(){
+  if (scene === 'hanging') return { x:swX, y:swY };
+  const e=end();
+  return { x:e.x+12, y:e.y+126 };
 }
-function paneBounds(index){
-  const b = buildingBounds(), cols = 4, rows = 7, gap = Math.max(4,b.w*.018);
-  const mx = b.w*.1, my = b.h*.09;
-  const w = (b.w-mx*2-gap*(cols-1))/cols, h = (b.h-my*2-gap*(rows-1))/rows;
-  const col = index%cols, row = Math.floor(index/cols);
-  return { x:b.x+mx+col*(w+gap), y:b.y+my+row*(h+gap), w, h };
-}
-function paneAt(px,py,pad=0){
-  for (let i=0;i<building.panes.length;i++){
-    if (building.panes[i].broken) continue;
-    const b = paneBounds(i);
-    if (px >= b.x-pad && px <= b.x+b.w+pad && py >= b.y-pad && py <= b.y+b.h+pad) return { index:i, bounds:b };
-  }
-  return null;
+function onSwitch(px,py,pad=0){
+  const sw=switchPosition();
+  const width=scene === 'hanging' ? 23 : 12, height=scene === 'hanging' ? 38 : 17;
+  return Math.abs(px-sw.x)<width+pad && Math.abs(py-sw.y)<height+pad;
 }
 
 /* ---------- audio (synthesized) ---------- */
@@ -259,32 +267,33 @@ const sfx = {
 /* ---------- UI ---------- */
 const $ = id => document.getElementById(id);
 function ui(){
-  const isLamp = scene === 'lamp';
-  $('state').textContent = isLamp ? (S.bulb ? (S.on ? 'on' : 'off') : 'broken') : `${building.broken} / ${building.panes.length} panes`;
+  const lampName = scene === 'hanging' ? 'hanging lamp' : `${scene} lamp`;
+  $('state').textContent = S.bulb ? (S.on ? 'on' : 'off') : 'broken';
   $('shots').textContent = S.shots;
-  $('broken').textContent = isLamp ? S.broken : building.broken;
-  $('scene-name').textContent = isLamp ? 'lamp' : 'skyscraper';
-  $('break-label').textContent = isLamp ? 'bulbs broken' : 'panes broken';
-  $('target').textContent = isLamp ? 'lamp?' : 'glass?';
-  $('description').textContent = isLamp
-    ? 'Flip the wall switch. Pull back the slingshot and let a pebble fly at the shade, the bulb or the switch. Or just grab the shade and give it a swing.'
-    : 'Pull back the slingshot and let a pebble fly at the skyscraper windows. Each pane breaks into falling glass.';
-  $('hint').textContent = isLamp
+  $('broken').textContent = S.broken;
+  $('scene-name').textContent = lampName;
+  $('break-label').textContent = 'bulbs broken';
+  $('target').textContent = 'lamp?';
+  $('description').textContent = scene === 'hanging'
+    ? 'Flip the wall switch. Pull back the slingshot and let a pebble fly at the shade, the bulb or the switch. Or grab the shade and give it a swing.'
+    : `Break the ${scene} lamp bulb with the slingshot. Each lamp has its own switch and a replaceable bulb.`;
+  $('hint').textContent = scene === 'hanging'
     ? 'flip the switch · pull the pebble back & let go · drag the shade'
-    : 'pull the pebble back & let go · aim at the glass';
-  cv.setAttribute('aria-label', isLamp
-    ? 'Interactive lamp. Press space to flip the switch.'
-    : 'Interactive skyscraper. Break the glass with the slingshot.');
+    : 'flip the lamp switch · pull the pebble back & let go';
+  cv.setAttribute('aria-label', `Interactive ${lampName}. Break the bulb with the slingshot.`);
   document.querySelectorAll('.scene-button').forEach(button => {
     button.setAttribute('aria-pressed', String(button.dataset.scene === scene));
   });
-  document.body.classList.toggle('dark', isLamp && !(S.on && S.bulb));
+  document.body.classList.toggle('dark', !(S.on && S.bulb));
 }
 function clock(){ $('clock').textContent = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}).toUpperCase(); }
 clock(); setInterval(clock, 5000);
 $('snd').addEventListener('click', () => { initAudio(); S.sound = !S.sound; $('snd').textContent = 'sound: ' + (S.sound ? 'on' : 'off'); });
 document.querySelectorAll('.scene-button').forEach(button => button.addEventListener('click', () => {
+  sceneStates[scene] = { on:S.on, bulb:S.bulb, bulbT:S.bulbT, glow:S.glow, flick:S.flick, pop:S.pop,
+    th:S.th, om:S.om, replaceAt:S.replaceAt, broken:S.broken };
   scene = button.dataset.scene;
+  Object.assign(S, sceneStates[scene]);
   drag = false; grab = null; pebbles = [];
   ammo.x = rest.x; ammo.y = rest.y;
   ui();
@@ -294,16 +303,17 @@ document.querySelectorAll('.scene-button').forEach(button => button.addEventList
 function toggle(){ S.on = !S.on; sfx.click(); if (S.on && S.bulb) S.flick = .2; ui(); }
 function hitShade(p){
   const c = Math.cos(S.th), s = Math.sin(S.th), vt = p.vx*c - p.vy*s, sp = Math.hypot(p.vx,p.vy);
-  S.om += vt / L * .45; p.hit = true;
+  if (scene === 'hanging') S.om += vt / L * .45;
+  p.hit = true;
   p.vx = -p.vx*.25 + (Math.random()-.5)*80; p.vy = p.vy < 0 ? -p.vy*.25 : -p.vy*.3;
   sfx.clang(Math.min(1, sp/1300));
   if (sp > 650 && S.on && S.bulb) S.flick = .28;
 }
 function breakBulb(p){
   const b = toWorld(0,74), c = Math.cos(S.th), s = Math.sin(S.th);
-  S.om += (p.vx*c - p.vy*s) / L * .2;
+  if (scene === 'hanging') S.om += (p.vx*c - p.vy*s) / L * .2;
   if (S.on) S.pop = 1;
-  S.bulb = false; S.broken++; replaceAt = now + 2.4; p.hit = true; p.vx *= .55; p.vy *= .55;
+  S.bulb = false; S.broken++; S.replaceAt = now + 2.4; p.hit = true; p.vx *= .55; p.vy *= .55;
   for (let i=0;i<30;i++){
     const a = Math.random()*Math.PI*2, v = 120 + Math.random()*420;
     shards.push({ x:b.x+(Math.random()-.5)*18, y:b.y+(Math.random()-.5)*18, vx:Math.cos(a)*v+p.vx*.15, vy:Math.sin(a)*v-160+p.vy*.1,
@@ -312,24 +322,6 @@ function breakBulb(p){
   if (shards.length > 160) shards.splice(0, shards.length-160);
   sfx.shatter(); ui();
 }
-function breakPane(p,index,bounds){
-  if (building.panes[index].broken) return;
-  building.panes[index].broken = true;
-  building.broken++;
-  p.hit = true; p.vx *= .55; p.vy *= .55;
-  const count = 18, cx = bounds.x+bounds.w/2, cy = bounds.y+bounds.h/2;
-  for (let i=0;i<count;i++){
-    const a = Math.random()*Math.PI*2, v = 90 + Math.random()*360;
-    shards.push({
-      x:cx+(Math.random()-.5)*bounds.w*.7, y:cy+(Math.random()-.5)*bounds.h*.7,
-      vx:Math.cos(a)*v+p.vx*.12, vy:Math.sin(a)*v-100+p.vy*.1,
-      r:Math.random()*6, vr:(Math.random()-.5)*22, s:2+Math.random()*5, life:0, rest:false
-    });
-  }
-  if (shards.length > 200) shards.splice(0,shards.length-200);
-  sfx.shatter(); ui();
-}
-
 /* ---------- input ---------- */
 function pos(e){ return { x:e.clientX, y:e.clientY }; }
 cv.addEventListener('pointerdown', e => {
@@ -341,13 +333,13 @@ cv.addEventListener('pointerdown', e => {
   const shPad = isMobile ? 16 : 12;
   const blbPad = isMobile ? 34 : 28;
 
-  if (scene === 'lamp' && onSwitch(m.x, m.y, swPad)) { toggle(); return; }
+  if (onSwitch(m.x, m.y, swPad)) { toggle(); return; }
   if (ammo.ready && Math.hypot(m.x - ammo.x, m.y - ammo.y) < ammoPad) {
     drag = true;
     cv.setPointerCapture(e.pointerId);
     return;
   }
-  if (scene !== 'lamp') return;
+  if (scene !== 'hanging') return;
   const l = toLocal(m.x, m.y);
   if (inShade(l, shPad) || Math.hypot(l.x, l.y - 74) < blbPad) {
     grab = { off: S.th - Math.atan2(m.x - ax, m.y - ay), t: performance.now() };
@@ -369,15 +361,12 @@ cv.addEventListener('pointermove', e => {
   const isMobile = W < 700;
   const swPad = isMobile ? 16 : 8;
   const ammoPad = isMobile ? 54 : 46;
-  if (scene === 'building'){
-    cv.style.cursor = (ammo.ready && Math.hypot(m.x-ammo.x,m.y-ammo.y)<ammoPad) || paneAt(m.x,m.y,6) ? 'grab' : 'default';
-    return;
-  }
   const shPad = isMobile ? 16 : 12;
   const blbPad = isMobile ? 34 : 28;
   const l = toLocal(m.x, m.y);
   cv.style.cursor = onSwitch(m.x, m.y, swPad) ? 'pointer'
-    : (ammo.ready && Math.hypot(m.x - ammo.x, m.y - ammo.y) < ammoPad) || inShade(l, shPad) || Math.hypot(l.x, l.y - 74) < blbPad ? 'grab' : 'default';
+    : (ammo.ready && Math.hypot(m.x - ammo.x, m.y - ammo.y) < ammoPad)
+      || (scene === 'hanging' && (inShade(l, shPad) || Math.hypot(l.x, l.y - 74) < blbPad)) ? 'grab' : 'default';
 });
 function release(){
   if (drag){
@@ -394,20 +383,18 @@ function release(){
 }
 cv.addEventListener('pointerup', release);
 cv.addEventListener('pointercancel', release);
-addEventListener('keydown', e => { if (scene === 'lamp' && e.code === 'Space' && e.target === document.body){ e.preventDefault(); initAudio(); toggle(); } });
+addEventListener('keydown', e => { if (e.code === 'Space' && e.target === document.body){ e.preventDefault(); initAudio(); toggle(); } });
 
 /* ---------- simulation ---------- */
 function update(dt){
-  if (scene === 'lamp'){
+  if (scene === 'hanging'){
     if (!grab){ S.om += (-9*Math.sin(S.th) - .3*S.om)*dt; S.th += S.om*dt; } else S.om *= .85;
-    if (!S.bulb && now > replaceAt){ S.bulb = true; S.bulbT = 0; ui(); }
-    if (S.bulbT < 1){ S.bulbT = Math.min(1, S.bulbT + dt*2.2); if (S.bulbT === 1 && S.on) S.flick = .35; }
-    let target = S.on && S.bulb && S.bulbT > .95 ? 1 : 0;
-    if (S.flick > 0){ S.flick -= dt; target *= Math.random() < .5 ? .25 : 1; }
-    S.glow += (target - S.glow) * Math.min(1, dt * (target ? 14 : 20));
-  } else {
-    S.glow = 0;
   }
+  if (!S.bulb && now > S.replaceAt){ S.bulb = true; S.bulbT = 0; ui(); }
+  if (S.bulbT < 1){ S.bulbT = Math.min(1, S.bulbT + dt*2.2); if (S.bulbT === 1 && S.on) S.flick = .35; }
+  let target = S.on && S.bulb && S.bulbT > .95 ? 1 : 0;
+  if (S.flick > 0){ S.flick -= dt; target *= Math.random() < .5 ? .25 : 1; }
+  S.glow += (target - S.glow) * Math.min(1, dt * (target ? 14 : 20));
   S.pop = Math.max(0, S.pop - dt*4);
 
   if (!ammo.ready && now > ammo.at){ ammo.ready = true; ammo.a = 0; }
@@ -417,13 +404,8 @@ function update(dt){
     p.life += dt; if (p.rest) continue;
     p.vy += G*dt; p.x += p.vx*dt; p.y += p.vy*dt;
     if (!p.hit){
-      if (scene === 'lamp'){
-        if (onSwitch(p.x,p.y,p.r)){ p.hit = true; toggle(); p.vx *= -.35; p.vy *= .3; }
-        else { const l = toLocal(p.x,p.y); if (inBulb(l,p.r)) breakBulb(p); else if (inShade(l,p.r)) hitShade(p); }
-      } else {
-        const hit = paneAt(p.x,p.y,p.r);
-        if (hit) breakPane(p,hit.index,hit.bounds);
-      }
+      if (onSwitch(p.x,p.y,p.r)){ p.hit = true; toggle(); p.vx *= -.35; p.vy *= .3; }
+      else { const l = toLocal(p.x,p.y); if (inBulb(l,p.r)) breakBulb(p); else if (inShade(l,p.r)) hitShade(p); }
     }
     if (p.y > floorY-p.r){
       p.y = floorY-p.r; if (Math.abs(p.vy) > 120) sfx.thud(Math.min(1, Math.abs(p.vy)/900));
@@ -445,56 +427,13 @@ function update(dt){
 }
 
 /* ---------- drawing ---------- */
-function drawBuilding(){
-  const b = buildingBounds();
-  const sky = x.createLinearGradient(0,0,0,floorY);
-  sky.addColorStop(0,'#080d17'); sky.addColorStop(1,'#111923');
-  x.fillStyle = sky; x.fillRect(0,0,W,floorY);
-  for (let i=0;i<9;i++){
-    const bw = W*.055+(i%3)*8, bh = H*(.12+((i*37)%24)/100);
-    const bx = i*W/8-bw/2;
-    x.fillStyle = i%2 ? '#0c1119' : '#0a0f16'; x.fillRect(bx,floorY-bh,bw,bh);
-    x.fillStyle = 'rgba(126,161,190,.12)';
-    for (let wy=floorY-bh+12;wy<floorY-10;wy+=20) x.fillRect(bx+8,wy,3,5);
-  }
-  const facade = x.createLinearGradient(b.x,0,b.x+b.w,0);
-  facade.addColorStop(0,'#131d29'); facade.addColorStop(.18,'#243648');
-  facade.addColorStop(.72,'#172637'); facade.addColorStop(1,'#0b121d');
-  x.fillStyle = facade; x.fillRect(b.x,b.y,b.w,b.h);
-  x.fillStyle = 'rgba(190,215,235,.18)'; x.fillRect(b.x,b.y,b.w,3);
-  x.fillStyle = '#0b121b'; x.fillRect(b.x-6,b.y+12,b.w+12,7);
-  x.fillStyle = 'rgba(120,160,195,.18)'; x.fillRect(b.x+b.w*.12,b.y+10,2,b.h-10);
-  x.fillRect(b.x+b.w*.88,b.y+10,2,b.h-10);
-  x.strokeStyle = 'rgba(160,190,215,.12)'; x.lineWidth = 2;
-  x.beginPath(); x.moveTo(b.x+b.w*.5,b.y); x.lineTo(b.x+b.w*.5,b.y+b.h); x.stroke();
-  for (let i=0;i<building.panes.length;i++){
-    const pane = paneBounds(i);
-    if (building.panes[i].broken){
-      x.fillStyle = '#080d13'; x.fillRect(pane.x,pane.y,pane.w,pane.h);
-      x.strokeStyle = 'rgba(150,185,215,.13)'; x.lineWidth = 1;
-      x.beginPath(); x.moveTo(pane.x,pane.y); x.lineTo(pane.x+pane.w,pane.y+pane.h);
-      x.moveTo(pane.x+pane.w,pane.y); x.lineTo(pane.x,pane.y+pane.h); x.stroke();
-      continue;
-    }
-    const tint = i%5 === 1 ? 'rgba(255,209,139,.65)' : 'rgba(96,147,184,.52)';
-    x.fillStyle = '#0c1722'; x.fillRect(pane.x,pane.y,pane.w,pane.h);
-    x.fillStyle = tint; x.globalAlpha = .55+.12*Math.sin(now*1.7+i); x.fillRect(pane.x+2,pane.y+2,pane.w-4,pane.h-4); x.globalAlpha = 1;
-    x.fillStyle = 'rgba(220,237,248,.18)'; x.beginPath();
-    x.moveTo(pane.x+pane.w*.72,pane.y+2); x.lineTo(pane.x+pane.w-2,pane.y+2);
-    x.lineTo(pane.x+2,pane.y+pane.h*.78); x.closePath(); x.fill();
-  }
-  x.fillStyle = '#0a111a'; x.fillRect(b.x-10,floorY-8,b.w+20,8);
-  x.strokeStyle = '#344859'; x.lineWidth = 2; x.beginPath();
-  x.moveTo(b.x+b.w*.5,b.y); x.lineTo(b.x+b.w*.5,b.y-24); x.stroke();
-  x.fillStyle = '#ff6b54'; x.beginPath(); x.arc(b.x+b.w*.5,b.y-25,2.5,0,Math.PI*2); x.fill();
-}
 function peb(px,py,r,a){
   x.globalAlpha = a; const g = x.createRadialGradient(px-r*.35,py-r*.4,1,px,py,r);
   g.addColorStop(0,'#aaa59c'); g.addColorStop(1,'#34322f'); x.fillStyle = g;
   x.beginPath(); x.arc(px,py,r,0,7); x.fill(); x.globalAlpha = 1;
 }
 function draw(){
-  const g = scene === 'lamp' ? S.glow : .12, e = end(), b = toWorld(0,74);
+  const g = S.glow, e = end(), b = toWorld(0,74), th = scene === 'hanging' ? S.th : 0;
 
   // room
   x.fillStyle = '#050607'; x.fillRect(0,0,W,H);
@@ -507,10 +446,18 @@ function draw(){
   x.fillStyle = `rgba(255,255,255,${.04+.07*g})`; x.fillRect(0,floorY,W,1);
   x.fillStyle = `rgba(0,0,0,.35)`; x.fillRect(0,floorY-10,W,10);
 
+  if (scene === 'table'){
+    const top = tableTop();
+    x.fillStyle = '#21170f'; x.fillRect(W*.3,top,W*.68,12);
+    x.fillStyle = '#120e0b'; x.fillRect(W*.33,top+12,10,floorY-top-12);
+    x.fillRect(W*.91,top+12,10,floorY-top-12);
+    x.fillStyle = 'rgba(255,201,118,.12)'; x.fillRect(W*.3,top,W*.68,2);
+  }
+
   if (g > .01){
-    const c = Math.cos(S.th);
+    const c = Math.cos(th);
     if (c > .3){
-      const t = (floorY-e.y)/c, fx = e.x + t*Math.sin(S.th), rw = t*.8;
+      const t = (floorY-e.y)/c, fx = e.x + t*Math.sin(th), rw = t*.8;
       x.save(); x.globalCompositeOperation = 'lighter'; x.translate(fx,floorY+4); x.scale(1,.13);
       const pg = x.createRadialGradient(0,0,0,0,0,rw);
       pg.addColorStop(0,`rgba(255,205,130,${.4*g})`); pg.addColorStop(1,'rgba(255,190,110,0)');
@@ -518,7 +465,7 @@ function draw(){
     }
     // light cone
     x.save(); x.beginPath(); x.rect(0,0,W,floorY); x.clip();
-    x.globalCompositeOperation = 'lighter'; x.translate(e.x,e.y); x.rotate(-S.th);
+    x.globalCompositeOperation = 'lighter'; x.translate(e.x,e.y); x.rotate(-th);
     const far = H*1.6, cg = x.createLinearGradient(0,66,0,far*.65);
     cg.addColorStop(0,`rgba(255,215,150,${.3*g})`); cg.addColorStop(.35,`rgba(255,190,110,${.1*g})`); cg.addColorStop(1,'rgba(255,180,100,0)');
     x.fillStyle = cg; x.beginPath(); x.moveTo(-58,64); x.lineTo(58,64); x.lineTo(far*.62,far); x.lineTo(-far*.62,far); x.closePath(); x.fill();
@@ -539,17 +486,27 @@ function draw(){
     x.fillStyle = hg; x.fillRect(b.x-260,b.y-260,520,520); x.restore();
   }
 
-  if (scene === 'lamp'){
-  // cord + ceiling rose
-  x.strokeStyle = mix('#18191b','#3a3128',g); x.lineWidth = 2;
-  x.beginPath(); x.moveTo(ax,0); x.lineTo(e.x,e.y); x.stroke();
-  x.fillStyle = '#131416'; rr(ax-20,-8,40,16,5); x.fill();
+  if (scene === 'hanging'){
+    x.strokeStyle = mix('#18191b','#3a3128',g); x.lineWidth = 2;
+    x.beginPath(); x.moveTo(ax,0); x.lineTo(e.x,e.y); x.stroke();
+    x.fillStyle = '#131416'; rr(ax-20,-8,40,16,5); x.fill();
+  } else {
+    const baseY = scene === 'table' ? tableTop() : floorY-5;
+    const stemTop = e.y+76, stemBottom = baseY-5;
+    x.fillStyle = 'rgba(0,0,0,.45)'; x.beginPath(); x.ellipse(e.x,baseY,scene === 'table' ? 32 : 30,6,0,0,Math.PI*2); x.fill();
+    x.fillStyle = '#242629'; rr(e.x-5,stemTop,10,Math.max(4,stemBottom-stemTop),4); x.fill();
+    x.fillStyle = '#393a3b'; x.fillRect(e.x-7,stemTop,3,Math.max(4,stemBottom-stemTop));
+    x.fillStyle = scene === 'table' ? '#34302a' : '#303237';
+    x.beginPath(); x.ellipse(e.x,baseY-3,scene === 'table' ? 28 : 24,7,0,0,Math.PI*2); x.fill();
+  }
 
   // lamp (local space)
-  x.save(); x.translate(e.x,e.y); x.rotate(-S.th);
+  x.save(); x.translate(e.x,e.y); x.rotate(-th);
   x.fillStyle = '#1b1d20'; rr(-8,-3,16,12,3); x.fill();
+  const shadeDark = scene === 'table' ? '#30271e' : '#25282c';
+  const shadeLit = scene === 'table' ? '#64513b' : '#4a3f31';
   const sg = x.createLinearGradient(-62,0,62,0);
-  sg.addColorStop(0,'#0c0d0f'); sg.addColorStop(.42,mix('#25282c','#4a3f31',g)); sg.addColorStop(.6,mix('#1c1e21','#352d23',g)); sg.addColorStop(1,'#0a0b0c');
+  sg.addColorStop(0,'#0c0d0f'); sg.addColorStop(.42,mix(shadeDark,shadeLit,g)); sg.addColorStop(.6,mix('#1c1e21','#352d23',g)); sg.addColorStop(1,'#0a0b0c');
   x.fillStyle = sg; x.beginPath(); x.moveTo(-22,6); x.lineTo(22,6); x.lineTo(62,66); x.lineTo(-62,66); x.closePath(); x.fill();
   x.strokeStyle = `rgba(255,255,255,${.05+.08*g})`; x.lineWidth = 1; x.beginPath(); x.moveTo(-22,6); x.lineTo(22,6); x.stroke();
   // inner rim
@@ -576,20 +533,25 @@ function draw(){
   }
   x.restore(); x.restore();
 
-  // wall switch
-  x.save();
-  x.shadowColor = 'rgba(0,0,0,.6)'; x.shadowBlur = 12; x.shadowOffsetY = 4;
-  x.fillStyle = mix('#111214','#3b3328',g*.75); rr(swX-23,swY-38,46,76,7); x.fill(); x.restore();
-  x.strokeStyle = `rgba(255,255,255,${.06+.06*g})`; x.lineWidth = 1; rr(swX-23,swY-38,46,76,7); x.stroke();
-  x.fillStyle = '#060707'; rr(swX-9,swY-20,18,40,4); x.fill();
-  const ly = S.on ? swY-18 : swY+2, lvg = x.createLinearGradient(0,ly,0,ly+16);
-  lvg.addColorStop(0,mix('#3a3c40','#a89479',g)); lvg.addColorStop(1,mix('#1c1d20','#5c4d3a',g));
-  x.fillStyle = lvg; rr(swX-7,ly,14,16,3); x.fill();
-  x.font = '600 9px ui-monospace,Menlo,monospace'; x.textAlign = 'center';
-  x.fillStyle = `rgba(236,230,217,${S.on ? .55 : .2})`; x.fillText('ON', swX, swY-48);
-  x.fillStyle = `rgba(236,230,217,${S.on ? .2 : .55})`; x.fillText('OFF', swX, swY+56);
+  const sw = switchPosition();
+  if (scene === 'hanging'){
+    x.save();
+    x.shadowColor = 'rgba(0,0,0,.6)'; x.shadowBlur = 12; x.shadowOffsetY = 4;
+    x.fillStyle = mix('#111214','#3b3328',g*.75); rr(sw.x-23,sw.y-38,46,76,7); x.fill(); x.restore();
+    x.strokeStyle = `rgba(255,255,255,${.06+.06*g})`; x.lineWidth = 1; rr(sw.x-23,sw.y-38,46,76,7); x.stroke();
+    x.fillStyle = '#060707'; rr(sw.x-9,sw.y-20,18,40,4); x.fill();
+    const ly = S.on ? sw.y-18 : sw.y+2, lvg = x.createLinearGradient(0,ly,0,ly+16);
+    lvg.addColorStop(0,mix('#3a3c40','#a89479',g)); lvg.addColorStop(1,mix('#1c1d20','#5c4d3a',g));
+    x.fillStyle = lvg; rr(sw.x-7,ly,14,16,3); x.fill();
+    x.font = '600 9px ui-monospace,Menlo,monospace'; x.textAlign = 'center';
+    x.fillStyle = `rgba(236,230,217,${S.on ? .55 : .2})`; x.fillText('ON', sw.x, sw.y-48);
+    x.fillStyle = `rgba(236,230,217,${S.on ? .2 : .55})`; x.fillText('OFF', sw.x, sw.y+56);
   } else {
-    drawBuilding();
+    x.fillStyle = '#17191b'; rr(sw.x-8,sw.y-13,16,26,4); x.fill();
+    x.strokeStyle = 'rgba(255,255,255,.16)'; x.lineWidth = 1; rr(sw.x-8,sw.y-13,16,26,4); x.stroke();
+    x.fillStyle = '#08090a'; rr(sw.x-4,sw.y-9,8,18,2); x.fill();
+    const knobY = S.on ? sw.y-8 : sw.y+1;
+    x.fillStyle = mix('#36383b','#a89479',g*.7); rr(sw.x-3,knobY,6,7,2); x.fill();
   }
 
   // slingshot
@@ -629,11 +591,9 @@ function draw(){
   vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,.65)'); x.fillStyle = vg; x.fillRect(0,0,W,H);
 
   // switch indicator (findable in the dark)
-  if (scene === 'lamp'){
-    const ia = (1-g) * (.55 + .45*Math.sin(now*2.5));
-    if (ia > .02){ x.save(); x.shadowColor = '#ffb85c'; x.shadowBlur = 10; x.fillStyle = `rgba(255,184,92,${ia})`;
-      x.beginPath(); x.arc(swX, swY+28, 2.2, 0, 7); x.fill(); x.restore(); }
-  }
+  const ia = (1-g) * (.55 + .45*Math.sin(now*2.5));
+  if (ia > .02){ x.save(); x.shadowColor = '#ffb85c'; x.shadowBlur = 10; x.fillStyle = `rgba(255,184,92,${ia})`;
+    x.beginPath(); x.arc(sw.x+(scene === 'hanging' ? 0 : 11), sw.y+(scene === 'hanging' ? 28 : 0), 2.2, 0, 7); x.fill(); x.restore(); }
 
   // aim preview
   if (drag){

@@ -201,14 +201,14 @@ resize();
 const hex = h => [1,3,5].map(i => parseInt(h.slice(i,i+2),16));
 const mix = (a,b,t) => { const A=hex(a),B=hex(b); return `rgb(${A.map((v,i)=>Math.round(v+(B[i]-v)*t)).join(',')})`; };
 function rr(px,py,w,h,r){ x.beginPath(); x.moveTo(px+r,py); x.arcTo(px+w,py,px+w,py+h,r); x.arcTo(px+w,py+h,px,py+h,r); x.arcTo(px,py+h,px,py,r); x.arcTo(px,py,px+w,py,r); x.closePath(); }
+function tableTop(){ return floorY-(W<700 ? (H>W ? 122 : 90) : 150); }
 function end(){
   if (scene === 'hanging') return { x:ax+L*Math.sin(S.th), y:ay+L*Math.cos(S.th) };
   const y = scene === 'table'
-    ? tableTop()-230
-    : floorY-Math.min(H*.68,430);
+    ? tableTop()-Math.min(230,H*.42,Math.max(130,tableTop()-140))
+    : floorY-Math.min(H*.68,430,Math.max(130,floorY-190));
   return { x:Math.min(W-80,Math.max(145,W*.68)), y };
 }
-function tableTop(){ return floorY-(W<700 ? 122 : 150); }
 function toLocal(px,py){
   const e=end(), dx=px-e.x, dy=py-e.y, th=scene === 'hanging' ? S.th : 0, c=Math.cos(th), s=Math.sin(th);
   return { x:dx*c-dy*s, y:dx*s+dy*c };
@@ -222,7 +222,8 @@ const inBulb = (p,r) => S.bulb && S.bulbT > .6 && p.y > 62 && Math.hypot(p.x, p.
 function switchPosition(){
   if (scene === 'hanging') return { x:swX, y:swY };
   const e=end();
-  return { x:e.x+12, y:e.y+126 };
+  const baseY=scene === 'table' ? tableTop() : floorY-5;
+  return { x:e.x+12, y:Math.min(e.y+126,baseY-18) };
 }
 function onSwitch(px,py,pad=0){
   const sw=switchPosition();

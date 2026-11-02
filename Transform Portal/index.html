@@ -97,7 +97,7 @@
 
         createScene() {
           // Add fog for atmosphere
-          this.scene.fog = new THREE.Fog(0xffffff, 10, 100);
+          this.scene.fog = new THREE.Fog(0x08050b, 10, 100);
         }
 
         createLights() {
@@ -201,15 +201,105 @@
           ];
           this.scene.add(this.cylinder2);
 
-          // Create static torus (ring)
-          const torusGeometry = new THREE.TorusGeometry(3, 0.2, 16, 100);
-          const torusMaterial = new THREE.MeshStandardMaterial({
-            color: 0xf9f9f9,
+          // Build a layered portal rim with a dark metal frame and glowing energy.
+          const torusGeometry = new THREE.TorusGeometry(3, 0.2, 24, 160);
+          const frameMaterial = new THREE.MeshPhysicalMaterial({
+            color: 0x202631,
+            metalness: 0.9,
+            roughness: 0.24,
+            clearcoat: 1,
+            clearcoatRoughness: 0.12,
           });
-          const staticTorus = new THREE.Mesh(torusGeometry, torusMaterial);
-          // staticTorus.rotation.set(0, 0, 0);
-          // staticTorus.rotation.y = -0.3;
-          this.scene.add(staticTorus);
+          const portalFrame = new THREE.Mesh(torusGeometry, frameMaterial);
+          this.scene.add(portalFrame);
+
+          this.portalEnergy = new THREE.Group();
+          this.scene.add(this.portalEnergy);
+
+          const makeEnergyRing = (radius, tube, color, opacity) => {
+            const material = new THREE.MeshBasicMaterial({
+              color,
+              transparent: true,
+              opacity,
+              blending: THREE.AdditiveBlending,
+              depthWrite: false,
+              toneMapped: false,
+            });
+            const ring = new THREE.Mesh(
+              new THREE.TorusGeometry(radius, tube, 12, 192),
+              material,
+            );
+            this.portalEnergy.add(ring);
+            return material;
+          };
+
+          this.portalPulseMaterial = makeEnergyRing(3, 0.16, 0xff7a16, 0.25);
+          makeEnergyRing(3, 0.075, 0xffa52d, 0.7);
+          makeEnergyRing(3, 0.026, 0xffedbd, 1);
+          makeEnergyRing(2.79, 0.022, 0xffa52d, 0.9);
+          makeEnergyRing(3.21, 0.022, 0xffa52d, 0.75);
+
+          // Fine, uneven arcs give the rim an electrical, hand-drawn edge.
+          const arcMaterial = new THREE.LineBasicMaterial({
+            color: 0xffe2a0,
+            transparent: true,
+            opacity: 0.8,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            toneMapped: false,
+          });
+          for (let arcIndex = 0; arcIndex < 9; arcIndex++) {
+            const start = Math.random() * Math.PI * 2;
+            const length = 0.2 + Math.random() * 0.75;
+            const phase = Math.random() * Math.PI * 2;
+            const points = [];
+            for (let step = 0; step <= 36; step++) {
+              const t = step / 36;
+              const angle = start + length * t;
+              const radius = 3 + Math.sin(t * 18 + phase) * 0.055 + (Math.random() - 0.5) * 0.035;
+              points.push(
+                new THREE.Vector3(
+                  Math.cos(angle) * radius,
+                  Math.sin(angle) * radius,
+                  (Math.random() - 0.5) * 0.12,
+                ),
+              );
+            }
+            const arc = new THREE.Line(
+              new THREE.BufferGeometry().setFromPoints(points),
+              arcMaterial,
+            );
+            this.portalEnergy.add(arc);
+          }
+
+          // A halo of fine sparks drifts around the portal opening.
+          const sparkPositions = new Float32Array(900 * 3);
+          for (let i = 0; i < 900; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const radius = 3.08 + Math.pow(Math.random(), 1.7) * 0.65;
+            sparkPositions[i * 3] = Math.cos(angle) * radius;
+            sparkPositions[i * 3 + 1] = Math.sin(angle) * radius;
+            sparkPositions[i * 3 + 2] = (Math.random() - 0.5) * 0.3;
+          }
+          const sparkGeometry = new THREE.BufferGeometry();
+          sparkGeometry.setAttribute(
+            "position",
+            new THREE.BufferAttribute(sparkPositions, 3),
+          );
+          this.portalSparks = new THREE.Points(
+            sparkGeometry,
+            new THREE.PointsMaterial({
+              color: 0xffc15b,
+              size: 0.035,
+              transparent: true,
+              opacity: 0.9,
+              blending: THREE.AdditiveBlending,
+              depthWrite: false,
+              sizeAttenuation: true,
+              toneMapped: false,
+            }),
+          );
+          this.portalEnergy.add(this.portalSparks);
 
           // Create torus knot
           const torusKnotGeometry = new THREE.TorusKnotGeometry(
@@ -287,7 +377,7 @@
             magFilter: THREE.LinearFilter,
             format: THREE.RGBAFormat,
           };
-
+ 
           this.renderTarget1 = new THREE.WebGLRenderTarget(
             window.innerWidth * window.devicePixelRatio,
             window.innerHeight * window.devicePixelRatio,
@@ -338,6 +428,11 @@
           requestAnimationFrame(() => this.animate());
 
           const elapsedTime = this.clock.getElapsedTime();
+
+          this.portalEnergy.rotation.z = Math.sin(elapsedTime * 0.18) * 0.035;
+          this.portalSparks.rotation.z = elapsedTime * 0.025;
+          this.portalPulseMaterial.opacity =
+            0.22 + (Math.sin(elapsedTime * 3.4) + 1) * 0.055;
 
           // Update controls
           this.controls.update();

@@ -121,6 +121,9 @@ body.dark #state{color:#8a857a}
   #scenes{top:max(60px, calc(env(safe-area-inset-top, 16px) + 44px));right:max(16px, env(safe-area-inset-right, 16px));gap:4px}
   .scene-button{font-size:10px;padding:6px 8px;min-height:30px}
 }
+@media (max-width:500px){
+  #scenes{top:max(130px, calc(env(safe-area-inset-top, 16px) + 116px))}
+}
 @media (max-height:500px) and (orientation:landscape){
   .top{top:12px;left:16px;max-width:calc(100vw - 110px)}
   .clock{margin-bottom:6px;font-size:10px}

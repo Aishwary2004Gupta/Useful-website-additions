@@ -251,7 +251,7 @@
           document.getElementById("world-label").textContent = labels[index];
           document.getElementById("world-description").textContent = descriptions[index];
           this.controls.object = this.worlds[index].camera;
-          this.controls.enableRotate = true;live
+          this.controls.enableRotate = true;
           this.worlds[index].camera.position.set(0, 0.35, 10); this.controls.target.set(0, 0.1, -3); this.controls.update();
           this.ui.classList.add("in-world");
         }

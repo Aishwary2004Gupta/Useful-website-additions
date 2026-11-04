@@ -3,306 +3,371 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#080b13" />
-    <title>Between Worlds — A Portal Study</title>
+    <title>Transform Portal</title>
     <style>
-      :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-      * { box-sizing: border-box; }
-      html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #080b13; }
-      #canvas-container { position: fixed; inset: 0; }
-      canvas { display: block; width: 100%; height: 100%; }
-      .interface { position: fixed; inset: 0; z-index: 2; pointer-events: none; color: #f5f4ef; }
-      .topbar { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 26px 34px; }
-      .brand { display: flex; align-items: center; gap: 11px; font-size: 11px; font-weight: 650; letter-spacing: .2em; text-transform: uppercase; color: #d9d9df; }
-      .brand-mark { width: 18px; height: 18px; border: 1px solid #dbd9d1; border-radius: 50%; box-shadow: 0 0 16px #b0d5ff88, inset 0 0 8px #c9e7ff66; }
-      .status { display: flex; align-items: center; gap: 9px; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: #a3a9b7; }
-      .status i { width: 6px; height: 6px; border-radius: 50%; background: #a5e6cc; box-shadow: 0 0 12px #9dfbd2; }
-      .intro { position: absolute; left: clamp(24px, 7vw, 108px); top: 50%; transform: translateY(-52%); width: min(330px, 35vw); transition: opacity .5s, transform .5s; }
-      .eyebrow { margin: 0 0 16px; color: #b7c8df; font-size: 10px; letter-spacing: .23em; text-transform: uppercase; }
-      h1 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-weight: 400; font-size: clamp(42px, 5.4vw, 76px); line-height: .98; letter-spacing: -.045em; }
-      .intro-copy { max-width: 285px; margin: 19px 0 0; color: #aab0bd; font-size: 13px; line-height: 1.75; }
-      .world-list { display: flex; gap: 20px; margin-top: 29px; }
-      .world-item { color: #d8d8dd; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
-      .world-item span { display: block; margin-bottom: 6px; color: #788295; font-size: 9px; }
-      .bottom-hint { position: absolute; left: 50%; bottom: 30px; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; color: #aab0bd; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; white-space: nowrap; transition: opacity .3s; }
-      .mouse-icon { width: 15px; height: 21px; border: 1px solid #aab0bd; border-radius: 9px; position: relative; }
-      .mouse-icon::after { content: ""; position: absolute; left: 6px; top: 4px; width: 1px; height: 5px; background: #dce6f5; }
-      .world-panel { position: absolute; top: 50%; right: clamp(24px, 7vw, 104px); transform: translateY(-50%); text-align: right; opacity: 0; transition: opacity .35s; }
-      .world-panel .world-label { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: #d0d9e8; }
-      .world-panel h2 { margin: 10px 0 8px; font: 400 clamp(32px, 4vw, 54px)/1 Georgia, "Times New Roman", serif; }
-      .world-panel p { margin: 0; color: #d2d5da; font-size: 12px; }
-      .return-button { position: absolute; right: 32px; bottom: 28px; pointer-events: auto; border: 1px solid #ffffff55; border-radius: 999px; background: #101621aa; color: #f7f4ed; padding: 12px 17px; font: inherit; font-size: 10px; letter-spacing: .13em; text-transform: uppercase; cursor: pointer; backdrop-filter: blur(12px); opacity: 0; visibility: hidden; transition: opacity .3s, background .2s; }
-      .return-button:hover { background: #ffffff22; }
-      .interface.in-world .intro, .interface.in-world .bottom-hint { opacity: 0; transform: translateY(-45%); }
-      .interface.in-world .world-panel { opacity: 1; }
-      .interface.in-world .return-button { opacity: 1; visibility: visible; }
-      .toast { position: absolute; bottom: 32px; left: 50%; transform: translate(-50%, 12px); border: 1px solid #ffffff22; border-radius: 999px; background: #111824bb; padding: 11px 16px; font-size: 10px; letter-spacing: .12em; color: #e9edf3; opacity: 0; transition: opacity .25s, transform .25s; }
-      .toast.show { opacity: 1; transform: translate(-50%, 0); }
-      @media (max-width: 700px) { .topbar { padding: 20px; } .intro { top: auto; bottom: 82px; transform: none; width: min(300px, 78vw); } h1 { font-size: 48px; } .intro-copy { font-size: 12px; margin-top: 10px; } .world-list { margin-top: 14px; } .bottom-hint { bottom: 25px; } .world-panel { top: 100px; right: 22px; } .return-button { right: 18px; bottom: 18px; } }
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        font-family: Arial, sans-serif;
+      }
+      #canvas-container {
+        width: 100vw;
+        height: 100vh;
+      }
     </style>
   </head>
   <body>
     <div id="canvas-container"></div>
-    <div class="interface" id="interface">
-      <header class="topbar"><div class="brand"><span class="brand-mark"></span> Field notes · 01</div><div class="status"><i></i> Two worlds connected</div></header>
-      <section class="intro"><p class="eyebrow">A passage between places</p><h1>Choose a<br />different sky.</h1><p class="intro-copy">A single ring holds two distant worlds. Turn around it, find the other side, and step through.</p><div class="world-list"><div class="world-item"><span>01 · The near side</span>Verdant / daylight</div><div class="world-item"><span>02 · The far side</span>Pelagic / deep</div></div></section>
-      <div class="world-panel" id="world-panel"><div class="world-label" id="world-label">World 01</div><h2 id="world-title">The Verdant</h2><p id="world-description">Follow the light through the quiet grove.</p></div>
-      <div class="bottom-hint" id="bottom-hint"><span class="mouse-icon"></span> Drag to turn the ring · Click a world to enter</div>
-      <button class="return-button" id="return-button" type="button">↶ &nbsp; Return through portal</button>
-      <div class="toast" id="toast">Click the glowing opening to enter</div>
-    </div>
+
+    <!-- <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script> -->
 
     <script type="module">
-      import * as THREE from "https://esm.sh/three@0.160.0";
-      import { OrbitControls } from "https://esm.sh/three@0.160.0/addons/controls/OrbitControls.js";
+      import * as THREE from "https://esm.sh/three";
+      import { OrbitControls } from "https://esm.sh/three/addons/controls/OrbitControls.js";
+      import { RGBELoader } from "https://esm.sh/three/addons/loaders/RGBELoader.js";
 
-      class RingPortal {
+      // Vertex Shader
+      const vertexShader = `
+            void main() {
+                vec4 worldPos = modelMatrix * vec4(position, 1.0);
+                vec4 mvPosition = viewMatrix * worldPos;
+                gl_Position = projectionMatrix * mvPosition;
+            }
+        `;
+
+      // Fragment Shader
+      const fragmentShader = `
+            uniform vec2 winResolution;
+            uniform sampler2D uTexture;
+
+            void main() {
+                vec2 uv = gl_FragCoord.xy / winResolution.xy;
+                vec4 color = texture2D(uTexture, uv);
+                gl_FragColor = color;
+            }
+        `;
+
+      class TransformPortal {
         constructor() {
-          this.container = document.getElementById("canvas-container");
-          this.ui = document.getElementById("interface");
-          this.mode = "portal";
-          this.activeWorld = 0;
-          this.clock = new THREE.Clock();
-          this.raycaster = new THREE.Raycaster();
-          this.pointer = new THREE.Vector2();
-          this.initRenderer();
-          this.createPortalScene();
-          this.createWorlds();
-          this.createPortalFaces();
-          this.createControls();
-          this.bindEvents();
-          this.resize();
+          this.init();
+          this.createScene();
+          this.createLights();
+          this.createObjects();
+          this.createRenderTargets();
+          this.setupControls();
           this.animate();
+          this.handleResize();
         }
 
-        initRenderer() {
-          this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-          this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        init() {
+          // Setup renderer
+          this.renderer = new THREE.WebGLRenderer({ antialias: true });
           this.renderer.setSize(window.innerWidth, window.innerHeight);
-          this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+          this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
           this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-          this.renderer.toneMappingExposure = 1.15;
-          this.container.appendChild(this.renderer.domElement);
-          this.mainScene = new THREE.Scene();
-          this.mainScene.background = new THREE.Color(0x080b13);
-          this.portalAssembly = new THREE.Group();
-          this.mainScene.add(this.portalAssembly);
-          this.mainCamera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 200);
-          this.mainCamera.position.set(0, 0.35, 13.2);
-        }
+          this.renderer.toneMappingExposure = 1;
+          document
+            .getElementById("canvas-container")
+            .appendChild(this.renderer.domElement);
 
-        createPortalScene() {
-          this.mainScene.fog = new THREE.FogExp2(0x080b13, 0.018);
-          this.mainScene.add(new THREE.HemisphereLight(0xc7d8ef, 0x171521, 1.8));
-          const key = new THREE.PointLight(0xb3d6ff, 38, 22, 2);
-          key.position.set(1.4, 2.4, 3.2);
-          this.mainScene.add(key);
-          const rimLight = new THREE.PointLight(0x97aaff, 26, 18, 2);
-          rimLight.position.set(-3, -1, -3);
-          this.mainScene.add(rimLight);
+          // Setup scene
+          this.scene = new THREE.Scene();
+          this.scene.background = new THREE.Color(0x000000);
 
-          // The torus is the original ring: its opening is the shared threshold.
-          this.ring = new THREE.Mesh(
-            new THREE.TorusGeometry(3, 0.19, 24, 144),
-            new THREE.MeshPhysicalMaterial({ color: 0xd8e1ee, metalness: 0.72, roughness: 0.19, clearcoat: 1, clearcoatRoughness: 0.08, emissive: 0x283652, emissiveIntensity: 0.4 }),
+          // Setup camera
+          this.camera = new THREE.PerspectiveCamera(
+            50,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            1000,
           );
-          this.portalAssembly.add(this.ring);
-          this.ringGlow = new THREE.Mesh(new THREE.TorusGeometry(3, 0.235, 12, 144), new THREE.MeshBasicMaterial({ color: 0x91aaff, transparent: true, opacity: 0.24 }));
-          this.portalAssembly.add(this.ringGlow);
+          this.camera.position.set(10, 0, 0);
 
-          // Subtle flecks give the portal chamber depth without distracting from its views.
-          const points = new Float32Array(420 * 3);
-          for (let i = 0; i < 420; i++) {
-            const radius = 7 + Math.random() * 15;
-            const angle = Math.random() * Math.PI * 2;
-            points[i * 3] = Math.cos(angle) * radius;
-            points[i * 3 + 1] = (Math.random() - 0.5) * 17;
-            points[i * 3 + 2] = Math.sin(angle) * radius - 5;
-          }
-          const starGeo = new THREE.BufferGeometry(); starGeo.setAttribute("position", new THREE.BufferAttribute(points, 3));
-          this.mainScene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xb9c9e5, size: 0.035, transparent: true, opacity: 0.48, sizeAttenuation: true })));
+          // Clock for animations
+          this.clock = new THREE.Clock();
         }
 
-        makeForest() {
-          const scene = new THREE.Scene(); scene.background = new THREE.Color(0xa9c8cc); scene.fog = new THREE.Fog(0xa9c8cc, 14, 42);
-          scene.add(new THREE.HemisphereLight(0xdff4ff, 0x455447, 2.2));
-          const sun = new THREE.DirectionalLight(0xffe7bf, 3.2); sun.position.set(-4, 8, 5); scene.add(sun);
-          const ground = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshStandardMaterial({ color: 0x53694b, roughness: 1 })); ground.rotation.x = -Math.PI / 2; ground.position.y = -2.8; scene.add(ground);
-          const hillMat = new THREE.MeshStandardMaterial({ color: 0x647b69, roughness: 1 });
-          for (let i = 0; i < 8; i++) { const hill = new THREE.Mesh(new THREE.SphereGeometry(1, 18, 12), hillMat); hill.scale.set(3 + Math.random() * 4, 1.1 + Math.random() * 1.8, 1.2); hill.position.set((i - 3.5) * 3.3, -2.3, -7 - Math.random() * 5); scene.add(hill); }
-          const treeMats = [0x354f42, 0x42624e, 0x526d55].map(color => new THREE.MeshStandardMaterial({ color, roughness: 1 }));
-          const trunkMat = new THREE.MeshStandardMaterial({ color: 0x59483c, roughness: 1 });
-          const moving = [];
-          for (let i = 0; i < 22; i++) {
-            const x = (Math.random() - 0.5) * 20; const z = -3 - Math.random() * 12; const height = 2 + Math.random() * 3.2;
-            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.16, height, 7), trunkMat); trunk.position.set(x, -2.8 + height / 2, z); scene.add(trunk);
-            const crown = new THREE.Mesh(new THREE.ConeGeometry(0.75 + Math.random() * 0.7, height * 0.72, 8), treeMats[i % treeMats.length]); crown.position.set(x, -2.8 + height * 0.92, z); scene.add(crown); moving.push(crown);
-          }
-          const camera = new THREE.PerspectiveCamera(52, 1, 0.1, 100); camera.position.set(0, 0.35, 10); camera.lookAt(0, 0.1, -3);
-          return { scene, camera, moving, background: 0xa9c8cc };
+        createScene() {
+          // Add fog for atmosphere
+          this.scene.fog = new THREE.Fog(0xffffff, 10, 100);
         }
 
-        makeOcean() {
-          const scene = new THREE.Scene(); scene.background = new THREE.Color(0x06394b); scene.fog = new THREE.Fog(0x06394b, 9, 32);
-          scene.add(new THREE.HemisphereLight(0x63d8ed, 0x09212e, 1.65));
-          const beam = new THREE.DirectionalLight(0x8deaff, 3.3); beam.position.set(-3, 8, 4); scene.add(beam);
-          const floor = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshStandardMaterial({ color: 0x124550, roughness: 0.9 })); floor.rotation.x = -Math.PI / 2; floor.position.y = -2.7; scene.add(floor);
-          const coralColors = [0xff806b, 0xf5b75e, 0x7bdfc3, 0xb08be3]; const moving = [];
-          for (let i = 0; i < 30; i++) {
-            const x = (Math.random() - 0.5) * 19; const z = -2 - Math.random() * 15; const height = 0.8 + Math.random() * 2.4;
-            const coral = new THREE.Mesh(new THREE.ConeGeometry(0.2 + Math.random() * 0.3, height, 7), new THREE.MeshStandardMaterial({ color: coralColors[i % coralColors.length], roughness: 0.58, emissive: coralColors[i % coralColors.length], emissiveIntensity: 0.08 }));
-            coral.position.set(x, -2.7 + height / 2, z); coral.rotation.z = (Math.random() - 0.5) * 0.38; scene.add(coral); moving.push(coral);
-          }
-          const bubbleGeo = new THREE.BufferGeometry(); const bubblePositions = new Float32Array(100 * 3); const bubbleSpeeds = [];
-          for (let i = 0; i < 100; i++) { bubblePositions[i * 3] = (Math.random() - 0.5) * 18; bubblePositions[i * 3 + 1] = -2 + Math.random() * 8; bubblePositions[i * 3 + 2] = -Math.random() * 18; bubbleSpeeds.push(0.25 + Math.random() * 0.65); }
-          bubbleGeo.setAttribute("position", new THREE.BufferAttribute(bubblePositions, 3));
-          const bubbles = new THREE.Points(bubbleGeo, new THREE.PointsMaterial({ color: 0xb9f5ff, size: 0.055, transparent: true, opacity: 0.7 })); scene.add(bubbles);
-          const camera = new THREE.PerspectiveCamera(52, 1, 0.1, 100); camera.position.set(0, 0.35, 10); camera.lookAt(0, 0.1, -3);
-          return { scene, camera, moving, bubbles, bubbleSpeeds, background: 0x06394b };
+        createLights() {
+          // Directional light
+          const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+          directionalLight.position.set(10, 10, 0);
+          directionalLight.castShadow = true;
+          this.scene.add(directionalLight);
+
+          // Ambient light
+          const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+          this.scene.add(ambientLight);
+
+          // Hemisphere light for sky effect
+          const hemisphereLight = new THREE.HemisphereLight(
+            0x87ceeb,
+            0x545454,
+            0,
+          );
+          this.scene.add(hemisphereLight);
         }
 
-        createWorlds() {
-          this.worlds = [this.makeForest(), this.makeOcean()];
-          this.targets = this.worlds.map(() => new THREE.WebGLRenderTarget(1024, 1024, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat, colorSpace: THREE.SRGBColorSpace }));
-          this.worlds.forEach((world, i) => { world.camera.aspect = 1; world.camera.updateProjectionMatrix(); });
-        }
+        createObjects() {
+          // Create uniforms for shaders
+          this.uniforms = {
+            uTexture: { value: null },
+            winResolution: {
+              value: new THREE.Vector2(
+                window.innerWidth,
+                window.innerHeight,
+              ).multiplyScalar(Math.min(window.devicePixelRatio, 2)),
+            },
+          };
 
-        createPortalFaces() {
-          const portalMaterial = (target) => new THREE.ShaderMaterial({
-            uniforms: { uWorld: { value: target.texture }, uTime: { value: 0 }, uTint: { value: new THREE.Color(0xffffff) } },
-            vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
-            fragmentShader: `
-              uniform sampler2D uWorld; uniform float uTime; uniform vec3 uTint; varying vec2 vUv;
-              void main(){
-                vec2 p=vUv-0.5; float d=length(p); float edge=1.0-smoothstep(0.475,0.5,d);
-                if(edge<0.01) discard;
-                vec2 uv=vUv+normalize(p+0.0001)*sin(d*46.0-uTime*1.8)*0.0025;
-                vec4 c=texture2D(uWorld,uv); float rim=smoothstep(0.42,0.49,d);
-                c.rgb*=uTint; c.rgb+=vec3(0.12,0.2,0.3)*rim; gl_FragColor=vec4(c.rgb,c.a*edge);
-                #include <tonemapping_fragment>
-                #include <colorspace_fragment>
-              }
-            `,
-            transparent: true, depthWrite: false, side: THREE.FrontSide,
+          // Create cylinder 1
+          const cylinderGeometry = new THREE.CylinderGeometry(3, 3, 8, 32);
+          this.cylinder1 = new THREE.Mesh(cylinderGeometry);
+          this.cylinder1.rotation.x = -Math.PI / 2;
+          this.cylinder1.position.set(0, 0, -4);
+
+          // Materials for cylinder 1
+          const shaderMaterial1 = new THREE.ShaderMaterial({
+            vertexShader,
+            fragmentShader,
+            uniforms: {
+              ...this.uniforms,
+              uTexture: { value: null },
+            },
           });
-          const geo = new THREE.PlaneGeometry(5.86, 5.86);
-          this.portalFaces = this.targets.map((target, i) => {
-            const material = portalMaterial(target);
-            const face = new THREE.Mesh(geo, material);
-            face.position.z = i === 0 ? 0.11 : -0.11;
-            if (i === 1) face.rotation.y = Math.PI;
-            face.userData.worldIndex = i;
-            face.renderOrder = i + 1;
-            this.portalAssembly.add(face);
-            return face;
+
+          const shaderMaterial2 = new THREE.ShaderMaterial({
+            vertexShader,
+            fragmentShader,
+            uniforms: {
+              ...this.uniforms,
+              uTexture: { value: null },
+            },
           });
-          // A short luminous collar makes the portal read as a single ring with two entrances.
-          const sleeve = new THREE.Mesh(new THREE.CylinderGeometry(2.94, 2.94, 0.38, 96, 1, true), new THREE.MeshBasicMaterial({ color: 0x8498bc, transparent: true, opacity: 0.2, side: THREE.DoubleSide }));
-          sleeve.rotation.x = Math.PI / 2; this.portalAssembly.add(sleeve);
+
+          const transparentMaterial = new THREE.MeshStandardMaterial({
+            color: 0x87ceeb,
+            transparent: true,
+            opacity: 0,
+          });
+
+          this.cylinder1.material = [
+            shaderMaterial1,
+            shaderMaterial2,
+            transparentMaterial,
+          ];
+          this.scene.add(this.cylinder1);
+
+          // Create cylinder 2
+          this.cylinder2 = new THREE.Mesh(cylinderGeometry);
+          this.cylinder2.rotation.x = -Math.PI / 2;
+          this.cylinder2.position.set(0, 0, 4);
+
+          // Materials for cylinder 2
+          const shaderMaterial3 = new THREE.ShaderMaterial({
+            vertexShader,
+            fragmentShader,
+            uniforms: {
+              ...this.uniforms,
+              uTexture: { value: null },
+            },
+          });
+
+          const shaderMaterial4 = new THREE.ShaderMaterial({
+            vertexShader,
+            fragmentShader,
+            uniforms: {
+              ...this.uniforms,
+              uTexture: { value: null },
+            },
+          });
+
+          this.cylinder2.material = [
+            shaderMaterial3,
+            transparentMaterial.clone(),
+            shaderMaterial4,
+          ];
+          this.scene.add(this.cylinder2);
+
+          // Create static torus (ring)
+          const torusGeometry = new THREE.TorusGeometry(3, 0.2, 16, 100);
+          const torusMaterial = new THREE.MeshStandardMaterial({
+            color: 0xf9f9f9,
+          });
+          const staticTorus = new THREE.Mesh(torusGeometry, torusMaterial);
+          // staticTorus.rotation.set(0, 0, 0);
+          // staticTorus.rotation.y = -0.3;
+          this.scene.add(staticTorus);
+
+          // Create sphere
+          const sphereGeometry = new THREE.SphereGeometry(1.0, 60, 64);
+          const sphereMaterial = new THREE.MeshPhysicalMaterial({
+            roughness: 0,
+            clearcoat: 1,
+            clearcoatRoughness: 0,
+            color: 0x92b2ff,
+          });
+          this.sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+          this.sphere.position.set(0, 0, 0);
+          this.scene.add(this.sphere);
+
+          // Create box
+          const boxGeometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+          const boxMaterial = new THREE.MeshPhysicalMaterial({
+            roughness: 0,
+            clearcoat: 1,
+            clearcoatRoughness: 0,
+            color: 0x92b2ff,
+          });
+          this.box = new THREE.Mesh(boxGeometry, boxMaterial);
+          this.box.position.set(0, 0, 0);
+          this.scene.add(this.box);
         }
 
-        createControls() {
-          this.controls = new OrbitControls(this.mainCamera, this.renderer.domElement);
-          this.controls.target.set(0, 0, 0); this.controls.enableDamping = true; this.controls.dampingFactor = 0.055;
-          this.controls.enablePan = false; this.controls.minDistance = 7.2; this.controls.maxDistance = 18;
-          this.controls.minPolarAngle = 0.68; this.controls.maxPolarAngle = Math.PI - 0.68;
+        createRenderTargets() {
+          const renderTargetParameters = {
+            minFilter: THREE.LinearFilter,
+            magFilter: THREE.LinearFilter,
+            format: THREE.RGBAFormat,
+          };
+
+          this.renderTarget1 = new THREE.WebGLRenderTarget(
+            window.innerWidth * window.devicePixelRatio,
+            window.innerHeight * window.devicePixelRatio,
+            renderTargetParameters,
+          );
+
+          this.renderTarget2 = new THREE.WebGLRenderTarget(
+            window.innerWidth * window.devicePixelRatio,
+            window.innerHeight * window.devicePixelRatio,
+            renderTargetParameters,
+          );
+        }
+
+        setupControls() {
+          this.controls = new OrbitControls(
+            this.camera,
+            this.renderer.domElement,
+          );
+          this.controls.enableZoom = true;
           this.controls.autoRotate = false;
-          this.controls.enableRotate = false;
+          this.controls.autoRotateSpeed = 3;
+          this.controls.enableDamping = true;
+          this.controls.dampingFactor = 0.05;
         }
 
-        bindEvents() {
-          this.renderer.domElement.addEventListener("pointerdown", (event) => { this.pointerDown = { x: event.clientX, y: event.clientY, lastX: event.clientX, lastY: event.clientY, dragged: false }; });
-          this.renderer.domElement.addEventListener("pointermove", (event) => {
-            if (this.mode !== "portal" || !this.pointerDown) return;
-            const dx = event.clientX - this.pointerDown.lastX;
-            const dy = event.clientY - this.pointerDown.lastY;
-            if (Math.hypot(event.clientX - this.pointerDown.x, event.clientY - this.pointerDown.y) > 4) this.pointerDown.dragged = true;
-            this.portalAssembly.rotation.y += dx * 0.009;
-            this.portalAssembly.rotation.x = THREE.MathUtils.clamp(this.portalAssembly.rotation.x + dy * 0.004, -0.38, 0.38);
-            this.pointerDown.lastX = event.clientX; this.pointerDown.lastY = event.clientY;
+        updateUniforms() {
+          const resolution = new THREE.Vector2(
+            window.innerWidth,
+            window.innerHeight,
+          ).multiplyScalar(Math.min(window.devicePixelRatio, 2));
+
+          // Update cylinder 1 materials
+          this.cylinder1.material.forEach((material) => {
+            if (material.type === "ShaderMaterial") {
+              material.uniforms.winResolution.value = resolution;
+            }
           });
-          this.renderer.domElement.addEventListener("pointerup", (event) => {
-            if (this.mode !== "portal" || !this.pointerDown) return;
-            const moved = this.pointerDown.dragged;
-            this.pointerDown = null;
-            if (moved) return;
-            const rect = this.renderer.domElement.getBoundingClientRect();
-            this.pointer.set(((event.clientX - rect.left) / rect.width) * 2 - 1, -((event.clientY - rect.top) / rect.height) * 2 + 1);
-            this.raycaster.setFromCamera(this.pointer, this.mainCamera);
-            const hit = this.raycaster.intersectObjects(this.portalFaces, false)[0];
-            if (hit) this.enterWorld(hit.object.userData.worldIndex);
-            else this.showToast("Click the glowing opening to enter");
-          });
-          document.getElementById("return-button").addEventListener("click", () => this.exitWorld());
-          window.addEventListener("keydown", (event) => { if (event.key === "Escape" && this.mode === "world") this.exitWorld(); });
-          window.addEventListener("resize", () => this.resize());
-        }
 
-        showToast(message) {
-          const el = document.getElementById("toast"); el.textContent = message; el.classList.add("show");
-          clearTimeout(this.toastTimer); this.toastTimer = setTimeout(() => el.classList.remove("show"), 1500);
-        }
-
-        enterWorld(index) {
-          this.activeWorld = index; this.mode = "world";
-          const titles = ["The Verdant", "The Pelagic"]; const labels = ["World 01 · Near side", "World 02 · Far side"];
-          const descriptions = ["Follow the light through the quiet grove.", "Drift beneath the surface into the blue."];
-          document.getElementById("world-title").textContent = titles[index];
-          document.getElementById("world-label").textContent = labels[index];
-          document.getElementById("world-description").textContent = descriptions[index];
-          this.controls.object = this.worlds[index].camera;
-          this.controls.enableRotate = true;
-          this.worlds[index].camera.position.set(0, 0.35, 10); this.controls.target.set(0, 0.1, -3); this.controls.update();
-          this.ui.classList.add("in-world");
-        }
-
-        exitWorld() {
-          if (this.mode !== "world") return;
-          this.mode = "portal"; this.controls.object = this.mainCamera;
-          this.controls.enableRotate = false;
-          // Keep the ring's orientation so the face just crossed remains in front.
-          this.mainCamera.position.set(0, 0.35, 13.2);
-          this.controls.target.set(0, 0, 0); this.controls.update();
-          this.ui.classList.remove("in-world");
-        }
-
-        updateWorlds(delta, elapsed) {
-          this.worlds.forEach((world, index) => {
-            if (index === 0) world.moving.forEach((mesh, i) => { mesh.rotation.z = Math.sin(elapsed * 0.45 + i) * 0.018; });
-            if (index === 1 && world.bubbles) {
-              const positions = world.bubbles.geometry.attributes.position;
-              for (let i = 0; i < world.bubbleSpeeds.length; i++) { let y = positions.getY(i) + delta * world.bubbleSpeeds[i]; if (y > 6) y = -2; positions.setY(i, y); }
-              positions.needsUpdate = true;
-              world.moving.forEach((mesh, i) => { mesh.rotation.z += Math.sin(elapsed * 0.7 + i) * delta * 0.025; });
+          // Update cylinder 2 materials
+          this.cylinder2.material.forEach((material) => {
+            if (material.type === "ShaderMaterial") {
+              material.uniforms.winResolution.value = resolution;
             }
           });
         }
 
-        resize() {
-          const width = window.innerWidth; const height = window.innerHeight;
-          this.renderer.setSize(width, height);
-          this.mainCamera.aspect = width / height; this.mainCamera.updateProjectionMatrix();
-          const size = Math.min(1400, Math.max(720, Math.floor(Math.min(width, height) * Math.min(window.devicePixelRatio, 1.5))));
-          this.targets?.forEach(target => target.setSize(size, size));
-        }
-
         animate() {
           requestAnimationFrame(() => this.animate());
-          const delta = Math.min(this.clock.getDelta(), 0.05); const elapsed = this.clock.elapsedTime;
-          this.controls.update(); this.updateWorlds(delta, elapsed);
-          this.portalFaces.forEach((face, index) => { face.material.uniforms.uTime.value = elapsed; });
-          this.ringGlow.material.opacity = 0.2 + Math.sin(elapsed * 1.5) * 0.06;
-          for (let i = 0; i < this.worlds.length; i++) {
-            this.renderer.setRenderTarget(this.targets[i]);
-            this.renderer.render(this.worlds[i].scene, this.worlds[i].camera);
-          }
+
+          const elapsedTime = this.clock.getElapsedTime();
+
+          // Update controls
+          this.controls.update();
+
+          // Update uniforms
+          this.updateUniforms();
+
+          // Render to texture 1 (box visible, sphere hidden)
+          this.sphere.visible = false;
+          this.box.visible = true;
+          this.renderer.setRenderTarget(this.renderTarget1);
+          this.renderer.render(this.scene, this.camera);
+
+          // Render to texture 2 (sphere visible, box hidden)
+          this.sphere.visible = true;
+          this.box.visible = false;
+          this.renderer.setRenderTarget(this.renderTarget2);
+          this.renderer.render(this.scene, this.camera);
+
+          // Reset render target
           this.renderer.setRenderTarget(null);
-          if (this.mode === "portal") this.renderer.render(this.mainScene, this.mainCamera);
-          else this.renderer.render(this.worlds[this.activeWorld].scene, this.worlds[this.activeWorld].camera);
+
+          // Update textures in materials
+          this.cylinder1.material[0].uniforms.uTexture.value =
+            this.renderTarget1.texture;
+          this.cylinder1.material[1].uniforms.uTexture.value =
+            this.renderTarget1.texture;
+          this.cylinder2.material[0].uniforms.uTexture.value =
+            this.renderTarget2.texture;
+          this.cylinder2.material[2].uniforms.uTexture.value =
+            this.renderTarget2.texture;
+
+          // Animate positions
+          const newPosZ = Math.sin(elapsedTime) * 3.5;
+          this.box.position.z = newPosZ;
+          this.sphere.position.z = newPosZ;
+
+          // Animate rotations
+          this.box.rotation.x = Math.cos(elapsedTime / 2);
+          this.box.rotation.y = Math.sin(elapsedTime / 2);
+          this.box.rotation.z = Math.sin(elapsedTime / 2);
+
+          this.sphere.rotation.x = Math.cos(elapsedTime / 2);
+          this.sphere.rotation.y = Math.sin(elapsedTime / 2);
+          this.sphere.rotation.z = Math.sin(elapsedTime / 2);
+
+          // Final render
+          this.renderer.render(this.scene, this.camera);
+        }
+
+        handleResize() {
+          window.addEventListener("resize", () => {
+            // Update camera
+            this.camera.aspect = window.innerWidth / window.innerHeight;
+            this.camera.updateProjectionMatrix();
+
+            // Update renderer
+            this.renderer.setSize(window.innerWidth, window.innerHeight);
+            this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+            // Update render targets
+            this.renderTarget1.setSize(
+              window.innerWidth * window.devicePixelRatio,
+              window.innerHeight * window.devicePixelRatio,
+            );
+            this.renderTarget2.setSize(
+              window.innerWidth * window.devicePixelRatio,
+              window.innerHeight * window.devicePixelRatio,
+            );
+          });
         }
       }
 
-      new RingPortal();
+      // Initialize the scene
+      new TransformPortal();
     </script>
   </body>
 </html>

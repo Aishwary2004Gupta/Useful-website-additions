@@ -41,18 +41,11 @@
           this.renderer.setSize(window.innerWidth, window.innerHeight);
           this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
           this.renderer.toneMappingExposure = 1;
-          document
-            .getElementById("canvas-container")
-            .appendChild(this.renderer.domElement);
+          document.getElementById("canvas-container").appendChild(this.renderer.domElement);
           this.clock = new THREE.Clock();
           this.mainScene = new THREE.Scene();
           this.mainScene.background = new THREE.Color(0x000000);
-          this.camera = new THREE.PerspectiveCamera(
-            50,
-            innerWidth / innerHeight,
-            0.1,
-            1000,
-          );
+          this.camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 1000);
           this.camera.position.set(10, 0, 0);
           this.activeWorld = null;
           this.makeWorlds();
@@ -63,91 +56,42 @@
         }
 
         makeWorlds() {
-          const material = new THREE.MeshPhysicalMaterial({
-            color: 0x92b2ff,
-            roughness: 0,
-            clearcoat: 1,
-            clearcoatRoughness: 0,
-          });
+          const material = new THREE.MeshPhysicalMaterial({ color: 0x92b2ff, roughness: 0, clearcoat: 1, clearcoatRoughness: 0 });
           this.worlds = [0, 1].map((index) => {
             const scene = new THREE.Scene();
-            scene.background = new THREE.Color(
-              index === 0 ? 0x101629 : 0x171321,
-            );
+            scene.background = new THREE.Color(index === 0 ? 0x101629 : 0x171321);
             scene.fog = new THREE.Fog(scene.background, 12, 45);
             scene.add(new THREE.HemisphereLight(0x87ceeb, 0x545454, 1.2));
             const light = new THREE.DirectionalLight(0xffffff, 2);
             light.position.set(4, 8, 6);
             scene.add(light);
-            const object =
-              index === 0
-                ? new THREE.Mesh(
-                    new THREE.BoxGeometry(1.5, 1.5, 1.5),
-                    material.clone(),
-                  )
-                : new THREE.Mesh(
-                    new THREE.SphereGeometry(1, 60, 64),
-                    material.clone(),
-                  );
+            const object = index === 0
+              ? new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.5, 1.5), material.clone())
+              : new THREE.Mesh(new THREE.SphereGeometry(1, 60, 64), material.clone());
             scene.add(object);
-            const floor = new THREE.Mesh(
-              new THREE.CircleGeometry(7, 64),
-              new THREE.MeshStandardMaterial({
-                color: index === 0 ? 0x202b43 : 0x302437,
-                roughness: 0.8,
-              }),
-            );
+            const floor = new THREE.Mesh(new THREE.CircleGeometry(7, 64), new THREE.MeshStandardMaterial({ color: index === 0 ? 0x202b43 : 0x302437, roughness: 0.8 }));
             floor.rotation.x = -Math.PI / 2;
             floor.position.y = -2.2;
             scene.add(floor);
             for (let i = 0; i < 12; i++) {
-              const pillar = new THREE.Mesh(
-                new THREE.BoxGeometry(0.16, 1.6 + (i % 3) * 0.45, 0.16),
-                new THREE.MeshStandardMaterial({
-                  color: index === 0 ? 0x566a9c : 0x8a5a83,
-                  emissive: index === 0 ? 0x10182e : 0x21101d,
-                }),
-              );
+              const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.16, 1.6 + (i % 3) * 0.45, 0.16), new THREE.MeshStandardMaterial({ color: index === 0 ? 0x566a9c : 0x8a5a83, emissive: index === 0 ? 0x10182e : 0x21101d }));
               const angle = (i / 12) * Math.PI * 2;
-              pillar.position.set(
-                Math.cos(angle) * 4.5,
-                -1.4,
-                Math.sin(angle) * 4.5,
-              );
+              pillar.position.set(Math.cos(angle) * 4.5, -1.4, Math.sin(angle) * 4.5);
               scene.add(pillar);
             }
             const camera = new THREE.PerspectiveCamera(48, 1, 0.1, 100);
             camera.position.set(0, 0.2, 6.5);
             camera.lookAt(0, 0, 0);
-            const target = new THREE.WebGLRenderTarget(768, 768, {
-              minFilter: THREE.LinearFilter,
-              magFilter: THREE.LinearFilter,
-              format: THREE.RGBAFormat,
-            });
-            return {
-              scene,
-              camera,
-              object,
-              target,
-              label: index === 0 ? "The Shifting Cube" : "The Blue Sphere",
-            };
+            const target = new THREE.WebGLRenderTarget(768, 768, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat });
+            return { scene, camera, object, target, label: index === 0 ? "The Shifting Cube" : "The Blue Sphere" };
           });
         }
 
         makePortal() {
-          const ring = new THREE.Mesh(
-            new THREE.TorusGeometry(3, 0.2, 16, 100),
-            new THREE.MeshStandardMaterial({ color: 0xf9f9f9 }),
-          );
+          const ring = new THREE.Mesh(new THREE.TorusGeometry(3, 0.2, 16, 100), new THREE.MeshStandardMaterial({ color: 0xf9f9f9 }));
           this.mainScene.add(ring);
           this.portalFaces = this.worlds.map((world, index) => {
-            const face = new THREE.Mesh(
-              new THREE.CircleGeometry(2.8, 96),
-              new THREE.MeshBasicMaterial({
-                map: world.target.texture,
-                side: THREE.DoubleSide,
-              }),
-            );
+            const face = new THREE.Mesh(new THREE.CircleGeometry(2.8, 96), new THREE.MeshBasicMaterial({ map: world.target.texture, side: THREE.DoubleSide }));
             face.position.z = index === 0 ? 0.012 : -0.012;
             face.userData.worldIndex = index;
             this.mainScene.add(face);
@@ -158,49 +102,20 @@
           light.position.set(10, 10, 0);
           this.mainScene.add(light);
           this.portalCamera = this.camera;
-          this.controls = new OrbitControls(
-            this.camera,
-            this.renderer.domElement,
-          );
+          this.controls = new OrbitControls(this.camera, this.renderer.domElement);
           this.controls.enableDamping = true;
           this.controls.dampingFactor = 0.05;
           this.controls.enableZoom = true;
           this.raycaster = new THREE.Raycaster();
           this.pointer = new THREE.Vector2();
-          this.renderer.domElement.addEventListener("click", (event) =>
-            this.onClick(event),
-          );
+          this.renderer.domElement.addEventListener("click", (event) => this.onClick(event));
           this.hint = document.createElement("div");
-          this.hint.textContent =
-            "Rotate around the ring · Click either world to enter";
-          Object.assign(this.hint.style, {
-            position: "fixed",
-            left: "50%",
-            bottom: "26px",
-            transform: "translateX(-50%)",
-            color: "rgba(255,255,255,.75)",
-            font: "13px Arial, sans-serif",
-            letterSpacing: ".04em",
-            textShadow: "0 1px 8px #000",
-            pointerEvents: "none",
-            whiteSpace: "nowrap",
-          });
+          this.hint.textContent = "Rotate around the ring · Click either world to enter";
+          Object.assign(this.hint.style, { position: "fixed", left: "50%", bottom: "26px", transform: "translateX(-50%)", color: "rgba(255,255,255,.75)", font: "13px Arial, sans-serif", letterSpacing: ".04em", textShadow: "0 1px 8px #000", pointerEvents: "none", whiteSpace: "nowrap" });
           document.body.appendChild(this.hint);
           this.returnButton = document.createElement("button");
           this.returnButton.textContent = "← Return through portal";
-          Object.assign(this.returnButton.style, {
-            display: "none",
-            position: "fixed",
-            left: "24px",
-            top: "24px",
-            padding: "12px 16px",
-            color: "white",
-            background: "rgba(10,12,20,.65)",
-            border: "1px solid rgba(255,255,255,.4)",
-            borderRadius: "24px",
-            cursor: "pointer",
-            font: "14px Arial,sans-serif",
-          });
+          Object.assign(this.returnButton.style, { display: "none", position: "fixed", left: "24px", top: "24px", padding: "12px 16px", color: "white", background: "rgba(10,12,20,.65)", border: "1px solid rgba(255,255,255,.4)", borderRadius: "24px", cursor: "pointer", font: "14px Arial,sans-serif" });
           this.returnButton.onclick = () => this.exitWorld();
           document.body.appendChild(this.returnButton);
         }
@@ -208,10 +123,7 @@
         onClick(event) {
           if (this.activeWorld !== null) return;
           const rect = this.renderer.domElement.getBoundingClientRect();
-          this.pointer.set(
-            ((event.clientX - rect.left) / rect.width) * 2 - 1,
-            -((event.clientY - rect.top) / rect.height) * 2 + 1,
-          );
+          this.pointer.set(((event.clientX - rect.left) / rect.width) * 2 - 1, -((event.clientY - rect.top) / rect.height) * 2 + 1);
           this.raycaster.setFromCamera(this.pointer, this.camera);
           const hit = this.raycaster.intersectObjects(this.portalFaces)[0];
           if (hit) this.enterWorld(hit.object.userData.worldIndex);
@@ -220,17 +132,11 @@
         enterWorld(index) {
           this.activeWorld = index;
           const world = this.worlds[index];
-          this.ringView = {
-            position: this.camera.position.clone(),
-            target: this.controls.target.clone(),
-          };
+          this.ringView = { position: this.camera.position.clone(), target: this.controls.target.clone() };
           this.controls.dispose();
           this.camera.position.set(0, 0.25, 6.5);
           this.camera.lookAt(0, 0, 0);
-          this.controls = new OrbitControls(
-            this.camera,
-            this.renderer.domElement,
-          );
+          this.controls = new OrbitControls(this.camera, this.renderer.domElement);
           this.controls.enableDamping = true;
           this.controls.dampingFactor = 0.05;
           this.controls.minDistance = 2.5;
@@ -238,18 +144,14 @@
           this.controls.target.set(0, 0, 0);
           this.currentScene = world.scene;
           this.returnButton.style.display = "block";
-          this.hint.textContent =
-            world.label + " · Explore with drag and scroll";
+          this.hint.textContent = world.label + " · Explore with drag and scroll";
         }
 
         exitWorld() {
           this.controls.dispose();
           this.camera.position.copy(this.ringView.position);
           this.camera.lookAt(this.ringView.target);
-          this.controls = new OrbitControls(
-            this.camera,
-            this.renderer.domElement,
-          );
+          this.controls = new OrbitControls(this.camera, this.renderer.domElement);
           this.controls.enableDamping = true;
           this.controls.dampingFactor = 0.05;
           this.controls.enableZoom = true;
@@ -257,8 +159,7 @@
           this.activeWorld = null;
           this.currentScene = null;
           this.returnButton.style.display = "none";
-          this.hint.textContent =
-            "Rotate around the ring · Click either world to enter";
+          this.hint.textContent = "Rotate around the ring · Click either world to enter";
         }
 
         animate() {
@@ -274,10 +175,7 @@
           });
           this.renderer.setRenderTarget(null);
           this.controls.update();
-          this.renderer.render(
-            this.activeWorld === null ? this.mainScene : this.currentScene,
-            this.camera,
-          );
+          this.renderer.render(this.activeWorld === null ? this.mainScene : this.currentScene, this.camera);
         }
 
         resize() {

@@ -65,7 +65,7 @@
             scene.add(light);
             const object = index === 0
               ? new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.5, 1.5), material.clone())
-              : new THREE.Mesh(new THREE.SphereGeometry(1, 60, 64), material.clone());
+              : new THREE.Mesh(new THREE.TorusKnotGeometry(0.75, 0.3, 100, 16), material.clone());
             scene.add(object);
             const floor = new THREE.Mesh(new THREE.CircleGeometry(7, 64), new THREE.MeshStandardMaterial({ color: index === 0 ? 0x202b43 : 0x302437, roughness: 0.8 }));
             floor.rotation.x = -Math.PI / 2;
@@ -81,7 +81,7 @@
             camera.position.set(0, 0.2, 6.5);
             camera.lookAt(0, 0, 0);
             const target = new THREE.WebGLRenderTarget(768, 768, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat });
-            return { scene, camera, object, target, label: index === 0 ? "The Shifting Cube" : "The Blue Sphere" };
+            return { scene, camera, object, target, label: index === 0 ? "The Shifting Cube" : "The Blue Torus Knot" };
           });
         }
 

@@ -34,339 +34,156 @@
       import { OrbitControls } from "https://esm.sh/three/addons/controls/OrbitControls.js";
       import { RGBELoader } from "https://esm.sh/three/addons/loaders/RGBELoader.js";
 
-      // Vertex Shader
-      const vertexShader = `
-            void main() {
-                vec4 worldPos = modelMatrix * vec4(position, 1.0);
-                vec4 mvPosition = viewMatrix * worldPos;
-                gl_Position = projectionMatrix * mvPosition;
-            }
-        `;
-
-      // Fragment Shader
-      const fragmentShader = `
-            uniform vec2 winResolution;
-            uniform sampler2D uTexture;
-
-            void main() {
-                vec2 uv = gl_FragCoord.xy / winResolution.xy;
-                vec4 color = texture2D(uTexture, uv);
-                gl_FragColor = color;
-            }
-        `;
-
       class TransformPortal {
         constructor() {
-          this.init();
-          this.createScene();
-          this.createLights();
-          this.createObjects();
-          this.createRenderTargets();
-          this.setupControls();
-          this.animate();
-          this.handleResize();
-        }
-
-        init() {
-          // Setup renderer
           this.renderer = new THREE.WebGLRenderer({ antialias: true });
-          this.renderer.setSize(window.innerWidth, window.innerHeight);
           this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+          this.renderer.setSize(window.innerWidth, window.innerHeight);
           this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
           this.renderer.toneMappingExposure = 1;
-          document
-            .getElementById("canvas-container")
-            .appendChild(this.renderer.domElement);
-
-          // Setup scene
-          this.scene = new THREE.Scene();
-          this.scene.background = new THREE.Color(0x000000);
-
-          // Setup camera
-          this.camera = new THREE.PerspectiveCamera(
-            50,
-            window.innerWidth / window.innerHeight,
-            0.1,
-            1000,
-          );
-          this.camera.position.set(10, 0, 0);
-
-          // Clock for animations
+          document.getElementById("canvas-container").appendChild(this.renderer.domElement);
           this.clock = new THREE.Clock();
+          this.mainScene = new THREE.Scene();
+          this.mainScene.background = new THREE.Color(0x000000);
+          this.camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 1000);
+          this.camera.position.set(10, 0, 0);
+          this.activeWorld = null;
+          this.makeWorlds();
+          this.makePortal();
+          this.setupInteraction();
+          this.animate();
+          window.addEventListener("resize", () => this.resize());
         }
 
-        createScene() {
-          // Add fog for atmosphere
-          this.scene.fog = new THREE.Fog(0xffffff, 10, 100);
+        makeWorlds() {
+          const material = new THREE.MeshPhysicalMaterial({ color: 0x92b2ff, roughness: 0, clearcoat: 1, clearcoatRoughness: 0 });
+          this.worlds = [0, 1].map((index) => {
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(index === 0 ? 0x101629 : 0x171321);
+            scene.fog = new THREE.Fog(scene.background, 12, 45);
+            scene.add(new THREE.HemisphereLight(0x87ceeb, 0x545454, 1.2));
+            const light = new THREE.DirectionalLight(0xffffff, 2);
+            light.position.set(4, 8, 6);
+            scene.add(light);
+            const object = index === 0
+              ? new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.5, 1.5), material.clone())
+              : new THREE.Mesh(new THREE.SphereGeometry(1, 60, 64), material.clone());
+            scene.add(object);
+            const floor = new THREE.Mesh(new THREE.CircleGeometry(7, 64), new THREE.MeshStandardMaterial({ color: index === 0 ? 0x202b43 : 0x302437, roughness: 0.8 }));
+            floor.rotation.x = -Math.PI / 2;
+            floor.position.y = -2.2;
+            scene.add(floor);
+            for (let i = 0; i < 12; i++) {
+              const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.16, 1.6 + (i % 3) * 0.45, 0.16), new THREE.MeshStandardMaterial({ color: index === 0 ? 0x566a9c : 0x8a5a83, emissive: index === 0 ? 0x10182e : 0x21101d }));
+              const angle = (i / 12) * Math.PI * 2;
+              pillar.position.set(Math.cos(angle) * 4.5, -1.4, Math.sin(angle) * 4.5);
+              scene.add(pillar);
+            }
+            const camera = new THREE.PerspectiveCamera(48, 1, 0.1, 100);
+            camera.position.set(0, 0.2, 6.5);
+            camera.lookAt(0, 0, 0);
+            const target = new THREE.WebGLRenderTarget(768, 768, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat });
+            return { scene, camera, object, target, label: index === 0 ? "The Shifting Cube" : "The Blue Sphere" };
+          });
         }
 
-        createLights() {
-          // Directional light
-          const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-          directionalLight.position.set(10, 10, 0);
-          directionalLight.castShadow = true;
-          this.scene.add(directionalLight);
-
-          // Ambient light
-          const ambientLight = new THREE.AmbientLight(0xffffff, 1);
-          this.scene.add(ambientLight);
-
-          // Hemisphere light for sky effect
-          const hemisphereLight = new THREE.HemisphereLight(
-            0x87ceeb,
-            0x545454,
-            0,
-          );
-          this.scene.add(hemisphereLight);
-        }
-
-        createObjects() {
-          // Create uniforms for shaders
-          this.uniforms = {
-            uTexture: { value: null },
-            winResolution: {
-              value: new THREE.Vector2(
-                window.innerWidth,
-                window.innerHeight,
-              ).multiplyScalar(Math.min(window.devicePixelRatio, 2)),
-            },
-          };
-
-          // Create cylinder 1
-          const cylinderGeometry = new THREE.CylinderGeometry(3, 3, 8, 32);
-          this.cylinder1 = new THREE.Mesh(cylinderGeometry);
-          this.cylinder1.rotation.x = -Math.PI / 2;
-          this.cylinder1.position.set(0, 0, -4);
-
-          // Materials for cylinder 1
-          const shaderMaterial1 = new THREE.ShaderMaterial({
-            vertexShader,
-            fragmentShader,
-            uniforms: {
-              ...this.uniforms,
-              uTexture: { value: null },
-            },
+        makePortal() {
+          const ring = new THREE.Mesh(new THREE.TorusGeometry(3, 0.2, 16, 100), new THREE.MeshStandardMaterial({ color: 0xf9f9f9 }));
+          this.mainScene.add(ring);
+          this.portalFaces = this.worlds.map((world, index) => {
+            const face = new THREE.Mesh(new THREE.CircleGeometry(2.8, 96), new THREE.MeshBasicMaterial({ map: world.target.texture, side: THREE.DoubleSide }));
+            face.position.z = index === 0 ? 0.012 : -0.012;
+            face.userData.worldIndex = index;
+            this.mainScene.add(face);
+            return face;
           });
-
-          const shaderMaterial2 = new THREE.ShaderMaterial({
-            vertexShader,
-            fragmentShader,
-            uniforms: {
-              ...this.uniforms,
-              uTexture: { value: null },
-            },
-          });
-
-          const transparentMaterial = new THREE.MeshStandardMaterial({
-            color: 0x87ceeb,
-            transparent: true,
-            opacity: 0,
-          });
-
-          this.cylinder1.material = [
-            shaderMaterial1,
-            shaderMaterial2,
-            transparentMaterial,
-          ];
-          this.scene.add(this.cylinder1);
-
-          // Create cylinder 2
-          this.cylinder2 = new THREE.Mesh(cylinderGeometry);
-          this.cylinder2.rotation.x = -Math.PI / 2;
-          this.cylinder2.position.set(0, 0, 4);
-
-          // Materials for cylinder 2
-          const shaderMaterial3 = new THREE.ShaderMaterial({
-            vertexShader,
-            fragmentShader,
-            uniforms: {
-              ...this.uniforms,
-              uTexture: { value: null },
-            },
-          });
-
-          const shaderMaterial4 = new THREE.ShaderMaterial({
-            vertexShader,
-            fragmentShader,
-            uniforms: {
-              ...this.uniforms,
-              uTexture: { value: null },
-            },
-          });
-
-          this.cylinder2.material = [
-            shaderMaterial3,
-            transparentMaterial.clone(),
-            shaderMaterial4,
-          ];
-          this.scene.add(this.cylinder2);
-
-          // Create static torus (ring)
-          const torusGeometry = new THREE.TorusGeometry(3, 0.2, 16, 100);
-          const torusMaterial = new THREE.MeshStandardMaterial({
-            color: 0xf9f9f9,
-          });
-          const staticTorus = new THREE.Mesh(torusGeometry, torusMaterial);
-          // staticTorus.rotation.set(0, 0, 0);
-          // staticTorus.rotation.y = -0.3;
-          this.scene.add(staticTorus);
-
-          // Create sphere
-          const sphereGeometry = new THREE.SphereGeometry(1.0, 60, 64);
-          const sphereMaterial = new THREE.MeshPhysicalMaterial({
-            roughness: 0,
-            clearcoat: 1,
-            clearcoatRoughness: 0,
-            color: 0x92b2ff,
-          });
-          this.sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-          this.sphere.position.set(0, 0, 0);
-          this.scene.add(this.sphere);
-
-          // Create box
-          const boxGeometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);
-          const boxMaterial = new THREE.MeshPhysicalMaterial({
-            roughness: 0,
-            clearcoat: 1,
-            clearcoatRoughness: 0,
-            color: 0x92b2ff,
-          });
-          this.box = new THREE.Mesh(boxGeometry, boxMaterial);
-          this.box.position.set(0, 0, 0);
-          this.scene.add(this.box);
-        }
-
-        createRenderTargets() {
-          const renderTargetParameters = {
-            minFilter: THREE.LinearFilter,
-            magFilter: THREE.LinearFilter,
-            format: THREE.RGBAFormat,
-          };
-
-          this.renderTarget1 = new THREE.WebGLRenderTarget(
-            window.innerWidth * window.devicePixelRatio,
-            window.innerHeight * window.devicePixelRatio,
-            renderTargetParameters,
-          );
-
-          this.renderTarget2 = new THREE.WebGLRenderTarget(
-            window.innerWidth * window.devicePixelRatio,
-            window.innerHeight * window.devicePixelRatio,
-            renderTargetParameters,
-          );
-        }
-
-        setupControls() {
-          this.controls = new OrbitControls(
-            this.camera,
-            this.renderer.domElement,
-          );
-          this.controls.enableZoom = true;
-          this.controls.autoRotate = false;
-          this.controls.autoRotateSpeed = 3;
+          this.mainScene.add(new THREE.AmbientLight(0xffffff, 1));
+          const light = new THREE.DirectionalLight(0xffffff, 1);
+          light.position.set(10, 10, 0);
+          this.mainScene.add(light);
+          this.portalCamera = this.camera;
+          this.controls = new OrbitControls(this.camera, this.renderer.domElement);
           this.controls.enableDamping = true;
           this.controls.dampingFactor = 0.05;
+          this.controls.enableZoom = true;
+          this.raycaster = new THREE.Raycaster();
+          this.pointer = new THREE.Vector2();
+          this.renderer.domElement.addEventListener("click", (event) => this.onClick(event));
+          this.hint = document.createElement("div");
+          this.hint.textContent = "Rotate around the ring · Click either world to enter";
+          Object.assign(this.hint.style, { position: "fixed", left: "50%", bottom: "26px", transform: "translateX(-50%)", color: "rgba(255,255,255,.75)", font: "13px Arial, sans-serif", letterSpacing: ".04em", textShadow: "0 1px 8px #000", pointerEvents: "none", whiteSpace: "nowrap" });
+          document.body.appendChild(this.hint);
+          this.returnButton = document.createElement("button");
+          this.returnButton.textContent = "← Return through portal";
+          Object.assign(this.returnButton.style, { display: "none", position: "fixed", left: "24px", top: "24px", padding: "12px 16px", color: "white", background: "rgba(10,12,20,.65)", border: "1px solid rgba(255,255,255,.4)", borderRadius: "24px", cursor: "pointer", font: "14px Arial,sans-serif" });
+          this.returnButton.onclick = () => this.exitWorld();
+          document.body.appendChild(this.returnButton);
         }
 
-        updateUniforms() {
-          const resolution = new THREE.Vector2(
-            window.innerWidth,
-            window.innerHeight,
-          ).multiplyScalar(Math.min(window.devicePixelRatio, 2));
+        onClick(event) {
+          if (this.activeWorld !== null) return;
+          const rect = this.renderer.domElement.getBoundingClientRect();
+          this.pointer.set(((event.clientX - rect.left) / rect.width) * 2 - 1, -((event.clientY - rect.top) / rect.height) * 2 + 1);
+          this.raycaster.setFromCamera(this.pointer, this.camera);
+          const hit = this.raycaster.intersectObjects(this.portalFaces)[0];
+          if (hit) this.enterWorld(hit.object.userData.worldIndex);
+        }
 
-          // Update cylinder 1 materials
-          this.cylinder1.material.forEach((material) => {
-            if (material.type === "ShaderMaterial") {
-              material.uniforms.winResolution.value = resolution;
-            }
-          });
+        enterWorld(index) {
+          this.activeWorld = index;
+          const world = this.worlds[index];
+          this.ringView = { position: this.camera.position.clone(), target: this.controls.target.clone() };
+          this.controls.dispose();
+          this.camera.position.set(0, 0.25, 6.5);
+          this.camera.lookAt(0, 0, 0);
+          this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+          this.controls.enableDamping = true;
+          this.controls.dampingFactor = 0.05;
+          this.controls.minDistance = 2.5;
+          this.controls.maxDistance = 14;
+          this.controls.target.set(0, 0, 0);
+          this.currentScene = world.scene;
+          this.returnButton.style.display = "block";
+          this.hint.textContent = world.label + " · Explore with drag and scroll";
+        }
 
-          // Update cylinder 2 materials
-          this.cylinder2.material.forEach((material) => {
-            if (material.type === "ShaderMaterial") {
-              material.uniforms.winResolution.value = resolution;
-            }
-          });
+        exitWorld() {
+          this.controls.dispose();
+          this.camera.position.copy(this.ringView.position);
+          this.camera.lookAt(this.ringView.target);
+          this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+          this.controls.enableDamping = true;
+          this.controls.dampingFactor = 0.05;
+          this.controls.enableZoom = true;
+          this.controls.target.copy(this.ringView.target);
+          this.activeWorld = null;
+          this.currentScene = null;
+          this.returnButton.style.display = "none";
+          this.hint.textContent = "Rotate around the ring · Click either world to enter";
         }
 
         animate() {
           requestAnimationFrame(() => this.animate());
-
-          const elapsedTime = this.clock.getElapsedTime();
-
-          // Update controls
-          this.controls.update();
-
-          // Update uniforms
-          this.updateUniforms();
-
-          // Render to texture 1 (box visible, sphere hidden)
-          this.sphere.visible = false;
-          this.box.visible = true;
-          this.renderer.setRenderTarget(this.renderTarget1);
-          this.renderer.render(this.scene, this.camera);
-
-          // Render to texture 2 (sphere visible, box hidden)
-          this.sphere.visible = true;
-          this.box.visible = false;
-          this.renderer.setRenderTarget(this.renderTarget2);
-          this.renderer.render(this.scene, this.camera);
-
-          // Reset render target
+          const t = this.clock.getElapsedTime();
+          this.worlds.forEach((world, index) => {
+            world.object.position.y = Math.sin(t * 1.1 + index) * 0.3;
+            world.object.rotation.x = Math.cos(t / 2);
+            world.object.rotation.y = Math.sin(t / 2);
+            world.object.rotation.z = Math.sin(t / 2);
+            this.renderer.setRenderTarget(world.target);
+            this.renderer.render(world.scene, world.camera);
+          });
           this.renderer.setRenderTarget(null);
-
-          // Update textures in materials
-          this.cylinder1.material[0].uniforms.uTexture.value =
-            this.renderTarget1.texture;
-          this.cylinder1.material[1].uniforms.uTexture.value =
-            this.renderTarget1.texture;
-          this.cylinder2.material[0].uniforms.uTexture.value =
-            this.renderTarget2.texture;
-          this.cylinder2.material[2].uniforms.uTexture.value =
-            this.renderTarget2.texture;
-
-          // Animate positions
-          const newPosZ = Math.sin(elapsedTime) * 3.5;
-          this.box.position.z = newPosZ;
-          this.sphere.position.z = newPosZ;
-
-          // Animate rotations
-          this.box.rotation.x = Math.cos(elapsedTime / 2);
-          this.box.rotation.y = Math.sin(elapsedTime / 2);
-          this.box.rotation.z = Math.sin(elapsedTime / 2);
-
-          this.sphere.rotation.x = Math.cos(elapsedTime / 2);
-          this.sphere.rotation.y = Math.sin(elapsedTime / 2);
-          this.sphere.rotation.z = Math.sin(elapsedTime / 2);
-
-          // Final render
-          this.renderer.render(this.scene, this.camera);
+          this.controls.update();
+          this.renderer.render(this.activeWorld === null ? this.mainScene : this.currentScene, this.camera);
         }
 
-        handleResize() {
-          window.addEventListener("resize", () => {
-            // Update camera
-            this.camera.aspect = window.innerWidth / window.innerHeight;
-            this.camera.updateProjectionMatrix();
-
-            // Update renderer
-            this.renderer.setSize(window.innerWidth, window.innerHeight);
-            this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-            // Update render targets
-            this.renderTarget1.setSize(
-              window.innerWidth * window.devicePixelRatio,
-              window.innerHeight * window.devicePixelRatio,
-            );
-            this.renderTarget2.setSize(
-              window.innerWidth * window.devicePixelRatio,
-              window.innerHeight * window.devicePixelRatio,
-            );
-          });
+        resize() {
+          this.camera.aspect = innerWidth / innerHeight;
+          this.camera.updateProjectionMatrix();
+          this.renderer.setSize(innerWidth, innerHeight);
         }
       }
-
-      // Initialize the scene
       new TransformPortal();
     </script>
   </body>

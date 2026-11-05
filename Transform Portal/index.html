@@ -42,7 +42,6 @@
           this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
           this.renderer.toneMappingExposure = 1;
           document.getElementById("canvas-container").appendChild(this.renderer.domElement);
-          this.clock = new THREE.Clock();
           this.mainScene = new THREE.Scene();
           this.mainScene.background = new THREE.Color(0x000000);
           this.camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 1000);
@@ -50,7 +49,6 @@
           this.activeWorld = null;
           this.makeWorlds();
           this.makePortal();
-          this.setupInteraction();
           this.animate();
           window.addEventListener("resize", () => this.resize());
         }
@@ -164,7 +162,7 @@
 
         animate() {
           requestAnimationFrame(() => this.animate());
-          const t = this.clock.getElapsedTime();
+          const t = performance.now() / 1000;
           this.worlds.forEach((world, index) => {
             world.object.position.y = Math.sin(t * 1.1 + index) * 0.3;
             world.object.rotation.x = Math.cos(t / 2);

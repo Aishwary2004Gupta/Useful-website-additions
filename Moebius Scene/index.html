@@ -16,6 +16,72 @@
       canvas {
         display: block;
       }
+      .flight-hud {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 2;
+        width: min(290px, calc(100vw - 40px));
+        padding: 16px 18px;
+        color: #f4f7ff;
+        background: rgba(10, 20, 43, 0.72);
+        border: 1px solid rgba(180, 216, 255, 0.42);
+        border-radius: 12px;
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.24);
+        backdrop-filter: blur(10px);
+        font: 13px/1.55 system-ui, sans-serif;
+        pointer-events: none;
+        user-select: none;
+      }
+      .flight-hud h1 {
+        margin: 0 0 9px;
+        color: #aee8ff;
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .flight-hud p {
+        margin: 3px 0;
+      }
+      .flight-hud kbd {
+        display: inline-block;
+        min-width: 20px;
+        padding: 0 5px;
+        color: #fff;
+        background: rgba(255, 255, 255, 0.14);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        border-radius: 4px;
+        font: inherit;
+        text-align: center;
+      }
+      .flight-hud .status {
+        margin-top: 10px;
+        padding-top: 9px;
+        color: #b5d0ec;
+        border-top: 1px solid rgba(255, 255, 255, 0.16);
+        font-size: 12px;
+      }
+      .flight-hud .status strong {
+        color: #fff;
+        font-weight: 600;
+      }
+      @media (max-width: 560px) {
+        .flight-hud {
+          top: 10px;
+          left: 10px;
+          width: min(255px, calc(100vw - 20px));
+          padding: 11px 13px;
+          font-size: 12px;
+        }
+        .flight-hud h1 {
+          margin-bottom: 5px;
+          font-size: 13px;
+        }
+        .flight-hud p:nth-of-type(n + 4) {
+          display: none;
+        }
+      }
     </style>
 
     <!-- Import map for Three.js & addons -->
@@ -30,6 +96,14 @@
   </head>
   <body>
     <canvas id="c"></canvas>
+    <aside class="flight-hud" aria-label="Flight controls">
+      <h1>Moebius Flight</h1>
+      <p><kbd>W</kbd> / <kbd>↑</kbd> Thrust &nbsp; <kbd>S</kbd> / <kbd>↓</kbd> Reverse</p>
+      <p><kbd>A</kbd> <kbd>D</kbd> / <kbd>←</kbd> <kbd>→</kbd> Steer</p>
+      <p><kbd>Q</kbd> / <kbd>E</kbd> Pitch &nbsp; <kbd>Shift</kbd> Boost</p>
+      <p>Drag to orbit · Scroll to zoom · <kbd>F</kbd> follow</p>
+      <div class="status">Flight: <strong id="flight-status">Ready</strong> · Speed: <strong id="speed-readout">0.00</strong></div>
+    </aside>
 
     <script type="module">
       import * as THREE from "three";
@@ -729,6 +803,154 @@
       spaceshipGroup.receiveShadow = true;
       scene.add(spaceshipGroup);
 
+      const shipFollowOffset = new THREE.Vector3();
+      let shipLoaded = false;
+
+      function createPilot() {
+        const pilot = new THREE.Group();
+        pilot.name = "Moebius pilot";
+
+        const suit = new THREE.MeshStandardMaterial({
+          color: "#e9edf0",
+          roughness: 0.82,
+        });
+        const orange = new THREE.MeshStandardMaterial({
+          color: "#f17b43",
+          roughness: 0.72,
+        });
+        const dark = new THREE.MeshStandardMaterial({
+          color: "#26394e",
+          roughness: 0.9,
+        });
+        const visor = new THREE.MeshStandardMaterial({
+          color: "#173f5d",
+          metalness: 0.28,
+          roughness: 0.24,
+        });
+        const glow = new THREE.MeshStandardMaterial({
+          color: "#75e0ed",
+          emissive: "#1a6578",
+          emissiveIntensity: 0.55,
+          roughness: 0.35,
+        });
+
+        function addEllipsoid(name, position, scale, material) {
+          const mesh = new THREE.Mesh(
+            new THREE.SphereGeometry(1, 20, 16),
+            material
+          );
+          mesh.name = name;
+          mesh.position.set(...position);
+          mesh.scale.set(...scale);
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+          pilot.add(mesh);
+          return mesh;
+        }
+
+        function addLimb(start, end, radius, material, name) {
+          const from = new THREE.Vector3(...start);
+          const to = new THREE.Vector3(...end);
+          const direction = to.clone().sub(from);
+          const limb = new THREE.Mesh(
+            new THREE.CylinderGeometry(radius * 0.86, radius, direction.length(), 12),
+            material
+          );
+          limb.name = name;
+          limb.position.copy(from).add(to).multiplyScalar(0.5);
+          limb.quaternion.setFromUnitVectors(
+            new THREE.Vector3(0, 1, 0),
+            direction.normalize()
+          );
+          limb.castShadow = true;
+          limb.receiveShadow = true;
+          pilot.add(limb);
+          addEllipsoid(`${name} joint`, start, [radius, radius, radius], material);
+          addEllipsoid(`${name} end`, end, [radius * 0.9, radius * 0.9, radius * 0.9], material);
+        }
+
+        // A compact seat and folded legs make the pose read clearly as seated.
+        const seat = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.12, 0.42), dark);
+        seat.name = "pilot seat";
+        seat.position.set(0, 0.43, 0.13);
+        seat.castShadow = true;
+        pilot.add(seat);
+        const seatBack = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.42, 0.12), dark);
+        seatBack.position.set(0, 0.68, 0.26);
+        seatBack.rotation.x = -0.12;
+        seatBack.castShadow = true;
+        pilot.add(seatBack);
+
+        addEllipsoid("pilot hips", [0, 0.53, 0.04], [0.27, 0.19, 0.23], suit);
+        for (const side of [-1, 1]) {
+          const x = side * 0.145;
+          addLimb([x, 0.51, -0.01], [x, 0.34, -0.34], 0.105, suit, "thigh");
+          addLimb([x, 0.34, -0.34], [x, 0.12, -0.36], 0.075, orange, "boot cuff");
+          addEllipsoid("pilot boot", [x, 0.075, -0.47], [0.105, 0.075, 0.18], dark);
+        }
+
+        addEllipsoid("pilot torso", [0, 0.91, 0.02], [0.29, 0.37, 0.22], suit);
+        const backpack = new THREE.Mesh(new THREE.BoxGeometry(0.31, 0.43, 0.18), orange);
+        backpack.name = "pilot pack";
+        backpack.position.set(0, 0.91, 0.235);
+        backpack.castShadow = true;
+        pilot.add(backpack);
+        addEllipsoid("pilot neck", [0, 1.23, 0.01], [0.105, 0.11, 0.1], orange);
+        addEllipsoid("pilot helmet", [0, 1.48, 0], [0.275, 0.29, 0.26], suit);
+        addEllipsoid("pilot visor", [0, 1.49, -0.219], [0.2, 0.155, 0.055], visor);
+        addEllipsoid("visor glint", [-0.078, 1.545, -0.267], [0.035, 0.018, 0.009], glow);
+        const chestPanel = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.18, 0.035), dark);
+        chestPanel.name = "pilot chest panel";
+        chestPanel.position.set(0, 0.94, -0.204);
+        chestPanel.castShadow = true;
+        pilot.add(chestPanel);
+        addEllipsoid("chest light", [0, 0.98, -0.228], [0.045, 0.035, 0.018], glow);
+
+        for (const side of [-1, 1]) {
+          const shoulderX = side * 0.255;
+          addEllipsoid("pilot shoulder", [shoulderX, 1.04, 0.015], [0.14, 0.15, 0.15], orange);
+          addLimb(
+            [shoulderX, 1.02, -0.01],
+            [side * 0.31, 0.78, -0.22],
+            0.085,
+            suit,
+            "upper arm"
+          );
+          addLimb(
+            [side * 0.31, 0.78, -0.22],
+            [side * 0.19, 0.65, -0.39],
+            0.07,
+            orange,
+            "gloved arm"
+          );
+          addEllipsoid("pilot glove", [side * 0.19, 0.65, -0.4], [0.085, 0.07, 0.09], dark);
+        }
+
+        return pilot;
+      }
+
+      function getBoundsInLocalSpace(object, reference) {
+        object.updateWorldMatrix(true, true);
+        reference.updateWorldMatrix(true, false);
+        const inverseReference = reference.matrixWorld.clone().invert();
+        const bounds = new THREE.Box3();
+        const point = new THREE.Vector3();
+        object.traverse((child) => {
+          if (!child.isMesh || !child.geometry) return;
+          if (!child.geometry.boundingBox) child.geometry.computeBoundingBox();
+          const box = child.geometry.boundingBox;
+          for (const x of [box.min.x, box.max.x]) {
+            for (const y of [box.min.y, box.max.y]) {
+              for (const z of [box.min.z, box.max.z]) {
+                point.set(x, y, z).applyMatrix4(child.matrixWorld).applyMatrix4(inverseReference);
+                bounds.expandByPoint(point);
+              }
+            }
+          }
+        });
+        return bounds;
+      }
+
       // DRACO + GLTF loader
       const draco = new DRACOLoader();
       draco.setDecoderPath("https://www.gstatic.com/draco/v1/decoders/");
@@ -763,8 +985,34 @@
           root.position.set(10, 0.5, -15);
           spaceshipGroup.add(root);
 
-          // Start animation loop only after spaceship is loaded
-          animate();
+          const shipBounds = getBoundsInLocalSpace(root, spaceshipGroup);
+          const shipSize = shipBounds.getSize(new THREE.Vector3());
+          const pilot = createPilot();
+          pilot.position.set(
+            (shipBounds.min.x + shipBounds.max.x) * 0.5,
+            shipBounds.max.y + 0.025,
+            (shipBounds.min.z + shipBounds.max.z) * 0.5
+          );
+          const pilotScale = THREE.MathUtils.clamp(
+            Math.max(shipSize.x, shipSize.z) * 0.075,
+            0.72,
+            1.2
+          );
+          pilot.scale.setScalar(pilotScale);
+          spaceshipGroup.add(pilot);
+
+          shipFollowOffset.set(
+            pilot.position.x,
+            shipBounds.max.y + pilotScale * 0.75,
+            pilot.position.z
+          );
+          spaceshipGroup.updateWorldMatrix(true, true);
+          const initialFollowTarget = spaceshipGroup.localToWorld(shipFollowOffset.clone());
+          const cameraShift = initialFollowTarget.clone().sub(controls.target);
+          camera.position.add(cameraShift);
+          controls.target.copy(initialFollowTarget);
+          shipLoaded = true;
+
         },
         undefined,
         (err) => console.error("Error loading spaceship", err)
@@ -803,28 +1051,38 @@
       // KEYBOARD CONTROLS
       // ==========================
 
-      const keys = {
-        ArrowUp: false,
-        ArrowDown: false,
-        ArrowLeft: false,
-        ArrowRight: false,
-      };
-
+      const keys = Object.create(null);
+      const flightStatus = document.getElementById("flight-status");
+      const speedReadout = document.getElementById("speed-readout");
       let spaceshipVelocity = 0;
-      const spaceshipAccel = 0.02;
-      const spaceshipRotationSpeed = 0.04;
-      const maxSpeed = 0.6;
+      let spaceshipYaw = Math.PI / 2;
+      let spaceshipPitch = 0;
+      let cameraFollow = true;
+      const spaceshipAccel = 0.018;
+      const spaceshipRotationSpeed = 0.035;
+      const spaceshipPitchSpeed = 0.025;
 
       window.addEventListener("keydown", (e) => {
-        if (e.key in keys) {
-          keys[e.key] = false; //set true for arrow controls
+        const controlKeys = [
+          "KeyW", "KeyA", "KeyS", "KeyD", "KeyQ", "KeyE",
+          "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight",
+          "ShiftLeft", "ShiftRight",
+        ];
+        if (controlKeys.includes(e.code)) {
+          keys[e.code] = true;
+          e.preventDefault();
+        }
+        if (e.code === "KeyF" && !e.repeat) {
+          cameraFollow = !cameraFollow;
+          flightStatus.textContent = cameraFollow ? "FOLLOW CAMERA" : "FREE CAMERA";
         }
       });
 
       window.addEventListener("keyup", (e) => {
-        if (e.key in keys) {
-          keys[e.key] = false;
-        }
+        keys[e.code] = false;
+      });
+      window.addEventListener("blur", () => {
+        for (const key of Object.keys(keys)) keys[key] = false;
       });
 
       // ==========================
@@ -836,44 +1094,59 @@
 
         const elapsedTime = clock.getElapsedTime();
 
-        // Camera
-        camera.lookAt(0, 0, 0);
-        controls.update();
-
-        // Rocking animation on X axis
-        spaceshipGroup.rotation.x =
-          Math.cos(elapsedTime * 2.0) * Math.cos(elapsedTime) * 0.15;
-
         // --------------------
         // SPACESHIP CONTROLS
         // --------------------
-        if (spaceshipGroup.children.length > 0) {
-          if (keys.ArrowUp) {
-            spaceshipVelocity -= spaceshipAccel;
-          }
-          if (keys.ArrowDown) {
-            spaceshipVelocity += spaceshipAccel;
-          }
-          spaceshipVelocity = THREE.MathUtils.clamp(
-            spaceshipVelocity,
-            -maxSpeed,
-            maxSpeed
-          );
+        const forwardPressed = keys.KeyW || keys.ArrowUp;
+        const reversePressed = keys.KeyS || keys.ArrowDown;
+        const leftPressed = keys.KeyA || keys.ArrowLeft;
+        const rightPressed = keys.KeyD || keys.ArrowRight;
+        const boosting = keys.ShiftLeft || keys.ShiftRight;
 
-          if (keys.ArrowLeft) {
-            spaceshipGroup.rotation.y += spaceshipRotationSpeed;
-          }
-          if (keys.ArrowRight) {
-            spaceshipGroup.rotation.y -= spaceshipRotationSpeed;
-          }
+        if (forwardPressed) spaceshipVelocity += spaceshipAccel * (boosting ? 1.8 : 1);
+        if (reversePressed) spaceshipVelocity -= spaceshipAccel;
+        const maxSpeed = boosting ? 1.05 : 0.62;
+        spaceshipVelocity = THREE.MathUtils.clamp(
+          spaceshipVelocity,
+          -maxSpeed * 0.65,
+          maxSpeed
+        );
 
-          const forward = new THREE.Vector3(0, 0, 1);
+        if (leftPressed) spaceshipYaw += spaceshipRotationSpeed;
+        if (rightPressed) spaceshipYaw -= spaceshipRotationSpeed;
+        if (keys.KeyQ) spaceshipPitch = Math.min(spaceshipPitch + spaceshipPitchSpeed, 0.38);
+        if (keys.KeyE) spaceshipPitch = Math.max(spaceshipPitch - spaceshipPitchSpeed, -0.38);
+        if (!keys.KeyQ && !keys.KeyE) spaceshipPitch *= 0.96;
+
+        spaceshipGroup.rotation.y = spaceshipYaw;
+        spaceshipGroup.rotation.x =
+          spaceshipPitch + Math.cos(elapsedTime * 2.0) * Math.cos(elapsedTime) * 0.12;
+
+        if (shipLoaded) {
+          const forward = new THREE.Vector3(0, 0, -1);
           forward.applyQuaternion(spaceshipGroup.quaternion);
           spaceshipGroup.position.addScaledVector(forward, spaceshipVelocity);
-
-          // slight damping
-          spaceshipVelocity *= 0.95;
         }
+
+        if (!forwardPressed && !reversePressed) {
+          spaceshipVelocity *= 0.95;
+        } else {
+          spaceshipVelocity *= 0.992;
+        }
+
+        if (cameraFollow && shipLoaded) {
+          spaceshipGroup.updateWorldMatrix(true, false);
+          const followTarget = spaceshipGroup.localToWorld(shipFollowOffset.clone());
+          const followShift = followTarget.sub(controls.target);
+          camera.position.add(followShift);
+          controls.target.add(followShift);
+        }
+        controls.update();
+
+        if (flightStatus.textContent !== (cameraFollow ? "FOLLOW CAMERA" : "FREE CAMERA")) {
+          flightStatus.textContent = cameraFollow ? "FOLLOW CAMERA" : "FREE CAMERA";
+        }
+        speedReadout.textContent = Math.abs(spaceshipVelocity).toFixed(2);
 
         // Update ground time uniform
         groundMaterial.uniforms.uTime.value = elapsedTime;
@@ -924,7 +1197,7 @@
         composer.render();
       }
 
-      // animate(); // Start animation only after spaceship is loaded
+      animate();
 
       // ==========================
       // RESIZE

@@ -9,6 +9,7 @@
     <!-- UI by @Lattice_Node — ludion.ai/p/toggle-daylight (MIT) -->
     <div data-ld-part="toggle-daylight" lang="ja">
       <canvas class="scene" aria-hidden="true"></canvas>
+      <canvas class="venom" aria-hidden="true"></canvas>
       <button
         class="hit"
         type="button"
@@ -22,12 +23,11 @@
     <style>
       /* UI by @Lattice_Node — ludion.ai/p/toggle-daylight (MIT) */
       [data-ld-part="toggle-daylight"] {
-        /* 固定しないトークン。世界の約20色は、この5色を明るさ違いで並べて作る */
-        --_bg: var(--ld-bg, #f5ecd9);
-        --_surface: var(--ld-surface, #8c9a62);
-        --_fg: var(--ld-fg, #1b2146);
-        --_muted: var(--ld-muted, #7f97b3);
-        --_accent: var(--ld-accent, #efa02c);
+        --_bg: var(--ld-bg, #e8e4df);
+        --_surface: var(--ld-surface, #343237);
+        --_fg: var(--ld-fg, #171519);
+        --_muted: var(--ld-muted, #8f8990);
+        --_accent: var(--ld-accent, #e32636);
         --_radius: var(--ld-radius, 9999px);
         --_font: var(--ld-font, system-ui, sans-serif);
         --_space: var(--ld-space, 8px);
@@ -37,11 +37,28 @@
         position: relative;
         display: block;
         box-sizing: border-box;
-        /* どの枠にも収まる。横長の丸（1 : 1.85）のまわりに、影と漏れる光の余白を含めた比率 */
         width: min(100%, calc((100vh - 64px) * 1.6439));
         aspect-ratio: 1.6439;
         font-family: var(--_font);
         color: var(--_fg);
+      }
+
+      [data-ld-part="toggle-daylight"]::before {
+        position: absolute;
+        top: 18%;
+        left: 7.5%;
+        width: 85%;
+        height: 64%;
+        border: 1px solid rgb(255 255 255 / 0.62);
+        border-radius: 9999px;
+        background:
+          radial-gradient(ellipse at 50% 0%, rgb(255 255 255 / 0.14), transparent 60%),
+          linear-gradient(160deg, #343137, #101014 56%, #29262d);
+        box-shadow:
+          inset 0 3px 8px rgb(255 255 255 / 0.16),
+          inset 0 -7px 16px rgb(0 0 0 / 0.68),
+          0 14px 28px rgb(23 21 25 / 0.28);
+        content: "";
       }
 
       /* 色を読むための見えない目印 */
@@ -59,24 +76,24 @@
       }
 
       [data-ld-part="toggle-daylight"] .scene {
+        display: none;
+      }
+
+      [data-ld-part="toggle-daylight"] .venom {
         position: absolute;
-        top: 0;
-        left: 0;
+        inset: 0;
         display: block;
         width: 100%;
         height: 100%;
         pointer-events: none;
-        /* 小数の表示倍率でも、ブラウザに補間させない。ピクセルをにじませないため */
-        image-rendering: pixelated;
       }
 
-      /* 本物のスイッチ。絵は canvas が描き、ここは押す場所だけ */
       [data-ld-part="toggle-daylight"] .hit {
         position: absolute;
-        top: 12.121%;
-        left: 7.373%;
-        width: 85.253%;
-        height: 75.758%;
+        top: 18%;
+        left: 7.5%;
+        width: 85%;
+        height: 64%;
         margin: 0;
         padding: 0;
         border: 0;
@@ -3075,7 +3092,232 @@ void main() {
           }
         };
       }
-      mount(document.querySelector('[data-ld-part="toggle-daylight"]'));
+      const mountLiquidSwitch = (root) => {
+        if (!root) return;
+
+        const canvas = root.querySelector(".venom");
+        const button = root.querySelector(".hit");
+        const status = root.querySelector("[data-status]");
+        const ctx = canvas.getContext("2d");
+        if (!ctx) throw new Error("Venom switch requires a 2D canvas context");
+
+        let width = 1;
+        let height = 1;
+        let dpr = 1;
+        let value = 0;
+        let target = 0;
+        let velocity = 0;
+        let dragging = null;
+        let suppressClickUntil = 0;
+        let frame = 0;
+        let lastFrame = 0;
+        let checked = false;
+        const motionQuery = matchMedia("(prefers-reduced-motion: reduce)");
+
+        const draw = (stretch = 0) => {
+          ctx.clearRect(0, 0, width * dpr, height * dpr);
+          const trackLeft = width * 0.075;
+          const trackWidth = width * 0.85;
+          const trackHeight = height * 0.64;
+          const centerY = height / 2;
+          const radius = trackHeight * 0.405;
+          const travel = trackWidth - trackHeight;
+          const centerX = trackLeft + trackHeight / 2 + travel * value;
+          const squash = Math.min(0.16, Math.abs(stretch) * 0.018);
+          const stretchX = 1 + squash;
+          const stretchY = 1 - squash * 0.45;
+
+          ctx.save();
+          ctx.scale(dpr, dpr);
+          ctx.translate(centerX, centerY);
+          ctx.rotate(Math.max(-0.08, Math.min(0.08, stretch * 0.002)));
+          ctx.scale(radius * stretchX, radius * stretchY);
+
+          const liquid = new Path2D();
+          liquid.moveTo(-0.82, 0.28);
+          liquid.bezierCurveTo(-1.02, -0.02, -0.82, -0.48, -0.56, -0.6);
+          liquid.lineTo(-0.34, -0.48);
+          liquid.lineTo(-0.16, -0.88);
+          liquid.lineTo(0.04, -0.58);
+          liquid.lineTo(0.28, -0.82);
+          liquid.lineTo(0.42, -0.48);
+          liquid.lineTo(0.68, -0.62);
+          liquid.bezierCurveTo(0.94, -0.35, 0.98, 0.02, 0.78, 0.34);
+          liquid.bezierCurveTo(0.66, 0.62, 0.34, 0.8, 0.12, 0.72);
+          liquid.lineTo(0.02, 0.99);
+          liquid.lineTo(-0.18, 0.7);
+          liquid.bezierCurveTo(-0.48, 0.86, -0.76, 0.62, -0.82, 0.28);
+          liquid.closePath();
+
+          const fill = ctx.createLinearGradient(-0.5, -0.9, 0.55, 0.9);
+          fill.addColorStop(0, "#55515b");
+          fill.addColorStop(0.22, "#1a191e");
+          fill.addColorStop(0.68, "#050507");
+          fill.addColorStop(1, "#351016");
+          ctx.shadowColor = "rgb(0 0 0 / 0.58)";
+          ctx.shadowBlur = 0.24;
+          ctx.shadowOffsetY = 0.12;
+          ctx.fillStyle = fill;
+          ctx.fill(liquid);
+          ctx.shadowColor = "transparent";
+
+          ctx.save();
+          ctx.clip(liquid);
+          const shine = ctx.createLinearGradient(-0.72, -0.5, 0.12, 0.08);
+          shine.addColorStop(0, "rgb(255 255 255 / 0.62)");
+          shine.addColorStop(0.22, "rgb(255 255 255 / 0.16)");
+          shine.addColorStop(1, "rgb(255 255 255 / 0)");
+          ctx.strokeStyle = shine;
+          ctx.lineWidth = 0.045;
+          ctx.beginPath();
+          ctx.moveTo(-0.64, -0.24);
+          ctx.bezierCurveTo(-0.48, -0.66, -0.1, -0.7, 0.2, -0.56);
+          ctx.stroke();
+          ctx.strokeStyle = "rgb(227 38 54 / 0.72)";
+          ctx.lineWidth = 0.035;
+          ctx.beginPath();
+          ctx.moveTo(-0.58, 0.42);
+          ctx.bezierCurveTo(-0.2, 0.68, 0.2, 0.62, 0.57, 0.28);
+          ctx.stroke();
+          ctx.restore();
+
+          // Slanted white eyes give the liquid its symbiote-mask expression.
+          ctx.fillStyle = "#f4f1ef";
+          ctx.beginPath();
+          ctx.moveTo(-0.64, -0.16);
+          ctx.quadraticCurveTo(-0.34, -0.48, -0.02, -0.27);
+          ctx.quadraticCurveTo(-0.3, -0.04, -0.64, -0.16);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo(0.08, -0.27);
+          ctx.quadraticCurveTo(0.38, -0.5, 0.66, -0.15);
+          ctx.quadraticCurveTo(0.34, -0.03, 0.08, -0.27);
+          ctx.fill();
+          ctx.restore();
+        };
+
+        const setStatus = (night) => {
+          const label = night ? "夜" : "昼";
+          if (status.textContent !== label) status.textContent = label;
+          if (checked === night) return;
+          checked = night;
+          button.setAttribute("aria-checked", String(night));
+          root.dispatchEvent(
+            new CustomEvent("daylight:change", {
+              bubbles: true,
+              composed: true,
+              detail: { night },
+            }),
+          );
+        };
+
+        const finish = () => {
+          frame = 0;
+          lastFrame = 0;
+          value = target;
+          velocity = 0;
+          draw();
+          setStatus(value >= 0.5);
+        };
+
+        const animate = (time) => {
+          frame = 0;
+          const dt = lastFrame ? Math.min(0.05, (time - lastFrame) / 1000) : 1 / 60;
+          lastFrame = time;
+          const previous = value;
+          if (motionQuery.matches) {
+            value = target;
+          } else {
+            value += (target - value) * (1 - Math.exp(-dt * 13));
+          }
+          velocity = (value - previous) / Math.max(dt, 1 / 240);
+          draw(velocity);
+          if (Math.abs(target - value) < 0.0015 && Math.abs(velocity) < 0.03) {
+            finish();
+            return;
+          }
+          frame = requestAnimationFrame(animate);
+        };
+
+        const moveTo = (next) => {
+          target = Math.min(1, Math.max(0, next));
+          if (!frame) frame = requestAnimationFrame(animate);
+        };
+
+        const resize = () => {
+          const bounds = root.getBoundingClientRect();
+          width = bounds.width;
+          height = bounds.height;
+          dpr = Math.min(2, window.devicePixelRatio || 1);
+          canvas.width = Math.max(1, Math.round(width * dpr));
+          canvas.height = Math.max(1, Math.round(height * dpr));
+          canvas.style.width = `${width}px`;
+          canvas.style.height = `${height}px`;
+          draw();
+        };
+
+        const pointToValue = (clientX) => {
+          const bounds = root.getBoundingClientRect();
+          const trackLeft = bounds.left + bounds.width * 0.075;
+          const trackWidth = bounds.width * 0.85;
+          const trackHeight = bounds.height * 0.64;
+          const travel = trackWidth - trackHeight;
+          return Math.min(
+            1,
+            Math.max(0, (clientX - trackLeft - trackHeight / 2) / travel),
+          );
+        };
+
+        button.addEventListener("pointerdown", (event) => {
+          if (event.button !== 0) return;
+          dragging = { id: event.pointerId, start: value, moved: false };
+          button.setPointerCapture(event.pointerId);
+        });
+        button.addEventListener("pointermove", (event) => {
+          if (!dragging || event.pointerId !== dragging.id) return;
+          const next = pointToValue(event.clientX);
+          if (Math.abs(next - dragging.start) > 0.01) dragging.moved = true;
+          if (dragging.moved) {
+            value = next;
+            target = next;
+            draw(next - dragging.start);
+          }
+        });
+        const release = (event) => {
+          if (!dragging || event.pointerId !== dragging.id) return;
+          if (dragging.moved) {
+            suppressClickUntil = performance.now() + 400;
+            moveTo(value >= 0.5 ? 1 : 0);
+          }
+          dragging = null;
+        };
+        button.addEventListener("pointerup", release);
+        button.addEventListener("pointercancel", release);
+        button.addEventListener("lostpointercapture", release);
+        button.addEventListener("click", () => {
+          if (performance.now() < suppressClickUntil) return;
+          moveTo(target >= 0.5 ? 0 : 1);
+        });
+        button.addEventListener("keydown", (event) => {
+          if (event.key === "ArrowRight" || event.key === "ArrowUp") {
+            event.preventDefault();
+            moveTo(target + 0.04);
+          } else if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
+            event.preventDefault();
+            moveTo(target - 0.04);
+          } else if (event.key === "Home") {
+            event.preventDefault();
+            moveTo(0);
+          } else if (event.key === "End") {
+            event.preventDefault();
+            moveTo(1);
+          }
+        });
+
+        new ResizeObserver(resize).observe(root);
+        resize();
+      };
+      mountLiquidSwitch(document.querySelector('[data-ld-part="toggle-daylight"]'));
     </script>
   </body>
 </html>
